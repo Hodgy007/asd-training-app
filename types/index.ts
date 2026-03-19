@@ -55,7 +55,7 @@ export interface TrainingProgress {
 export interface AiInsight {
   id: string
   childId: string
-  generatedAt: Date
+  generatedAt: string
   summary: string
   patterns: string
   recommendations: string
