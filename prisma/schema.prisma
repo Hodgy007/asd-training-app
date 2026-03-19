@@ -1,0 +1,135 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String             @id @default(cuid())
+  email            String             @unique
+  name             String?
+  password         String
+  role             Role               @default(CAREGIVER)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  children         Child[]
+  trainingProgress TrainingProgress[]
+  accounts         Account[]
+  sessions         Session[]
+}
+
+enum Role {
+  CAREGIVER
+  ADMIN
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Child {
+  id          String        @id @default(cuid())
+  name        String
+  dateOfBirth DateTime
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  observations Observation[]
+  aiInsights  AiInsight[]
+}
+
+model Observation {
+  id            String    @id @default(cuid())
+  childId       String
+  child         Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  date          DateTime
+  behaviourType String
+  domain        Domain
+  frequency     Frequency
+  context       Context
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum Domain {
+  SOCIAL_COMMUNICATION
+  BEHAVIOUR_AND_PLAY
+  SENSORY_RESPONSES
+}
+
+enum Frequency {
+  RARE
+  SOMETIMES
+  OFTEN
+}
+
+enum Context {
+  HOME
+  NURSERY
+  OUTDOORS
+  OTHER
+}
+
+model TrainingProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleId    String
+  lessonId    String?
+  completed   Boolean   @default(false)
+  score       Int?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, moduleId, lessonId])
+}
+
+model AiInsight {
+  id              String   @id @default(cuid())
+  childId         String
+  child           Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  generatedAt     DateTime @default(now())
+  summary         String   @db.Text
+  patterns        String   @db.Text
+  recommendations String   @db.Text
+  disclaimer      String   @default("This is not a diagnosis. This tool supports observation and pattern recognition only. Always consult a qualified healthcare professional.")
+}
