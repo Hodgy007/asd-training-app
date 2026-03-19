@@ -35,6 +35,76 @@ Next.js 14 web app for caregivers and early years practitioners to complete ASD 
 
 ---
 
+## App Structure
+
+```
+asd-training-app/
+├── app/
+│   ├── page.tsx                          # Root — redirects to /dashboard or /login
+│   ├── layout.tsx                        # Root layout
+│   ├── (auth)/
+│   │   ├── login/page.tsx               # Login form
+│   │   └── register/page.tsx            # Registration form
+│   ├── (dashboard)/
+│   │   ├── layout.tsx                   # Dashboard shell — sidebar + topbar
+│   │   ├── dashboard/page.tsx           # Main dashboard overview
+│   │   ├── training/
+│   │   │   ├── page.tsx                 # Training module listing
+│   │   │   ├── [moduleId]/page.tsx      # Lesson listing for a module
+│   │   │   └── [moduleId]/[lessonId]/page.tsx  # Lesson viewer + quiz
+│   │   ├── children/
+│   │   │   ├── page.tsx                 # Child profile listing
+│   │   │   └── [childId]/page.tsx       # Child detail + observations + AI insights
+│   │   └── reports/page.tsx             # Reports + Recharts visualisations
+│   └── api/
+│       ├── auth/[...nextauth]/route.ts  # NextAuth handler
+│       ├── auth/register/route.ts       # User registration
+│       ├── children/route.ts            # GET list / POST create child
+│       ├── children/[childId]/route.ts  # GET / PATCH / DELETE child
+│       ├── children/[childId]/observations/route.ts
+│       ├── children/[childId]/observations/[observationId]/route.ts
+│       ├── children/[childId]/insights/route.ts  # Triggers Gemini AI report
+│       └── training/progress/route.ts
+├── components/
+│   ├── layout/sidebar.tsx + topbar.tsx
+│   ├── training/module-card, video-player, quiz-component
+│   ├── children/child-card, add-child-form, observation-form
+│   ├── observations/observation-table, domain-chart, weekly-summary
+│   ├── ai/insights-panel, generate-report-btn
+│   ├── providers/session-provider.tsx   # NextAuth SessionProvider wrapper
+│   └── ui/button, card, badge, progress, modal, disclaimer
+├── lib/
+│   ├── auth.ts                          # NextAuth options + PrismaAdapter
+│   ├── prisma.ts                        # Prisma client singleton
+│   ├── gemini.ts                        # Gemini AI functions (summary, patterns, guidance, report)
+│   ├── constants.ts                     # Behaviour lists per domain
+│   ├── observations.ts                  # Observation helpers
+│   └── training-data.ts                 # Static training content
+├── prisma/
+│   ├── schema.prisma                    # DB models (User, Child, Observation, AiInsight, TrainingProgress)
+│   └── seed.ts                          # Seeds training content + demo user
+└── types/index.ts
+```
+
+### Database Models
+- **User** — email, bcrypt password, name, role (CAREGIVER | ADMIN)
+- **Child** — name, DOB, notes, linked to User
+- **Observation** — behaviourType, domain, frequency, context, notes, linked to Child
+- **TrainingProgress** — moduleId, lessonId, score, completed, linked to User
+- **AiInsight** — summary, patterns, recommendations, disclaimer, linked to Child
+- **Account / Session / VerificationToken** — NextAuth adapter tables
+
+### AI Integration
+Uses `gemini-1.5-flash`. Four functions in `lib/gemini.ts`:
+1. `generateObservationSummary` — carer-friendly 2–3 sentence summary
+2. `detectPatterns` — bulleted domain pattern list
+3. `generateActionGuidance` — 3–4 practical next steps
+4. `generateInsightReport` — full report saved to AiInsight table
+
+All prompts explicitly instruct the model: **never diagnose, never suggest autism**.
+
+---
+
 ## Local Development
 
 ```bash
