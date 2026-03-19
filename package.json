@@ -36,6 +36,9 @@
     "react-hook-form": "^7.52.2",
     "@hookform/resolvers": "^3.9.0"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "devDependencies": {
     "@types/node": "^20.14.11",
     "@types/react": "^18.3.3",
