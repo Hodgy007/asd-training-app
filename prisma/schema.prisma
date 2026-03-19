@@ -1,12 +1,11 @@
-// This is your Prisma schema file
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -17,15 +16,10 @@ model User {
   role             Role               @default(CAREGIVER)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
-  children         Child[]
-  trainingProgress TrainingProgress[]
   accounts         Account[]
+  children         Child[]
   sessions         Session[]
-}
-
-enum Role {
-  CAREGIVER
-  ADMIN
+  trainingProgress TrainingProgress[]
 }
 
 model Account {
@@ -34,12 +28,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -63,22 +57,21 @@ model VerificationToken {
 }
 
 model Child {
-  id          String        @id @default(cuid())
-  name        String
-  dateOfBirth DateTime
-  notes       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String        @id @default(cuid())
+  name         String
+  dateOfBirth  DateTime
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  userId       String
+  aiInsights   AiInsight[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   observations Observation[]
-  aiInsights  AiInsight[]
 }
 
 model Observation {
   id            String    @id @default(cuid())
   childId       String
-  child         Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
   date          DateTime
   behaviourType String
   domain        Domain
@@ -87,6 +80,38 @@ model Observation {
   notes         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  child         Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+model TrainingProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  moduleId    String
+  lessonId    String?
+  completed   Boolean   @default(false)
+  score       Int?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId, lessonId])
+}
+
+model AiInsight {
+  id              String   @id @default(cuid())
+  childId         String
+  generatedAt     DateTime @default(now())
+  summary         String
+  patterns        String
+  recommendations String
+  disclaimer      String   @default("This is not a diagnosis. This tool supports observation and pattern recognition only. Always consult a qualified healthcare professional.")
+  child           Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  CAREGIVER
+  ADMIN
 }
 
 enum Domain {
@@ -106,30 +131,4 @@ enum Context {
   NURSERY
   OUTDOORS
   OTHER
-}
-
-model TrainingProgress {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  moduleId    String
-  lessonId    String?
-  completed   Boolean   @default(false)
-  score       Int?
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@unique([userId, moduleId, lessonId])
-}
-
-model AiInsight {
-  id              String   @id @default(cuid())
-  childId         String
-  child           Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
-  generatedAt     DateTime @default(now())
-  summary         String   @db.Text
-  patterns        String   @db.Text
-  recommendations String   @db.Text
-  disclaimer      String   @default("This is not a diagnosis. This tool supports observation and pattern recognition only. Always consult a qualified healthcare professional.")
 }
