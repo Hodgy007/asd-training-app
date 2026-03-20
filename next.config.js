@@ -4,10 +4,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['via.placeholder.com', 'placehold.co'],
-  },
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
+    remotePatterns: [
+      { hostname: 'via.placeholder.com' },
+      { hostname: 'placehold.co' },
+    ],
   },
 }
 
