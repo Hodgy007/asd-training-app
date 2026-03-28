@@ -24,7 +24,7 @@ interface NavItem {
 const CAREGIVER_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/training', label: 'ASD Training', icon: BookOpen },
-  { href: '/children', label: 'Children', icon: Users },
+  { href: '/children', label: 'Child Observations', icon: Users },
   { href: '/reports', label: 'Reports', icon: FileText },
 ]
 
@@ -37,7 +37,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/training', label: 'ASD Training', icon: BookOpen },
   { href: '/careers', label: 'Careers Training', icon: Briefcase },
-  { href: '/children', label: 'Children', icon: Users },
+  { href: '/children', label: 'Child Observations', icon: Users },
   { href: '/reports', label: 'Reports', icon: FileText },
   { href: '/admin', label: 'Admin', icon: ShieldCheck },
 ]
