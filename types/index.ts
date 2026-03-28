@@ -1,13 +1,57 @@
-export type Role = 'CAREGIVER' | 'ADMIN'
+export type Role =
+  | 'SUPER_ADMIN'
+  | 'ORG_ADMIN'
+  | 'CAREGIVER'
+  | 'CAREER_DEV_OFFICER'
+  | 'STUDENT'
+  | 'INTERN'
+  | 'EMPLOYEE'
+
+export const LEAF_ROLES: Role[] = [
+  'CAREGIVER',
+  'CAREER_DEV_OFFICER',
+  'STUDENT',
+  'INTERN',
+  'EMPLOYEE',
+]
+
 export type Domain = 'SOCIAL_COMMUNICATION' | 'BEHAVIOUR_AND_PLAY' | 'SENSORY_RESPONSES'
 export type Frequency = 'RARE' | 'SOMETIMES' | 'OFTEN'
 export type Context = 'HOME' | 'NURSERY' | 'OUTDOORS' | 'OTHER'
+
+export interface Organisation {
+  id: string
+  name: string
+  slug: string
+  active: boolean
+  allowedModuleIds: string[]
+  allowedRoles: string[]
+  logoUrl?: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Announcement {
+  id: string
+  title: string
+  body: string
+  active: boolean
+  organisationId?: string | null
+  createdById: string
+  expiresAt?: Date | null
+  createdAt: Date
+  updatedAt: Date
+}
 
 export interface User {
   id: string
   email: string
   name?: string | null
   role: Role
+  active: boolean
+  organisationId?: string | null
+  allowedModuleIds: string[]
+  mustChangePassword: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -62,7 +106,6 @@ export interface AiInsight {
   disclaimer: string
 }
 
-// Training data types
 export interface QuizQuestion {
   id: string
   question: string
@@ -89,7 +132,6 @@ export interface TrainingModule {
   lessons: Lesson[]
 }
 
-// Chart data types
 export interface WeeklyChartData {
   week: string
   social: number
@@ -105,7 +147,6 @@ export interface DomainSummary {
   hasThreshold: boolean
 }
 
-// API response types
 export interface ApiResponse<T> {
   data?: T
   error?: string
@@ -118,7 +159,6 @@ export interface PaginatedResponse<T> {
   pageSize: number
 }
 
-// Form types
 export interface CreateChildForm {
   name: string
   dateOfBirth: string
@@ -146,7 +186,6 @@ export interface LoginForm {
   password: string
 }
 
-// Session extension
 declare module 'next-auth' {
   interface Session {
     user: {
@@ -154,6 +193,8 @@ declare module 'next-auth' {
       email: string
       name?: string | null
       role: string
+      organisationId?: string | null
+      mustChangePassword: boolean
     }
   }
 }
@@ -162,5 +203,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string
     role: string
+    organisationId?: string | null
+    mustChangePassword: boolean
   }
 }
