@@ -10,7 +10,7 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
 
-  const isAdmin = session?.user?.role === 'ADMIN'
+  const isAdmin = session?.user?.role === 'SUPER_ADMIN'
 
   async function handleDeleteAccount() {
     setDeleting(true)
@@ -55,7 +55,7 @@ export default function SettingsPage() {
           <div>
             <p className="text-slate-400">Role</p>
             <p className="font-medium text-slate-900">
-              {session?.user?.role === 'ADMIN'
+              {session?.user?.role === 'SUPER_ADMIN'
                 ? 'Administrator'
                 : session?.user?.role === 'CAREER_DEV_OFFICER'
                 ? 'Careers Professional'

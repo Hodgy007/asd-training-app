@@ -10,7 +10,7 @@ export async function DELETE() {
   }
 
   // Prevent admin from self-deleting via this route (use admin panel)
-  if (session.user.role === 'ADMIN') {
+  if (session.user.role === 'SUPER_ADMIN') {
     return NextResponse.json(
       { error: 'Admin accounts cannot be self-deleted. Contact another administrator.' },
       { status: 403 }
