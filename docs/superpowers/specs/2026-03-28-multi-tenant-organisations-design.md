@@ -188,14 +188,32 @@ ORG_ADMIN and SUPER_ADMIN do not access `/dashboard` — they have their own por
 
 ## 3. SSO Sign-In Policy
 
-The existing `signIn` callback in `lib/auth.ts` currently creates new SSO users on first sign-in (upsert behaviour). With multi-tenancy, a new SSO sign-in cannot be assigned to an org automatically — **new SSO users must be pre-created by an Org Admin or SUPER_ADMIN**.
+The existing `signIn` callback in `lib/auth.ts` currently auto-creates new SSO users on first sign-in (upsert behaviour). With multi-tenancy this is not safe — a new SSO user cannot be automatically assigned to an org, role, or module set.
 
-**Updated `signIn` callback behaviour:**
+**SSO continues to work, but requires pre-registration.**
 
-- If the user **already exists** in the DB (identified by email): allow sign-in, check `user.organisation.active` (if org exists), proceed.
-- If the user **does not exist** in the DB: block sign-in and return an error — `"Account not found. Please contact your organisation administrator."` This prevents SSO users from self-registering outside of the org onboarding flow.
+### How it works
 
-This means the Google and Azure AD providers will no longer auto-provision new accounts. Existing SSO users (created before this migration) are unaffected — they will be assigned to the Legacy org in the migration step.
+1. An Org Admin (or SUPER_ADMIN) creates the user account with name + email. The "SSO only" toggle is enabled — password fields are hidden and `password: ""` is stored. `mustChangePassword` is set to `false` (no password to change).
+2. The user signs in via Google or Azure AD.
+3. NextAuth's `signIn` callback looks up the user by email. The account **already exists** in the DB — sign-in is allowed.
+4. The `PrismaAdapter` creates an `Account` record linking the SSO provider to that user (standard NextAuth behaviour).
+5. The user lands with the correct org, role, and module assignments already in place.
+
+### Updated `signIn` callback behaviour
+
+- If the user **exists** in the DB (matched by email): check `user.active` and `user.organisation?.active`; allow if both true.
+- If the user **does not exist** in the DB: block sign-in and return the error `"Account not found. Contact your organisation administrator."` — SSO self-registration is disabled.
+
+### Org Admin user creation form changes
+
+The "Create user" form in `/admin/users` gets an **"SSO only" toggle**:
+- When enabled: password fields are hidden, `password: ""` stored, `mustChangePassword: false`
+- When disabled (default): password field shown, `mustChangePassword: true` on save
+
+### Existing SSO users
+
+Users who signed in via SSO before this migration already exist in the DB. They are assigned to the Legacy org in the migration step and are unaffected.
 
 ---
 
