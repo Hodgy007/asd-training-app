@@ -132,11 +132,30 @@
 .dark .text-sage-700   { color: rgb(134 239 172); }
 
 /* Borders */
-.dark .border-calm-200 { border-color: rgb(51 65 85); }  /* → slate-700 */
-.dark .border-calm-300 { border-color: rgb(71 85 105); } /* → slate-600 */
-.dark .border-calm-100 { border-color: rgb(51 65 85); }  /* → slate-700 */
-.dark .border-red-200  { border-color: rgb(185 28 28 / 0.5); }
-.dark .border-green-200 { border-color: rgb(21 128 61 / 0.5); }
+.dark .border-calm-200   { border-color: rgb(51 65 85); }
+.dark .border-calm-300   { border-color: rgb(71 85 105); }
+.dark .border-calm-100   { border-color: rgb(51 65 85); }
+.dark .border-red-200    { border-color: rgb(185 28 28 / 0.5); }
+.dark .border-green-200  { border-color: rgb(21 128 61 / 0.5); }
+.dark .border-primary-200 { border-color: rgb(154 52 18 / 0.5); }
+.dark .border-primary-300 { border-color: rgb(154 52 18 / 0.6); }
+.dark .border-primary-100 { border-color: rgb(124 45 18 / 0.4); }
+
+/* Primary (brand orange) light tints → dark warm tints */
+.dark .bg-primary-50  { background-color: rgb(67 20 7 / 0.35); }
+.dark .bg-primary-100 { background-color: rgb(100 30 10 / 0.5); }
+.dark .text-primary-700 { color: rgb(251 146 60); }   /* → orange-400 */
+.dark .text-primary-800 { color: rgb(253 186 116); }  /* → orange-300 */
+
+/* Sage (green) light tints → dark green tints */
+.dark .bg-sage-50  { background-color: rgb(5 46 22 / 0.3); }
+.dark .bg-sage-100 { background-color: rgb(5 46 22 / 0.5); }
+.dark .text-sage-600 { color: rgb(134 239 172); }
+.dark .text-sage-700 { color: rgb(167 243 208); }
+.dark .text-sage-800 { color: rgb(187 247 208); }
+
+/* Warm (orange alias) light tints */
+.dark .bg-warm-100 { background-color: rgb(100 30 10 / 0.5); }
 
 /* Print styles for reports */
 @media print {
