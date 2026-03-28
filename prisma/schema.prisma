@@ -9,18 +9,24 @@ datasource db {
 }
 
 model User {
-  id               String             @id @default(cuid())
-  email            String             @unique
-  name             String?
-  password         String
-  role             Role               @default(CAREGIVER)
-  active           Boolean            @default(true)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  id                 String             @id @default(cuid())
+  email              String             @unique
+  name               String?
+  password           String
+  role               Role               @default(CAREGIVER)
+  active             Boolean            @default(true)
+  organisationId     String?
+  allowedModuleIds   String[]
+  mustChangePassword Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  organisation     Organisation?      @relation(fields: [organisationId], references: [id])
   accounts         Account[]
   children         Child[]
   sessions         Session[]
   trainingProgress TrainingProgress[]
+  announcements    Announcement[]     @relation("AnnouncementsCreated")
 }
 
 model Account {
@@ -55,6 +61,36 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Organisation {
+  id               String         @id @default(cuid())
+  name             String
+  slug             String         @unique
+  active           Boolean        @default(true)
+  allowedModuleIds String[]
+  allowedRoles     String[]
+  logoUrl          String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  users         User[]
+  announcements Announcement[]
+}
+
+model Announcement {
+  id             String        @id @default(cuid())
+  title          String
+  body           String
+  active         Boolean       @default(true)
+  organisationId String?
+  createdById    String
+  expiresAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: SetNull)
+  createdBy    User          @relation("AnnouncementsCreated", fields: [createdById], references: [id])
 }
 
 model Child {
@@ -119,9 +155,13 @@ model PasswordResetToken {
 }
 
 enum Role {
+  SUPER_ADMIN
+  ORG_ADMIN
   CAREGIVER
   CAREER_DEV_OFFICER
-  ADMIN
+  STUDENT
+  INTERN
+  EMPLOYEE
 }
 
 enum Domain {
