@@ -7,6 +7,7 @@ const registerSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
   password: z.string().min(8).max(128),
+  role: z.enum(['CAREGIVER', 'CAREER_DEV_OFFICER']).default('CAREGIVER'),
 })
 
 export async function POST(req: NextRequest) {
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { name, email, password } = parsed.data
+    const { name, email, password, role } = parsed.data
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
@@ -38,7 +39,8 @@ export async function POST(req: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        role: 'CAREGIVER',
+        role,
+        active: true,
       },
     })
 

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, Heart, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -40,20 +40,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-calm-50 to-sage-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-2xl mb-4 shadow-lg">
-            <Heart className="h-8 w-8 text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="32,4 60,56 4,56" fill="#f5821f" />
+              <polygon points="32,18 50,50 14,50" fill="#fcaf17" opacity="0.75" />
+            </svg>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">ASD Awareness UK</h1>
-          <p className="text-slate-500 mt-1">Caregiver Training & Observation Tool</p>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Ambitious about <span className="text-primary-500">Autism</span>
+          </h1>
+          <p className="text-slate-500 mt-1">Caregiver Training &amp; Observation Tool</p>
         </div>
 
         {/* Login Card */}
-        <div className="card">
-          <h2 className="text-xl font-semibold text-slate-900 mb-6">Sign in to your account</h2>
+        <div className="card border-t-4 border-t-primary-500">
+          <h2 className="text-xl font-bold text-slate-900 mb-6">Sign in to your account</h2>
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-5">
@@ -124,7 +129,7 @@ export default function LoginPage() {
           <div className="mt-6 pt-5 border-t border-calm-200 text-center">
             <p className="text-sm text-slate-500">
               Don&apos;t have an account?{' '}
-              <Link href="/register" className="font-medium text-primary-600 hover:text-primary-700">
+              <Link href="/register" className="font-bold text-primary-500 hover:text-primary-600">
                 Create one here
               </Link>
             </p>
@@ -132,7 +137,7 @@ export default function LoginPage() {
 
           {/* Demo credentials */}
           <div className="mt-4 bg-calm-50 rounded-xl p-3">
-            <p className="text-xs text-slate-500 font-medium mb-1">Demo account:</p>
+            <p className="text-xs text-slate-500 font-bold mb-1">Demo account:</p>
             <p className="text-xs text-slate-500">
               Email: <span className="font-mono text-slate-700">demo@example.com</span>
             </p>
@@ -143,7 +148,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-6">
-          ASD Awareness UK &mdash; Registered Charity &middot; Not a diagnostic tool
+          Ambitious about Autism &mdash; Registered Charity &middot; Not a diagnostic tool
         </p>
       </div>
     </div>

@@ -42,8 +42,8 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-            <span className="text-xs font-semibold text-primary-700">{initials}</span>
+          <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
+            <span className="text-xs font-bold text-white">{initials}</span>
           </div>
           <div className="hidden md:block">
             <p className="text-sm font-medium text-slate-900 leading-tight">

@@ -26,23 +26,23 @@ export default async function TrainingPage() {
       </div>
 
       {/* Overall progress */}
-      <div className="card bg-gradient-to-r from-primary-600 to-primary-700 text-white border-0">
+      <div className="card border-0 bg-primary-500">
         <div className="flex items-end justify-between mb-3">
           <div>
-            <p className="text-primary-100 text-sm font-medium">Your progress</p>
-            <p className="text-3xl font-bold mt-1">
+            <p className="text-sm font-bold text-white/80">Your progress</p>
+            <p className="text-3xl font-bold mt-1 text-white">
               {completedLessons}
-              <span className="text-primary-200 text-xl font-normal"> / {totalLessons}</span>
+              <span className="text-white/70 text-xl font-normal"> / {totalLessons}</span>
             </p>
-            <p className="text-primary-200 text-sm">lessons completed</p>
+            <p className="text-white/80 text-sm font-medium">lessons completed</p>
           </div>
           <div className="text-right">
-            <p className="text-5xl font-bold text-white/90">
+            <p className="text-5xl font-bold text-white">
               {Math.round((completedLessons / totalLessons) * 100)}%
             </p>
           </div>
         </div>
-        <div className="w-full h-2 bg-primary-500/50 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-white/30 rounded-full overflow-hidden">
           <div
             className="h-full bg-white rounded-full transition-all"
             style={{ width: `${(completedLessons / totalLessons) * 100}%` }}

@@ -1,8 +1,10 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 import { differenceInYears, differenceInMonths } from 'date-fns'
 
 const DISCLAIMER =
   'These observations are for discussion with your GP, health visitor, or SENCO. This is not a diagnosis.'
+
+const MODEL = 'gemini-2.5-flash'
 
 function getAgeString(dateOfBirth: Date): string {
   const years = differenceInYears(new Date(), dateOfBirth)
@@ -54,9 +56,7 @@ export async function generateObservationSummary(
     return 'AI insights are not available. Please configure the GEMINI_API_KEY environment variable.'
   }
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   const age = getAgeString(dateOfBirth)
   const observationText = formatObservationsForPrompt(observations)
 
@@ -75,8 +75,8 @@ Please provide a brief summary (2-3 sentences) of the observed patterns in carer
 Focus only on what has been observed — do not speculate or diagnose.
 End with: "${DISCLAIMER}"`
 
-  const result = await model.generateContent(prompt)
-  return result.response.text()
+  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
+  return response.text ?? ''
 }
 
 export async function detectPatterns(
@@ -93,9 +93,7 @@ export async function detectPatterns(
     return 'AI pattern detection is not available. Please configure the GEMINI_API_KEY environment variable.'
   }
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   const observationText = formatObservationsForPrompt(observations)
 
   const prompt = `You are an assistant supporting carers and professionals who work with children.
@@ -110,8 +108,8 @@ List 2-4 specific behaviour patterns you notice, using carer-friendly language.
 Format as a brief bulleted list.
 Do not speculate beyond what the data shows.`
 
-  const result = await model.generateContent(prompt)
-  return result.response.text()
+  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
+  return response.text ?? ''
 }
 
 export async function generateActionGuidance(patterns: string): Promise<string> {
@@ -119,8 +117,7 @@ export async function generateActionGuidance(patterns: string): Promise<string> 
     return 'AI guidance is not available. Please configure the GEMINI_API_KEY environment variable.'
   }
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
   const prompt = `You are an assistant supporting carers and professionals who work with children.
 Your role is to suggest practical next steps based on observed patterns.
@@ -136,8 +133,8 @@ Use warm, encouraging, non-alarming language.
 Format as a bulleted list.
 End with: "${DISCLAIMER}"`
 
-  const result = await model.generateContent(prompt)
-  return result.response.text()
+  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
+  return response.text ?? ''
 }
 
 export async function generateInsightReport(
@@ -161,9 +158,7 @@ export async function generateInsightReport(
     return { summary: fallback, patterns: fallback, recommendations: fallback }
   }
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   const age = getAgeString(child.dateOfBirth)
   const observationText = formatObservationsForPrompt(observations)
 
@@ -194,10 +189,9 @@ RECOMMENDATIONS:
 
 Always end the RECOMMENDATIONS section with: "${DISCLAIMER}"`
 
-  const result = await model.generateContent(prompt)
-  const text = result.response.text()
+  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
+  const text = response.text ?? ''
 
-  // Parse the structured response
   const summaryMatch = text.match(/SUMMARY:\s*([\s\S]*?)(?=PATTERNS:|$)/i)
   const patternsMatch = text.match(/PATTERNS:\s*([\s\S]*?)(?=RECOMMENDATIONS:|$)/i)
   const recommendationsMatch = text.match(/RECOMMENDATIONS:\s*([\s\S]*?)$/i)

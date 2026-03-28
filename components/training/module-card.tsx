@@ -45,8 +45,9 @@ export function ModuleCard({ module, completedLessons, locked }: ModuleCardProps
               ? 'bg-sage-500 text-white'
               : locked
                 ? 'bg-calm-200 text-slate-400'
-                : 'bg-primary-600 text-white'
+                : 'text-black font-bold'
           )}
+          style={!isComplete && !locked ? { backgroundColor: '#f5821f' } : undefined}
         >
           {isComplete ? <CheckCircle className="h-5 w-5" /> : module.order}
         </div>
@@ -88,8 +89,8 @@ export function ModuleCard({ module, completedLessons, locked }: ModuleCardProps
         </div>
         <div className="w-full h-1.5 bg-calm-200 rounded-full overflow-hidden">
           <div
-            className={clsx('h-full rounded-full transition-all', isComplete ? 'bg-sage-500' : 'bg-primary-500')}
-            style={{ width: `${progressPct}%` }}
+            className={clsx('h-full rounded-full transition-all', isComplete ? 'bg-sage-500' : '')}
+            style={{ width: `${progressPct}%`, backgroundColor: isComplete ? undefined : '#f5821f' }}
           />
         </div>
       </div>

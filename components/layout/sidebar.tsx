@@ -2,24 +2,51 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
   BookOpen,
   Users,
   FileText,
-  Heart,
   LogOut,
   X,
+  Briefcase,
+  ShieldCheck,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
-const navItems = [
+interface NavItem {
+  href: string
+  label: string
+  icon: React.ElementType
+}
+
+const CAREGIVER_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/training', label: 'Training', icon: BookOpen },
+  { href: '/training', label: 'ASD Training', icon: BookOpen },
   { href: '/children', label: 'Children', icon: Users },
   { href: '/reports', label: 'Reports', icon: FileText },
 ]
+
+const CAREERS_NAV: NavItem[] = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/careers', label: 'Careers Training', icon: Briefcase },
+]
+
+const ADMIN_NAV: NavItem[] = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/training', label: 'ASD Training', icon: BookOpen },
+  { href: '/careers', label: 'Careers Training', icon: Briefcase },
+  { href: '/children', label: 'Children', icon: Users },
+  { href: '/reports', label: 'Reports', icon: FileText },
+  { href: '/admin', label: 'Admin', icon: ShieldCheck },
+]
+
+function getNavItems(role?: string): NavItem[] {
+  if (role === 'ADMIN') return ADMIN_NAV
+  if (role === 'CAREER_DEV_OFFICER') return CAREERS_NAV
+  return CAREGIVER_NAV
+}
 
 interface SidebarProps {
   onClose?: () => void
@@ -28,18 +55,24 @@ interface SidebarProps {
 
 export function Sidebar({ onClose, mobile }: SidebarProps) {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const role = session?.user?.role
+  const navItems = getNavItems(role)
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-calm-200">
       {/* Logo */}
-      <div className="flex items-center justify-between p-6 border-b border-calm-200">
+      <div className="flex items-center justify-between p-5 border-b border-calm-200 bg-white">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-            <Heart className="h-4 w-4 text-white" />
+          <div className="flex-shrink-0">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="18,2 34,32 2,32" fill="#f5821f" />
+              <polygon points="18,10 28,28 8,28" fill="#fcaf17" opacity="0.7" />
+            </svg>
           </div>
           <div>
-            <p className="font-bold text-slate-900 text-sm leading-tight">ASD Awareness</p>
-            <p className="text-xs text-slate-400">UK Charity</p>
+            <p className="font-bold text-slate-900 text-sm leading-tight">Ambitious about</p>
+            <p className="font-bold text-primary-500 text-sm leading-tight">Autism</p>
           </div>
         </div>
         {mobile && (
@@ -51,6 +84,22 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
           </button>
         )}
       </div>
+
+      {/* Role badge */}
+      {role && (
+        <div className="px-5 py-2 border-b border-calm-100">
+          <span className={clsx(
+            'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
+            role === 'ADMIN' && 'bg-purple-100 text-purple-700',
+            role === 'CAREER_DEV_OFFICER' && 'bg-blue-100 text-blue-700',
+            role === 'CAREGIVER' && 'bg-orange-100 text-orange-700',
+          )}>
+            {role === 'ADMIN' && <ShieldCheck className="h-3 w-3" />}
+            {role === 'CAREER_DEV_OFFICER' && <Briefcase className="h-3 w-3" />}
+            {role === 'ADMIN' ? 'Admin' : role === 'CAREER_DEV_OFFICER' ? 'Careers Professional' : 'Caregiver'}
+          </span>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1" aria-label="Main navigation">
@@ -64,14 +113,14 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
               href={item.href}
               onClick={onClose}
               className={clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
+                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all',
                 isActive
-                  ? 'bg-primary-50 text-primary-700 shadow-sm'
+                  ? 'bg-primary-50 text-primary-600 shadow-sm'
                   : 'text-slate-600 hover:bg-calm-50 hover:text-slate-900'
               )}
             >
               <Icon
-                className={clsx('h-5 w-5 flex-shrink-0', isActive ? 'text-primary-600' : 'text-slate-400')}
+                className={clsx('h-5 w-5 flex-shrink-0', isActive ? 'text-primary-500' : 'text-slate-400')}
               />
               {item.label}
             </Link>
@@ -81,15 +130,16 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
 
       {/* Bottom section */}
       <div className="p-4 border-t border-calm-200 space-y-2">
-        <div className="bg-amber-50 rounded-xl p-3 mb-3">
-          <p className="text-xs text-amber-700 leading-relaxed">
-            <strong>Reminder:</strong> This tool does not diagnose. Share observations with your GP
-            or health visitor.
-          </p>
-        </div>
+        {role !== 'CAREER_DEV_OFFICER' && (
+          <div className="bg-orange-50 border-l-4 border-primary-500 rounded-r-xl p-3 mb-3">
+            <p className="text-xs text-slate-600 leading-relaxed">
+              <strong className="text-primary-600">Reminder:</strong> This tool does not diagnose. Share observations with your GP or health visitor.
+            </p>
+          </div>
+        )}
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all w-full"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all w-full"
         >
           <LogOut className="h-5 w-5 text-slate-400" />
           Sign out
