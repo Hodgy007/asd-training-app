@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { Menu, Bell } from 'lucide-react'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 interface TopbarProps {
   onMenuClick: () => void
@@ -21,21 +22,23 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
     : 'U'
 
   return (
-    <header className="h-16 bg-white border-b border-calm-200 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
+    <header className="h-16 bg-white dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuClick}
-          className="md:hidden p-2 rounded-xl text-slate-500 hover:bg-calm-100 transition-colors"
+          className="md:hidden p-2 rounded-xl text-slate-500 hover:bg-calm-100 dark:hover:bg-slate-700 transition-colors"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </button>
-        {title && <h1 className="text-lg font-semibold text-slate-900 hidden md:block">{title}</h1>}
+        {title && <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100 hidden md:block">{title}</h1>}
       </div>
 
       <div className="flex items-center gap-3">
+        <ThemeToggle />
+
         <button
-          className="p-2 rounded-xl text-slate-400 hover:bg-calm-100 transition-colors relative"
+          className="p-2 rounded-xl text-slate-400 hover:bg-calm-100 dark:hover:bg-slate-700 transition-colors relative"
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
@@ -46,10 +49,10 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
             <span className="text-xs font-bold text-white">{initials}</span>
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-medium text-slate-900 leading-tight">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-tight">
               {session?.user?.name || 'Caregiver'}
             </p>
-            <p className="text-xs text-slate-400 capitalize">
+            <p className="text-xs text-slate-400 dark:text-slate-500 capitalize">
               {session?.user?.role?.toLowerCase() || 'caregiver'}
             </p>
           </div>

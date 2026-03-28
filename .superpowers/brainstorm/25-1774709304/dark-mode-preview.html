@@ -1,0 +1,98 @@
+<h2>Dark mode colour preview</h2>
+<p class="subtitle">How the app will look in light vs dark — using your existing brand orange. Click to approve.</p>
+
+<div class="split" style="gap:20px;align-items:flex-start">
+
+  <!-- LIGHT MODE -->
+  <div class="mockup" style="flex:1">
+    <div class="mockup-header">☀️ Light mode (current)</div>
+    <div class="mockup-body" style="padding:0;overflow:hidden;border-radius:0 0 8px 8px">
+      <!-- Topbar -->
+      <div style="background:#ffffff;border-bottom:1px solid #e2e8f0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:700;color:#0f172a;font-size:14px">Dashboard</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#f5821f;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700">AD</div>
+          <span style="font-size:11px;color:#94a3b8">☀️</span>
+        </div>
+      </div>
+      <!-- Content -->
+      <div style="background:#f8fafc;padding:16px;display:flex;gap:12px">
+        <!-- Sidebar -->
+        <div style="width:48px;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;padding:8px;display:flex;flex-direction:column;gap:8px">
+          <div style="width:100%;height:6px;background:#f5821f;border-radius:4px"></div>
+          <div style="width:100%;height:6px;background:#e2e8f0;border-radius:4px"></div>
+          <div style="width:100%;height:6px;background:#e2e8f0;border-radius:4px"></div>
+          <div style="width:100%;height:6px;background:#e2e8f0;border-radius:4px"></div>
+        </div>
+        <!-- Cards -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:12px">
+            <div style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:4px">Welcome back</div>
+            <div style="font-size:10px;color:#64748b">You have 3 observations this week</div>
+          </div>
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:12px">
+            <div style="font-size:10px;font-weight:700;color:#0f172a;margin-bottom:6px">Training Progress</div>
+            <div style="height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden">
+              <div style="width:60%;height:100%;background:#f5821f;border-radius:4px"></div>
+            </div>
+          </div>
+          <div style="background:#f5821f;border-radius:8px;padding:8px;text-align:center">
+            <span style="font-size:10px;font-weight:700;color:white">Add Observation</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DARK MODE -->
+  <div class="mockup" style="flex:1" data-choice="approve" onclick="toggleSelect(this)">
+    <div class="mockup-header">🌙 Dark mode (proposed) — click to approve</div>
+    <div class="mockup-body" style="padding:0;overflow:hidden;border-radius:0 0 8px 8px">
+      <!-- Topbar -->
+      <div style="background:#1e293b;border-bottom:1px solid #334155;padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:700;color:#f1f5f9;font-size:14px">Dashboard</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#f5821f;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700">AD</div>
+          <span style="font-size:11px;color:#94a3b8">🌙</span>
+        </div>
+      </div>
+      <!-- Content -->
+      <div style="background:#0f172a;padding:16px;display:flex;gap:12px">
+        <!-- Sidebar -->
+        <div style="width:48px;background:#1e293b;border-radius:8px;border:1px solid #334155;padding:8px;display:flex;flex-direction:column;gap:8px">
+          <div style="width:100%;height:6px;background:#f5821f;border-radius:4px"></div>
+          <div style="width:100%;height:6px;background:#334155;border-radius:4px"></div>
+          <div style="width:100%;height:6px;background:#334155;border-radius:4px"></div>
+          <div style="width:100%;height:6px;background:#334155;border-radius:4px"></div>
+        </div>
+        <!-- Cards -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:12px">
+            <div style="font-size:11px;font-weight:700;color:#f1f5f9;margin-bottom:4px">Welcome back</div>
+            <div style="font-size:10px;color:#94a3b8">You have 3 observations this week</div>
+          </div>
+          <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:12px">
+            <div style="font-size:10px;font-weight:700;color:#f1f5f9;margin-bottom:6px">Training Progress</div>
+            <div style="height:6px;background:#334155;border-radius:4px;overflow:hidden">
+              <div style="width:60%;height:100%;background:#f5821f;border-radius:4px"></div>
+            </div>
+          </div>
+          <div style="background:#f5821f;border-radius:8px;padding:8px;text-align:center">
+            <span style="font-size:10px;font-weight:700;color:white">Add Observation</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:20px;background:#1e293b;border-radius:12px;padding:16px;color:#94a3b8;font-size:12px">
+  <strong style="color:#f1f5f9">Dark palette:</strong>
+  <span style="margin-left:8px">Page bg: <code style="color:#f5821f">#0f172a</code></span>
+  <span style="margin-left:8px">Card bg: <code style="color:#f5821f">#1e293b</code></span>
+  <span style="margin-left:8px">Border: <code style="color:#f5821f">#334155</code></span>
+  <span style="margin-left:8px">Text: <code style="color:#f5821f">#f1f5f9</code></span>
+  <span style="margin-left:8px">Muted text: <code style="color:#f5821f">#94a3b8</code></span>
+  <span style="margin-left:8px">Brand orange: <code style="color:#f5821f">#f5821f</code> (unchanged)</span>
+</div>

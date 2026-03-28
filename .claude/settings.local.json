@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Vercel__list_deployments",
+      "mcp__claude_ai_Vercel__get_project",
+      "Bash(grep -v \"^$\")",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(C:/Users/Simon/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/skills/brainstorming/scripts/start-server.sh --project-dir \"C:/Users/Simon/OneDrive/Documents/asd-training-app\")",
+      "Bash(cd:*)"
+    ]
+  }
+}

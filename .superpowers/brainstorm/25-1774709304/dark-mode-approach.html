@@ -1,0 +1,42 @@
+<h2>How should dark mode be controlled?</h2>
+<p class="subtitle">Pick the approach that works best for your users</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Manual toggle in the app</h3>
+      <p>A sun/moon button in the topbar. Users switch whenever they want — default follows their system setting on first visit. Persistent (remembered via localStorage).</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Pros</h4><ul><li>Full user control</li><li>Familiar UX pattern</li><li>Works independently of OS setting</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Adds a button to the topbar</li><li>Requires a ThemeProvider component</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Follow system preference only</h3>
+      <p>Uses the OS dark/light setting automatically via <code>prefers-color-scheme</code> CSS media query. No toggle needed — it just works.</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Pros</h4><ul><li>Zero UI complexity</li><li>Respects OS accessibility setting</li><li>Less code</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>User can't override without changing OS</li><li>Less control for users on shared devices</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Toggle in Settings page</h3>
+      <p>No topbar button — instead a "Theme" dropdown (Light / Dark / System) lives in the Settings page the user already has access to.</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Pros</h4><ul><li>Keeps topbar clean</li><li>Three-way control (Light / Dark / System)</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Less discoverable — buried in settings</li><li>Harder to switch quickly</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px">👉 My recommendation is <strong>A</strong> — a topbar toggle is the most accessible and discoverable pattern for users who may have visual impairments.</p>
