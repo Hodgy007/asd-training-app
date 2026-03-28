@@ -12,6 +12,7 @@ export interface Lesson {
   title: string
   type: 'VIDEO' | 'TEXT'
   content: string
+  videoUrl?: string
   order: number
   quizQuestions: QuizQuestion[]
 }
@@ -37,6 +38,7 @@ export const TRAINING_MODULES: TrainingModule[] = [
         moduleId: 'module-1',
         title: 'What is Autism Spectrum Disorder?',
         type: 'VIDEO',
+        videoUrl: 'https://74u9y331cmlgwrqe.public.blob.vercel-storage.com/training/module-1/what-is-autism-spectrum-disorder.mp4',
         order: 1,
         content: `Autism Spectrum Disorder (ASD) is a neurodevelopmental condition that affects how people perceive and interact with the world around them. The word "spectrum" reflects the wide range of ways in which ASD can present — no two autistic people are the same.
 

@@ -147,7 +147,7 @@ export default function LessonPage({ params }: LessonPageProps) {
 
       {/* Video (if applicable) */}
       {lesson.type === 'VIDEO' && (
-        <VideoPlayer title={lesson.title} />
+        <VideoPlayer title={lesson.title} videoUrl={lesson.videoUrl} />
       )}
 
       {/* Lesson content */}
