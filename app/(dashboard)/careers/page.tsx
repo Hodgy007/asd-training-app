@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { CAREERS_MODULES } from '@/lib/careers-training-data'
-import { canAccessCareers } from '@/lib/rbac'
+import { canAccessCareers, isAdmin } from '@/lib/rbac'
 import Link from 'next/link'
 import { Briefcase, CheckCircle, Circle, ChevronRight, Lock } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -73,7 +73,7 @@ export default async function CareersPage() {
               (p) => p.moduleId === CAREERS_MODULES[index - 1].id && p.completed
             ).length === CAREERS_MODULES[index - 1].lessons.length
 
-          const isLocked = !previousModuleComplete && index > 0
+          const isLocked = !isAdmin(session) && !previousModuleComplete && index > 0
 
           return (
             <div

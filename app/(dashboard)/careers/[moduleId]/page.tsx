@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
 import { getCareerModuleById } from '@/lib/careers-training-data'
-import { canAccessCareers } from '@/lib/rbac'
+import { canAccessCareers, isAdmin } from '@/lib/rbac'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -99,7 +99,7 @@ export default async function CareerModulePage({ params }: { params: { moduleId:
           {module.lessons.map((lesson, idx) => {
             const isLessonComplete = completedLessonIds.includes(lesson.id)
             const isLessonLocked =
-              idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id)
+              !isAdmin(session) && idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id)
 
             return (
               <div

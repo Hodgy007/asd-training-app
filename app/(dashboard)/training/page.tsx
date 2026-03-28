@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { TRAINING_MODULES } from '@/lib/training-data'
 import { ModuleCard } from '@/components/training/module-card'
+import { isAdmin } from '@/lib/rbac'
 
 export default async function TrainingPage() {
   const session = await getServerSession(authOptions)
@@ -68,7 +69,7 @@ export default async function TrainingPage() {
               key={module.id}
               module={module}
               completedLessons={moduleProgress.length}
-              locked={!previousModuleComplete && index > 0}
+              locked={!isAdmin(session) && !previousModuleComplete && index > 0}
             />
           )
         })}

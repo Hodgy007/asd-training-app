@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
 import { getModuleById } from '@/lib/training-data'
+import { isAdmin } from '@/lib/rbac'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -96,7 +97,7 @@ export default async function ModulePage({ params }: { params: { moduleId: strin
         <div className="space-y-2">
           {module.lessons.map((lesson, idx) => {
             const isLessonComplete = completedLessonIds.includes(lesson.id)
-            const isLessonLocked = idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id)
+            const isLessonLocked = !isAdmin(session) && idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id)
 
             return (
               <div
