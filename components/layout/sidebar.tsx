@@ -12,6 +12,7 @@ import {
   X,
   Briefcase,
   ShieldCheck,
+  Settings,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -26,11 +27,13 @@ const CAREGIVER_NAV: NavItem[] = [
   { href: '/training', label: 'ASD Training', icon: BookOpen },
   { href: '/children', label: 'Child Observations', icon: Users },
   { href: '/reports', label: 'Reports', icon: FileText },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
 const CAREERS_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/careers', label: 'Careers Training', icon: Briefcase },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
 const ADMIN_NAV: NavItem[] = [
@@ -40,6 +43,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: '/children', label: 'Child Observations', icon: Users },
   { href: '/reports', label: 'Reports', icon: FileText },
   { href: '/admin', label: 'Admin', icon: ShieldCheck },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
 function getNavItems(role?: string): NavItem[] {

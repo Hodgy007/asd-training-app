@@ -31,6 +31,7 @@ export default function RegisterPage() {
     role: 'CAREGIVER' as Role,
   })
   const [showPassword, setShowPassword] = useState(false)
+  const [privacyConsent, setPrivacyConsent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -41,6 +42,11 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+
+    if (!privacyConsent) {
+      setError('You must agree to the privacy policy to create an account.')
+      return
+    }
 
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match.')
@@ -228,12 +234,24 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="bg-orange-50 border-l-4 border-primary-500 rounded-r-xl p-3">
-              <p className="text-xs text-slate-600">
-                By creating an account, you agree to use this tool for observation and support
-                purposes only. This tool is not a diagnostic instrument.
-              </p>
-            </div>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={privacyConsent}
+                onChange={(e) => setPrivacyConsent(e.target.checked)}
+                className="mt-0.5 accent-primary-500 flex-shrink-0"
+                required
+              />
+              <span className="text-xs text-slate-600 leading-relaxed">
+                I have read and agree to the{' '}
+                <a href="/privacy" target="_blank" className="text-primary-600 underline">
+                  Privacy Policy
+                </a>
+                . I consent to my personal data being processed for the purpose of ASD observation
+                tracking and training. I understand this tool is not a diagnostic instrument and I
+                will share concerns with a qualified healthcare professional.
+              </span>
+            </label>
 
             <button
               type="submit"

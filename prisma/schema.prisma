@@ -110,6 +110,14 @@ model AiInsight {
   child           Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+}
+
 enum Role {
   CAREGIVER
   CAREER_DEV_OFFICER

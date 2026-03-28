@@ -767,13 +767,210 @@ async function main() {
     }
   }
 
-  console.log('Seeding complete!')
+  // Seed demo child under the demo caregiver
+  const demoChild = await prisma.child.upsert({
+    where: { id: 'demo-child-jamie' },
+    update: {},
+    create: {
+      id: 'demo-child-jamie',
+      name: 'Jamie Collins',
+      dateOfBirth: new Date('2021-09-14'), // ~4.5 years old
+      notes: 'Jamie is a bright and curious child who loves trains and numbers. Has been attending nursery since age 2. Staff have noted some differences in social play and transitions.',
+      userId: caregiver.id,
+    },
+  })
+  console.log('Created demo child:', demoChild.name)
+
+  // Observations spread across domains and dates
+  const demoObservations = [
+    // Social communication
+    {
+      childId: demoChild.id,
+      date: new Date('2026-01-08'),
+      behaviourType: 'Limited eye contact during shared play',
+      domain: 'SOCIAL_COMMUNICATION' as const,
+      frequency: 'OFTEN' as const,
+      context: 'NURSERY' as const,
+      notes: 'During group story time Jamie rarely looked at the practitioner when spoken to directly. Focused on a toy train throughout.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-01-15'),
+      behaviourType: 'Delayed response to name',
+      domain: 'SOCIAL_COMMUNICATION' as const,
+      frequency: 'OFTEN' as const,
+      context: 'HOME' as const,
+      notes: 'When called from another room Jamie did not respond on first or second call. Responded on the third attempt after direct touch.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-01-22'),
+      behaviourType: 'Reduced declarative pointing',
+      domain: 'SOCIAL_COMMUNICATION' as const,
+      frequency: 'SOMETIMES' as const,
+      context: 'OUTDOORS' as const,
+      notes: 'During a walk, a dog ran past. Jamie did not point to share the experience or look back to check I had seen it. No bid for shared attention.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-02-03'),
+      behaviourType: 'Echolalia — repeating TV phrases',
+      domain: 'SOCIAL_COMMUNICATION' as const,
+      frequency: 'OFTEN' as const,
+      context: 'HOME' as const,
+      notes: 'Jamie frequently uses phrases from favourite programmes (e.g. "The doors are closing") in unrelated contexts. Does not appear to use these communicatively.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-02-18'),
+      behaviourType: 'Difficulty with back-and-forth conversation',
+      domain: 'SOCIAL_COMMUNICATION' as const,
+      frequency: 'OFTEN' as const,
+      context: 'NURSERY' as const,
+      notes: 'When peers tried to engage Jamie in role play, Jamie did not respond to their narrative. Continued own parallel play with trains.',
+    },
+    // Behaviour and play
+    {
+      childId: demoChild.id,
+      date: new Date('2026-01-10'),
+      behaviourType: 'Lining up toys in precise rows',
+      domain: 'BEHAVIOUR_AND_PLAY' as const,
+      frequency: 'OFTEN' as const,
+      context: 'HOME' as const,
+      notes: 'Every evening Jamie lines up all toy trains in order of size on the windowsill. Becomes very distressed if the order is changed.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-01-19'),
+      behaviourType: 'Distress at routine change',
+      domain: 'BEHAVIOUR_AND_PLAY' as const,
+      frequency: 'OFTEN' as const,
+      context: 'HOME' as const,
+      notes: 'Bath time was moved 30 minutes earlier due to a family commitment. Jamie became extremely distressed (screaming, floor-dropping) for approximately 20 minutes.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-02-05'),
+      behaviourType: 'Repetitive hand-flapping when excited',
+      domain: 'BEHAVIOUR_AND_PLAY' as const,
+      frequency: 'OFTEN' as const,
+      context: 'HOME' as const,
+      notes: 'When a favourite programme starts, Jamie flaps both hands rapidly for several seconds. Also occurs when discussing trains.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-02-12'),
+      behaviourType: 'Limited imaginative play',
+      domain: 'BEHAVIOUR_AND_PLAY' as const,
+      frequency: 'OFTEN' as const,
+      context: 'NURSERY' as const,
+      notes: 'In free play Jamie does not engage in pretend scenarios. Prefers to sort and arrange objects. Does not engage with the role play corner.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-03-01'),
+      behaviourType: 'Insistence on specific seat at mealtimes',
+      domain: 'BEHAVIOUR_AND_PLAY' as const,
+      frequency: 'OFTEN' as const,
+      context: 'HOME' as const,
+      notes: 'Jamie will only eat from a specific blue bowl, sitting in the same chair. Refused to eat for 40 minutes when the bowl was in the dishwasher.',
+    },
+    // Sensory responses
+    {
+      childId: demoChild.id,
+      date: new Date('2026-01-13'),
+      behaviourType: 'Hypersensitivity to hand dryer noise',
+      domain: 'SENSORY_RESPONSES' as const,
+      frequency: 'OFTEN' as const,
+      context: 'OUTDOORS' as const,
+      notes: 'In a public toilet Jamie screamed and covered ears when the hand dryer activated. Remained distressed for 10 minutes after leaving.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-01-27'),
+      behaviourType: 'Refusal of textured foods',
+      domain: 'SENSORY_RESPONSES' as const,
+      frequency: 'OFTEN' as const,
+      context: 'HOME' as const,
+      notes: 'Diet is very restricted — smooth foods only. Strong gag response to any lumpy or mixed-texture food. Currently eating fewer than 10 foods.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-02-09'),
+      behaviourType: 'Seeks deep pressure / tight clothing',
+      domain: 'SENSORY_RESPONSES' as const,
+      frequency: 'SOMETIMES' as const,
+      context: 'HOME' as const,
+      notes: 'Jamie requests very tight hugs frequently and insists on wearing clothing a size too small. Appears calmer when wrapped tightly in a blanket.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-02-24'),
+      behaviourType: 'Distress at clothing labels and seams',
+      domain: 'SENSORY_RESPONSES' as const,
+      frequency: 'OFTEN' as const,
+      context: 'HOME' as const,
+      notes: 'Spends up to 15 minutes each morning distressed by socks seams. Clothing labels have been removed from all garments. Will not wear jeans.',
+    },
+    {
+      childId: demoChild.id,
+      date: new Date('2026-03-10'),
+      behaviourType: 'Unusual pain response — apparent indifference to injury',
+      domain: 'SENSORY_RESPONSES' as const,
+      frequency: 'SOMETIMES' as const,
+      context: 'OUTDOORS' as const,
+      notes: 'Jamie fell from climbing frame and sustained a graze. No crying or apparent distress. Carried on playing. Noticed injury 20 minutes later.',
+    },
+  ]
+
+  for (const obs of demoObservations) {
+    await prisma.observation.create({ data: obs })
+  }
+  console.log(`Created ${demoObservations.length} demo observations`)
+
+  // AI insight for the demo child
+  await prisma.aiInsight.create({
+    data: {
+      childId: demoChild.id,
+      generatedAt: new Date('2026-03-15'),
+      summary: `Over the observed period (January–March 2026), Jamie (age 4, 6 months) shows a consistent pattern of differences across all three observation domains: social communication, behaviour and play, and sensory processing. The frequency and consistency of these observations across both home and nursery settings is notable.`,
+      patterns: `Social communication: Reduced joint attention behaviours are consistently observed — Jamie rarely points to share interest and does not look back to check for shared experience. Delayed response to name and limited back-and-forth exchange are reported frequently across contexts. Echolalia (repeating TV phrases) is present and appears non-functional.\n\nBehaviour and play: A strong preference for sameness and routine is evident, with significant distress when routines are disrupted. Repetitive behaviours including lining up objects and hand-flapping are observed regularly. Imaginative and pretend play appears absent; play is predominantly sensory-exploratory or systematic.\n\nSensory processing: Hypersensitivity to auditory input (particularly sudden loud noises) and tactile input (seams, food textures) is documented across multiple observations. Simultaneous sensory-seeking behaviour (deep pressure, tight clothing) suggests a complex sensory profile rather than uniform over- or under-sensitivity.`,
+      recommendations: `These observations present a consistent pattern that warrants further professional exploration. The following steps are recommended:\n\n1. Discuss these documented observations with Jamie's GP or health visitor at the next available appointment. Bring printed copies of the observation records.\n\n2. Request a referral to the community paediatric team or local autism assessment service. Note that waiting times in many areas exceed 12 months — early referral is advisable.\n\n3. Speak with the nursery SENCO (Special Educational Needs Coordinator) about Jamie's observed differences. The nursery can provide a professional SENCO report which will support any formal assessment.\n\n4. Consider a referral to Speech and Language Therapy for assessment of Jamie's communication profile, particularly the echolalia and limited conversational exchange.\n\n5. An Occupational Therapy (sensory integration) referral may be helpful given the significant sensory differences noted, particularly the food selectivity and tactile sensitivities.\n\nPlease remember: these observations do not constitute a diagnosis. Many children display some of these behaviours. The pattern, frequency, and consistency across multiple settings is what makes these observations worth sharing with healthcare professionals.`,
+      disclaimer: 'This is not a diagnosis. This tool supports observation and pattern recognition only. Always consult a qualified healthcare professional.',
+    },
+  })
+  console.log('Created demo AI insight')
+
+  // Mark first 2 modules complete for demo caregiver
+  const completedModules = trainingModules.slice(0, 2)
+  for (const module of completedModules) {
+    for (const lesson of module.lessons) {
+      await prisma.trainingProgress.upsert({
+        where: {
+          userId_moduleId_lessonId: {
+            userId: caregiver.id,
+            moduleId: module.id,
+            lessonId: lesson.id,
+          },
+        },
+        update: { completed: true, completedAt: new Date('2026-02-20') },
+        create: {
+          userId: caregiver.id,
+          moduleId: module.id,
+          lessonId: lesson.id,
+          completed: true,
+          completedAt: new Date('2026-02-20'),
+        },
+      })
+    }
+  }
+  console.log('Marked first 2 training modules complete for demo caregiver')
+
+  console.log('\nSeeding complete!')
   console.log('\nDemo credentials:')
-  console.log('  Email: demo@example.com')
-  console.log('  Password: demo123')
+  console.log('  Email: demo@example.com  /  Password: demo123')
   console.log('\nAdmin credentials:')
-  console.log('  Email: admin@asdawareness.org.uk')
-  console.log('  Password: admin123')
+  console.log('  Email: admin@asdawareness.org.uk  /  Password: admin123')
 }
 
 main()
