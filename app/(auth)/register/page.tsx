@@ -275,7 +275,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                onClick={() => signIn('google', { callbackUrl: '/' })}
                 className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-calm-200 hover:bg-calm-50 transition text-sm font-medium text-slate-700"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -288,7 +288,7 @@ export default function RegisterPage() {
               </button>
               <button
                 type="button"
-                onClick={() => signIn('azure-ad', { callbackUrl: '/dashboard' })}
+                onClick={() => signIn('azure-ad', { callbackUrl: '/' })}
                 className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-calm-200 hover:bg-calm-50 transition text-sm font-medium text-slate-700"
               >
                 <svg className="h-4 w-4" viewBox="0 0 23 23">
