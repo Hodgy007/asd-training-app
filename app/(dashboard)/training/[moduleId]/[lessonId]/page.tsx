@@ -14,40 +14,46 @@ interface LessonPageProps {
   params: { moduleId: string; lessonId: string }
 }
 
+// Parses inline **bold** and <strong>bold</strong> into React elements
+function renderInline(text: string) {
+  // Normalise <strong>...</strong> to **...** first, then split on **
+  const normalised = text.replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+  const parts = normalised.split(/\*\*(.*?)\*\*/)
+  return parts.map((part, j) =>
+    j % 2 === 1 ? <strong key={j} className="text-slate-900 dark:text-slate-100">{part}</strong> : part
+  )
+}
+
 function renderContent(content: string) {
   const lines = content.split('\n')
   return lines.map((line, i) => {
     if (line.startsWith('**') && line.endsWith('**')) {
       return (
-        <h3 key={i} className="font-semibold text-slate-900 mt-5 mb-2 text-base">
+        <h3 key={i} className="font-semibold text-slate-900 dark:text-slate-100 mt-5 mb-2 text-base">
           {line.replace(/\*\*/g, '')}
         </h3>
       )
     }
     if (line.startsWith('- ')) {
       return (
-        <li key={i} className="text-slate-700 ml-4">
-          {line.slice(2).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+        <li key={i} className="text-slate-700 dark:text-slate-300 ml-4">
+          {renderInline(line.slice(2))}
         </li>
       )
     }
     if (/^\d+\./.test(line)) {
       return (
-        <li key={i} className="text-slate-700 ml-4 list-decimal">
-          {line.replace(/^\d+\.\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+        <li key={i} className="text-slate-700 dark:text-slate-300 ml-4 list-decimal">
+          {renderInline(line.replace(/^\d+\.\s*/, ''))}
         </li>
       )
     }
     if (line.trim() === '') {
       return <div key={i} className="h-2" />
     }
-    // Handle inline bold
-    const parts = line.split(/\*\*(.*?)\*\*/)
     return (
-      <p key={i} className="text-slate-700">
-        {parts.map((part, j) =>
-          j % 2 === 1 ? <strong key={j} className="text-slate-900">{part}</strong> : part
-        )}
+      <p key={i} className="text-slate-700 dark:text-slate-300">
+        {renderInline(line)}
       </p>
     )
   })
