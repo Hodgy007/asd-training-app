@@ -71,9 +71,15 @@ export async function PATCH(
     }
   }
 
+  const updateData: Record<string, unknown> = {}
+  if (parsed.data.name !== undefined) updateData.name = parsed.data.name
+  if (parsed.data.role !== undefined) updateData.role = parsed.data.role
+  if (parsed.data.active !== undefined) updateData.active = parsed.data.active
+  if (parsed.data.allowedModuleIds !== undefined) updateData.allowedModuleIds = parsed.data.allowedModuleIds
+
   const updated = await prisma.user.update({
     where: { id: params.userId },
-    data: parsed.data as any,
+    data: updateData,
     select: {
       id: true, name: true, email: true, role: true, active: true,
       allowedModuleIds: true, updatedAt: true,

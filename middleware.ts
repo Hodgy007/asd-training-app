@@ -29,8 +29,17 @@ export async function middleware(req: NextRequest) {
   const role = token.role as string
   const mustChangePassword = token.mustChangePassword as boolean
 
-  // Force password change (except on the change-password page itself and the API)
-  if (mustChangePassword && pathname !== '/change-password' && !pathname.startsWith('/api/auth/change-password')) {
+  // Force password change
+  if (mustChangePassword) {
+    // Allow the change-password page and its API
+    if (pathname === '/change-password' || pathname.startsWith('/api/auth/change-password')) {
+      return NextResponse.next()
+    }
+    // Block other API routes with 403
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Password change required' }, { status: 403 })
+    }
+    // Redirect pages to change-password
     return NextResponse.redirect(new URL('/change-password', req.url))
   }
 

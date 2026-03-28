@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { Role } from '@prisma/client'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 
@@ -110,7 +111,7 @@ export async function POST(req: NextRequest) {
       name: parsed.data.name,
       email: parsed.data.email,
       password: hashedPassword,
-      role: parsed.data.role as any,
+      role: parsed.data.role as Role,
       organisationId: orgId,
       allowedModuleIds: parsed.data.allowedModuleIds,
       mustChangePassword,
