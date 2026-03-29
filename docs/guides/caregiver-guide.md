@@ -18,8 +18,9 @@
 5. [Child Observations](#5-child-observations)
 6. [AI Insights](#6-ai-insights)
 7. [Reports and Charts](#7-reports-and-charts)
-8. [Settings](#8-settings)
-9. [Getting Help](#9-getting-help)
+8. [Virtual Classroom Sessions](#8-virtual-classroom-sessions)
+9. [Settings](#9-settings)
+10. [Getting Help](#10-getting-help)
 
 ---
 
@@ -311,7 +312,37 @@ This makes the document self-explanatory if you hand it to a professional.
 
 ---
 
-## 8. Settings
+## 8. Virtual Classroom Sessions
+
+Your organisation may invite you to attend live virtual training sessions. These can be held over Zoom, Microsoft Teams, or another platform.
+
+### Seeing upcoming sessions
+
+When you have been invited to a session, an **Upcoming Sessions** card will appear on your Dashboard showing the next session's title, date, and time at a glance.
+
+### Viewing all your sessions
+
+Click **Sessions** in the left-hand sidebar to see the full list of sessions you have been invited to, along with their status (Upcoming, In Progress, Completed, or Cancelled).
+
+### Joining a session
+
+When a session is ready to begin, a **Join** button will appear next to it. Click **Join** to open the meeting link — this will take you directly into the Zoom or Teams meeting, or to whatever platform your organisation is using.
+
+### Recordings
+
+After a session has taken place, your organisation's admin may add a recording link. If a recording is available, a **Watch recording** link will appear on the session in your Sessions list.
+
+### Hosting a session
+
+If your organisation's administrator has assigned you as a **host** for a session, you will have additional options when you open that session:
+
+- **Meeting link** — add or update the link that attendees will use to join.
+- **Attendance** — check off which attendees were present once the session is under way or has finished.
+- **Recording** — add a recording URL after the session ends so attendees can watch it back.
+
+---
+
+## 9. Settings
 
 The **Settings** page (bottom of the sidebar) lets you view your account details and manage your data.
 
@@ -335,7 +366,7 @@ This action is permanent and cannot be reversed.
 
 ---
 
-## 9. Getting Help
+## 10. Getting Help
 
 ### If something is not working
 
