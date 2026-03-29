@@ -4,6 +4,15 @@ import GoogleProvider from 'next-auth/providers/google'
 import AzureADProvider from 'next-auth/providers/azure-ad'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
+import { getEffectiveModules } from './modules'
+
+async function getUserEffectiveModules(userId: string): Promise<string[]> {
+  const u = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { allowedModuleIds: true, organisation: { select: { allowedModuleIds: true } } },
+  })
+  return getEffectiveModules(u?.allowedModuleIds ?? [], u?.organisation?.allowedModuleIds ?? [])
+}
 
 export const authOptions: NextAuthOptions = {
   // No adapter — we use JWT sessions and handle SSO linking manually in signIn callback
@@ -172,6 +181,7 @@ export const authOptions: NextAuthOptions = {
         token.mustChangePassword = (user as { mustChangePassword?: boolean }).mustChangePassword ?? false
         token.totpEnabled = (user as { totpEnabled?: boolean }).totpEnabled ?? false
         token.mfaPending = (user as { mfaPending?: boolean }).mfaPending ?? false
+        token.effectiveModules = await getUserEffectiveModules(user.id)
       }
 
       // SSO login — look up DB user by email since there's no adapter
@@ -187,6 +197,7 @@ export const authOptions: NextAuthOptions = {
           token.mustChangePassword = dbUser.mustChangePassword
           token.totpEnabled = dbUser.totpEnabled
           token.mfaPending = dbUser.totpEnabled === true
+          token.effectiveModules = await getUserEffectiveModules(dbUser.id)
         }
       }
 
@@ -201,8 +212,8 @@ export const authOptions: NextAuthOptions = {
           token.mustChangePassword = dbUser.mustChangePassword
           token.totpEnabled = dbUser.totpEnabled
         }
-        // If the client triggers an update, MFA was just verified or setup completed
         token.mfaPending = false
+        token.effectiveModules = await getUserEffectiveModules(token.id as string)
       }
 
       return token
@@ -215,6 +226,7 @@ export const authOptions: NextAuthOptions = {
         session.user.mustChangePassword = token.mustChangePassword as boolean
         session.user.totpEnabled = token.totpEnabled as boolean
         session.user.mfaPending = token.mfaPending as boolean
+        session.user.effectiveModules = (token.effectiveModules as string[]) ?? []
       }
       return session
     },

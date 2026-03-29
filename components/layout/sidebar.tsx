@@ -21,7 +21,7 @@ interface NavItem {
   icon: React.ElementType
 }
 
-function getNavItems(role?: string): NavItem[] {
+function getNavItems(role?: string, modules: string[] = []): NavItem[] {
   const items: NavItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ]
@@ -39,10 +39,12 @@ function getNavItems(role?: string): NavItem[] {
   }
 
   if (role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
-    items.push(
-      { href: '/training', label: 'ASD Training', icon: BookOpen },
-      { href: '/careers', label: 'Careers Training', icon: Briefcase },
-    )
+    if (modules.some((m) => m.startsWith('module-'))) {
+      items.push({ href: '/training', label: 'ASD Training', icon: BookOpen })
+    }
+    if (modules.some((m) => m.startsWith('careers-'))) {
+      items.push({ href: '/careers', label: 'Careers Training', icon: Briefcase })
+    }
   }
 
   items.push({ href: '/settings', label: 'Settings', icon: Settings })
@@ -75,7 +77,8 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const role = session?.user?.role
-  const navItems = getNavItems(role)
+  const modules = session?.user?.effectiveModules ?? []
+  const navItems = getNavItems(role, modules)
 
   return (
     <div className="flex flex-col h-full bg-orange-50 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">

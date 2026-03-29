@@ -199,6 +199,7 @@ declare module 'next-auth' {
       mustChangePassword: boolean
       totpEnabled: boolean
       mfaPending: boolean
+      effectiveModules: string[]
     }
   }
 }
@@ -211,5 +212,6 @@ declare module 'next-auth/jwt' {
     mustChangePassword: boolean
     totpEnabled: boolean
     mfaPending: boolean
+    effectiveModules: string[]
   }
 }
