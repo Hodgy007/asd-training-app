@@ -4,14 +4,11 @@ import GoogleProvider from 'next-auth/providers/google'
 import AzureADProvider from 'next-auth/providers/azure-ad'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
-import { getEffectiveModules } from './modules'
+import { getUserPrograms } from './modules'
+import type { ProgramInfo } from './modules'
 
-async function getUserEffectiveModules(userId: string): Promise<string[]> {
-  const u = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { allowedModuleIds: true, organisation: { select: { allowedModuleIds: true } } },
-  })
-  return getEffectiveModules(u?.allowedModuleIds ?? [], u?.organisation?.allowedModuleIds ?? [])
+async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> {
+  return getUserPrograms(userId)
 }
 
 export const authOptions: NextAuthOptions = {
@@ -181,7 +178,7 @@ export const authOptions: NextAuthOptions = {
         token.mustChangePassword = (user as { mustChangePassword?: boolean }).mustChangePassword ?? false
         token.totpEnabled = (user as { totpEnabled?: boolean }).totpEnabled ?? false
         token.mfaPending = (user as { mfaPending?: boolean }).mfaPending ?? false
-        token.effectiveModules = await getUserEffectiveModules(user.id)
+        token.effectivePrograms = await getUserEffectivePrograms(user.id)
       }
 
       // SSO login — look up DB user by email since there's no adapter
@@ -197,7 +194,7 @@ export const authOptions: NextAuthOptions = {
           token.mustChangePassword = dbUser.mustChangePassword
           token.totpEnabled = dbUser.totpEnabled
           token.mfaPending = dbUser.totpEnabled === true
-          token.effectiveModules = await getUserEffectiveModules(dbUser.id)
+          token.effectivePrograms = await getUserEffectivePrograms(dbUser.id)
         }
       }
 
@@ -213,7 +210,7 @@ export const authOptions: NextAuthOptions = {
           token.totpEnabled = dbUser.totpEnabled
         }
         token.mfaPending = false
-        token.effectiveModules = await getUserEffectiveModules(token.id as string)
+        token.effectivePrograms = await getUserEffectivePrograms(token.id as string)
       }
 
       return token
@@ -226,7 +223,7 @@ export const authOptions: NextAuthOptions = {
         session.user.mustChangePassword = token.mustChangePassword as boolean
         session.user.totpEnabled = token.totpEnabled as boolean
         session.user.mfaPending = token.mfaPending as boolean
-        session.user.effectiveModules = (token.effectiveModules as string[]) ?? []
+        session.user.effectivePrograms = (token.effectivePrograms as ProgramInfo[]) ?? []
       }
       return session
     },

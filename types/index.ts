@@ -24,7 +24,7 @@ export interface Organisation {
   name: string
   slug: string
   active: boolean
-  allowedModuleIds: string[]
+  allowedProgramIds: string[]
   allowedRoles: string[]
   logoUrl?: string | null
   createdAt: Date
@@ -50,7 +50,6 @@ export interface User {
   role: Role
   active: boolean
   organisationId?: string | null
-  allowedModuleIds: string[]
   mustChangePassword: boolean
   totpEnabled?: boolean
   mfaPending?: boolean
@@ -199,7 +198,7 @@ declare module 'next-auth' {
       mustChangePassword: boolean
       totpEnabled: boolean
       mfaPending: boolean
-      effectiveModules: string[]
+      effectivePrograms: { id: string; name: string }[]
     }
   }
 }
@@ -212,6 +211,6 @@ declare module 'next-auth/jwt' {
     mustChangePassword: boolean
     totpEnabled: boolean
     mfaPending: boolean
-    effectiveModules: string[]
+    effectivePrograms: { id: string; name: string }[]
   }
 }

@@ -1,5 +1,5 @@
 import prisma from './prisma'
-import type { Module, Lesson, QuizQuestion, ModuleType } from '@prisma/client'
+import type { Module, Lesson, QuizQuestion } from '@prisma/client'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -11,11 +11,11 @@ export type LessonWithQuiz = Lesson & { quizQuestions: QuizQuestion[] }
 
 // ─── Super-admin queries (includes inactive records) ─────────────────────────
 
-/** All modules ordered by type then order, each with a lesson count. */
-export async function getAllModules(): Promise<(Module & { _count: { lessons: number } })[]> {
+/** All modules ordered by program then order, each with a lesson count and program info. */
+export async function getAllModules() {
   return prisma.module.findMany({
-    orderBy: [{ type: 'asc' }, { order: 'asc' }],
-    include: { _count: { select: { lessons: true } } },
+    orderBy: [{ programId: 'asc' }, { order: 'asc' }],
+    include: { _count: { select: { lessons: true } }, program: { select: { id: true, name: true } } },
   })
 }
 
@@ -44,10 +44,10 @@ export async function getLessonById(lessonId: string): Promise<LessonWithQuiz | 
 
 // ─── User-facing queries (active records only) ───────────────────────────────
 
-/** Active modules of the given type, ordered. */
-export async function getModules(type: ModuleType): Promise<Module[]> {
+/** Active modules for a given program, ordered. */
+export async function getModulesByProgram(programId: string) {
   return prisma.module.findMany({
-    where: { active: true, type },
+    where: { programId, active: true },
     orderBy: { order: 'asc' },
   })
 }
