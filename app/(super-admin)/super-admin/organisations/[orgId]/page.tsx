@@ -44,18 +44,6 @@ interface OrgDetail {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const MODULE_LABELS: Record<string, string> = {
-  'module-1': 'Module 1: What is ASD?',
-  'module-2': 'Module 2: Communication',
-  'module-3': 'Module 3: Social Skills',
-  'module-4': 'Module 4: Sensory Processing',
-  'module-5': 'Module 5: Supporting Strategies',
-  'careers-module-1': 'Careers Module 1',
-  'careers-module-2': 'Careers Module 2',
-  'careers-module-3': 'Careers Module 3',
-  'careers-module-4': 'Careers Module 4',
-}
-
 const ROLE_LABELS: Record<string, string> = {
   ORG_ADMIN: 'Org Admin',
   CAREGIVER: 'Caregiver',
@@ -145,9 +133,11 @@ export default function OrgDetailPage() {
     )
   }
 
-  function toggleModule(mod: string) {
+  function toggleTrainingPlan(plan: 'asd' | 'careers') {
+    const ids: string[] = plan === 'asd' ? [...ASD_MODULE_IDS] : [...CAREERS_MODULE_IDS]
+    const isOn = ids.some((id) => editModules.includes(id))
     setEditModules((prev) =>
-      prev.includes(mod) ? prev.filter((m) => m !== mod) : [...prev, mod]
+      isOn ? prev.filter((m) => !ids.includes(m)) : [...prev, ...ids.filter((id) => !prev.includes(id))]
     )
   }
 
@@ -352,38 +342,46 @@ export default function OrgDetailPage() {
             </div>
           </div>
 
-          {/* Allowed Modules */}
+          {/* Training Plans */}
           <div>
-            <label className="label mb-2 block">Allowed Modules</label>
+            <label className="label mb-2 block">Training Plans</label>
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">ASD Training</p>
-              <div className="flex flex-wrap gap-3">
-                {ASD_MODULE_IDS.map((mod) => (
-                  <label key={mod} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={editModules.includes(mod)}
-                      onChange={() => toggleModule(mod)}
-                      className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-sm text-slate-700">{MODULE_LABELS[mod] ?? mod}</span>
-                  </label>
-                ))}
-              </div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-2">Careers Training</p>
-              <div className="flex flex-wrap gap-3">
-                {CAREERS_MODULE_IDS.map((mod) => (
-                  <label key={mod} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={editModules.includes(mod)}
-                      onChange={() => toggleModule(mod)}
-                      className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-sm text-slate-700">{MODULE_LABELS[mod] ?? mod}</span>
-                  </label>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => toggleTrainingPlan('asd')}
+                className={clsx(
+                  'flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
+                  ASD_MODULE_IDS.some((id) => editModules.includes(id))
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
+                    : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
+                )}
+              >
+                {ASD_MODULE_IDS.some((id) => editModules.includes(id))
+                  ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                  : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                <div>
+                  <p className="font-bold">ASD Awareness Training</p>
+                  <p className="text-xs opacity-75">5 modules — early identification for caregivers</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleTrainingPlan('careers')}
+                className={clsx(
+                  'flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
+                  CAREERS_MODULE_IDS.some((id) => editModules.includes(id))
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
+                    : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
+                )}
+              >
+                {CAREERS_MODULE_IDS.some((id) => editModules.includes(id))
+                  ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                  : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                <div>
+                  <p className="font-bold">Careers CPD Training</p>
+                  <p className="text-xs opacity-75">4 modules — autism-inclusive careers guidance</p>
+                </div>
+              </button>
             </div>
           </div>
 

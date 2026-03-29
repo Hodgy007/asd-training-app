@@ -216,12 +216,20 @@ export default function OrgAdminUsersPage() {
     }
   }
 
-  function toggleModule(moduleId: string) {
+  const ASD_IDS = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5']
+  const CAREERS_IDS = ['careers-module-1', 'careers-module-2', 'careers-module-3', 'careers-module-4']
+
+  const hasAsd = ASD_IDS.some((id) => createForm.allowedModuleIds.includes(id))
+  const hasCareers = CAREERS_IDS.some((id) => createForm.allowedModuleIds.includes(id))
+
+  function toggleTrainingPlan(plan: 'asd' | 'careers') {
+    const ids = plan === 'asd' ? ASD_IDS : CAREERS_IDS
+    const isOn = plan === 'asd' ? hasAsd : hasCareers
     setCreateForm((f) => ({
       ...f,
-      allowedModuleIds: f.allowedModuleIds.includes(moduleId)
-        ? f.allowedModuleIds.filter((m) => m !== moduleId)
-        : [...f.allowedModuleIds, moduleId],
+      allowedModuleIds: isOn
+        ? f.allowedModuleIds.filter((m) => !ids.includes(m))
+        : [...f.allowedModuleIds, ...ids.filter((id) => !f.allowedModuleIds.includes(id))],
     }))
   }
 
@@ -379,30 +387,47 @@ export default function OrgAdminUsersPage() {
               </div>
             )}
 
-            {/* Module access */}
+            {/* Training plan access */}
             {org && org.allowedModuleIds.length > 0 && (
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-2">Module Access</label>
-                <div className="flex flex-wrap gap-2">
-                  {org.allowedModuleIds.map((moduleId) => {
-                    const checked = createForm.allowedModuleIds.includes(moduleId)
-                    return (
-                      <button
-                        key={moduleId}
-                        type="button"
-                        onClick={() => toggleModule(moduleId)}
-                        className={clsx(
-                          'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
-                          checked
-                            ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
-                            : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300'
-                        )}
-                      >
-                        {checked && <CheckCircle className="inline h-3 w-3 mr-1" />}
-                        {moduleId}
-                      </button>
-                    )
-                  })}
+                <label className="block text-xs font-medium text-slate-600 mb-2">Training Plans</label>
+                <div className="space-y-2">
+                  {ASD_IDS.some((id) => org.allowedModuleIds.includes(id)) && (
+                    <button
+                      type="button"
+                      onClick={() => toggleTrainingPlan('asd')}
+                      className={clsx(
+                        'flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
+                        hasAsd
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
+                          : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
+                      )}
+                    >
+                      {hasAsd ? <CheckCircle className="h-4 w-4 flex-shrink-0" /> : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                      <div>
+                        <p className="font-bold">ASD Awareness Training</p>
+                        <p className="text-xs opacity-75">5 modules — early identification for caregivers</p>
+                      </div>
+                    </button>
+                  )}
+                  {CAREERS_IDS.some((id) => org.allowedModuleIds.includes(id)) && (
+                    <button
+                      type="button"
+                      onClick={() => toggleTrainingPlan('careers')}
+                      className={clsx(
+                        'flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
+                        hasCareers
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
+                          : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
+                      )}
+                    >
+                      {hasCareers ? <CheckCircle className="h-4 w-4 flex-shrink-0" /> : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                      <div>
+                        <p className="font-bold">Careers CPD Training</p>
+                        <p className="text-xs opacity-75">4 modules — autism-inclusive careers guidance</p>
+                      </div>
+                    </button>
+                  )}
                 </div>
               </div>
             )}
