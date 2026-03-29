@@ -13,7 +13,7 @@ const createSchema = z.object({
     (roles) => roles.every((r) => LEAF_ROLES.includes(r as any)),
     'Only leaf roles are allowed'
   ),
-  allowedModuleIds: z.array(z.string()),
+  allowedProgramIds: z.array(z.string()),
   active: z.boolean().default(true),
 })
 

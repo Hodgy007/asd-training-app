@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { BarChart3, RefreshCw } from 'lucide-react'
-import { ASD_MODULE_IDS, CAREERS_MODULE_IDS } from '@/lib/modules'
 
 interface ModuleStat {
   moduleId: string
+  moduleName: string
+  programName: string
   completions: number
   totalUsers: number
   pct: number
@@ -19,24 +20,21 @@ interface OrgReport {
   modules: ModuleStat[]
 }
 
-// Short labels for table column headers
-const SHORT_LABELS: Record<string, string> = {
-  'module-1': 'M1',
-  'module-2': 'M2',
-  'module-3': 'M3',
-  'module-4': 'M4',
-  'module-5': 'M5',
-  'careers-module-1': 'C1',
-  'careers-module-2': 'C2',
-  'careers-module-3': 'C3',
-  'careers-module-4': 'C4',
+interface ModuleMeta {
+  id: string
+  title: string
+  programId: string
+  programName: string
 }
 
-const ALL_MODULE_IDS = [...ASD_MODULE_IDS, ...CAREERS_MODULE_IDS]
+interface ReportResponse {
+  report: OrgReport[]
+  moduleMeta: ModuleMeta[]
+}
 
 function PctCell({ stat }: { stat: ModuleStat }) {
   if (stat.totalUsers === 0) {
-    return <span className="text-slate-300">—</span>
+    return <span className="text-slate-300">&mdash;</span>
   }
   const color =
     stat.pct >= 80
@@ -54,6 +52,7 @@ function PctCell({ stat }: { stat: ModuleStat }) {
 
 export default function SuperAdminReportsPage() {
   const [data, setData] = useState<OrgReport[]>([])
+  const [moduleMeta, setModuleMeta] = useState<ModuleMeta[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,7 +66,9 @@ export default function SuperAdminReportsPage() {
         setError(d.error ?? 'Failed to load report.')
         return
       }
-      setData(await res.json())
+      const json: ReportResponse = await res.json()
+      setData(json.report)
+      setModuleMeta(json.moduleMeta)
     } catch {
       setError('Network error. Please try again.')
     } finally {
@@ -78,6 +79,23 @@ export default function SuperAdminReportsPage() {
   useEffect(() => {
     fetchReport()
   }, [fetchReport])
+
+  // Group modules by program for the legend and column headers
+  const programGroups = moduleMeta.reduce<Record<string, ModuleMeta[]>>((acc, m) => {
+    if (!acc[m.programId]) acc[m.programId] = []
+    acc[m.programId].push(m)
+    return acc
+  }, {})
+
+  // Create short labels like P1-M1, P1-M2, P2-M1 etc.
+  const shortLabels = new Map<string, string>()
+  Object.entries(programGroups).forEach(([, modules], pIdx) => {
+    modules.forEach((m, mIdx) => {
+      shortLabels.set(m.id, `P${pIdx + 1}-M${mIdx + 1}`)
+    })
+  })
+
+  const allModuleIds = moduleMeta.map((m) => m.id)
 
   return (
     <div className="max-w-full space-y-6">
@@ -100,25 +118,23 @@ export default function SuperAdminReportsPage() {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
-        <span className="font-semibold text-slate-600">Module columns:</span>
-        <span className="font-semibold text-slate-600 mt-1 mr-1">ASD:</span>
-        {ASD_MODULE_IDS.map((id) => (
-          <span key={id}>
-            <span className="font-mono font-semibold text-purple-700">{SHORT_LABELS[id]}</span>
-            {' = '}
-            {id}
-          </span>
-        ))}
-        <span className="font-semibold text-slate-600 mt-1 mr-1">Careers:</span>
-        {CAREERS_MODULE_IDS.map((id) => (
-          <span key={id}>
-            <span className="font-mono font-semibold text-emerald-700">{SHORT_LABELS[id]}</span>
-            {' = '}
-            {id}
-          </span>
-        ))}
-      </div>
+      {moduleMeta.length > 0 && !loading && (
+        <div className="flex flex-wrap items-start gap-4 text-xs text-slate-500">
+          <span className="font-semibold text-slate-600">Module columns:</span>
+          {Object.entries(programGroups).map(([programId, modules]) => (
+            <div key={programId} className="flex flex-wrap items-center gap-2">
+              <span className="font-semibold text-slate-600">{modules[0]?.programName}:</span>
+              {modules.map((m) => (
+                <span key={m.id}>
+                  <span className="font-mono font-semibold text-purple-700">{shortLabels.get(m.id)}</span>
+                  {' = '}
+                  {m.title}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Table */}
       <div className="card overflow-hidden p-0">
@@ -132,24 +148,13 @@ export default function SuperAdminReportsPage() {
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 whitespace-nowrap">
                   Users
                 </th>
-                {/* ASD module columns */}
-                {ASD_MODULE_IDS.map((id) => (
+                {allModuleIds.map((id) => (
                   <th
                     key={id}
                     className="px-3 py-3 font-semibold text-purple-700 text-center whitespace-nowrap"
-                    title={id}
+                    title={moduleMeta.find((m) => m.id === id)?.title ?? id}
                   >
-                    {SHORT_LABELS[id]}
-                  </th>
-                ))}
-                {/* Careers module columns */}
-                {CAREERS_MODULE_IDS.map((id) => (
-                  <th
-                    key={id}
-                    className="px-3 py-3 font-semibold text-emerald-700 text-center whitespace-nowrap"
-                    title={id}
-                  >
-                    {SHORT_LABELS[id]}
+                    {shortLabels.get(id) ?? id}
                   </th>
                 ))}
               </tr>
@@ -158,17 +163,17 @@ export default function SuperAdminReportsPage() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={2 + ALL_MODULE_IDS.length}
+                    colSpan={2 + allModuleIds.length}
                     className="px-4 py-12 text-center text-slate-400"
                   >
                     <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
-                    Loading report…
+                    Loading report...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
                   <td
-                    colSpan={2 + ALL_MODULE_IDS.length}
+                    colSpan={2 + allModuleIds.length}
                     className="px-4 py-10 text-center text-red-500"
                   >
                     {error}
@@ -177,11 +182,11 @@ export default function SuperAdminReportsPage() {
               ) : data.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={2 + ALL_MODULE_IDS.length}
+                    colSpan={2 + allModuleIds.length}
                     className="px-4 py-12 text-center text-slate-400"
                   >
                     <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                    No data — no organisations exist yet.
+                    No data &mdash; no organisations exist yet.
                   </td>
                 </tr>
               ) : (
@@ -195,14 +200,14 @@ export default function SuperAdminReportsPage() {
                       <p className="text-xs text-slate-400 font-mono">{org.orgSlug}</p>
                     </td>
                     <td className="px-4 py-3 text-slate-700">{org.totalUsers}</td>
-                    {ALL_MODULE_IDS.map((moduleId) => {
+                    {allModuleIds.map((moduleId) => {
                       const stat = org.modules.find((m) => m.moduleId === moduleId)
                       return (
                         <td key={moduleId} className="px-3 py-3 text-center">
                           {stat ? (
                             <PctCell stat={stat} />
                           ) : (
-                            <span className="text-slate-300">—</span>
+                            <span className="text-slate-300">&mdash;</span>
                           )}
                         </td>
                       )

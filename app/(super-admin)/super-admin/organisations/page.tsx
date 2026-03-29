@@ -13,7 +13,11 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import { LEAF_ROLES } from '@/types'
-import { ASD_MODULE_IDS, CAREERS_MODULE_IDS } from '@/lib/modules'
+
+interface ProgramOption {
+  id: string
+  name: string
+}
 
 interface OrgRow {
   id: string
@@ -21,21 +25,9 @@ interface OrgRow {
   slug: string
   active: boolean
   allowedRoles: string[]
-  allowedModuleIds: string[]
+  allowedProgramIds: string[]
   createdAt: string
   _count: { users: number }
-}
-
-const MODULE_LABELS: Record<string, string> = {
-  'module-1': 'Module 1: What is ASD?',
-  'module-2': 'Module 2: Communication',
-  'module-3': 'Module 3: Social Skills',
-  'module-4': 'Module 4: Sensory Processing',
-  'module-5': 'Module 5: Supporting Strategies',
-  'careers-module-1': 'Careers Module 1',
-  'careers-module-2': 'Careers Module 2',
-  'careers-module-3': 'Careers Module 3',
-  'careers-module-4': 'Careers Module 4',
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -55,6 +47,7 @@ function slugify(name: string): string {
 
 export default function OrganisationsPage() {
   const [orgs, setOrgs] = useState<OrgRow[]>([])
+  const [programs, setPrograms] = useState<ProgramOption[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -64,7 +57,7 @@ export default function OrganisationsPage() {
   const [formName, setFormName] = useState('')
   const [formSlug, setFormSlug] = useState('')
   const [formRoles, setFormRoles] = useState<string[]>([])
-  const [formModules, setFormModules] = useState<string[]>([])
+  const [formPrograms, setFormPrograms] = useState<string[]>([])
   const [formActive, setFormActive] = useState(true)
   const [formSubmitting, setFormSubmitting] = useState(false)
 
@@ -78,7 +71,19 @@ export default function OrganisationsPage() {
     }
   }, [])
 
-  useEffect(() => { fetchOrgs() }, [fetchOrgs])
+  const fetchPrograms = useCallback(async () => {
+    try {
+      const res = await fetch('/api/super-admin/training/programs')
+      if (res.ok) {
+        const data = await res.json()
+        setPrograms(data.map((p: { id: string; name: string }) => ({ id: p.id, name: p.name })))
+      }
+    } catch {
+      // Programs will be empty - form will still work
+    }
+  }, [])
+
+  useEffect(() => { fetchOrgs(); fetchPrograms() }, [fetchOrgs, fetchPrograms])
 
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })
@@ -116,9 +121,9 @@ export default function OrganisationsPage() {
     )
   }
 
-  function toggleModule(mod: string) {
-    setFormModules((prev) =>
-      prev.includes(mod) ? prev.filter((m) => m !== mod) : [...prev, mod]
+  function toggleProgram(programId: string) {
+    setFormPrograms((prev) =>
+      prev.includes(programId) ? prev.filter((p) => p !== programId) : [...prev, programId]
     )
   }
 
@@ -133,7 +138,7 @@ export default function OrganisationsPage() {
           name: formName,
           slug: formSlug,
           allowedRoles: formRoles,
-          allowedModuleIds: formModules,
+          allowedProgramIds: formPrograms,
           active: formActive,
         }),
       })
@@ -143,7 +148,7 @@ export default function OrganisationsPage() {
         setFormName('')
         setFormSlug('')
         setFormRoles([])
-        setFormModules([])
+        setFormPrograms([])
         setFormActive(true)
         fetchOrgs()
       } else {
@@ -236,38 +241,24 @@ export default function OrganisationsPage() {
               </div>
             </div>
 
-            {/* Allowed Modules */}
+            {/* Training Programs */}
             <div>
-              <label className="label mb-2 block">Allowed Modules</label>
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">ASD Modules</p>
-                <div className="flex flex-wrap gap-3">
-                  {ASD_MODULE_IDS.map((mod) => (
-                    <label key={mod} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formModules.includes(mod)}
-                        onChange={() => toggleModule(mod)}
-                        className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-                      />
-                      <span className="text-sm text-slate-700">{MODULE_LABELS[mod] ?? mod}</span>
-                    </label>
-                  ))}
-                </div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-2">Careers Modules</p>
-                <div className="flex flex-wrap gap-3">
-                  {CAREERS_MODULE_IDS.map((mod) => (
-                    <label key={mod} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formModules.includes(mod)}
-                        onChange={() => toggleModule(mod)}
-                        className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-                      />
-                      <span className="text-sm text-slate-700">{MODULE_LABELS[mod] ?? mod}</span>
-                    </label>
-                  ))}
-                </div>
+              <label className="label mb-2 block">Training Programs</label>
+              <div className="flex flex-wrap gap-3">
+                {programs.map((prog) => (
+                  <label key={prog.id} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formPrograms.includes(prog.id)}
+                      onChange={() => toggleProgram(prog.id)}
+                      className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm text-slate-700">{prog.name}</span>
+                  </label>
+                ))}
+                {programs.length === 0 && (
+                  <p className="text-xs text-slate-400">Loading programs...</p>
+                )}
               </div>
             </div>
 
@@ -293,7 +284,7 @@ export default function OrganisationsPage() {
                 Cancel
               </button>
               <button type="submit" disabled={formSubmitting} className="btn-primary">
-                {formSubmitting ? 'Creating…' : 'Create Organisation'}
+                {formSubmitting ? 'Creating\u2026' : 'Create Organisation'}
               </button>
             </div>
           </form>
@@ -329,7 +320,7 @@ export default function OrganisationsPage() {
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
                     <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
-                    Loading…
+                    Loading...
                   </td>
                 </tr>
               ) : orgs.length === 0 ? (

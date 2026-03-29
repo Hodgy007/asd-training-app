@@ -3,28 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { BarChart3, RefreshCw, ChevronDown, ChevronUp, Users } from 'lucide-react'
 
-const MODULE_NAMES: Record<string, string> = {
-  'module-1': 'Understanding ASD: An Introduction',
-  'module-2': 'Social Communication',
-  'module-3': 'Behaviour and Play',
-  'module-4': 'Sensory Processing Differences',
-  'module-5': 'Next Steps: Referrals & Support',
-  'careers-module-1': 'Understanding Autism in Careers',
-  'careers-module-2': 'Autism-Inclusive Careers Planning',
-  'careers-module-3': 'Employer Engagement & Work Experience',
-  'careers-module-4': 'Collaboration & Referral Pathways',
-}
-
-function getModuleLabel(moduleId: string): string {
-  return MODULE_NAMES[moduleId] ?? moduleId
-}
-
-function getTrainingPlan(moduleId: string): string {
-  return moduleId.startsWith('careers-') ? 'Careers CPD Training' : 'ASD Awareness Training'
-}
-
 interface ModuleStat {
   moduleId: string
+  moduleName: string
+  programName: string
   completions: number
   totalUsers: number
   pct: number
@@ -84,8 +66,8 @@ function ModuleRow({
     <>
       <tr className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
         <td className="px-4 py-3">
-          <p className="font-medium text-slate-800 text-sm">{getModuleLabel(stat.moduleId)}</p>
-          <p className="text-xs text-slate-400">{getTrainingPlan(stat.moduleId)}</p>
+          <p className="font-medium text-slate-800 text-sm">{stat.moduleName}</p>
+          <p className="text-xs text-slate-400">{stat.programName}</p>
         </td>
         <td className="px-4 py-3 w-64">
           <PctBar stat={stat} />
@@ -221,7 +203,7 @@ export default function OrgReportsPage() {
                 <tr>
                   <td colSpan={3} className="px-4 py-12 text-center text-slate-400">
                     <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
-                    Loading report…
+                    Loading report...
                   </td>
                 </tr>
               ) : error ? (
@@ -267,8 +249,8 @@ export default function OrgReportsPage() {
               <tbody>
                 {data.users.map((u) => (
                   <tr key={u.id} className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-800">{u.name ?? '—'}</td>
-                    <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{u.email ?? '—'}</td>
+                    <td className="px-4 py-3 font-medium text-slate-800">{u.name ?? '\u2014'}</td>
+                    <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{u.email ?? '\u2014'}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${

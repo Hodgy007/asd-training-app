@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 import { isSuperAdmin } from '@/lib/rbac'
 import { getModuleById } from '@/lib/training-db'
 import prisma from '@/lib/prisma'
-import { ModuleType } from '@prisma/client'
 
 interface Params {
   params: { moduleId: string }
@@ -36,10 +35,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json()
-  const { title, description, type, order, active } = body
+  const { title, description, programId, order, active } = body
 
-  if (type !== undefined && !Object.values(ModuleType).includes(type)) {
-    return NextResponse.json({ error: `Invalid type. Must be one of: ${Object.values(ModuleType).join(', ')}` }, { status: 400 })
+  // Validate programId if provided
+  if (programId !== undefined) {
+    const program = await prisma.trainingProgram.findUnique({ where: { id: programId } })
+    if (!program) {
+      return NextResponse.json({ error: 'Invalid programId. Program not found.' }, { status: 400 })
+    }
   }
 
   const updated = await prisma.module.update({
@@ -47,7 +50,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data: {
       ...(title !== undefined && { title }),
       ...(description !== undefined && { description }),
-      ...(type !== undefined && { type }),
+      ...(programId !== undefined && { programId }),
       ...(order !== undefined && { order }),
       ...(active !== undefined && { active }),
     },

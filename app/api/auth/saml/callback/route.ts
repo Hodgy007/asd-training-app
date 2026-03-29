@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
 import { prisma } from '@/lib/prisma'
 import { validateSamlResponse } from '@/lib/saml'
-import { getEffectiveModules } from '@/lib/modules'
+import { getUserPrograms } from '@/lib/modules'
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     // Find or create user
     let user = await prisma.user.findUnique({
       where: { email: validatedEmail },
-      include: { organisation: { select: { allowedModuleIds: true } } },
+      include: { organisation: { select: { active: true } } },
     })
 
     if (!user && config.autoProvision) {
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
           organisationId: config.organisationId,
           active: true,
         },
-        include: { organisation: { select: { allowedModuleIds: true } } },
+        include: { organisation: { select: { active: true } } },
       })
     }
 
@@ -76,10 +76,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Build JWT token
-    const effectiveModules = getEffectiveModules(
-      user.allowedModuleIds ?? [],
-      user.organisation?.allowedModuleIds ?? []
-    )
+    const effectivePrograms = await getUserPrograms(user.id)
 
     const token = await encode({
       token: {
@@ -91,7 +88,7 @@ export async function POST(req: NextRequest) {
         mustChangePassword: user.mustChangePassword ?? false,
         totpEnabled: user.totpEnabled ?? false,
         mfaPending: false, // SAML users skip MFA (already authenticated by corporate IdP)
-        effectiveModules,
+        effectivePrograms,
       },
       secret: process.env.NEXTAUTH_SECRET!,
     })

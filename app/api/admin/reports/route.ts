@@ -13,10 +13,22 @@ export async function GET() {
   const orgId = session.user.organisationId
   if (!orgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
 
+  // Get org's allowed programs and their modules
   const org = await prisma.organisation.findUnique({
     where: { id: orgId },
-    select: { allowedModuleIds: true },
+    select: { allowedProgramIds: true },
   })
+
+  const allowedProgramIds = org?.allowedProgramIds ?? []
+
+  // Fetch modules for allowed programs
+  const modules = await prisma.module.findMany({
+    where: { programId: { in: allowedProgramIds }, active: true },
+    orderBy: [{ programId: 'asc' }, { order: 'asc' }],
+    select: { id: true, title: true, programId: true, program: { select: { name: true } } },
+  })
+
+  const moduleIds = modules.map((m) => m.id)
 
   const users = await prisma.user.findMany({
     where: {
@@ -32,13 +44,15 @@ export async function GET() {
     },
   })
 
-  const moduleIds = org?.allowedModuleIds ?? []
   const moduleStats = moduleIds.map((moduleId) => {
+    const mod = modules.find((m) => m.id === moduleId)
     const completions = users.filter((u) =>
       u.trainingProgress.some((p) => p.moduleId === moduleId)
     ).length
     return {
       moduleId,
+      moduleName: mod?.title ?? moduleId,
+      programName: mod?.program?.name ?? 'Unknown',
       completions,
       totalUsers: users.length,
       pct: users.length > 0 ? Math.round((completions / users.length) * 100) : 0,
