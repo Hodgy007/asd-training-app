@@ -179,16 +179,6 @@ function LoginForm() {
             </p>
           </div>
 
-          {/* Demo credentials */}
-          <div className="mt-4 bg-calm-50 rounded-xl p-3">
-            <p className="text-xs text-slate-500 font-bold mb-1">Demo account:</p>
-            <p className="text-xs text-slate-500">
-              Email: <span className="font-mono text-slate-700">demo@example.com</span>
-            </p>
-            <p className="text-xs text-slate-500">
-              Password: <span className="font-mono text-slate-700">demo123</span>
-            </p>
-          </div>
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-6">
