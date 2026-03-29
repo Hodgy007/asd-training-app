@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Loader2,
   Settings,
+  Plus,
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -156,11 +157,22 @@ export default function SessionsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your Sessions</h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Virtual classroom sessions you&apos;re hosting or attending.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your Sessions</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Virtual classroom sessions you&apos;re hosting or attending.
+          </p>
+        </div>
+        {['ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER'].includes(authSession?.user?.role ?? '') && (
+          <Link
+            href="/sessions/new"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold transition-colors flex-shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+            Create Session
+          </Link>
+        )}
       </div>
 
       {sessions.length === 0 ? (

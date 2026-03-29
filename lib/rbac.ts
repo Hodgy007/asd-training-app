@@ -46,3 +46,8 @@ export function canAccessCareers(session: Session | null): boolean {
 export function canAccessCaregiving(session: Session | null): boolean {
   return hasRole(session, 'CAREGIVER')
 }
+
+/** Roles that can create and manage virtual classroom sessions */
+export function canCreateSessions(session: Session | null): boolean {
+  return hasRole(session, 'ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER')
+}

@@ -146,5 +146,7 @@ export function canManageSession(
   if (user.role === 'ORG_ADMIN' && user.organisationId === session.organisationId) {
     return true
   }
-  return session.hostId === user.id
+  if (session.hostId === user.id) return true
+  if (session.createdById === user.id) return true
+  return false
 }
