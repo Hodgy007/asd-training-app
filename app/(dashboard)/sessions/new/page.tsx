@@ -31,14 +31,13 @@ const ROLE_LABELS: Record<string, string> = {
   EMPLOYEE: 'Employee',
 }
 
-const ATTENDEE_ROLES = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']
-
 const CAN_CREATE = ['ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER']
 
 export default function NewSessionPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
+  const [orgRoles, setOrgRoles] = useState<string[]>([])
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
@@ -71,6 +70,10 @@ export default function NewSessionPage() {
   // Fetch org users for host picker on mount
   useEffect(() => {
     if (status !== 'authenticated') return
+
+    fetch('/api/sessions/org-info')
+      .then((r) => r.json())
+      .then((org) => { if (org?.allowedRoles) setOrgRoles(org.allowedRoles) })
 
     fetch('/api/sessions/org-users')
       .then((r) => r.json())
@@ -358,7 +361,7 @@ export default function NewSessionPage() {
                   Invite by role
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {ATTENDEE_ROLES.map((role) => (
+                  {orgRoles.map((role) => (
                     <button
                       key={role}
                       type="button"
