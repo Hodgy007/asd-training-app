@@ -14,7 +14,8 @@ This guide is for Organisation Admins. It covers everything you need to manage y
 4. [Managing Users](#4-managing-users)
 5. [Announcements](#5-announcements)
 6. [Reports](#6-reports)
-7. [Security and MFA](#7-security-and-mfa)
+7. [Virtual Classroom Sessions](#7-virtual-classroom-sessions)
+8. [Security and MFA](#8-security-and-mfa)
 
 ---
 
@@ -220,7 +221,80 @@ Click the refresh button (circular arrow) in the top-right corner of the page at
 
 ---
 
-## 7. Security and MFA
+## 7. Virtual Classroom Sessions
+
+The **Sessions** section (click **Sessions** in the left-hand sidebar) lets you create and manage live virtual training sessions for your organisation. Sessions can be hosted over Zoom, Microsoft Teams, or any platform using a custom link.
+
+### Creating a session
+
+1. Click **Sessions** in the sidebar, then click **Create Session** in the top-right corner.
+2. Fill in the session details:
+   - **Title** — a short descriptive name (e.g. "ASD Awareness — Module 3 Live Q&A").
+   - **Description** (optional) — any context or agenda for attendees.
+   - **Date and time** — when the session will start.
+   - **Duration** — how long the session is expected to run (in minutes).
+   - **Platform** — choose **Zoom**, **Microsoft Teams**, or **Custom** (for any other platform or tool).
+   - **Host** — select a member of your organisation who will lead the session.
+3. Under **Invite attendees**, choose who to invite:
+   - **All members** — everyone in your organisation.
+   - **By role** — invite all members who have a specific role (e.g. all Caregivers).
+   - **Individual people** — select specific members by name.
+4. Click **Create Session**.
+
+### Meeting links
+
+Once the session is created, you can add a meeting link in one of two ways:
+
+- **Paste manually** — paste any URL into the **Meeting link** field (e.g. a Zoom invite link or Teams meeting URL you have already created).
+- **Auto-generate** — if your organisation has Zoom or Teams API credentials configured (see Meeting Settings below), a **Generate link** button will appear. Click it to create the meeting link automatically. The link will be saved to the session and shared with attendees.
+
+### Managing sessions
+
+On the Sessions page you can see all sessions for your organisation. For each session you can:
+
+- **Edit details** — update the title, description, date/time, duration, host, or platform.
+- **Start** — mark the session as in progress when it begins.
+- **Complete** — mark the session as finished after it ends.
+- **Cancel** — cancel a session that will no longer take place. Cancelled sessions remain in the list for record-keeping.
+
+### Attendance tracking
+
+Open any session to see the list of invited attendees. During or after the session, use the checkboxes next to each name to record who attended. You can also use the **Mark all present** or **Mark all absent** buttons to update the whole list at once.
+
+### Adding a recording
+
+After a session has taken place, you can store a link to the recording:
+
+1. Open the session.
+2. Scroll to the **Recording** field.
+3. Paste the recording URL (e.g. a Zoom cloud recording link, a Teams meeting recording, or a YouTube link).
+4. Save.
+
+Attendees will be able to access the recording link from their own session view.
+
+### Meeting Settings
+
+To enable auto-generated meeting links, you need to configure API credentials for Zoom or Microsoft Teams. Navigate to **Settings > Meeting Settings** in the admin panel.
+
+**Zoom:**
+
+1. In the Meeting Settings page, select the **Zoom** tab.
+2. Enter your Zoom **Account ID**, **Client ID**, and **Client Secret**. These are obtained from your Zoom app in the [Zoom Marketplace](https://marketplace.zoom.us/).
+3. Click **Save**.
+4. Click **Test connection** to verify the credentials are working. A green confirmation will appear if the connection is successful.
+
+**Microsoft Teams:**
+
+1. Select the **Teams** tab.
+2. Enter your Azure AD **Client ID**, **Client Secret**, and **Tenant ID**. These come from your app registration in the [Azure Portal](https://portal.azure.com/).
+3. Click **Save**.
+4. Click **Test connection** to verify.
+
+Once credentials are saved and the connection is tested, the **Generate link** button will appear when creating or editing sessions set to that platform.
+
+---
+
+## 8. Security and MFA
 
 ### Two-factor authentication
 
