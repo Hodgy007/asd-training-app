@@ -63,18 +63,13 @@ export async function validateSamlResponse(
       return { valid: false, error: 'No Signature element found in SAML response' }
     }
 
-    const sig = new SignedXml()
-    sig.keyInfoProvider = {
-      getKey: () => Buffer.from(cert),
-      getKeyInfo: () => `<X509Data><X509Certificate>${certForVerify}</X509Certificate></X509Data>`,
-    } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-
+    const sig = new SignedXml({ publicCert: cert })
     sig.loadSignature(signatureElements[0]!)
     const isValid = sig.checkSignature(xml)
     if (!isValid) {
       return {
         valid: false,
-        error: `Signature verification failed: ${sig.validationErrors.join(', ')}`,
+        error: `Signature verification failed: ${(sig as any).validationErrors?.join(', ') || 'unknown error'}`,
       }
     }
 
@@ -163,9 +158,8 @@ export async function parseMetadataUrl(
 
     const xmlText = await res.text()
     const parsed = await parseStringPromise(xmlText, {
-      explicitNamespaces: true,
       tagNameProcessors: [(name: string) => name.replace(/^[^:]+:/, '')],
-    })
+    } as any)
 
     // Extract entityID from EntityDescriptor
     const entityDescriptor = parsed.EntityDescriptor
