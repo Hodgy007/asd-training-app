@@ -349,6 +349,12 @@ Each module cell shows a completion figure in the format **completed/total (%)**
 
 Click the circular arrow icon to refresh the report data.
 
+### Virtual Classroom Sessions — super admin note
+
+Sessions are managed at the organisation level by Org Admins and are scoped to their own organisation. As a Super Admin you do not create or manage sessions directly, but org-level session counts are visible in the platform's organisation reports. If session volume reporting is required, it will appear alongside the existing module completion data in future report updates.
+
+Organisations that wish to auto-generate Zoom or Microsoft Teams meeting links for their sessions can configure their API credentials through the **Meeting Settings** page within their own admin panel. If an org admin asks you how to set this up, direct them to the Meeting Settings section of their admin panel — see the Org Admin Guide for full instructions. No platform-wide configuration is required from the Super Admin side.
+
 ---
 
 ## 9. Single Sign-On (SSO) Setup
