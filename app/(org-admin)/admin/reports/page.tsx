@@ -3,6 +3,26 @@
 import { useState, useEffect, useCallback } from 'react'
 import { BarChart3, RefreshCw, ChevronDown, ChevronUp, Users } from 'lucide-react'
 
+const MODULE_NAMES: Record<string, string> = {
+  'module-1': 'Understanding ASD: An Introduction',
+  'module-2': 'Social Communication',
+  'module-3': 'Behaviour and Play',
+  'module-4': 'Sensory Processing Differences',
+  'module-5': 'Next Steps: Referrals & Support',
+  'careers-module-1': 'Understanding Autism in Careers',
+  'careers-module-2': 'Autism-Inclusive Careers Planning',
+  'careers-module-3': 'Employer Engagement & Work Experience',
+  'careers-module-4': 'Collaboration & Referral Pathways',
+}
+
+function getModuleLabel(moduleId: string): string {
+  return MODULE_NAMES[moduleId] ?? moduleId
+}
+
+function getTrainingPlan(moduleId: string): string {
+  return moduleId.startsWith('careers-') ? 'Careers CPD Training' : 'ASD Awareness Training'
+}
+
 interface ModuleStat {
   moduleId: string
   completions: number
@@ -64,7 +84,8 @@ function ModuleRow({
     <>
       <tr className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
         <td className="px-4 py-3">
-          <p className="font-medium text-slate-800 font-mono text-sm">{stat.moduleId}</p>
+          <p className="font-medium text-slate-800 text-sm">{getModuleLabel(stat.moduleId)}</p>
+          <p className="text-xs text-slate-400">{getTrainingPlan(stat.moduleId)}</p>
         </td>
         <td className="px-4 py-3 w-64">
           <PctBar stat={stat} />
