@@ -18,35 +18,35 @@ import { formatObservationDate } from '@/lib/observations'
 import { differenceInYears } from 'date-fns'
 import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { getEffectiveModules, hasAsdAccess, hasCareersAccess } from '@/lib/modules'
-import { canAccessCaregiving, canAccessCareers } from '@/lib/rbac'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 
+  const isCaregiverRole = session.user.role === 'CAREGIVER'
+
   const [children, progressRecords, recentObservations] = await Promise.all([
-    prisma.child.findMany({
-      where: { userId: session.user.id },
-      include: {
-        _count: { select: { observations: true } },
-        observations: {
-          orderBy: { date: 'desc' },
-          take: 1,
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    }),
+    isCaregiverRole
+      ? prisma.child.findMany({
+          where: { userId: session.user.id },
+          include: {
+            _count: { select: { observations: true } },
+            observations: { orderBy: { date: 'desc' }, take: 1 },
+          },
+          orderBy: { createdAt: 'desc' },
+        })
+      : Promise.resolve([]),
     prisma.trainingProgress.findMany({
       where: { userId: session.user.id, completed: true },
     }),
-    prisma.observation.findMany({
-      where: {
-        child: { userId: session.user.id },
-      },
-      include: { child: { select: { name: true } } },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    }),
+    isCaregiverRole
+      ? prisma.observation.findMany({
+          where: { child: { userId: session.user.id } },
+          include: { child: { select: { name: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        })
+      : Promise.resolve([]),
   ])
 
   const user = await prisma.user.findUnique({
@@ -59,11 +59,12 @@ export default async function DashboardPage() {
     user?.organisation?.allowedModuleIds ?? []
   )
 
-  const showCaregiving = canAccessCaregiving(session) || hasAsdAccess(effectiveModules)
-  const showCareers = canAccessCareers(session) || hasCareersAccess(effectiveModules)
+  const isCaregiver = session.user.role === 'CAREGIVER'
+  const showAsd = hasAsdAccess(effectiveModules)
+  const showCareers = hasCareersAccess(effectiveModules)
 
   const activeModules = [
-    ...(showCaregiving ? TRAINING_MODULES.filter((m) => effectiveModules.includes(m.id)) : []),
+    ...(showAsd ? TRAINING_MODULES.filter((m) => effectiveModules.includes(m.id)) : []),
     ...(showCareers ? CAREERS_MODULES.filter((m) => effectiveModules.includes(m.id)) : []),
   ]
 
@@ -79,7 +80,7 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Welcome back, {firstName}</h1>
         <p className="text-slate-500 mt-1">
-          Here&apos;s an overview of your training progress and children.
+          Here&apos;s an overview of your training progress{isCaregiver ? ' and observations' : ''}.
         </p>
       </div>
 
@@ -87,7 +88,7 @@ export default async function DashboardPage() {
       <DashboardAnnouncements />
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className={`grid grid-cols-1 ${isCaregiver ? 'sm:grid-cols-3' : 'sm:grid-cols-1 max-w-sm'} gap-4`}>
         <div className="card flex items-center gap-4">
           <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
             <BookOpen className="h-6 w-6 text-primary-600" />
@@ -100,28 +101,32 @@ export default async function DashboardPage() {
             <p className="text-sm text-slate-500">Lessons completed</p>
           </div>
         </div>
-        <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Users className="h-6 w-6 text-sage-600" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">{children.length}</p>
-            <p className="text-sm text-slate-500">
-              {children.length === 1 ? 'Child' : 'Children'} tracked
-            </p>
-          </div>
-        </div>
-        <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-warm-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <ClipboardList className="h-6 w-6 text-warm-500" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">
-              {children.reduce((acc, c) => acc + c._count.observations, 0)}
-            </p>
-            <p className="text-sm text-slate-500">Total observations</p>
-          </div>
-        </div>
+        {isCaregiver && (
+          <>
+            <div className="card flex items-center gap-4">
+              <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Users className="h-6 w-6 text-sage-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">{children.length}</p>
+                <p className="text-sm text-slate-500">
+                  {children.length === 1 ? 'Child' : 'Children'} tracked
+                </p>
+              </div>
+            </div>
+            <div className="card flex items-center gap-4">
+              <div className="w-12 h-12 bg-warm-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <ClipboardList className="h-6 w-6 text-warm-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">
+                  {children.reduce((acc, c) => acc + c._count.observations, 0)}
+                </p>
+                <p className="text-sm text-slate-500">Total observations</p>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -192,16 +197,18 @@ export default async function DashboardPage() {
           <div className="card">
             <h2 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
             <div className="space-y-2">
+              {isCaregiver && (
+                <Link
+                  href="/children"
+                  className="flex items-center gap-3 p-3 bg-primary-50 hover:bg-primary-100 rounded-xl transition-colors group"
+                >
+                  <Plus className="h-5 w-5 text-primary-600" />
+                  <span className="text-sm font-medium text-primary-700">Add a child</span>
+                  <ArrowRight className="h-4 w-4 text-primary-400 ml-auto group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              )}
               <Link
-                href="/children"
-                className="flex items-center gap-3 p-3 bg-primary-50 hover:bg-primary-100 rounded-xl transition-colors group"
-              >
-                <Plus className="h-5 w-5 text-primary-600" />
-                <span className="text-sm font-medium text-primary-700">Add a child</span>
-                <ArrowRight className="h-4 w-4 text-primary-400 ml-auto group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-              <Link
-                href="/training"
+                href={showAsd ? '/training' : '/careers'}
                 className="flex items-center gap-3 p-3 bg-sage-50 hover:bg-sage-100 rounded-xl transition-colors group"
               >
                 <TrendingUp className="h-5 w-5 text-sage-600" />
@@ -211,7 +218,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {children.length > 0 && (
+          {isCaregiver && children.length > 0 && (
             <div className="card">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-slate-900">Children</h2>
@@ -251,8 +258,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent Observations */}
-      {recentObservations.length > 0 && (
+      {/* Recent Observations — caregivers only */}
+      {isCaregiver && recentObservations.length > 0 && (
         <div className="card">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Recent Observations</h2>
           <div className="space-y-2">
