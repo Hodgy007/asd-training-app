@@ -18,6 +18,7 @@ import {
   X,
   GraduationCap,
   Layers,
+  BookOpen,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -636,23 +637,26 @@ export default function OrgAdminUsersPage() {
 
                       {/* Activity counts */}
                       <td className="px-4 py-3 text-slate-400 hidden lg:table-cell text-xs">
-                        {user.role !== 'CAREER_DEV_OFFICER' && (
+                        {user.role === 'CAREGIVER' && (
                           <span className="mr-3">{user._count.children} children</span>
                         )}
                         <span>{user._count.trainingProgress} lessons</span>
                       </td>
 
-                      {/* Delete */}
-                      <td className="px-4 py-3 text-center">
+                      {/* Actions */}
+                      <td className="px-4 py-3">
                         {!isSelf && (
-                          <button
-                            disabled={isLoading}
-                            onClick={() => deleteUser(user.id, user.name)}
-                            className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                            title="Delete user"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center justify-center gap-1">
+                            <ModuleToggleButton user={user} org={org} updateUser={updateUser} />
+                            <button
+                              disabled={isLoading}
+                              onClick={() => deleteUser(user.id, user.name)}
+                              className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              title="Delete user"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -688,6 +692,90 @@ export default function OrgAdminUsersPage() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/* ──────────────────────────── Module Toggle Button ──────────────────────────── */
+
+const ASD_IDS_LIST = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5']
+const CAREERS_IDS_LIST = ['careers-module-1', 'careers-module-2', 'careers-module-3', 'careers-module-4']
+
+function ModuleToggleButton({
+  user,
+  org,
+  updateUser,
+}: {
+  user: UserRow
+  org: OrgInfo | null
+  updateUser: (userId: string, patch: Record<string, unknown>) => Promise<void>
+}) {
+  const [open, setOpen] = useState(false)
+
+  if (!org) return null
+
+  const userHasAsd = ASD_IDS_LIST.some((id) => user.allowedModuleIds.includes(id))
+  const userHasCareers = CAREERS_IDS_LIST.some((id) => user.allowedModuleIds.includes(id))
+  const orgHasAsd = ASD_IDS_LIST.some((id) => org.allowedModuleIds.includes(id))
+  const orgHasCareers = CAREERS_IDS_LIST.some((id) => org.allowedModuleIds.includes(id))
+
+  function toggle(plan: 'asd' | 'careers') {
+    const ids = plan === 'asd' ? ASD_IDS_LIST : CAREERS_IDS_LIST
+    const isOn = plan === 'asd' ? userHasAsd : userHasCareers
+    const newModules = isOn
+      ? user.allowedModuleIds.filter((m) => !ids.includes(m))
+      : [...user.allowedModuleIds, ...ids.filter((id) => !user.allowedModuleIds.includes(id))]
+    updateUser(user.id, { allowedModuleIds: newModules })
+    setOpen(false)
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="p-1.5 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+        title="Edit training access"
+      >
+        <BookOpen className="h-4 w-4" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-8 z-20 w-64 bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 shadow-lg p-3 space-y-2">
+            <p className="text-xs font-semibold text-slate-500 mb-2">Training Access</p>
+            {orgHasAsd && (
+              <button
+                type="button"
+                onClick={() => toggle('asd')}
+                className={clsx(
+                  'flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors text-left',
+                  userHasAsd
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                    : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300'
+                )}
+              >
+                {userHasAsd ? <CheckCircle className="h-3.5 w-3.5 flex-shrink-0" /> : <div className="h-3.5 w-3.5 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                ASD Awareness Training
+              </button>
+            )}
+            {orgHasCareers && (
+              <button
+                type="button"
+                onClick={() => toggle('careers')}
+                className={clsx(
+                  'flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors text-left',
+                  userHasCareers
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                    : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300'
+                )}
+              >
+                {userHasCareers ? <CheckCircle className="h-3.5 w-3.5 flex-shrink-0" /> : <div className="h-3.5 w-3.5 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                Careers CPD Training
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }
