@@ -8,8 +8,7 @@ import {
   ChevronUp,
   ChevronDown,
   Loader2,
-  CheckCircle,
-  XCircle,
+  Eye,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -54,23 +53,6 @@ export default function TrainingModulesPage() {
 
   const asdModules = modules.filter((m) => m.type === 'ASD')
   const careersModules = modules.filter((m) => m.type === 'CAREERS')
-
-  const toggleActive = async (mod: Module) => {
-    setActionLoading(mod.id)
-    try {
-      const res = await fetch(`/api/super-admin/training/modules/${mod.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ active: !mod.active }),
-      })
-      if (res.ok) {
-        setToast({ message: `Module ${!mod.active ? 'activated' : 'deactivated'}`, type: 'success' })
-        await fetchModules()
-      }
-    } finally {
-      setActionLoading(null)
-    }
-  }
 
   const swapOrder = async (list: Module[], index: number, direction: 'up' | 'down') => {
     const otherIndex = direction === 'up' ? index - 1 : index + 1
@@ -134,7 +116,6 @@ export default function TrainingModulesPage() {
             actionLoading={actionLoading}
             showForm={showAsdForm}
             setShowForm={setShowAsdForm}
-            toggleActive={toggleActive}
             swapOrder={swapOrder}
             onCreated={() => {
               fetchModules()
@@ -149,7 +130,6 @@ export default function TrainingModulesPage() {
             actionLoading={actionLoading}
             showForm={showCareersForm}
             setShowForm={setShowCareersForm}
-            toggleActive={toggleActive}
             swapOrder={swapOrder}
             onCreated={() => {
               fetchModules()
@@ -172,7 +152,6 @@ interface SectionProps {
   actionLoading: string | null
   showForm: boolean
   setShowForm: (v: boolean) => void
-  toggleActive: (m: Module) => void
   swapOrder: (list: Module[], index: number, dir: 'up' | 'down') => void
   onCreated: () => void
 }
@@ -184,7 +163,6 @@ function ModuleSection({
   actionLoading,
   showForm,
   setShowForm,
-  toggleActive,
   swapOrder,
   onCreated,
 }: SectionProps) {
@@ -261,18 +239,15 @@ function ModuleSection({
 
             {/* Actions */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                onClick={() => toggleActive(mod)}
-                disabled={actionLoading === mod.id}
-                className="p-2 rounded-xl border border-calm-200 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
-                title={mod.active ? 'Deactivate' : 'Activate'}
+              <Link
+                href={mod.type === 'ASD' ? `/training` : `/careers`}
+                className="inline-flex items-center gap-1 border border-calm-200 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-700 rounded-xl px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 transition-colors"
+                target="_blank"
+                title="Preview training as a learner"
               >
-                {mod.active ? (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                ) : (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                )}
-              </button>
+                <Eye className="h-4 w-4" />
+                View
+              </Link>
               <Link
                 href={`/super-admin/training/${mod.id}`}
                 className="inline-flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"

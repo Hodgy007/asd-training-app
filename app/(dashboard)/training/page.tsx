@@ -19,8 +19,8 @@ export default async function TrainingPage() {
     user?.organisation?.allowedModuleIds ?? []
   )
 
-  // CAREGIVER always has access; other leaf roles check modules
-  if (user?.role !== 'CAREGIVER' && !hasAsdAccess(effectiveModules)) {
+  // SUPER_ADMIN can preview; CAREGIVER always has access; other leaf roles check modules
+  if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'CAREGIVER' && !hasAsdAccess(effectiveModules)) {
     redirect('/dashboard')
   }
 

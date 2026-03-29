@@ -21,7 +21,7 @@ export default async function CareersPage() {
     user?.organisation?.allowedModuleIds ?? []
   )
 
-  if (user?.role !== 'CAREER_DEV_OFFICER' && !hasCareersAccess(effectiveModules)) {
+  if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'CAREER_DEV_OFFICER' && !hasCareersAccess(effectiveModules)) {
     redirect('/dashboard')
   }
 

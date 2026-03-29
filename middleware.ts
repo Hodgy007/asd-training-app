@@ -94,11 +94,15 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(homeForRole(role), req.url))
   }
 
-  // SUPER_ADMIN and ORG_ADMIN cannot access leaf-role routes
+  // SUPER_ADMIN and ORG_ADMIN cannot access leaf-role routes (except training/careers preview for super admins)
   if (role === 'SUPER_ADMIN' || role === 'ORG_ADMIN') {
-    const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/children', '/reports', '/settings']
-    if (leafOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-      return NextResponse.redirect(new URL(homeForRole(role), req.url))
+    const previewPaths = ['/training', '/careers']
+    const isPreview = role === 'SUPER_ADMIN' && previewPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
+    if (!isPreview) {
+      const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/children', '/reports', '/settings']
+      if (leafOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+        return NextResponse.redirect(new URL(homeForRole(role), req.url))
+      }
     }
   }
 
