@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import 'react-quill-new/dist/quill.snow.css'
@@ -76,6 +76,7 @@ function parseQuestion(q: QuizQuestion): ParsedQuestion {
 
 export default function LessonEditorPage() {
   const params = useParams()
+  const router = useRouter()
   const moduleId = params.moduleId as string
   const lessonId = params.lessonId as string
 
@@ -149,7 +150,7 @@ export default function LessonEditorPage() {
       })
       if (res.ok) {
         setToast({ message: 'Lesson saved', type: 'success' })
-        await fetchLesson()
+        setTimeout(() => router.push(`/super-admin/training/${moduleId}`), 500)
       } else {
         setToast({ message: 'Failed to save lesson', type: 'error' })
       }
