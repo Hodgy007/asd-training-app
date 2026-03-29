@@ -78,7 +78,7 @@ Next.js 14 App Router app. TypeScript throughout. Deployed to Vercel (`asd-train
 
 All child/observation data cascades on user delete. Module/Lesson/QuizQuestion cascade on parent delete. The Prisma singleton lives in `lib/prisma.ts`.
 
-**Roles and RBAC:** Seven roles -- `SUPER_ADMIN`, `ORG_ADMIN`, `CAREGIVER`, `CAREER_DEV_OFFICER`, `STUDENT`, `INTERN`, `EMPLOYEE`. Role helpers live in `lib/rbac.ts`:
+**Roles and RBAC:** Seven roles -- `SUPER_ADMIN`, `ORG_ADMIN`, `CAREGIVER` (displayed as "Practitioner"), `CAREER_DEV_OFFICER`, `STUDENT`, `INTERN`, `EMPLOYEE`. Role helpers live in `lib/rbac.ts`:
 - `isSuperAdmin(session)` -- platform-wide admin
 - `isOrgAdmin(session)` -- manages one organisation
 - `isLeafRole(session)` -- any of the five end-user roles (CAREGIVER, CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE)
@@ -93,18 +93,18 @@ Leaf role types are also exported from `types/index.ts` as `LEAF_ROLES`. Navigat
 **Super admin training preview:** SUPER_ADMIN can access `/training` and `/careers` pages to preview training content as a learner. The middleware allows this via a `previewPaths` check, and the dashboard layout (`app/(dashboard)/layout.tsx`) bypasses the admin redirect for these paths. The super admin Training Content page (`/super-admin/training`) has a View button (opens training as learner in a new tab) and an Edit button. The lesson editor redirects back to the module page after save.
 
 **Dashboard role-gating:** The dashboard page (`app/(dashboard)/dashboard/page.tsx`) is role-aware:
-- **CAREGIVER** sees: children stats (count, observations), "Add a child" quick action, children list, and recent observations section.
-- **Non-caregivers** (CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE) see only: lessons completed stat card and training progress. Children-related stats, quick actions, and observations are hidden.
-- The welcome message adapts: "training progress and observations" for caregivers, "training progress" for others.
+- **CAREGIVER** (Practitioner) sees: children stats (count, observations), "Add a child" quick action, children list, and recent observations section.
+- **Non-practitioners** (CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE) see only: lessons completed stat card and training progress. Children-related stats, quick actions, and observations are hidden.
+- The welcome message adapts: "training progress and observations" for practitioners, "training progress" for others.
 
-**Disclaimer caregiver-only:** The important warning banner ("This tool supports observation and pattern recognition only...") is rendered by `components/ui/caregiver-disclaimer.tsx`, a client component that checks `session.user.role === 'CAREGIVER'` and returns `null` for all other roles. It is included in the root layout (`app/layout.tsx`). The page title is "Training & Observation Platform".
+**Disclaimer practitioner-only:** The important warning banner ("This tool supports observation and pattern recognition only...") is rendered by `components/ui/caregiver-disclaimer.tsx`, a client component that checks `session.user.role === 'CAREGIVER'` and returns `null` for all other roles. It is included in the root layout (`app/layout.tsx`). The page title is "Training & Observation Platform".
 
-**Training content (database-driven):** Training content lives in `Module`, `Lesson`, and `QuizQuestion` database tables. Two module types: `ASD` (for caregivers) and `CAREERS` (for career dev officers). Data access layer at `lib/training-db.ts` provides two sets of queries: super-admin queries (include inactive records for editing) and user-facing queries (active records only). Super admins edit content via a WYSIWYG editor (`react-quill-new`) at `/super-admin/training` and can generate quiz questions with AI (Gemini). Seed training data with `npx tsx prisma/seed-training-content.ts`. Progress API is shared: `POST /api/training/progress` accepts any `moduleId`/`lessonId` combination. The `TrainingProgress` model tracks completion per user.
+**Training content (database-driven):** Training content lives in `Module`, `Lesson`, and `QuizQuestion` database tables. Two module types: `ASD` (for practitioners) and `CAREERS` (for career dev officers). Data access layer at `lib/training-db.ts` provides two sets of queries: super-admin queries (include inactive records for editing) and user-facing queries (active records only). Super admins edit content via a WYSIWYG editor (`react-quill-new`) at `/super-admin/training` and can generate quiz questions with AI (Gemini). Seed training data with `npx tsx prisma/seed-training-content.ts`. Progress API is shared: `POST /api/training/progress` accepts any `moduleId`/`lessonId` combination. The `TrainingProgress` model tracks completion per user.
 
 **Sidebar navigation by role:**
 - SUPER_ADMIN: Overview, Organisations, Training Content, Announcements, Reports
 - ORG_ADMIN: Users, Announcements, Reports, Sessions
-- CAREGIVER: Dashboard, ASD Training, Child Observations, Reports, Sessions, Settings
+- CAREGIVER (Practitioner): Dashboard, ASD Training, Child Observations, Reports, Sessions, Settings
 - CAREER_DEV_OFFICER: Dashboard, Careers Training, Sessions, Settings
 - STUDENT / INTERN / EMPLOYEE: Dashboard, then **only** the training links matching their `effectiveModules` (ASD Training if any `module-*` IDs present, Careers Training if any `careers-*` IDs present), Sessions, Settings
 
