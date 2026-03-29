@@ -83,6 +83,47 @@
   }
 }
 
+/* Quill editor dark mode */
+.dark .ql-toolbar.ql-snow {
+  border-color: #334155;
+  background: #1e293b;
+}
+.dark .ql-toolbar.ql-snow .ql-stroke {
+  stroke: #94a3b8;
+}
+.dark .ql-toolbar.ql-snow .ql-fill {
+  fill: #94a3b8;
+}
+.dark .ql-toolbar.ql-snow .ql-picker-label {
+  color: #94a3b8;
+}
+.dark .ql-toolbar.ql-snow .ql-picker-options {
+  background: #1e293b;
+  border-color: #334155;
+}
+.dark .ql-toolbar.ql-snow button:hover .ql-stroke,
+.dark .ql-toolbar.ql-snow .ql-picker-label:hover .ql-stroke {
+  stroke: #e2e8f0;
+}
+.dark .ql-toolbar.ql-snow button:hover .ql-fill,
+.dark .ql-toolbar.ql-snow .ql-picker-label:hover .ql-fill {
+  fill: #e2e8f0;
+}
+.dark .ql-toolbar.ql-snow button.ql-active .ql-stroke {
+  stroke: #a78bfa;
+}
+.dark .ql-toolbar.ql-snow button.ql-active .ql-fill {
+  fill: #a78bfa;
+}
+.dark .ql-container.ql-snow {
+  border-color: #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+.dark .ql-editor.ql-blank::before {
+  color: #475569;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
