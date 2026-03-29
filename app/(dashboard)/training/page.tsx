@@ -4,17 +4,34 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { TRAINING_MODULES } from '@/lib/training-data'
 import { ModuleCard } from '@/components/training/module-card'
-import { isAdmin } from '@/lib/rbac'
+import { getEffectiveModules, hasAsdAccess } from '@/lib/modules'
 
 export default async function TrainingPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { allowedModuleIds: true, role: true, organisation: { select: { allowedModuleIds: true } } },
+  })
+
+  const effectiveModules = getEffectiveModules(
+    user?.allowedModuleIds ?? [],
+    user?.organisation?.allowedModuleIds ?? []
+  )
+
+  // CAREGIVER always has access; other leaf roles check modules
+  if (user?.role !== 'CAREGIVER' && !hasAsdAccess(effectiveModules)) {
+    redirect('/dashboard')
+  }
+
+  const visibleModules = TRAINING_MODULES.filter((m) => effectiveModules.includes(m.id))
+
   const progressRecords = await prisma.trainingProgress.findMany({
     where: { userId: session.user.id },
   })
 
-  const totalLessons = TRAINING_MODULES.reduce((acc, m) => acc + m.lessons.length, 0)
+  const totalLessons = visibleModules.reduce((acc, m) => acc + m.lessons.length, 0)
   const completedLessons = progressRecords.filter((p) => p.completed).length
 
   return (
@@ -39,21 +56,21 @@ export default async function TrainingPage() {
           </div>
           <div className="text-right">
             <p className="text-5xl font-bold text-white">
-              {Math.round((completedLessons / totalLessons) * 100)}%
+              {totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0}%
             </p>
           </div>
         </div>
         <div className="w-full h-2 bg-white/30 rounded-full overflow-hidden">
           <div
             className="h-full bg-white rounded-full transition-all"
-            style={{ width: `${(completedLessons / totalLessons) * 100}%` }}
+            style={{ width: `${totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0}%` }}
           />
         </div>
       </div>
 
       {/* Module grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {TRAINING_MODULES.map((module, index) => {
+        {visibleModules.map((module, index) => {
           const moduleProgress = progressRecords.filter(
             (p) => p.moduleId === module.id && p.completed
           )
@@ -61,15 +78,15 @@ export default async function TrainingPage() {
             index === 0 ||
             progressRecords.filter(
               (p) =>
-                p.moduleId === TRAINING_MODULES[index - 1].id && p.completed
-            ).length === TRAINING_MODULES[index - 1].lessons.length
+                p.moduleId === visibleModules[index - 1].id && p.completed
+            ).length === visibleModules[index - 1].lessons.length
 
           return (
             <ModuleCard
               key={module.id}
               module={module}
               completedLessons={moduleProgress.length}
-              locked={!isAdmin(session) && !previousModuleComplete && index > 0}
+              locked={!previousModuleComplete && index > 0}
             />
           )
         })}

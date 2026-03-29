@@ -13,8 +13,12 @@ import {
   CheckCircle,
 } from 'lucide-react'
 import { TRAINING_MODULES } from '@/lib/training-data'
+import { CAREERS_MODULES } from '@/lib/careers-training-data'
 import { formatObservationDate } from '@/lib/observations'
 import { differenceInYears } from 'date-fns'
+import { DashboardAnnouncements } from '@/components/dashboard/announcements'
+import { getEffectiveModules, hasAsdAccess, hasCareersAccess } from '@/lib/modules'
+import { canAccessCaregiving, canAccessCareers } from '@/lib/rbac'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -45,9 +49,27 @@ export default async function DashboardPage() {
     }),
   ])
 
-  const totalLessons = TRAINING_MODULES.reduce((acc, m) => acc + m.lessons.length, 0)
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { allowedModuleIds: true, organisation: { select: { allowedModuleIds: true } } },
+  })
+
+  const effectiveModules = getEffectiveModules(
+    user?.allowedModuleIds ?? [],
+    user?.organisation?.allowedModuleIds ?? []
+  )
+
+  const showCaregiving = canAccessCaregiving(session) || hasAsdAccess(effectiveModules)
+  const showCareers = canAccessCareers(session) || hasCareersAccess(effectiveModules)
+
+  const activeModules = [
+    ...(showCaregiving ? TRAINING_MODULES.filter((m) => effectiveModules.includes(m.id)) : []),
+    ...(showCareers ? CAREERS_MODULES.filter((m) => effectiveModules.includes(m.id)) : []),
+  ]
+
+  const totalLessons = activeModules.reduce((acc, m) => acc + m.lessons.length, 0)
   const completedLessons = progressRecords.length
-  const progressPct = Math.round((completedLessons / totalLessons) * 100)
+  const progressPct = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
   const firstName = session.user.name?.split(' ')[0] || 'there'
 
@@ -60,6 +82,9 @@ export default async function DashboardPage() {
           Here&apos;s an overview of your training progress and children.
         </p>
       </div>
+
+      {/* Announcements */}
+      <DashboardAnnouncements />
 
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -124,7 +149,7 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="space-y-2">
-            {TRAINING_MODULES.map((module) => {
+            {activeModules.map((module) => {
               const moduleLessons = module.lessons.length
               const completedModuleLessons = progressRecords.filter(
                 (p) => p.moduleId === module.id

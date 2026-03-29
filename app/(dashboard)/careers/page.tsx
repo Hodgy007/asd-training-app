@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { CAREERS_MODULES } from '@/lib/careers-training-data'
-import { canAccessCareers, isAdmin } from '@/lib/rbac'
+import { getEffectiveModules, hasCareersAccess } from '@/lib/modules'
 import Link from 'next/link'
 import { Briefcase, CheckCircle, Circle, ChevronRight, Lock } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -11,13 +11,28 @@ import { clsx } from 'clsx'
 export default async function CareersPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
-  if (!canAccessCareers(session)) redirect('/dashboard')
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { allowedModuleIds: true, role: true, organisation: { select: { allowedModuleIds: true } } },
+  })
+
+  const effectiveModules = getEffectiveModules(
+    user?.allowedModuleIds ?? [],
+    user?.organisation?.allowedModuleIds ?? []
+  )
+
+  if (user?.role !== 'CAREER_DEV_OFFICER' && !hasCareersAccess(effectiveModules)) {
+    redirect('/dashboard')
+  }
+
+  const visibleModules = CAREERS_MODULES.filter((m) => effectiveModules.includes(m.id))
 
   const progressRecords = await prisma.trainingProgress.findMany({
     where: { userId: session.user.id },
   })
 
-  const totalLessons = CAREERS_MODULES.reduce((acc, m) => acc + m.lessons.length, 0)
+  const totalLessons = visibleModules.reduce((acc, m) => acc + m.lessons.length, 0)
   const completedLessons = progressRecords.filter(
     (p) => p.completed && p.moduleId.startsWith('careers-')
   ).length
@@ -59,7 +74,7 @@ export default async function CareersPage() {
 
       {/* Module grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {CAREERS_MODULES.map((module, index) => {
+        {visibleModules.map((module, index) => {
           const moduleProgress = progressRecords.filter(
             (p) => p.moduleId === module.id && p.completed
           )
@@ -70,10 +85,10 @@ export default async function CareersPage() {
           const previousModuleComplete =
             index === 0 ||
             progressRecords.filter(
-              (p) => p.moduleId === CAREERS_MODULES[index - 1].id && p.completed
-            ).length === CAREERS_MODULES[index - 1].lessons.length
+              (p) => p.moduleId === visibleModules[index - 1].id && p.completed
+            ).length === visibleModules[index - 1].lessons.length
 
-          const isLocked = !isAdmin(session) && !previousModuleComplete && index > 0
+          const isLocked = !previousModuleComplete && index > 0
 
           return (
             <div

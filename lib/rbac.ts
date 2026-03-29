@@ -1,33 +1,48 @@
 import { Session } from 'next-auth'
-
-export type Role = 'CAREGIVER' | 'CAREER_DEV_OFFICER' | 'ADMIN'
+import type { Role } from '@/types'
 
 /**
  * Returns true if the session has one of the required roles.
- * Always returns false if session is null.
  */
 export function hasRole(session: Session | null, ...roles: Role[]): boolean {
   if (!session?.user?.role) return false
   return roles.includes(session.user.role as Role)
 }
 
+/** SUPER_ADMIN — top-level charity authority */
+export function isSuperAdmin(session: Session | null): boolean {
+  return hasRole(session, 'SUPER_ADMIN')
+}
+
+/** ORG_ADMIN — manages one organisation */
+export function isOrgAdmin(session: Session | null): boolean {
+  return hasRole(session, 'ORG_ADMIN')
+}
+
+/** Any of the five leaf roles (end users who do training) */
+export function isLeafRole(session: Session | null): boolean {
+  return hasRole(session, 'CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE')
+}
+
 /**
- * Returns true if the user is an admin.
+ * Backwards-compat alias. Now checks SUPER_ADMIN instead of ADMIN.
  */
 export function isAdmin(session: Session | null): boolean {
-  return hasRole(session, 'ADMIN')
+  return isSuperAdmin(session)
 }
 
 /**
- * Returns true if the user can access the careers training section.
+ * Returns true if the user's role is CAREER_DEV_OFFICER.
+ * SUPER_ADMIN and ORG_ADMIN do NOT access training routes.
  */
 export function canAccessCareers(session: Session | null): boolean {
-  return hasRole(session, 'CAREER_DEV_OFFICER', 'ADMIN')
+  return hasRole(session, 'CAREER_DEV_OFFICER')
 }
 
 /**
- * Returns true if the user can access the caregiver section (children, ASD training, reports).
+ * Returns true if the user's role is CAREGIVER.
+ * SUPER_ADMIN and ORG_ADMIN do NOT access training routes.
  */
 export function canAccessCaregiving(session: Session | null): boolean {
-  return hasRole(session, 'CAREGIVER', 'ADMIN')
+  return hasRole(session, 'CAREGIVER')
 }

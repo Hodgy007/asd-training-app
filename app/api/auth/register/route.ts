@@ -32,6 +32,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Assign to Legacy org — self-registered users go here by default
+    const legacyOrg = await prisma.organisation.findUnique({ where: { slug: 'legacy' } })
+
     const hashedPassword = await bcrypt.hash(password, 12)
 
     const user = await prisma.user.create({
@@ -41,6 +44,7 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         role,
         active: true,
+        organisationId: legacyOrg?.id ?? null,
       },
     })
 

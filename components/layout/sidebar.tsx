@@ -11,7 +11,6 @@ import {
   LogOut,
   X,
   Briefcase,
-  ShieldCheck,
   Settings,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -22,34 +21,49 @@ interface NavItem {
   icon: React.ElementType
 }
 
-const CAREGIVER_NAV: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/training', label: 'ASD Training', icon: BookOpen },
-  { href: '/children', label: 'Child Observations', icon: Users },
-  { href: '/reports', label: 'Reports', icon: FileText },
-  { href: '/settings', label: 'Settings', icon: Settings },
-]
-
-const CAREERS_NAV: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/careers', label: 'Careers Training', icon: Briefcase },
-  { href: '/settings', label: 'Settings', icon: Settings },
-]
-
-const ADMIN_NAV: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/training', label: 'ASD Training', icon: BookOpen },
-  { href: '/careers', label: 'Careers Training', icon: Briefcase },
-  { href: '/children', label: 'Child Observations', icon: Users },
-  { href: '/reports', label: 'Reports', icon: FileText },
-  { href: '/admin', label: 'Admin', icon: ShieldCheck },
-  { href: '/settings', label: 'Settings', icon: Settings },
-]
-
 function getNavItems(role?: string): NavItem[] {
-  if (role === 'ADMIN') return ADMIN_NAV
-  if (role === 'CAREER_DEV_OFFICER') return CAREERS_NAV
-  return CAREGIVER_NAV
+  const items: NavItem[] = [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  ]
+
+  if (role === 'CAREGIVER') {
+    items.push(
+      { href: '/training', label: 'ASD Training', icon: BookOpen },
+      { href: '/children', label: 'Child Observations', icon: Users },
+      { href: '/reports', label: 'Reports', icon: FileText },
+    )
+  }
+
+  if (role === 'CAREER_DEV_OFFICER') {
+    items.push({ href: '/careers', label: 'Careers Training', icon: Briefcase })
+  }
+
+  if (role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
+    items.push(
+      { href: '/training', label: 'ASD Training', icon: BookOpen },
+      { href: '/careers', label: 'Careers Training', icon: Briefcase },
+    )
+  }
+
+  items.push({ href: '/settings', label: 'Settings', icon: Settings })
+
+  return items
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  CAREGIVER: 'Caregiver',
+  CAREER_DEV_OFFICER: 'Careers Professional',
+  STUDENT: 'Student',
+  INTERN: 'Intern',
+  EMPLOYEE: 'Employee',
+}
+
+const ROLE_BADGE_STYLES: Record<string, string> = {
+  CAREGIVER: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+  CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
+  INTERN: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
+  EMPLOYEE: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300',
 }
 
 interface SidebarProps {
@@ -90,17 +104,13 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
       </div>
 
       {/* Role badge */}
-      {role && (
+      {role && ROLE_LABELS[role] && (
         <div className="px-5 py-2 border-b border-calm-100 dark:border-slate-700">
           <span className={clsx(
             'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
-            role === 'ADMIN' && 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-            role === 'CAREER_DEV_OFFICER' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-            role === 'CAREGIVER' && 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+            ROLE_BADGE_STYLES[role] ?? 'bg-slate-100 text-slate-700',
           )}>
-            {role === 'ADMIN' && <ShieldCheck className="h-3 w-3" />}
-            {role === 'CAREER_DEV_OFFICER' && <Briefcase className="h-3 w-3" />}
-            {role === 'ADMIN' ? 'Admin' : role === 'CAREER_DEV_OFFICER' ? 'Careers Professional' : 'Caregiver'}
+            {ROLE_LABELS[role]}
           </span>
         </div>
       )}
@@ -134,7 +144,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
 
       {/* Bottom section */}
       <div className="p-4 border-t border-calm-200 dark:border-slate-700 space-y-2">
-        {role !== 'CAREER_DEV_OFFICER' && (
+        {role === 'CAREGIVER' && (
           <div className="bg-orange-50 dark:bg-slate-700 border-l-4 border-primary-500 rounded-r-xl p-3 mb-3">
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               <strong className="text-primary-600 dark:text-primary-400">Reminder:</strong> This tool does not diagnose. Share observations with your GP or health visitor.

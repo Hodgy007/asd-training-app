@@ -33,14 +33,19 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          include: { organisation: { select: { active: true } } },
         })
 
         if (!user) {
           throw new Error('No account found with that email address')
         }
 
-        if (user.active === false) {
+        if (!user.active) {
           throw new Error('Your account has been deactivated. Please contact an administrator.')
+        }
+
+        if (user.organisation && !user.organisation.active) {
+          throw new Error('Your organisation has been deactivated. Please contact an administrator.')
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
@@ -54,6 +59,8 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
+          organisationId: user.organisationId,
+          mustChangePassword: user.mustChangePassword,
         }
       },
     }),
@@ -63,47 +70,56 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
-      // For SSO sign-ins, ensure the user is active
       if (account?.provider !== 'credentials') {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email ?? '' },
+          include: { organisation: { select: { active: true } } },
         })
-        if (dbUser && dbUser.active === false) {
+
+        if (!dbUser) {
+          return '/login?error=Account not found. Contact your organisation administrator.'
+        }
+
+        if (!dbUser.active) {
           return false
         }
-        // New SSO users: set a default role of CAREGIVER if not already in DB
-        if (!dbUser) {
-          await prisma.user.upsert({
-            where: { email: user.email ?? '' },
-            create: {
-              email: user.email ?? '',
-              name: user.name ?? '',
-              password: '', // SSO users have no password
-              role: 'CAREGIVER',
-              active: true,
-            },
-            update: {},
-          })
+
+        if (dbUser.organisation && !dbUser.organisation.active) {
+          return false
         }
+
+        return true
       }
       return true
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id
-        token.role = (user as { role?: string }).role
+        token.role = (user as { role?: string }).role ?? 'CAREGIVER'
+        token.organisationId = (user as { organisationId?: string | null }).organisationId ?? null
+        token.mustChangePassword = (user as { mustChangePassword?: boolean }).mustChangePassword ?? false
       }
-      // Refresh role from DB on each token refresh (picks up admin role changes)
-      if (token.id && !token.role) {
-        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string } })
-        if (dbUser) token.role = dbUser.role
+
+      if (trigger === 'update') {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, organisationId: true, mustChangePassword: true },
+        })
+        if (dbUser) {
+          token.role = dbUser.role
+          token.organisationId = dbUser.organisationId
+          token.mustChangePassword = dbUser.mustChangePassword
+        }
       }
+
       return token
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
         session.user.role = token.role as string
+        session.user.organisationId = (token.organisationId as string | null) ?? null
+        session.user.mustChangePassword = token.mustChangePassword as boolean
       }
       return session
     },

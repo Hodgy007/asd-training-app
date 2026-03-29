@@ -16,6 +16,9 @@ const observationSchema = z.object({
 export async function GET(_req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (session.user.role !== 'CAREGIVER') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   // Verify ownership
   const child = await prisma.child.findFirst({
@@ -34,6 +37,9 @@ export async function GET(_req: NextRequest, { params }: { params: { childId: st
 export async function POST(req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (session.user.role !== 'CAREGIVER') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const child = await prisma.child.findFirst({
     where: { id: params.childId, userId: session.user.id },

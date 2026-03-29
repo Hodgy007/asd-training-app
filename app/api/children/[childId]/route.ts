@@ -14,6 +14,9 @@ async function getChildOrFail(childId: string, userId: string) {
 export async function GET(_req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (session.user.role !== 'CAREGIVER') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const child = await getChildOrFail(params.childId, session.user.id)
   if (!child) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -33,6 +36,9 @@ const updateSchema = z.object({
 export async function PUT(req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (session.user.role !== 'CAREGIVER') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const child = await getChildOrFail(params.childId, session.user.id)
   if (!child) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -61,6 +67,9 @@ export async function PUT(req: NextRequest, { params }: { params: { childId: str
 export async function DELETE(_req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (session.user.role !== 'CAREGIVER') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const child = await getChildOrFail(params.childId, session.user.id)
   if (!child) return NextResponse.json({ error: 'Not found' }, { status: 404 })

@@ -723,7 +723,7 @@ async function main() {
       email: 'admin@asdawareness.org.uk',
       name: 'Admin User',
       password: adminPassword,
-      role: 'ADMIN',
+      role: 'SUPER_ADMIN',
     },
   })
   console.log('Created admin user:', admin.email)

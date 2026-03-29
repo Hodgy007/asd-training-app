@@ -72,7 +72,7 @@ export default function CareerLessonPage({ params }: LessonPageProps) {
     if (
       status === 'authenticated' &&
       session?.user?.role !== 'CAREER_DEV_OFFICER' &&
-      session?.user?.role !== 'ADMIN'
+      session?.user?.role !== 'SUPER_ADMIN'
     ) {
       router.push('/dashboard')
     }

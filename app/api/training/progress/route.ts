@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         userId_moduleId_lessonId: {
           userId: session.user.id,
           moduleId,
-          lessonId: lessonId ?? null,
+          lessonId: (lessonId ?? null) as string,
         },
       },
       update: {
