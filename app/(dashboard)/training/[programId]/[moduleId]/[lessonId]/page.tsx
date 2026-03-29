@@ -10,7 +10,7 @@ import { QuizComponent } from '@/components/training/quiz-component'
 import { clsx } from 'clsx'
 
 interface LessonPageProps {
-  params: { moduleId: string; lessonId: string }
+  params: { programId: string; moduleId: string; lessonId: string }
 }
 
 interface LessonData {
@@ -31,13 +31,13 @@ interface LessonData {
   module: {
     id: string
     title: string
-    type: string
+    programId: string
     order: number
     lessons: { id: string; title: string; order: number }[]
   }
 }
 
-export default function LessonPage({ params }: LessonPageProps) {
+export default function ProgramLessonPage({ params }: LessonPageProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [quizStarted, setQuizStarted] = useState(false)
@@ -46,10 +46,19 @@ export default function LessonPage({ params }: LessonPageProps) {
   const [lesson, setLesson] = useState<LessonData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [programName, setProgramName] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
+
+  // Derive program name from session
+  useEffect(() => {
+    if (session?.user?.effectivePrograms) {
+      const prog = session.user.effectivePrograms.find((p) => p.id === params.programId)
+      setProgramName(prog?.name ?? 'Training')
+    }
+  }, [session, params.programId])
 
   useEffect(() => {
     if (status !== 'authenticated') return
@@ -81,7 +90,7 @@ export default function LessonPage({ params }: LessonPageProps) {
     return (
       <div className="text-center py-12">
         <p className="text-slate-500">Lesson not found.</p>
-        <Link href="/training" className="text-primary-600 hover:text-primary-700 mt-2 inline-block">
+        <Link href={`/training/${params.programId}`} className="text-primary-600 hover:text-primary-700 mt-2 inline-block">
           Back to training
         </Link>
       </div>
@@ -122,13 +131,13 @@ export default function LessonPage({ params }: LessonPageProps) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm">
-        <Link href="/training" className="text-slate-400 hover:text-slate-600 transition-colors">
-          Training
+      <div className="flex items-center gap-2 text-sm flex-wrap">
+        <Link href={`/training/${params.programId}`} className="text-slate-400 hover:text-slate-600 transition-colors">
+          {programName || 'Training'}
         </Link>
         <span className="text-slate-300">/</span>
         <Link
-          href={`/training/${lesson.module.id}`}
+          href={`/training/${params.programId}/${lesson.module.id}`}
           className="text-slate-400 hover:text-slate-600 transition-colors truncate max-w-[200px]"
         >
           {lesson.module.title}
@@ -188,8 +197,8 @@ export default function LessonPage({ params }: LessonPageProps) {
       <div className="bg-primary-50 border border-primary-100 rounded-2xl p-5">
         <p className="text-primary-800 font-semibold mb-2">What did you notice?</p>
         <p className="text-primary-700 text-sm">
-          Before moving on to the quiz, take a moment to reflect: have you observed any of the
-          behaviours described in this lesson? Think of a specific child in your care.
+          Before moving on to the quiz, take a moment to reflect on what you have learned
+          in this lesson and how it applies to your practice.
         </p>
       </div>
 
@@ -217,7 +226,7 @@ export default function LessonPage({ params }: LessonPageProps) {
             <div className="flex flex-col sm:flex-row gap-3">
               {nextLesson && !isLastLesson ? (
                 <Link
-                  href={`/training/${lesson.module.id}/${nextLesson.id}`}
+                  href={`/training/${params.programId}/${lesson.module.id}/${nextLesson.id}`}
                   className="btn-primary flex items-center justify-center gap-2"
                 >
                   Next lesson: {nextLesson.title}
@@ -225,14 +234,14 @@ export default function LessonPage({ params }: LessonPageProps) {
                 </Link>
               ) : (
                 <Link
-                  href={`/training/${lesson.module.id}`}
+                  href={`/training/${params.programId}/${lesson.module.id}`}
                   className="btn-primary flex items-center justify-center gap-2"
                 >
                   Back to module overview
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               )}
-              <Link href="/training" className="btn-secondary flex items-center justify-center gap-2">
+              <Link href={`/training/${params.programId}`} className="btn-secondary flex items-center justify-center gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 All modules
               </Link>

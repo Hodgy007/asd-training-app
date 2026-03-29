@@ -14,9 +14,10 @@ interface ModuleCardProps {
   module: ModuleForCard
   completedLessons: number
   locked: boolean
+  programId?: string
 }
 
-export function ModuleCard({ module, completedLessons, locked }: ModuleCardProps) {
+export function ModuleCard({ module, completedLessons, locked, programId }: ModuleCardProps) {
   const totalLessons = module.lessons.length
   const isComplete = completedLessons === totalLessons
   const progressPct = Math.round((completedLessons / totalLessons) * 100)
@@ -104,7 +105,7 @@ export function ModuleCard({ module, completedLessons, locked }: ModuleCardProps
 
       {!locked ? (
         <Link
-          href={`/training/${module.id}`}
+          href={programId ? `/training/${programId}/${module.id}` : `/training/${module.id}`}
           className={clsx(
             'flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium transition-all',
             isComplete

@@ -24,7 +24,7 @@ export async function GET(
         select: {
           id: true,
           title: true,
-          type: true,
+          programId: true,
           order: true,
           lessons: {
             where: { active: true },

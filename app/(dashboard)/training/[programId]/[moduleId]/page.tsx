@@ -2,8 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
-import { getModuleById } from '@/lib/training-data'
-import { isAdmin } from '@/lib/rbac'
+import { isSuperAdmin } from '@/lib/rbac'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -15,11 +14,26 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
-export default async function ModulePage({ params }: { params: { moduleId: string } }) {
+export default async function ProgramModulePage({
+  params,
+}: {
+  params: { programId: string; moduleId: string }
+}) {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 
-  const module = getModuleById(params.moduleId)
+  // Fetch active module with lessons
+  const module = await prisma.module.findFirst({
+    where: { id: params.moduleId, active: true, programId: params.programId },
+    include: {
+      lessons: {
+        where: { active: true },
+        orderBy: { order: 'asc' },
+        include: { _count: { select: { quizQuestions: true } } },
+      },
+    },
+  })
+
   if (!module) notFound()
 
   const progressRecords = await prisma.trainingProgress.findMany({
@@ -38,7 +52,7 @@ export default async function ModulePage({ params }: { params: { moduleId: strin
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Link
-          href="/training"
+          href={`/training/${params.programId}`}
           className="p-2 rounded-xl text-slate-500 hover:bg-calm-100 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -70,13 +84,13 @@ export default async function ModulePage({ params }: { params: { moduleId: strin
                 'h-full rounded-full transition-all',
                 isComplete ? 'bg-sage-500' : 'bg-primary-500'
               )}
-              style={{ width: `${(completedCount / totalCount) * 100}%` }}
+              style={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
             />
           </div>
         </div>
         {nextLesson && (
           <Link
-            href={`/training/${module.id}/${nextLesson.id}`}
+            href={`/training/${params.programId}/${module.id}/${nextLesson.id}`}
             className="btn-primary inline-flex items-center gap-2"
           >
             {completedCount === 0 ? 'Start first lesson' : 'Continue learning'}
@@ -97,7 +111,7 @@ export default async function ModulePage({ params }: { params: { moduleId: strin
         <div className="space-y-2">
           {module.lessons.map((lesson, idx) => {
             const isLessonComplete = completedLessonIds.includes(lesson.id)
-            const isLessonLocked = !isAdmin(session) && idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id)
+            const isLessonLocked = !isSuperAdmin(session) && idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id)
 
             return (
               <div
@@ -133,12 +147,12 @@ export default async function ModulePage({ params }: { params: { moduleId: strin
                     {lesson.title}
                   </p>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    {lesson.quizQuestions.length} quiz questions
+                    {lesson._count.quizQuestions} quiz questions
                   </p>
                 </div>
                 {!isLessonLocked && (
                   <Link
-                    href={`/training/${module.id}/${lesson.id}`}
+                    href={`/training/${params.programId}/${module.id}/${lesson.id}`}
                     className={clsx(
                       'flex-shrink-0 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors',
                       isLessonComplete

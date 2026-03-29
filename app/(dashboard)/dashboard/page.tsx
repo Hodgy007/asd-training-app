@@ -12,13 +12,11 @@ import {
   Plus,
   CheckCircle,
 } from 'lucide-react'
-import { TRAINING_MODULES } from '@/lib/training-data'
-import { CAREERS_MODULES } from '@/lib/careers-training-data'
 import { formatObservationDate } from '@/lib/observations'
 import { differenceInYears } from 'date-fns'
 import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
-import { getEffectiveModules, hasAsdAccess, hasCareersAccess } from '@/lib/modules'
+import { isSuperAdmin } from '@/lib/rbac'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -50,30 +48,43 @@ export default async function DashboardPage() {
       : Promise.resolve([]),
   ])
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { allowedModuleIds: true, organisation: { select: { allowedModuleIds: true } } },
-  })
+  // Determine which programs the user can access
+  let allowedProgramIds: string[] = []
+  if (isSuperAdmin(session)) {
+    const allPrograms = await prisma.trainingProgram.findMany({
+      where: { active: true },
+      select: { id: true },
+    })
+    allowedProgramIds = allPrograms.map((p) => p.id)
+  } else {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { organisation: { select: { allowedProgramIds: true } } },
+    })
+    allowedProgramIds = user?.organisation?.allowedProgramIds ?? []
+  }
 
-  const effectiveModules = getEffectiveModules(
-    user?.allowedModuleIds ?? [],
-    user?.organisation?.allowedModuleIds ?? []
-  )
-
-  const isCaregiver = session.user.role === 'CAREGIVER'
-  const showAsd = hasAsdAccess(effectiveModules)
-  const showCareers = hasCareersAccess(effectiveModules)
-
-  const activeModules = [
-    ...(showAsd ? TRAINING_MODULES.filter((m) => effectiveModules.includes(m.id)) : []),
-    ...(showCareers ? CAREERS_MODULES.filter((m) => effectiveModules.includes(m.id)) : []),
-  ]
+  // Fetch modules for user's programs from DB
+  const activeModules = allowedProgramIds.length > 0
+    ? await prisma.module.findMany({
+        where: { programId: { in: allowedProgramIds }, active: true },
+        orderBy: [{ programId: 'asc' }, { order: 'asc' }],
+        include: {
+          lessons: { where: { active: true }, select: { id: true } },
+          program: { select: { id: true, name: true } },
+        },
+      })
+    : []
 
   const totalLessons = activeModules.reduce((acc, m) => acc + m.lessons.length, 0)
   const completedLessons = progressRecords.length
   const progressPct = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
   const firstName = session.user.name?.split(' ')[0] || 'there'
+  const isCaregiver = session.user.role === 'CAREGIVER'
+
+  // Determine the first program link for quick actions
+  const firstProgramId = allowedProgramIds[0]
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -185,7 +196,7 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                   <Link
-                    href={`/training/${module.id}`}
+                    href={`/training/${module.program.id}/${module.id}`}
                     className="text-xs text-primary-600 hover:text-primary-700 font-medium flex-shrink-0"
                   >
                     {completedModuleLessons > 0 ? 'Continue' : 'Start'}
@@ -212,7 +223,7 @@ export default async function DashboardPage() {
                 </Link>
               )}
               <Link
-                href={showAsd ? '/training' : '/careers'}
+                href={firstProgramId ? `/training/${firstProgramId}` : '/training'}
                 className="flex items-center gap-3 p-3 bg-sage-50 hover:bg-sage-100 rounded-xl transition-colors group"
               >
                 <TrendingUp className="h-5 w-5 text-sage-600" />
@@ -233,7 +244,6 @@ export default async function DashboardPage() {
               <div className="space-y-3">
                 {children.slice(0, 3).map((child) => {
                   const age = differenceInYears(new Date(), child.dateOfBirth)
-                  const lastObs = child.observations[0]
                   return (
                     <Link
                       key={child.id}
