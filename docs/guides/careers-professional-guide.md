@@ -39,17 +39,14 @@ The platform is built around four careers modules that align with the **Gatsby B
 
 You will be redirected to the sign-in page with a confirmation message. Sign in with the credentials you just created.
 
-### 2.2 Signing in with Google or Microsoft
+### 2.2 Signing in
 
-If your organisation uses Google Workspace or Microsoft 365, you can sign in using those credentials instead of a separate password. On the registration or sign-in page, select **Google** or **Microsoft** as appropriate. Your account must be created by an administrator before SSO sign-in will work — if you receive an "access denied" message, contact your organisation administrator.
+The login page has a toggle at the top to switch between **Email & Password** and **Single Sign-On**:
 
-### 2.3 Signing in
+- **Email & Password** — enter your email address and password, then select **Sign in**. If you have forgotten your password, select **Forgot password?** and a reset link will be sent to your inbox.
+- **Single Sign-On** — if your organisation supports it, select **Google** or **Microsoft** to sign in with your existing work account. Your account must be created by an administrator before SSO sign-in will work — if you receive an "access denied" message, contact your organisation administrator.
 
-1. Go to the platform URL and select **Sign in**.
-2. Enter your email address and password, then select **Sign in**.
-3. If you have forgotten your password, select **Forgot password?** and enter your email address. A reset link will be sent to your inbox.
-
-### 2.4 Your role badge
+### 2.3 Your role badge
 
 Once signed in, you will see a blue **Careers Professional** badge in the sidebar. This confirms your account has the correct role and that you have access to the careers CPD modules.
 
@@ -61,13 +58,13 @@ After signing in you are taken directly to your **Dashboard** at `/dashboard`. T
 
 ### 3.1 Welcome and progress summary
 
-The top of the dashboard greets you by name and shows three summary tiles:
+The top of the dashboard greets you by name and shows your training progress. As a Careers Professional, your dashboard focuses on training only — you will see:
 
 - **Lessons completed** — how many lessons across all your active modules you have finished, shown as a fraction of the total available (for example, *3 / 16*).
-- **Children tracked** — relevant to caregiver accounts; as a Careers Professional this will show zero and can be disregarded.
-- **Total observations** — similarly a caregiver feature; this will show zero for your account.
 
-Below the tiles is a **Training Progress** panel showing each of your active modules with a per-module completion count and a quick **Start** or **Continue** link.
+Children tracking and observations are caregiver-specific features and do not appear on your dashboard.
+
+Below the tile is a **Training Progress** panel showing each of your active modules with a per-module completion count and a quick **Start** or **Continue** link.
 
 ### 3.2 Announcements
 
@@ -75,7 +72,7 @@ If your organisation's administrator or the platform team has posted any announc
 
 ### 3.3 Navigation
 
-The sidebar on the left (or accessible via the menu icon on mobile) contains your main navigation links:
+The sidebar on the left (or accessible via the menu icon on mobile) contains your main navigation links. The sidebar is module-aware — you will only see training links for the modules you have been given access to. If you only have access to Careers CPD Training, the sidebar shows:
 
 | Link | Where it goes |
 |---|---|
@@ -83,6 +80,8 @@ The sidebar on the left (or accessible via the menu icon on mobile) contains you
 | **Careers Training** | The careers CPD training hub |
 | **Settings** | Your account and privacy settings |
 | **Sign out** | Signs you out of the platform |
+
+If your administrator has also granted you access to ASD Awareness Training, an **ASD Training** link will appear in the sidebar as well.
 
 ---
 
@@ -196,6 +195,12 @@ To confirm deletion, type `DELETE` into the confirmation field and select **Dele
 **Account administration** (role changes, adding colleagues, organisational access): contact your organisation's designated platform administrator, who can manage user accounts through the admin panel.
 
 **Privacy and data requests**: email **privacy@ambitiousaboutautism.org.uk** with your name and request.
+
+---
+
+### Dark mode
+
+The platform fully supports dark mode. All interface elements — including role badges, progress bars, and form controls — remain clearly readable in both light and dark themes. Dark mode follows your system preference automatically.
 
 ---
 
