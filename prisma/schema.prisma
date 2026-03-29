@@ -154,6 +154,56 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 }
 
+enum ModuleType {
+  ASD
+  CAREERS
+}
+
+enum LessonType {
+  TEXT
+  VIDEO
+}
+
+model Module {
+  id          String     @id
+  title       String
+  description String
+  type        ModuleType
+  order       Int
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id            String         @id
+  moduleId      String
+  title         String
+  type          LessonType
+  content       String         @db.Text
+  videoUrl      String?
+  order         Int
+  active        Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  module        Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  quizQuestions QuizQuestion[]
+}
+
+model QuizQuestion {
+  id            String   @id @default(cuid())
+  lessonId      String
+  question      String   @db.Text
+  options       String   @db.Text
+  correctAnswer String
+  explanation   String   @db.Text
+  order         Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
 enum Role {
   SUPER_ADMIN
   ORG_ADMIN
