@@ -114,7 +114,7 @@ This page lists every organisation on the platform in a table. You can see each 
 1. Click **Create Organisation** in the top-right corner. A form appears below the header.
 2. Fill in the **Name** field (e.g. "Sunrise Care Services"). The **Slug** field will fill in automatically based on the name — you can edit it if needed. The slug must use only lowercase letters, numbers, and hyphens.
 3. Under **Allowed Roles**, tick the types of users this organisation will have. The available roles are:
-   - **Caregiver** — accesses ASD awareness training and can log child observations
+   - **Practitioner** — accesses ASD awareness training and can log child observations
    - **Careers Professional** — accesses careers training only
    - **Student**, **Intern**, **Employee** — access both ASD and careers training
 4. Under **Module Access**, use the **ASD Awareness Training** and **Careers CPD Training** toggles to control which training plans this organisation's users may access.
@@ -167,7 +167,7 @@ Navigate to **Training Content** in the left-hand sidebar.
 
 Training content is organised into **Modules**, and each module contains **Lessons**. There are two types of training:
 
-- **ASD Training** — for Caregivers, Students, Interns, and Employees learning about autism
+- **ASD Training** — for Practitioners, Students, Interns, and Employees learning about autism
 - **Careers Training** — for Careers Professionals and others focused on career development
 
 ### Browsing modules

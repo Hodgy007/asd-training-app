@@ -1,4 +1,4 @@
-# Caregiver Guide — Ambitious about Autism Training Platform
+# Practitioner Guide — Ambitious about Autism Training Platform
 
 **Platform:** https://asd-training-app-v2.vercel.app
 
@@ -26,7 +26,7 @@
 
 ## 1. Welcome
 
-If you are reading this, you are already taking a meaningful step. Caring for a child and wanting to understand their world better — noticing things, asking questions, seeking knowledge — is one of the most important things a caregiver can do.
+If you are reading this, you are already taking a meaningful step. Caring for a child and wanting to understand their world better — noticing things, asking questions, seeking knowledge — is one of the most important things a practitioner can do.
 
 The Ambitious about Autism platform has been designed with you in mind. It gives you:
 
@@ -50,9 +50,9 @@ You will be asked to provide:
 - **Your full name**
 - **Your email address**
 - **A password** (choose something memorable but secure)
-- **Your role** — select **Caregiver**
+- **Your role** — select **Practitioner**
 
-Choosing the Caregiver role unlocks the parts of the platform described in this guide: ASD training, child observation tracking, AI insights, and reports.
+Choosing the Practitioner role unlocks the parts of the platform described in this guide: ASD training, child observation tracking, AI insights, and reports.
 
 You can also sign in using your **Google account** or **Microsoft account** if your organisation has enabled those options. If you are unsure whether this applies to you, ask your organisation's administrator.
 
@@ -75,7 +75,7 @@ The platform greets you by first name. Below the greeting is a short summary of 
 
 ### Important disclaimer banner
 
-As a Caregiver, you will see an important disclaimer banner reminding you that this platform is an observation and training tool — not a diagnostic tool. This banner is shown only to Caregiver accounts and does not appear for other roles.
+As a Practitioner, you will see an important disclaimer banner reminding you that this platform is an observation and training tool — not a diagnostic tool. This banner is shown only to Practitioner accounts and does not appear for other roles.
 
 ### Announcements
 
@@ -83,7 +83,7 @@ If your organisation or the platform administrators have posted any important no
 
 ### Your progress at a glance
 
-As a Caregiver, your dashboard shows three summary cards that are specific to your role:
+As a Practitioner, your dashboard shows three summary cards that are specific to your role:
 
 | Card | What it shows |
 |---|---|
@@ -91,7 +91,7 @@ As a Caregiver, your dashboard shows three summary cards that are specific to yo
 | Children tracked | How many child profiles you have added |
 | Total observations | The total number of observations you have logged across all children |
 
-The children and observations cards are caregiver-specific features — other roles on the platform do not see them.
+The children and observations cards are practitioner-specific features — other roles on the platform do not see them.
 
 ### Training progress panel
 
@@ -99,7 +99,7 @@ A more detailed view of each training module shows how many lessons you have com
 
 ### Quick actions
 
-Shortcut buttons let you jump straight to **Add a child** or continue your training. The "Add a child" action is a caregiver-specific feature.
+Shortcut buttons let you jump straight to **Add a child** or continue your training. The "Add a child" action is a practitioner-specific feature.
 
 ### Recent observations
 
@@ -109,7 +109,7 @@ If you have logged any observations, the five most recent ones appear here for a
 
 ## 4. Training Modules
 
-The **ASD Training** section (accessible from the left-hand sidebar) is the learning heart of the platform. It contains five modules covering what caregivers need to know about recognising and documenting early developmental patterns.
+The **ASD Training** section (accessible from the left-hand sidebar) is the learning heart of the platform. It contains five modules covering what practitioners need to know about recognising and documenting early developmental patterns.
 
 ### Finding your training
 
@@ -142,7 +142,7 @@ If you close the browser mid-lesson, do not worry — your completed lessons are
 
 At the bottom of the Training Hub, you will see this reminder:
 
-> *"These modules are designed to help caregivers and early years practitioners recognise and document developmental patterns. Completing this training does not qualify you to diagnose ASD. Always refer concerns to a qualified healthcare professional."*
+> *"These modules are designed to help practitioners and early years professionals recognise and document developmental patterns. Completing this training does not qualify you to diagnose ASD. Always refer concerns to a qualified healthcare professional."*
 
 Please keep this in mind as you work through the content. The goal of this training is to make you a more confident, more informed observer — not to give you the tools to make a clinical judgement.
 
@@ -240,7 +240,7 @@ The **AI Insights** tab on each child's profile uses Google Gemini, an AI model,
 
 > **Please read this carefully.**
 >
-> AI Insights are a tool to help you organise and articulate what you have observed. They are generated by an AI that has been instructed never to suggest a diagnosis, never to speculate beyond what the data shows, and to use warm, accessible language appropriate for a caregiver.
+> AI Insights are a tool to help you organise and articulate what you have observed. They are generated by an AI that has been instructed never to suggest a diagnosis, never to speculate beyond what the data shows, and to use warm, accessible language appropriate for a practitioner.
 >
 > **An AI Insight report is not a diagnosis. It is not a clinical assessment. It is not a substitute for professional advice.**
 >
@@ -258,7 +258,7 @@ The **AI Insights** tab on each child's profile uses Google Gemini, an AI model,
 The AI insight report has three sections:
 
 **Summary**
-Two or three sentences describing the overall picture of what has been observed, in plain, caregiver-friendly language. It focuses on patterns — not conclusions.
+Two or three sentences describing the overall picture of what has been observed, in plain, practitioner-friendly language. It focuses on patterns — not conclusions.
 
 **Patterns**
 A bullet-point list identifying the main behavioural patterns across the three domains. This is drawn directly from the observations you have logged.
@@ -297,7 +297,7 @@ At the top of the Reports page, two filters let you narrow down what you are loo
 
 For each child in the selected date range:
 
-- **Child header** — name, date of birth, report generated date, total observations in the period, and any caregiver notes.
+- **Child header** — name, date of birth, report generated date, total observations in the period, and any practitioner notes.
 - **Weekly Observation Trends chart** — a bar chart showing how many observations were logged per week across the three domains.
 - **Observations by domain** — a detailed table listing every observation in the period, grouped by domain, with date, behaviour, frequency, context, and any notes.
 
@@ -306,7 +306,7 @@ For each child in the selected date range:
 Click **Print report** at the top right. The report is formatted for printing — filters and navigation are hidden, leaving a clean document.
 
 The printed report includes a footer:
-> *"This report contains observational data only and does not constitute a diagnosis. Share this document with your GP, health visitor, or SENCO for professional assessment. Observations were recorded by a caregiver using the Ambitious about Autism tool."*
+> *"This report contains observational data only and does not constitute a diagnosis. Share this document with your GP, health visitor, or SENCO for professional assessment. Observations were recorded by a practitioner using the Ambitious about Autism tool."*
 
 This makes the document self-explanatory if you hand it to a professional.
 
@@ -348,7 +348,7 @@ The **Settings** page (bottom of the sidebar) lets you view your account details
 
 ### Your account
 
-Displays your name, email address, and role (Caregiver).
+Displays your name, email address, and role (Practitioner).
 
 ### Data and privacy
 

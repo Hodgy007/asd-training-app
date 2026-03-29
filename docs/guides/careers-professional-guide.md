@@ -33,7 +33,7 @@ The platform is built around four careers modules that align with the **Gatsby B
 
 1. Navigate to the platform at [https://asd-training-app-v2.vercel.app](https://asd-training-app-v2.vercel.app).
 2. Select **Create account** (or follow the link from your organisation's welcome email).
-3. On the registration page, choose your role. Select **Careers Professional** — described as *"I am a careers leader, SENCO, or SEND professional working with autistic young people."* This is important: choosing the correct role ensures you are shown the careers CPD content rather than the caregiver training modules.
+3. On the registration page, choose your role. Select **Careers Professional** — described as *"I am a careers leader, SENCO, or SEND professional working with autistic young people."* This is important: choosing the correct role ensures you are shown the careers CPD content rather than the practitioner training modules.
 4. Enter your full name, work email address, and a password of at least 8 characters.
 5. Read and tick the privacy consent checkbox. Your data is stored securely on EU-hosted servers (Neon PostgreSQL on Azure). No data is sold or shared with third parties.
 6. Select **Create account**.
@@ -63,7 +63,7 @@ The top of the dashboard greets you by name and shows your training progress. As
 
 - **Lessons completed** — how many lessons across all your active modules you have finished, shown as a fraction of the total available (for example, *3 / 16*).
 
-Children tracking and observations are caregiver-specific features and do not appear on your dashboard.
+Children tracking and observations are practitioner-specific features and do not appear on your dashboard.
 
 Below the tile is a **Training Progress** panel showing each of your active modules with a per-module completion count and a quick **Start** or **Continue** link.
 

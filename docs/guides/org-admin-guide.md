@@ -1,6 +1,6 @@
 # Organisation Admin Guide
 
-**Ambitious about Autism — Caregiver Training Platform**
+**Ambitious about Autism — Practitioner Training Platform**
 
 This guide is for Organisation Admins. It covers everything you need to manage your organisation's users and training programme.
 
@@ -85,7 +85,7 @@ The left-hand sidebar has three sections:
 At the top of the Users page you will see:
 
 - The total number of users in your organisation
-- A breakdown of users by role (e.g. how many Caregivers, how many Students)
+- A breakdown of users by role (e.g. how many Practitioners, how many Students)
 - A search bar and role filter to find specific people quickly
 
 ---
@@ -100,7 +100,7 @@ The Users page lists everyone in your organisation. Each row shows:
 - Their role
 - Whether their account is active or inactive
 - The date they joined
-- **Activity** — for Caregiver users this shows both the number of children they have added and lessons completed; for all other roles it shows only the lesson count
+- **Activity** — for Practitioner users this shows both the number of children they have added and lessons completed; for all other roles it shows only the lesson count
 - **Actions** — a bin icon to delete the user, and a book icon to edit their training plan access (toggle ASD Awareness Training / Careers CPD Training per user)
 
 You can search by name or email using the search bar. You can also filter by role using the dropdown next to the search bar.
@@ -111,7 +111,7 @@ Your organisation is configured to use a specific set of roles. The roles availa
 
 | Role | Who it is for | Training access |
 |---|---|---|
-| **Caregiver** | People caring for a child with autism | ASD awareness training modules; can add child profiles and log observations |
+| **Practitioner** | People caring for a child with autism | ASD awareness training modules; can add child profiles and log observations |
 | **Careers Professional** | Careers advisers and employment support staff | Careers training modules only |
 | **Student** | Learners undertaking training as part of their studies | ASD and/or careers training (depending on what your organisation is assigned) |
 | **Intern** | Interns undertaking the training programme | ASD and/or careers training |
@@ -237,7 +237,7 @@ The **Sessions** section (click **Sessions** in the left-hand sidebar) lets you 
    - **Host** — select a member of your organisation who will lead the session.
 3. Under **Invite attendees**, choose who to invite:
    - **All members** — everyone in your organisation.
-   - **By role** — invite all members who have a specific role (e.g. all Caregivers).
+   - **By role** — invite all members who have a specific role (e.g. all Practitioners).
    - **Individual people** — select specific members by name.
 4. Click **Create Session**.
 
