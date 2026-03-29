@@ -74,21 +74,22 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json()
-  if (!Array.isArray(body)) {
-    return NextResponse.json({ error: 'Request body must be an array of quiz questions' }, { status: 400 })
+  const items = Array.isArray(body) ? body : body.questions
+  if (!Array.isArray(items)) {
+    return NextResponse.json({ error: 'Request body must be an array or { questions: [...] }' }, { status: 400 })
   }
 
   // Bulk replace: delete all then create from array
   await prisma.$transaction([
     prisma.quizQuestion.deleteMany({ where: { lessonId: params.lessonId } }),
     prisma.quizQuestion.createMany({
-      data: body.map((q: { question: string; options: string[] | string; correctAnswer: string; explanation: string; order: number }) => ({
+      data: items.map((q: { question: string; options: string[] | string; correctAnswer: string; explanation: string; order?: number }, i: number) => ({
         lessonId: params.lessonId,
         question: q.question,
         options: Array.isArray(q.options) ? JSON.stringify(q.options) : q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
-        order: q.order,
+        order: q.order ?? i + 1,
       })),
     }),
   ])
