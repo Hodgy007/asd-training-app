@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Topbar } from '@/components/layout/topbar'
 import { useSession } from 'next-auth/react'
@@ -8,15 +9,17 @@ import { redirect } from 'next/navigation'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const pathname = usePathname()
   const { data: session, status } = useSession()
 
   if (status === 'unauthenticated') {
     redirect('/login')
   }
 
-  // Redirect admin roles to their portals (fallback — middleware handles this too)
+  // Redirect admin roles to their portals — except when previewing training/careers content
+  const isPreview = pathname.startsWith('/training') || pathname.startsWith('/careers')
   if (status === 'authenticated') {
-    if (session?.user?.role === 'SUPER_ADMIN') redirect('/super-admin')
+    if (session?.user?.role === 'SUPER_ADMIN' && !isPreview) redirect('/super-admin')
     if (session?.user?.role === 'ORG_ADMIN') redirect('/admin')
   }
 
