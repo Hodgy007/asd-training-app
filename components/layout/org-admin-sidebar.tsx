@@ -9,6 +9,7 @@ import {
   Megaphone,
   BarChart3,
   Video,
+  Shield,
   LogOut,
   X,
   ShieldCheck,
@@ -28,6 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
   { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
+  { href: '/admin/settings/sso', label: 'Enterprise SSO', icon: Shield },
 ]
 
 interface OrgAdminSidebarProps {
