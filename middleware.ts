@@ -28,6 +28,8 @@ export async function middleware(req: NextRequest) {
 
   const role = token.role as string
   const mustChangePassword = token.mustChangePassword as boolean
+  const mfaPending = token.mfaPending as boolean
+  const totpEnabled = token.totpEnabled as boolean
 
   // Force password change
   if (mustChangePassword) {
@@ -45,6 +47,40 @@ export async function middleware(req: NextRequest) {
 
   // If on /change-password but doesn't need to change, redirect to home
   if (!mustChangePassword && pathname === '/change-password') {
+    return NextResponse.redirect(new URL(homeForRole(role), req.url))
+  }
+
+  // Force MFA verification for users with MFA enabled who haven't verified yet
+  if (mfaPending) {
+    if (pathname === '/mfa-verify' || pathname.startsWith('/api/auth')) {
+      return NextResponse.next()
+    }
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'MFA verification required' }, { status: 403 })
+    }
+    return NextResponse.redirect(new URL('/mfa-verify', req.url))
+  }
+
+  // If on /mfa-verify but not pending, redirect to home
+  if (!mfaPending && pathname === '/mfa-verify') {
+    return NextResponse.redirect(new URL(homeForRole(role), req.url))
+  }
+
+  // Force MFA setup for admin roles
+  const isAdmin = role === 'SUPER_ADMIN' || role === 'ORG_ADMIN'
+  if (isAdmin && !totpEnabled && !mfaPending) {
+    const allowedPaths = ['/mfa-setup', '/api/auth/mfa', '/api/auth']
+    if (allowedPaths.some((p) => pathname.startsWith(p))) {
+      return NextResponse.next()
+    }
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'MFA setup required' }, { status: 403 })
+    }
+    return NextResponse.redirect(new URL('/mfa-setup', req.url))
+  }
+
+  // If on /mfa-setup but not required, redirect to home
+  if (pathname === '/mfa-setup' && (!isAdmin || totpEnabled)) {
     return NextResponse.redirect(new URL(homeForRole(role), req.url))
   }
 
