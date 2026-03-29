@@ -11,8 +11,9 @@
 2. [Getting Started](#2-getting-started)
 3. [Your Dashboard](#3-your-dashboard)
 4. [Careers CPD Training](#4-careers-cpd-training)
-5. [Account Settings](#5-account-settings)
-6. [Getting Help](#6-getting-help)
+5. [Virtual Classroom Sessions](#5-virtual-classroom-sessions)
+6. [Account Settings](#6-account-settings)
+7. [Getting Help](#7-getting-help)
 
 ---
 
@@ -164,21 +165,51 @@ Completed lessons and modules remain accessible. On the module overview page, se
 
 ---
 
-## 5. Account Settings
+## 5. Virtual Classroom Sessions
+
+Your organisation may invite you to attend live virtual training sessions. These can be held over Zoom, Microsoft Teams, or another platform.
+
+### Seeing upcoming sessions
+
+When you have been invited to a session, an **Upcoming Sessions** card will appear on your Dashboard showing the next session's title, date, and time at a glance.
+
+### Viewing all your sessions
+
+Click **Sessions** in the left-hand sidebar to see the full list of sessions you have been invited to, along with their status (Upcoming, In Progress, Completed, or Cancelled).
+
+### Joining a session
+
+When a session is ready to begin, a **Join** button will appear next to it. Click **Join** to open the meeting link — this will take you directly into the Zoom or Teams meeting, or to whatever platform your organisation is using.
+
+### Recordings
+
+After a session has taken place, your organisation's admin may add a recording link. If a recording is available, a **Watch recording** link will appear on the session in your Sessions list.
+
+### Hosting a session
+
+If your organisation's administrator has assigned you as a **host** for a session, you will have additional options when you open that session:
+
+- **Meeting link** — add or update the link that attendees will use to join.
+- **Attendance** — check off which attendees were present once the session is under way or has finished.
+- **Recording** — add a recording URL after the session ends so attendees can watch it back.
+
+---
+
+## 6. Account Settings
 
 Select **Settings** in the sidebar to reach your account settings page at `/settings`.
 
-### 5.1 Your account information
+### 6.1 Your account information
 
 The account panel displays your name, email address, and your role (shown as *Careers Professional*). These are set at registration. If you need to update your name or email address, contact your organisation administrator or use the support email below.
 
-### 5.2 Data and privacy
+### 6.2 Data and privacy
 
 Your data is stored on EU-hosted servers. The platform stores your name, email address, and training progress records. No data is sold or shared with third parties.
 
 Under UK GDPR you have the right to access, correct, and erase your data. To request a copy of your data or to make a correction, contact **privacy@ambitiousaboutautism.org.uk**.
 
-### 5.3 Deleting your account
+### 6.3 Deleting your account
 
 The **Danger Zone** section at the bottom of the settings page allows you to permanently delete your account and all associated data, including your training progress records. This action cannot be undone.
 
@@ -186,7 +217,7 @@ To confirm deletion, type `DELETE` into the confirmation field and select **Dele
 
 ---
 
-## 6. Getting Help
+## 7. Getting Help
 
 **Technical issues** (login problems, pages not loading, progress not saving): contact **privacy@ambitiousaboutautism.org.uk** and include a description of the issue and the browser you are using.
 
