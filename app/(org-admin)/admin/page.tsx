@@ -188,10 +188,14 @@ export default function OrgAdminUsersPage() {
     e.preventDefault()
     setCreateLoading(true)
     try {
+      const payload = { ...createForm }
+      if (payload.ssoOnly) {
+        delete (payload as Record<string, unknown>).password
+      }
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(createForm),
+        body: JSON.stringify(payload),
       })
       if (res.ok) {
         showToast('User created successfully.', 'success')
