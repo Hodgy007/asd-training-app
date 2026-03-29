@@ -57,7 +57,10 @@ You can also sign in using your **Google account** or **Microsoft account** if y
 
 ### Logging in
 
-Once registered, visit the platform and click **Sign in**. Enter your email address and password. If you have forgotten your password, click **Forgot password** on the sign-in page and a reset link will be sent to your email.
+Once registered, visit the platform and click **Sign in**. The login page has a toggle at the top to switch between **Email & Password** and **Single Sign-On**:
+
+- **Email & Password** — enter your email address and password, then click **Sign in**. If you have forgotten your password, click **Forgot password** and a reset link will be sent to your email.
+- **Single Sign-On** — if your organisation supports it, click **Google** or **Microsoft** to sign in with your existing account.
 
 ---
 
@@ -69,13 +72,17 @@ When you sign in, you land on your **Dashboard**. Think of this as your home bas
 
 The platform greets you by first name. Below the greeting is a short summary of where things stand.
 
+### Important disclaimer banner
+
+As a Caregiver, you will see an important disclaimer banner reminding you that this platform is an observation and training tool — not a diagnostic tool. This banner is shown only to Caregiver accounts and does not appear for other roles.
+
 ### Announcements
 
 If your organisation or the platform administrators have posted any important notices — new training content, reminders, or updates — they appear here at the top of your dashboard.
 
 ### Your progress at a glance
 
-Three summary cards give you a quick picture:
+As a Caregiver, your dashboard shows three summary cards that are specific to your role:
 
 | Card | What it shows |
 |---|---|
@@ -83,13 +90,15 @@ Three summary cards give you a quick picture:
 | Children tracked | How many child profiles you have added |
 | Total observations | The total number of observations you have logged across all children |
 
+The children and observations cards are caregiver-specific features — other roles on the platform do not see them.
+
 ### Training progress panel
 
 A more detailed view of each training module shows how many lessons you have completed per module, and a link to continue or start each one.
 
 ### Quick actions
 
-Two shortcut buttons let you jump straight to adding a child or continuing your training.
+Shortcut buttons let you jump straight to **Add a child** or continue your training. The "Add a child" action is a caregiver-specific feature.
 
 ### Recent observations
 
@@ -352,6 +361,12 @@ The reminder in the sidebar is worth keeping front of mind:
 > *"This tool does not diagnose. Share observations with your GP or health visitor."*
 
 You are doing something valuable by logging what you notice and learning more. The platform is here to support that — not to replace the professionals who can truly assess and help.
+
+---
+
+### Dark mode
+
+The platform fully supports dark mode. All interface elements — including role badges, buttons, and charts — remain clearly readable in both light and dark themes. Dark mode follows your system preference automatically.
 
 ---
 
