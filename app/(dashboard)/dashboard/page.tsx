@@ -17,6 +17,7 @@ import { CAREERS_MODULES } from '@/lib/careers-training-data'
 import { formatObservationDate } from '@/lib/observations'
 import { differenceInYears } from 'date-fns'
 import { DashboardAnnouncements } from '@/components/dashboard/announcements'
+import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
 import { getEffectiveModules, hasAsdAccess, hasCareersAccess } from '@/lib/modules'
 
 export default async function DashboardPage() {
@@ -86,6 +87,9 @@ export default async function DashboardPage() {
 
       {/* Announcements */}
       <DashboardAnnouncements />
+
+      {/* Upcoming Sessions */}
+      <UpcomingSessions />
 
       {/* Stats row */}
       <div className={`grid grid-cols-1 ${isCaregiver ? 'sm:grid-cols-3' : 'sm:grid-cols-1 max-w-sm'} gap-4`}>
