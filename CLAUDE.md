@@ -42,9 +42,9 @@ Next.js 14 App Router app. TypeScript throughout. Deployed to Vercel (`asd-train
 
 **Route groups:**
 - `app/(auth)/` -- login, register, forgot-password, reset-password pages; no auth required
-- `app/(dashboard)/` -- all leaf-role authenticated pages, wrapped by `app/(dashboard)/layout.tsx` which renders the sidebar + topbar shell
+- `app/(dashboard)/` -- all leaf-role authenticated pages, wrapped by `app/(dashboard)/layout.tsx` which renders the sidebar + topbar shell; includes `/sessions` (user-facing upcoming/past sessions)
 - `app/(super-admin)/` -- super admin pages (`/super-admin/*`), own layout with `SuperAdminSidebar`
-- `app/(org-admin)/` -- org admin pages (`/admin/*`), own layout with `OrgAdminSidebar`
+- `app/(org-admin)/` -- org admin pages (`/admin/*`), own layout with `OrgAdminSidebar`; includes `/admin/sessions` (session management) and `/admin/settings/meetings` (Zoom/Teams API config)
 - `app/(mfa)/` -- `/mfa-setup` and `/mfa-verify` pages for TOTP enrollment and verification
 - `app/(change-password)/` -- `/change-password` page for forced password changes
 - `app/api/` -- all API routes; auth state is checked via `getServerSession(authOptions)` at the top of each handler
@@ -73,6 +73,8 @@ Next.js 14 App Router app. TypeScript throughout. Deployed to Vercel (`asd-train
 - `Announcement` -- org-scoped or global announcements with optional expiry
 - `Module`, `Lesson`, `QuizQuestion` -- training content CMS (replaces hardcoded TS files)
 - `PasswordResetToken` -- for forgot-password email flow
+- `ClassSession`, `SessionAttendee` -- virtual classroom sessions (named `ClassSession` to avoid collision with the NextAuth `Session` table; always access via `prisma.classSession`)
+- `OrgMeetingConfig` -- per-org Zoom/Teams API credentials and settings for auto-generating meeting links
 
 All child/observation data cascades on user delete. Module/Lesson/QuizQuestion cascade on parent delete. The Prisma singleton lives in `lib/prisma.ts`.
 
@@ -101,16 +103,18 @@ Leaf role types are also exported from `types/index.ts` as `LEAF_ROLES`. Navigat
 
 **Sidebar navigation by role:**
 - SUPER_ADMIN: Overview, Organisations, Training Content, Announcements, Reports
-- ORG_ADMIN: Users, Announcements, Reports
-- CAREGIVER: Dashboard, ASD Training, Child Observations, Reports, Settings
-- CAREER_DEV_OFFICER: Dashboard, Careers Training, Settings
-- STUDENT / INTERN / EMPLOYEE: Dashboard, then **only** the training links matching their `effectiveModules` (ASD Training if any `module-*` IDs present, Careers Training if any `careers-*` IDs present), Settings
+- ORG_ADMIN: Users, Announcements, Reports, Sessions
+- CAREGIVER: Dashboard, ASD Training, Child Observations, Reports, Sessions, Settings
+- CAREER_DEV_OFFICER: Dashboard, Careers Training, Sessions, Settings
+- STUDENT / INTERN / EMPLOYEE: Dashboard, then **only** the training links matching their `effectiveModules` (ASD Training if any `module-*` IDs present, Careers Training if any `careers-*` IDs present), Sessions, Settings
 
 **Dark mode role badges:** All role badges across all admin views (sidebar, org admin user list, super admin org settings) have dark mode color variants using `dark:bg-*/40 dark:text-*-300` patterns.
 
 **Org admin reports:** Reports show proper module names and training plan labels ("ASD Awareness Training", "Careers CPD Training") instead of raw module IDs.
 
 **AI layer:** `lib/gemini.ts` contains four functions that call `gemini-2.5-flash` via `@google/genai`. All prompts explicitly instruct the model never to diagnose or suggest autism. Full reports are persisted to the `AiInsight` table; the API route is `app/api/children/[childId]/insights/route.ts`. Gemini is also used for AI-generated quiz questions in the training CMS.
+
+**Virtual Classroom Sessions:** Org admins create sessions at `/admin/sessions`. Each session has a title, date/time, duration, platform (Zoom / Teams / Custom), host, and a list of attendees. Attendees can be selected as: all org members, specific roles, or individual users. Both the host and the org admin have full management rights over a session. Meeting links can be pasted manually or auto-generated via the Zoom or Teams API using per-org credentials stored in `OrgMeetingConfig` (configured at `/admin/settings/meetings`). Status flow: `SCHEDULED` → `IN_PROGRESS` → `COMPLETED` (or `CANCELLED`). Attendance is tracked via checkboxes on the `SessionAttendee` join model; a recording URL can be added after the session completes. Users view their upcoming and past sessions at `/sessions`, and the dashboard shows an "Upcoming Sessions" card. Data access helpers live in `lib/sessions.ts`; Zoom/Teams API integration lives in `lib/meetings.ts`. **Important:** the Prisma model is `ClassSession` (not `Session`) to avoid colliding with the NextAuth `Session` table — always use `prisma.classSession`.
 
 **Observations:** The three enums (`Domain`, `Frequency`, `Context`) are the vocabulary for logging behaviours. Behaviour lists per domain live in `lib/constants.ts`. Helper functions for aggregating observations are in `lib/observations.ts`. Charts on the reports page use Recharts.
 
