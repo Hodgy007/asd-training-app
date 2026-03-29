@@ -29,6 +29,9 @@ model User {
   sessions         Session[]
   trainingProgress TrainingProgress[]
   announcements    Announcement[]     @relation("AnnouncementsCreated")
+  hostedSessions   ClassSession[]     @relation("SessionHost")
+  createdSessions  ClassSession[]     @relation("SessionCreator")
+  sessionAttendees SessionAttendee[]
 }
 
 model Account {
@@ -78,6 +81,8 @@ model Organisation {
 
   users         User[]
   announcements Announcement[]
+  sessions      ClassSession[]
+  meetingConfig OrgMeetingConfig?
 }
 
 model Announcement {
@@ -204,6 +209,68 @@ model QuizQuestion {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
+model ClassSession {
+  id             String          @id @default(cuid())
+  title          String
+  description    String?         @db.Text
+  scheduledAt    DateTime
+  duration       Int
+  meetingUrl     String?
+  recordingUrl   String?
+  platform       MeetingPlatform @default(CUSTOM)
+  status         SessionStatus   @default(SCHEDULED)
+  hostId         String
+  createdById    String
+  organisationId String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  host         User                @relation("SessionHost", fields: [hostId], references: [id])
+  createdBy    User                @relation("SessionCreator", fields: [createdById], references: [id])
+  organisation Organisation        @relation(fields: [organisationId], references: [id])
+  attendees    SessionAttendee[]
+}
+
+model SessionAttendee {
+  id        String    @id @default(cuid())
+  sessionId String
+  userId    String
+  attended  Boolean   @default(false)
+  joinedAt  DateTime?
+
+  session ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+}
+
+model OrgMeetingConfig {
+  id             String          @id @default(cuid())
+  organisationId String          @unique
+  platform       MeetingPlatform
+  apiKey         String?
+  apiSecret      String?
+  tenantId       String?
+  configured     Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+}
+
+enum MeetingPlatform {
+  ZOOM
+  TEAMS
+  CUSTOM
+}
+
+enum SessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
 
 enum Role {
