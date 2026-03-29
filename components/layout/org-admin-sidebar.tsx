@@ -5,8 +5,10 @@ import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
   Users,
+  Calendar,
   Megaphone,
   BarChart3,
+  Video,
   LogOut,
   X,
   ShieldCheck,
@@ -22,8 +24,10 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Users', icon: Users, exact: true },
+  { href: '/admin/sessions', label: 'Sessions', icon: Calendar },
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
 ]
 
 interface OrgAdminSidebarProps {

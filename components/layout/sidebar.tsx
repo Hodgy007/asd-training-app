@@ -11,6 +11,7 @@ import {
   LogOut,
   X,
   Briefcase,
+  Calendar,
   Settings,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -47,6 +48,7 @@ function getNavItems(role?: string, modules: string[] = []): NavItem[] {
     }
   }
 
+  items.push({ href: '/sessions', label: 'Sessions', icon: Calendar })
   items.push({ href: '/settings', label: 'Settings', icon: Settings })
 
   return items
