@@ -69,15 +69,16 @@ model VerificationToken {
 }
 
 model Organisation {
-  id               String         @id @default(cuid())
-  name             String
-  slug             String         @unique
-  active           Boolean        @default(true)
-  allowedModuleIds String[]
-  allowedRoles     String[]
-  logoUrl          String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  id                String         @id @default(cuid())
+  name              String
+  slug              String         @unique
+  active            Boolean        @default(true)
+  allowedModuleIds  String[]
+  allowedProgramIds String[]
+  allowedRoles      String[]
+  logoUrl           String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   users         User[]
   announcements Announcement[]
@@ -173,14 +174,16 @@ enum LessonType {
 }
 
 model Module {
-  id          String     @id
+  id          String           @id
   title       String
   description String
   type        ModuleType
   order       Int
-  active      Boolean    @default(true)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  active      Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  programId   String?
+  program     TrainingProgram? @relation(fields: [programId], references: [id])
   lessons     Lesson[]
 }
 
@@ -210,6 +213,23 @@ model QuizQuestion {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
+model TrainingProgram {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?       @db.Text
+  order        Int
+  active       Boolean       @default(true)
+  version      String        @default("1.0")
+  status       ProgramStatus @default(DRAFT)
+  reviewedAt   DateTime?
+  reviewedBy   String?
+  reviewNotes  String?       @db.Text
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  modules Module[]
 }
 
 model ClassSession {
@@ -289,6 +309,13 @@ enum SessionStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+enum ProgramStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  ARCHIVED
 }
 
 enum Role {
