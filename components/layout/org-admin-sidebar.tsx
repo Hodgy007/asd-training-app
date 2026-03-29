@@ -38,7 +38,7 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
   return (
     <div className="flex flex-col h-full bg-orange-50 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
       {/* Logo */}
-      <div className="flex items-center justify-between p-5 border-b border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div className="flex items-center justify-between p-5 border-b border-calm-200 dark:border-slate-700 bg-orange-50 dark:bg-slate-800">
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
