@@ -10,7 +10,6 @@ import {
   FileText,
   LogOut,
   X,
-  Briefcase,
   Calendar,
   Settings,
 } from 'lucide-react'
@@ -22,29 +21,27 @@ interface NavItem {
   icon: React.ElementType
 }
 
-function getNavItems(role?: string, modules: string[] = []): NavItem[] {
+function getNavItems(
+  role?: string,
+  programs: { id: string; name: string }[] = [],
+): NavItem[] {
   const items: NavItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ]
 
   if (role === 'CAREGIVER') {
+    // Show all assigned programs
+    for (const program of programs) {
+      items.push({ href: `/training/${program.id}`, label: program.name, icon: BookOpen })
+    }
     items.push(
-      { href: '/training', label: 'ASD Training', icon: BookOpen },
       { href: '/children', label: 'Child Observations', icon: Users },
       { href: '/reports', label: 'Reports', icon: FileText },
     )
-  }
-
-  if (role === 'CAREER_DEV_OFFICER') {
-    items.push({ href: '/careers', label: 'Careers Training', icon: Briefcase })
-  }
-
-  if (role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
-    if (modules.some((m) => m.startsWith('module-'))) {
-      items.push({ href: '/training', label: 'ASD Training', icon: BookOpen })
-    }
-    if (modules.some((m) => m.startsWith('careers-'))) {
-      items.push({ href: '/careers', label: 'Careers Training', icon: Briefcase })
+  } else if (role === 'CAREER_DEV_OFFICER' || role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
+    // Show all assigned programs
+    for (const program of programs) {
+      items.push({ href: `/training/${program.id}`, label: program.name, icon: BookOpen })
     }
   }
 
@@ -79,8 +76,8 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const role = session?.user?.role
-  const modules = session?.user?.effectiveModules ?? []
-  const navItems = getNavItems(role, modules)
+  const programs = session?.user?.effectivePrograms ?? []
+  const navItems = getNavItems(role, programs)
 
   return (
     <div className="flex flex-col h-full bg-orange-50 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
