@@ -103,14 +103,14 @@ async function main() {
         title: mod.title,
         description: mod.description,
         order: mod.order,
-        type: 'ASD',
+        programId: 'program-asd',
       },
       create: {
         id: mod.id,
         title: mod.title,
         description: mod.description,
         order: mod.order,
-        type: 'ASD',
+        programId: 'program-asd',
       },
     })
     console.log(`  ✓ Module: ${mod.id}`)
@@ -169,14 +169,14 @@ async function main() {
         title: mod.title,
         description: mod.description,
         order: mod.order,
-        type: 'CAREERS',
+        programId: 'program-careers',
       },
       create: {
         id: mod.id,
         title: mod.title,
         description: mod.description,
         order: mod.order,
-        type: 'CAREERS',
+        programId: 'program-careers',
       },
     })
     console.log(`  ✓ Module: ${mod.id}`)
