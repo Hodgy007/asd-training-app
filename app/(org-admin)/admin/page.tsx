@@ -61,6 +61,7 @@ interface UserRow {
   active: boolean
   allowedModuleIds: string[]
   mustChangePassword: boolean
+  ssoOnly: boolean
   createdAt: string
   _count: { children: number; trainingProgress: number }
 }
@@ -562,13 +563,16 @@ export default function OrgAdminUsersPage() {
                     >
                       {/* User info */}
                       <td className="px-4 py-3">
-                        <div className="font-medium text-slate-900">
+                        <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                           {user.name ?? '—'}
+                          {user.ssoOnly && (
+                            <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400 flex-shrink-0" /></span>
+                          )}
                           {isSelf && (
-                            <span className="ml-2 text-xs text-emerald-600 font-normal">(you)</span>
+                            <span className="ml-1 text-xs text-emerald-600 font-normal">(you)</span>
                           )}
                           {user.mustChangePassword && (
-                            <span className="ml-2 text-xs text-amber-500 font-normal">must change password</span>
+                            <span className="ml-1 text-xs text-amber-500 font-normal">must change password</span>
                           )}
                         </div>
                         <div className="text-xs text-slate-400 mt-0.5">{user.email}</div>

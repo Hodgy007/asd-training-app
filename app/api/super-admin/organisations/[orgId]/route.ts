@@ -33,6 +33,7 @@ export async function GET(
         select: {
           id: true, name: true, email: true, role: true, active: true,
           allowedModuleIds: true, mustChangePassword: true, createdAt: true,
+          password: true,
           _count: { select: { trainingProgress: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -42,7 +43,13 @@ export async function GET(
   })
 
   if (!org) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  return NextResponse.json(org)
+
+  // Strip password hashes and add ssoOnly flag
+  const orgWithSso = {
+    ...org,
+    users: org.users.map(({ password, ...rest }) => ({ ...rest, ssoOnly: password === '' })),
+  }
+  return NextResponse.json(orgWithSso)
 }
 
 export async function PATCH(

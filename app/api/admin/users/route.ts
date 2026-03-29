@@ -53,13 +53,19 @@ export async function GET(req: NextRequest) {
       select: {
         id: true, name: true, email: true, role: true, active: true,
         allowedModuleIds: true, mustChangePassword: true, createdAt: true,
+        password: true,
         _count: { select: { children: true, trainingProgress: true } },
       },
     }),
     prisma.user.count({ where }),
   ])
 
-  return NextResponse.json({ users, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
+  const usersWithSso = users.map(({ password, ...rest }) => ({
+    ...rest,
+    ssoOnly: password === '',
+  }))
+
+  return NextResponse.json({ users: usersWithSso, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
 }
 
 export async function POST(req: NextRequest) {

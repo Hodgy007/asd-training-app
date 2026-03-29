@@ -12,6 +12,7 @@ import {
   Building2,
   Users,
   RefreshCw,
+  ShieldCheck,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { LEAF_ROLES } from '@/types'
@@ -27,6 +28,7 @@ interface OrgUser {
   active: boolean
   allowedModuleIds: string[]
   mustChangePassword: boolean
+  ssoOnly: boolean
   createdAt: string
   _count: { trainingProgress: number }
 }
@@ -511,8 +513,13 @@ export default function OrgDetailPage() {
               ) : (
                 org.users.map((user) => (
                   <tr key={user.id} className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-800">
-                      {user.name ?? <span className="text-slate-400 italic">—</span>}
+                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
+                      <span className="inline-flex items-center gap-1.5">
+                        {user.name ?? <span className="text-slate-400 italic">—</span>}
+                        {user.ssoOnly && (
+                          <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400 flex-shrink-0" /></span>
+                        )}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-slate-600 text-xs">{user.email}</td>
                     <td className="px-4 py-3">
