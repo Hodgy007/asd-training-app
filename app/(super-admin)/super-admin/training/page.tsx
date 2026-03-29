@@ -12,6 +12,7 @@ import {
   Eye,
   Edit3,
   X,
+  Trash2,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -370,6 +371,11 @@ export default function TrainingContentPage() {
                     fetchPrograms()
                     showToast('Program updated', 'success')
                   }}
+                  onDeleted={() => {
+                    setEditingProgramId(null)
+                    fetchPrograms()
+                    showToast('Program deleted', 'success')
+                  }}
                   onCancel={() => setEditingProgramId(null)}
                 />
               )}
@@ -647,10 +653,12 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
 function EditProgramForm({
   program,
   onSaved,
+  onDeleted,
   onCancel,
 }: {
   program: Program
   onSaved: () => void
+  onDeleted: () => void
   onCancel: () => void
 }) {
   const [name, setName] = useState(program.name)
@@ -692,6 +700,25 @@ function EditProgramForm({
       } else {
         const data = await res.json()
         setError(data.error || 'Failed to save')
+      }
+    } catch {
+      setError('Network error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    const ok = window.confirm(`Delete "${program.name}"? This will fail if the program still has modules. Remove all modules first.`)
+    if (!ok) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/super-admin/training/programs/${program.id}`, { method: 'DELETE' })
+      if (res.ok) {
+        onDeleted()
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Failed to delete')
       }
     } catch {
       setError('Network error')
@@ -807,21 +834,32 @@ function EditProgramForm({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 pt-1">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
-          >
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            Save Changes
-          </button>
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
+            >
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="border border-calm-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
           <button
             type="button"
-            onClick={onCancel}
-            className="border border-calm-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+            onClick={handleDelete}
+            disabled={submitting}
+            className="inline-flex items-center gap-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl px-3 py-2 text-sm font-bold transition-colors disabled:opacity-50"
           >
-            Cancel
+            <Trash2 className="h-4 w-4" />
+            Delete Program
           </button>
         </div>
       </form>
