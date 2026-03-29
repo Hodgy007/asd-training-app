@@ -60,7 +60,7 @@ export default function MfaVerifyPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Ambitious about <span className="text-primary-500">Autism</span>
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Caregiver Training &amp; Observation Tool</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Practitioner Training &amp; Observation Tool</p>
         </div>
 
         {/* MFA Card */}

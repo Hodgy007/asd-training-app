@@ -89,7 +89,7 @@ const ROLE_STYLES: Record<string, string> = {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  CAREGIVER: 'Caregiver',
+  CAREGIVER: 'Practitioner',
   CAREER_DEV_OFFICER: 'Careers',
   STUDENT: 'Student',
   INTERN: 'Intern',

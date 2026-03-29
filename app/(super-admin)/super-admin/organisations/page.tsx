@@ -39,7 +39,7 @@ const MODULE_LABELS: Record<string, string> = {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  CAREGIVER: 'Caregiver',
+  CAREGIVER: 'Practitioner',
   CAREER_DEV_OFFICER: 'Careers Professional',
   STUDENT: 'Student',
   INTERN: 'Intern',

@@ -64,14 +64,14 @@ export async function generateObservationSummary(
 Your role is to summarise observational data to help identify patterns.
 You NEVER provide a diagnosis. You NEVER suggest a child has autism.
 You help identify patterns for discussion with healthcare professionals.
-Use warm, accessible, non-clinical language suitable for a caregiver.
+Use warm, accessible, non-clinical language suitable for a practitioner.
 
 Child: ${childName}, Age: ${age}
 Observation period: Last 4 weeks
 Observations:
 ${observationText}
 
-Please provide a brief summary (2-3 sentences) of the observed patterns in carer-friendly language.
+Please provide a brief summary (2-3 sentences) of the observed patterns in practitioner-friendly language.
 Focus only on what has been observed — do not speculate or diagnose.
 End with: "${DISCLAIMER}"`
 
@@ -127,7 +127,7 @@ You suggest supportive actions and professional consultations only.
 Observed patterns:
 ${patterns}
 
-Provide 3-4 practical, actionable next steps for the caregiver.
+Provide 3-4 practical, actionable next steps for the practitioner.
 Include suggestions about who to speak to (GP, health visitor, SENCO, speech therapist etc.).
 Use warm, encouraging, non-alarming language.
 Format as a bulleted list.
@@ -166,10 +166,10 @@ export async function generateInsightReport(
 Your role is to summarise observational data to help identify patterns.
 You NEVER provide a diagnosis. You NEVER suggest a child has autism.
 You help identify patterns for discussion with healthcare professionals.
-Use warm, accessible, non-clinical language suitable for a caregiver.
+Use warm, accessible, non-clinical language suitable for a practitioner.
 
 Child: ${child.name}, Age: ${age}
-${child.notes ? `Caregiver notes: ${child.notes}` : ''}
+${child.notes ? `Practitioner notes: ${child.notes}` : ''}
 Observation period: Last 4 weeks
 Total observations: ${observations.length}
 
@@ -185,7 +185,7 @@ PATTERNS:
 [Bullet points identifying the main behavioural patterns observed across domains. Be specific and factual.]
 
 RECOMMENDATIONS:
-[3-4 practical next steps for the caregiver, including who to speak to. Be encouraging and supportive.]
+[3-4 practical next steps for the practitioner, including who to speak to. Be encouraging and supportive.]
 
 Always end the RECOMMENDATIONS section with: "${DISCLAIMER}"`
 

@@ -11,7 +11,7 @@ type Role = 'CAREGIVER' | 'CAREER_DEV_OFFICER'
 const ROLE_OPTIONS: { value: Role; label: string; description: string }[] = [
   {
     value: 'CAREGIVER',
-    label: 'Parent / Caregiver',
+    label: 'Parent / Practitioner',
     description: 'I care for a child and want to log observations and access ASD awareness training.',
   },
   {

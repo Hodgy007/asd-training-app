@@ -8,7 +8,7 @@ const trainingModules = [
     id: 'module-1',
     title: 'Understanding ASD: An Introduction',
     description:
-      'An accessible introduction to Autism Spectrum Disorder for caregivers and early years practitioners. Learn what ASD is, how it presents, and why early identification matters.',
+      'An accessible introduction to Autism Spectrum Disorder for practitioners and early years professionals. Learn what ASD is, how it presents, and why early identification matters.',
     order: 1,
     lessons: [
       {
@@ -26,7 +26,7 @@ ASD is characterised by differences in three broad areas:
 In the UK, approximately 1 in 100 people are autistic. ASD is more commonly diagnosed in boys than girls, though research suggests girls may be underdiagnosed due to different presentations.
 
 **Why early identification matters:**
-Early identification allows children to access support during the most critical period of brain development. Interventions before the age of 5 can significantly improve language development, social skills, and long-term outcomes. As a caregiver or early years practitioner, your observations are invaluable in this process.`,
+Early identification allows children to access support during the most critical period of brain development. Interventions before the age of 5 can significantly improve language development, social skills, and long-term outcomes. As a practitioner or early years professional, your observations are invaluable in this process.`,
         quizQuestions: [
           {
             id: 'q-1-1-1',
@@ -69,7 +69,7 @@ Early identification allows children to access support during the most critical 
         title: 'Myths and Misconceptions About ASD',
         type: 'TEXT',
         order: 2,
-        content: `There are many misconceptions about autism that can affect how caregivers, professionals, and society respond to autistic children and adults. Understanding the facts is essential for providing appropriate support.
+        content: `There are many misconceptions about autism that can affect how practitioners, professionals, and society respond to autistic children and adults. Understanding the facts is essential for providing appropriate support.
 
 **Myth 1: "All autistic people have the same presentation"**
 Fact: ASD is a spectrum. Some autistic people are highly verbal and academic; others are non-speaking. Some need significant daily support; others live very independently. Every autistic person is different.
@@ -120,7 +120,7 @@ Fact: Many autistic people experience intense empathy. The challenge is often wi
       },
       {
         id: 'lesson-1-3',
-        title: 'The Role of the Caregiver in Early Identification',
+        title: 'The Role of the Practitioner in Early Identification',
         type: 'TEXT',
         order: 3,
         content: `As a parent, grandparent, childminder, or early years practitioner, you spend more time with a child than any healthcare professional. This gives you a unique and vital perspective.
@@ -154,7 +154,7 @@ Observation and pattern-spotting is not the same as diagnosis. Many of the behav
           {
             id: 'q-1-3-1',
             question:
-              'What is the primary role of a caregiver using this observation tool?',
+              'What is the primary role of a practitioner using this observation tool?',
             options: JSON.stringify([
               'To diagnose the child with ASD',
               'To systematically record and track behavioural patterns',
@@ -163,11 +163,11 @@ Observation and pattern-spotting is not the same as diagnosis. Many of the behav
             ]),
             correctAnswer: 'To systematically record and track behavioural patterns',
             explanation:
-              'Caregivers are uniquely placed to observe children over time. Systematic observation helps build a picture that can be shared with healthcare professionals — it is not a diagnostic tool.',
+              'Practitioners are uniquely placed to observe children over time. Systematic observation helps build a picture that can be shared with healthcare professionals — it is not a diagnostic tool.',
           },
           {
             id: 'q-1-3-2',
-            question: 'In the UK, who would a caregiver typically speak to first if they have concerns about a child\'s development?',
+            question: 'In the UK, who would a practitioner typically speak to first if they have concerns about a child\'s development?',
             options: JSON.stringify([
               'A specialist autism consultant',
               'The local authority',
@@ -562,7 +562,7 @@ When recording, include:
               'The child\'s mood that morning',
               'The specific trigger, the response observed, and the frequency',
               'Whether the behaviour happened at home or at school',
-              'How the caregiver responded to the behaviour',
+              'How the practitioner responded to the behaviour',
             ]),
             correctAnswer: 'The specific trigger, the response observed, and the frequency',
             explanation:
@@ -576,7 +576,7 @@ When recording, include:
     id: 'module-5',
     title: 'Next Steps: Referrals, Support, and Self-Care',
     description:
-      'Guidance on the UK referral pathway, how to prepare for appointments, understanding Education, Health and Care Plans (EHCPs), and looking after your own wellbeing as a caregiver.',
+      'Guidance on the UK referral pathway, how to prepare for appointments, understanding Education, Health and Care Plans (EHCPs), and looking after your own wellbeing as a practitioner.',
     order: 5,
     lessons: [
       {
@@ -584,7 +584,7 @@ When recording, include:
         title: 'Navigating the UK Assessment Pathway',
         type: 'TEXT',
         order: 1,
-        content: `Understanding how the UK diagnostic pathway works can help caregivers feel more prepared and empowered. The pathway varies somewhat by local area, but the general structure is consistent across England, Scotland, Wales, and Northern Ireland.
+        content: `Understanding how the UK diagnostic pathway works can help practitioners feel more prepared and empowered. The pathway varies somewhat by local area, but the general structure is consistent across England, Scotland, Wales, and Northern Ireland.
 
 **Step 1: Raise concerns with your GP or health visitor**
 Start by speaking to the child's GP or health visitor. Bring your documented observations — the more specific and consistent your records, the better. Describe what you've observed, when, and how frequently.
@@ -606,7 +606,7 @@ Waiting times for ASD assessment vary significantly across the UK — from a few
 
 **Step 3: The assessment**
 The assessment typically involves:
-- Parental/caregiver interview (detailed developmental history)
+- Parental/practitioner interview (detailed developmental history)
 - Structured observation of the child
 - Cognitive and communication assessments
 - Information from school or nursery (SENCO report)
@@ -632,7 +632,7 @@ Following diagnosis, families can access:
         quizQuestions: [
           {
             id: 'q-5-1-1',
-            question: 'What is the typical first step if a caregiver has concerns about a child\'s development in the UK?',
+            question: 'What is the typical first step if a practitioner has concerns about a child\'s development in the UK?',
             options: JSON.stringify([
               'Contacting CAMHS directly',
               'Requesting an EHCP from the local authority',
@@ -660,12 +660,12 @@ Following diagnosis, families can access:
       },
       {
         id: 'lesson-5-2',
-        title: 'Caregiver Wellbeing and Resilience',
+        title: 'Practitioner Wellbeing and Resilience',
         type: 'TEXT',
         order: 2,
         content: `Supporting a child who may have additional needs can be rewarding, but it can also be exhausting, stressful, and emotionally demanding. Looking after your own wellbeing is not a luxury — it is essential for being able to provide the best care.
 
-**Common challenges caregivers face:**
+**Common challenges practitioners face:**
 - Anxiety about the child's future
 - Stress during the assessment waiting period
 - Grief or adjustment following a diagnosis
@@ -676,13 +676,13 @@ Following diagnosis, families can access:
 - Financial pressure (increased costs, reduced working hours)
 
 **The importance of support:**
-Research consistently shows that caregiver wellbeing directly affects child outcomes. A caregiver who is supported, rested, and connected is better able to provide consistent, calm, responsive care.
+Research consistently shows that practitioner wellbeing directly affects child outcomes. A practitioner who is supported, rested, and connected is better able to provide consistent, calm, responsive care.
 
 **Practical self-care strategies:**
 - **Connect with others:** Peer support groups for parents of autistic children can be enormously helpful. Others understand what you're going through.
 - **Accept help:** Allow family and friends to assist. You do not need to do everything alone.
 - **Communicate with your employer:** If you need flexible working arrangements, know your rights.
-- **Access your own GP:** Caregiver stress and burnout are real. Talk to your GP if you are struggling.
+- **Access your own GP:** Practitioner stress and burnout are real. Talk to your GP if you are struggling.
 - **Take breaks:** Respite care can be arranged through the local authority or third-sector organisations.
 
 **Supporting siblings:**
@@ -693,17 +693,17 @@ A diagnosis does not change who a child is. It can open doors to support, provid
         quizQuestions: [
           {
             id: 'q-5-2-1',
-            question: 'Why is caregiver wellbeing described as essential rather than a luxury?',
+            question: 'Why is practitioner wellbeing described as essential rather than a luxury?',
             options: JSON.stringify([
-              'Because caregivers deserve a break',
-              'Because caregiver wellbeing directly affects the quality of care and child outcomes',
+              'Because practitioners deserve a break',
+              'Because practitioner wellbeing directly affects the quality of care and child outcomes',
               'Because it is a legal requirement',
               'Because it reduces NHS costs',
             ]),
             correctAnswer:
-              'Because caregiver wellbeing directly affects the quality of care and child outcomes',
+              'Because practitioner wellbeing directly affects the quality of care and child outcomes',
             explanation:
-              'Research shows that supported, well caregivers are better able to provide consistent, calm, and responsive care. Caregiver burnout can negatively impact the child, so self-care is genuinely important.',
+              'Research shows that supported, well practitioners are better able to provide consistent, calm, and responsive care. Practitioner burnout can negatively impact the child, so self-care is genuinely important.',
           },
         ],
       },

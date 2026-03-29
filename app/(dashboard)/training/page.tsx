@@ -106,7 +106,7 @@ export default async function TrainingPage() {
 
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
         <p className="text-sm text-amber-800">
-          <strong>About this training:</strong> These modules are designed to help caregivers and
+          <strong>About this training:</strong> These modules are designed to help practitioners and
           early years practitioners recognise and document developmental patterns. Completing this
           training does not qualify you to diagnose ASD. Always refer concerns to a qualified
           healthcare professional.

@@ -7,8 +7,8 @@ import { CaregiverDisclaimer } from '@/components/ui/caregiver-disclaimer'
 export const metadata: Metadata = {
   title: 'Ambitious about Autism — Training & Observation Platform',
   description:
-    'A training and observation platform for caregivers and early years practitioners to support early identification of autism patterns. Not a diagnostic tool.',
-  keywords: ['autism', 'caregiver training', 'observation', 'early years', 'UK', 'Ambitious about Autism'],
+    'A training and observation platform for practitioners and early years professionals to support early identification of autism patterns. Not a diagnostic tool.',
+  keywords: ['autism', 'practitioner training', 'observation', 'early years', 'UK', 'Ambitious about Autism'],
   authors: [{ name: 'Ambitious about Autism' }],
   robots: 'noindex, nofollow',
 }

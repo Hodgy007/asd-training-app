@@ -30,7 +30,7 @@ export const TRAINING_MODULES: TrainingModule[] = [
     id: 'module-1',
     title: 'Understanding ASD: An Introduction',
     description:
-      'An accessible introduction to Autism Spectrum Disorder for caregivers and early years practitioners. Learn what ASD is, how it presents, and why early identification matters.',
+      'An accessible introduction to Autism Spectrum Disorder for practitioners and early years professionals. Learn what ASD is, how it presents, and why early identification matters.',
     order: 1,
     lessons: [
       {
@@ -94,7 +94,7 @@ Early identification allows children to access support during the most critical 
         title: 'Myths and Misconceptions About ASD',
         type: 'TEXT',
         order: 2,
-        content: `There are many misconceptions about autism that can affect how caregivers, professionals, and society respond to autistic children and adults.
+        content: `There are many misconceptions about autism that can affect how practitioners, professionals, and society respond to autistic children and adults.
 
 **Myth 1: "All autistic people have the same presentation"**
 Fact: ASD is a spectrum. Some autistic people are highly verbal; others are non-speaking. Every autistic person is different.
@@ -145,7 +145,7 @@ Fact: Many autistic people experience intense empathy. The challenge is often wi
       {
         id: 'lesson-1-3',
         moduleId: 'module-1',
-        title: 'The Role of the Caregiver in Early Identification',
+        title: 'The Role of the Practitioner in Early Identification',
         type: 'TEXT',
         order: 3,
         content: `As a parent, grandparent, childminder, or early years practitioner, you spend more time with a child than any healthcare professional. This gives you a unique and vital perspective.
@@ -171,7 +171,7 @@ Your documented observations can be shared at any stage of this process and are 
         quizQuestions: [
           {
             id: 'q-1-3-1',
-            question: 'What is the primary role of a caregiver using this observation tool?',
+            question: 'What is the primary role of a practitioner using this observation tool?',
             options: [
               'To diagnose the child with ASD',
               'To systematically record and track behavioural patterns',
@@ -180,12 +180,12 @@ Your documented observations can be shared at any stage of this process and are 
             ],
             correctAnswer: 'To systematically record and track behavioural patterns',
             explanation:
-              'Caregivers are uniquely placed to observe children over time. Systematic observation helps build a picture that can be shared with healthcare professionals.',
+              'Practitioners are uniquely placed to observe children over time. Systematic observation helps build a picture that can be shared with healthcare professionals.',
           },
           {
             id: 'q-1-3-2',
             question:
-              "In the UK, who would a caregiver typically speak to first if they have concerns?",
+              "In the UK, who would a practitioner typically speak to first if they have concerns?",
             options: [
               'A specialist autism consultant',
               'The local authority',
@@ -546,7 +546,7 @@ When recording, include:
               "The child's mood that morning",
               'The specific trigger, the response observed, and the frequency',
               'Whether the behaviour happened at home or at school',
-              'How the caregiver responded to the behaviour',
+              'How the practitioner responded to the behaviour',
             ],
             correctAnswer: 'The specific trigger, the response observed, and the frequency',
             explanation:
@@ -569,7 +569,7 @@ When recording, include:
         title: 'Navigating the UK Assessment Pathway',
         type: 'TEXT',
         order: 1,
-        content: `Understanding how the UK diagnostic pathway works can help caregivers feel more prepared and empowered.
+        content: `Understanding how the UK diagnostic pathway works can help practitioners feel more prepared and empowered.
 
 **Step 1: Raise concerns with your GP or health visitor**
 Start by speaking to the child's GP or health visitor. Bring your documented observations.
@@ -585,7 +585,7 @@ Waiting times vary significantly — from a few months to several years.
 
 **Step 3: The assessment**
 The assessment typically involves:
-- Parental/caregiver interview (detailed developmental history)
+- Parental/practitioner interview (detailed developmental history)
 - Structured observation of the child
 - Cognitive and communication assessments
 - Information from school or nursery (SENCO report)
@@ -605,7 +605,7 @@ Following diagnosis, families can access:
           {
             id: 'q-5-1-1',
             question:
-              "What is the typical first step if a caregiver has concerns about a child's development in the UK?",
+              "What is the typical first step if a practitioner has concerns about a child's development in the UK?",
             options: [
               'Contacting CAMHS directly',
               'Requesting an EHCP from the local authority',
@@ -634,12 +634,12 @@ Following diagnosis, families can access:
       {
         id: 'lesson-5-2',
         moduleId: 'module-5',
-        title: 'Caregiver Wellbeing and Resilience',
+        title: 'Practitioner Wellbeing and Resilience',
         type: 'TEXT',
         order: 2,
         content: `Supporting a child who may have additional needs can be rewarding, but also exhausting. Looking after your own wellbeing is essential.
 
-**Common challenges caregivers face:**
+**Common challenges practitioners face:**
 - Anxiety about the child's future
 - Stress during the assessment waiting period
 - Grief or adjustment following a diagnosis
@@ -650,7 +650,7 @@ Following diagnosis, families can access:
 **Practical self-care strategies:**
 - **Connect with others:** Peer support groups for parents of autistic children can be enormously helpful.
 - **Accept help:** Allow family and friends to assist.
-- **Access your own GP:** Caregiver stress and burnout are real.
+- **Access your own GP:** Practitioner stress and burnout are real.
 - **Take breaks:** Respite care can be arranged through the local authority or third-sector organisations.
 
 **Supporting siblings:**
@@ -662,17 +662,17 @@ A diagnosis does not change who a child is. It can open doors to support, provid
           {
             id: 'q-5-2-1',
             question:
-              'Why is caregiver wellbeing described as essential rather than a luxury?',
+              'Why is practitioner wellbeing described as essential rather than a luxury?',
             options: [
-              'Because caregivers deserve a break',
-              'Because caregiver wellbeing directly affects the quality of care and child outcomes',
+              'Because practitioners deserve a break',
+              'Because practitioner wellbeing directly affects the quality of care and child outcomes',
               'Because it is a legal requirement',
               'Because it reduces NHS costs',
             ],
             correctAnswer:
-              'Because caregiver wellbeing directly affects the quality of care and child outcomes',
+              'Because practitioner wellbeing directly affects the quality of care and child outcomes',
             explanation:
-              'Supported, well caregivers are better able to provide consistent, calm, and responsive care. Caregiver burnout can negatively impact the child.',
+              'Supported, well practitioners are better able to provide consistent, calm, and responsive care. Practitioner burnout can negatively impact the child.',
           },
         ],
       },

@@ -50,10 +50,10 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
           </div>
           <div className="hidden md:block">
             <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-tight">
-              {session?.user?.name || 'Caregiver'}
+              {session?.user?.name || 'Practitioner'}
             </p>
             <p className="text-xs text-slate-400 dark:text-slate-500 capitalize">
-              {session?.user?.role?.toLowerCase() || 'caregiver'}
+              {session?.user?.role?.toLowerCase() || 'practitioner'}
             </p>
           </div>
         </div>

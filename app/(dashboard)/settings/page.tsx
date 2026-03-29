@@ -59,7 +59,7 @@ export default function SettingsPage() {
                 ? 'Administrator'
                 : session?.user?.role === 'CAREER_DEV_OFFICER'
                 ? 'Careers Professional'
-                : 'Caregiver'}
+                : 'Practitioner'}
             </p>
           </div>
         </div>

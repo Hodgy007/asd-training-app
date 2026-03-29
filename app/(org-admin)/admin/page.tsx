@@ -23,7 +23,7 @@ import {
 import { clsx } from 'clsx'
 
 const ROLE_LABELS: Record<string, string> = {
-  CAREGIVER: 'Caregiver',
+  CAREGIVER: 'Practitioner',
   CAREER_DEV_OFFICER: 'Careers Professional',
   STUDENT: 'Student',
   INTERN: 'Intern',
@@ -407,7 +407,7 @@ export default function OrgAdminUsersPage() {
                       {hasAsd ? <CheckCircle className="h-4 w-4 flex-shrink-0" /> : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
                       <div>
                         <p className="font-bold">ASD Awareness Training</p>
-                        <p className="text-xs opacity-75">5 modules — early identification for caregivers</p>
+                        <p className="text-xs opacity-75">5 modules — early identification for practitioners</p>
                       </div>
                     </button>
                   )}
