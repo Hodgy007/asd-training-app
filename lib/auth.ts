@@ -131,6 +131,35 @@ export const authOptions: NextAuthOptions = {
           return false
         }
 
+        // Ensure Account link exists for SSO provider (prevents OAuthAccountNotLinked)
+        if (account) {
+          const existing = await prisma.account.findUnique({
+            where: {
+              provider_providerAccountId: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+              },
+            },
+          })
+          if (!existing) {
+            await prisma.account.create({
+              data: {
+                userId: dbUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token ?? null,
+                access_token: account.access_token ?? null,
+                expires_at: account.expires_at ?? null,
+                token_type: account.token_type ?? null,
+                scope: account.scope ?? null,
+                id_token: account.id_token ?? null,
+                session_state: (account.session_state as string) ?? null,
+              },
+            })
+          }
+        }
+
         return true
       }
       return true
