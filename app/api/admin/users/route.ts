@@ -13,7 +13,6 @@ const createSchema = z.object({
   role: z.string(),
   password: z.string().min(8).max(128).optional(),
   ssoOnly: z.boolean().default(false),
-  allowedModuleIds: z.array(z.string()).default([]),
 })
 
 export async function GET(req: NextRequest) {
@@ -52,7 +51,7 @@ export async function GET(req: NextRequest) {
       take: pageSize,
       select: {
         id: true, name: true, email: true, role: true, active: true,
-        allowedModuleIds: true, mustChangePassword: true, createdAt: true,
+        mustChangePassword: true, createdAt: true,
         password: true,
         _count: { select: { children: true, trainingProgress: true } },
       },
@@ -79,7 +78,7 @@ export async function POST(req: NextRequest) {
 
   const org = await prisma.organisation.findUnique({
     where: { id: orgId },
-    select: { allowedRoles: true, allowedModuleIds: true },
+    select: { allowedRoles: true },
   })
   if (!org) return NextResponse.json({ error: 'Organisation not found' }, { status: 404 })
 
@@ -119,7 +118,6 @@ export async function POST(req: NextRequest) {
       password: hashedPassword,
       role: parsed.data.role as Role,
       organisationId: orgId,
-      allowedModuleIds: parsed.data.allowedModuleIds,
       mustChangePassword,
       active: true,
     },

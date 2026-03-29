@@ -12,7 +12,7 @@ export async function GET() {
 
   const org = await prisma.organisation.findUnique({
     where: { id: session.user.organisationId! },
-    select: { id: true, name: true, allowedRoles: true, allowedModuleIds: true },
+    select: { id: true, name: true, allowedRoles: true, allowedProgramIds: true },
   })
 
   return NextResponse.json(org)

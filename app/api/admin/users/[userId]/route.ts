@@ -9,7 +9,6 @@ const updateSchema = z.object({
   role: z.string().optional(),
   active: z.boolean().optional(),
   name: z.string().min(1).max(100).optional(),
-  allowedModuleIds: z.array(z.string()).optional(),
 })
 
 export async function GET(
@@ -25,7 +24,7 @@ export async function GET(
     where: { id: params.userId },
     select: {
       id: true, name: true, email: true, role: true, active: true,
-      allowedModuleIds: true, organisationId: true, createdAt: true, updatedAt: true,
+      organisationId: true, createdAt: true, updatedAt: true,
       _count: { select: { children: true, trainingProgress: true } },
     },
   })
@@ -75,14 +74,12 @@ export async function PATCH(
   if (parsed.data.name !== undefined) updateData.name = parsed.data.name
   if (parsed.data.role !== undefined) updateData.role = parsed.data.role
   if (parsed.data.active !== undefined) updateData.active = parsed.data.active
-  if (parsed.data.allowedModuleIds !== undefined) updateData.allowedModuleIds = parsed.data.allowedModuleIds
-
   const updated = await prisma.user.update({
     where: { id: params.userId },
     data: updateData,
     select: {
       id: true, name: true, email: true, role: true, active: true,
-      allowedModuleIds: true, updatedAt: true,
+      updatedAt: true,
     },
   })
 

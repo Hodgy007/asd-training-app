@@ -16,7 +16,6 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { LEAF_ROLES } from '@/types'
-import { ASD_MODULE_IDS, CAREERS_MODULE_IDS } from '@/lib/modules'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,7 +25,6 @@ interface OrgUser {
   email: string
   role: string
   active: boolean
-  allowedModuleIds: string[]
   mustChangePassword: boolean
   ssoOnly: boolean
   createdAt: string
@@ -39,9 +37,16 @@ interface OrgDetail {
   slug: string
   active: boolean
   allowedRoles: string[]
-  allowedModuleIds: string[]
+  allowedProgramIds: string[]
   users: OrgUser[]
   _count: { users: number }
+}
+
+interface ProgramSummary {
+  id: string
+  name: string
+  active: boolean
+  _count: { modules: number }
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -73,6 +78,7 @@ export default function OrgDetailPage() {
 
   // Data
   const [org, setOrg] = useState<OrgDetail | null>(null)
+  const [programs, setPrograms] = useState<ProgramSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -83,7 +89,7 @@ export default function OrgDetailPage() {
   const [editName, setEditName] = useState('')
   const [editSlug, setEditSlug] = useState('')
   const [editRoles, setEditRoles] = useState<string[]>([])
-  const [editModules, setEditModules] = useState<string[]>([])
+  const [editProgramIds, setEditProgramIds] = useState<string[]>([])
   const [editActive, setEditActive] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -110,13 +116,21 @@ export default function OrgDetailPage() {
         setEditName(data.name)
         setEditSlug(data.slug)
         setEditRoles(data.allowedRoles)
-        setEditModules(data.allowedModuleIds)
+        setEditProgramIds(data.allowedProgramIds)
         setEditActive(data.active)
       }
     } finally {
       setLoading(false)
     }
   }, [orgId])
+
+  // Fetch programs list
+  useEffect(() => {
+    fetch('/api/super-admin/training/programs')
+      .then((r) => r.json())
+      .then((data: ProgramSummary[]) => setPrograms(data))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => { fetchOrg() }, [fetchOrg])
 
@@ -135,11 +149,9 @@ export default function OrgDetailPage() {
     )
   }
 
-  function toggleTrainingPlan(plan: 'asd' | 'careers') {
-    const ids: string[] = plan === 'asd' ? [...ASD_MODULE_IDS] : [...CAREERS_MODULE_IDS]
-    const isOn = ids.some((id) => editModules.includes(id))
-    setEditModules((prev) =>
-      isOn ? prev.filter((m) => !ids.includes(m)) : [...prev, ...ids.filter((id) => !prev.includes(id))]
+  function toggleProgram(programId: string) {
+    setEditProgramIds((prev) =>
+      prev.includes(programId) ? prev.filter((id) => id !== programId) : [...prev, programId]
     )
   }
 
@@ -154,7 +166,7 @@ export default function OrgDetailPage() {
           name: editName,
           slug: editSlug,
           allowedRoles: editRoles,
-          allowedModuleIds: editModules,
+          allowedProgramIds: editProgramIds,
           active: editActive,
         }),
       })
@@ -222,7 +234,7 @@ export default function OrgDetailPage() {
     return (
       <div className="max-w-4xl mx-auto flex items-center justify-center py-24 text-slate-400">
         <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-        Loading…
+        Loading...
       </div>
     )
   }
@@ -238,6 +250,9 @@ export default function OrgDetailPage() {
       </div>
     )
   }
+
+  // Only show active programs in the toggle list
+  const activePrograms = programs.filter((p) => p.active)
 
   // ── Main render ────────────────────────────────────────────────────────────
 
@@ -344,46 +359,40 @@ export default function OrgDetailPage() {
             </div>
           </div>
 
-          {/* Training Plans */}
+          {/* Training Programs */}
           <div>
-            <label className="label mb-2 block">Training Plans</label>
+            <label className="label mb-2 block">Training Programs</label>
             <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => toggleTrainingPlan('asd')}
-                className={clsx(
-                  'flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
-                  ASD_MODULE_IDS.some((id) => editModules.includes(id))
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
-                    : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
-                )}
-              >
-                {ASD_MODULE_IDS.some((id) => editModules.includes(id))
-                  ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                  : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
-                <div>
-                  <p className="font-bold">ASD Awareness Training</p>
-                  <p className="text-xs opacity-75">5 modules — early identification for practitioners</p>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => toggleTrainingPlan('careers')}
-                className={clsx(
-                  'flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
-                  CAREERS_MODULE_IDS.some((id) => editModules.includes(id))
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
-                    : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
-                )}
-              >
-                {CAREERS_MODULE_IDS.some((id) => editModules.includes(id))
-                  ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                  : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
-                <div>
-                  <p className="font-bold">Careers CPD Training</p>
-                  <p className="text-xs opacity-75">4 modules — autism-inclusive careers guidance</p>
-                </div>
-              </button>
+              {activePrograms.length === 0 ? (
+                <p className="text-sm text-slate-400">No active training programs available.</p>
+              ) : (
+                activePrograms.map((program) => {
+                  const isEnabled = editProgramIds.includes(program.id)
+                  return (
+                    <button
+                      key={program.id}
+                      type="button"
+                      onClick={() => toggleProgram(program.id)}
+                      className={clsx(
+                        'flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
+                        isEnabled
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
+                          : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
+                      )}
+                    >
+                      {isEnabled
+                        ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                        : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                      <div>
+                        <p className="font-bold">{program.name}</p>
+                        <p className="text-xs opacity-75">
+                          {program._count.modules} {program._count.modules === 1 ? 'module' : 'modules'}
+                        </p>
+                      </div>
+                    </button>
+                  )
+                })
+              )}
             </div>
           </div>
 
@@ -402,7 +411,7 @@ export default function OrgDetailPage() {
 
           <div className="flex justify-end pt-1">
             <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? 'Saving…' : 'Save Changes'}
+              {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
@@ -482,7 +491,7 @@ export default function OrgDetailPage() {
                   disabled={adminSubmitting}
                   className="px-3 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
                 >
-                  {adminSubmitting ? 'Creating…' : 'Create Admin'}
+                  {adminSubmitting ? 'Creating...' : 'Create Admin'}
                 </button>
               </div>
             </form>
@@ -515,7 +524,7 @@ export default function OrgDetailPage() {
                   <tr key={user.id} className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
                     <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
                       <span className="inline-flex items-center gap-1.5">
-                        {user.name ?? <span className="text-slate-400 italic">—</span>}
+                        {user.name ?? <span className="text-slate-400 italic">--</span>}
                         {user.ssoOnly && (
                           <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400 flex-shrink-0" /></span>
                         )}
@@ -579,7 +588,7 @@ export default function OrgDetailPage() {
           title={org._count.users > 0 ? 'Remove all users before deleting this organisation' : undefined}
         >
           <Trash2 className="h-4 w-4" />
-          {deleting ? 'Deleting…' : 'Delete Organisation'}
+          {deleting ? 'Deleting...' : 'Delete Organisation'}
         </button>
         {org._count.users > 0 && (
           <p className="text-xs text-slate-400">

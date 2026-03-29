@@ -18,7 +18,6 @@ import {
   X,
   GraduationCap,
   Layers,
-  BookOpen,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -50,7 +49,7 @@ interface OrgInfo {
   id: string
   name: string
   allowedRoles: string[]
-  allowedModuleIds: string[]
+  allowedProgramIds: string[]
 }
 
 interface UserRow {
@@ -59,7 +58,6 @@ interface UserRow {
   email: string
   role: string
   active: boolean
-  allowedModuleIds: string[]
   mustChangePassword: boolean
   ssoOnly: boolean
   createdAt: string
@@ -79,7 +77,6 @@ interface CreateForm {
   role: string
   password: string
   ssoOnly: boolean
-  allowedModuleIds: string[]
 }
 
 export default function OrgAdminUsersPage() {
@@ -97,7 +94,7 @@ export default function OrgAdminUsersPage() {
 
   const [showCreate, setShowCreate] = useState(false)
   const [createForm, setCreateForm] = useState<CreateForm>({
-    name: '', email: '', role: '', password: '', ssoOnly: false, allowedModuleIds: [],
+    name: '', email: '', role: '', password: '', ssoOnly: false,
   })
   const [createLoading, setCreateLoading] = useState(false)
 
@@ -113,11 +110,10 @@ export default function OrgAdminUsersPage() {
       .then((r) => r.json())
       .then((o: OrgInfo) => {
         setOrg(o)
-        // Pre-select first allowed role and all org modules in create form
+        // Pre-select first allowed role in create form
         setCreateForm((f) => ({
           ...f,
           role: o.allowedRoles[0] ?? '',
-          allowedModuleIds: o.allowedModuleIds,
         }))
       })
   }, [status])
@@ -190,9 +186,9 @@ export default function OrgAdminUsersPage() {
     e.preventDefault()
     setCreateLoading(true)
     try {
-      const payload = { ...createForm }
-      if (payload.ssoOnly) {
-        delete (payload as Record<string, unknown>).password
+      const payload: Record<string, unknown> = { ...createForm }
+      if (createForm.ssoOnly) {
+        delete payload.password
       }
       const res = await fetch('/api/admin/users', {
         method: 'POST',
@@ -206,7 +202,6 @@ export default function OrgAdminUsersPage() {
           name: '', email: '',
           role: org?.allowedRoles[0] ?? '',
           password: '', ssoOnly: false,
-          allowedModuleIds: org?.allowedModuleIds ?? [],
         })
         fetchUsers()
       } else {
@@ -216,23 +211,6 @@ export default function OrgAdminUsersPage() {
     } finally {
       setCreateLoading(false)
     }
-  }
-
-  const ASD_IDS = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5']
-  const CAREERS_IDS = ['careers-module-1', 'careers-module-2', 'careers-module-3', 'careers-module-4']
-
-  const hasAsd = ASD_IDS.some((id) => createForm.allowedModuleIds.includes(id))
-  const hasCareers = CAREERS_IDS.some((id) => createForm.allowedModuleIds.includes(id))
-
-  function toggleTrainingPlan(plan: 'asd' | 'careers') {
-    const ids = plan === 'asd' ? ASD_IDS : CAREERS_IDS
-    const isOn = plan === 'asd' ? hasAsd : hasCareers
-    setCreateForm((f) => ({
-      ...f,
-      allowedModuleIds: isOn
-        ? f.allowedModuleIds.filter((m) => !ids.includes(m))
-        : [...f.allowedModuleIds, ...ids.filter((id) => !f.allowedModuleIds.includes(id))],
-    }))
   }
 
   if (status !== 'authenticated' || session?.user?.role !== 'ORG_ADMIN') return null
@@ -370,7 +348,7 @@ export default function OrgAdminUsersPage() {
               </div>
             </div>
 
-            {/* Password — hidden when ssoOnly */}
+            {/* Password -- hidden when ssoOnly */}
             {!createForm.ssoOnly && (
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">
@@ -386,51 +364,6 @@ export default function OrgAdminUsersPage() {
                   className="w-full px-3 py-2 rounded-lg border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white font-mono"
                   placeholder="Min. 8 characters"
                 />
-              </div>
-            )}
-
-            {/* Training plan access */}
-            {org && org.allowedModuleIds.length > 0 && (
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-2">Training Plans</label>
-                <div className="space-y-2">
-                  {ASD_IDS.some((id) => org.allowedModuleIds.includes(id)) && (
-                    <button
-                      type="button"
-                      onClick={() => toggleTrainingPlan('asd')}
-                      className={clsx(
-                        'flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
-                        hasAsd
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
-                          : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
-                      )}
-                    >
-                      {hasAsd ? <CheckCircle className="h-4 w-4 flex-shrink-0" /> : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
-                      <div>
-                        <p className="font-bold">ASD Awareness Training</p>
-                        <p className="text-xs opacity-75">5 modules — early identification for practitioners</p>
-                      </div>
-                    </button>
-                  )}
-                  {CAREERS_IDS.some((id) => org.allowedModuleIds.includes(id)) && (
-                    <button
-                      type="button"
-                      onClick={() => toggleTrainingPlan('careers')}
-                      className={clsx(
-                        'flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
-                        hasCareers
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
-                          : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
-                      )}
-                    >
-                      {hasCareers ? <CheckCircle className="h-4 w-4 flex-shrink-0" /> : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
-                      <div>
-                        <p className="font-bold">Careers CPD Training</p>
-                        <p className="text-xs opacity-75">4 modules — autism-inclusive careers guidance</p>
-                      </div>
-                    </button>
-                  )}
-                </div>
               </div>
             )}
 
@@ -492,7 +425,7 @@ export default function OrgAdminUsersPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by name or email…"
+            placeholder="Search by name or email..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
@@ -539,7 +472,7 @@ export default function OrgAdminUsersPage() {
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
                     <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
-                    Loading users…
+                    Loading users...
                   </td>
                 </tr>
               ) : data?.users.length === 0 ? (
@@ -564,7 +497,7 @@ export default function OrgAdminUsersPage() {
                       {/* User info */}
                       <td className="px-4 py-3">
                         <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                          {user.name ?? '—'}
+                          {user.name ?? '--'}
                           {user.ssoOnly && (
                             <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400 flex-shrink-0" /></span>
                           )}
@@ -651,7 +584,6 @@ export default function OrgAdminUsersPage() {
                       <td className="px-4 py-3">
                         {!isSelf && (
                           <div className="flex items-center justify-center gap-1">
-                            <ModuleToggleButton user={user} org={org} updateUser={updateUser} />
                             <button
                               disabled={isLoading}
                               onClick={() => deleteUser(user.id, user.name)}
@@ -696,90 +628,6 @@ export default function OrgAdminUsersPage() {
           </div>
         )}
       </div>
-    </div>
-  )
-}
-
-/* ──────────────────────────── Module Toggle Button ──────────────────────────── */
-
-const ASD_IDS_LIST = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5']
-const CAREERS_IDS_LIST = ['careers-module-1', 'careers-module-2', 'careers-module-3', 'careers-module-4']
-
-function ModuleToggleButton({
-  user,
-  org,
-  updateUser,
-}: {
-  user: UserRow
-  org: OrgInfo | null
-  updateUser: (userId: string, patch: Record<string, unknown>) => Promise<void>
-}) {
-  const [open, setOpen] = useState(false)
-
-  if (!org) return null
-
-  const userHasAsd = ASD_IDS_LIST.some((id) => user.allowedModuleIds.includes(id))
-  const userHasCareers = CAREERS_IDS_LIST.some((id) => user.allowedModuleIds.includes(id))
-  const orgHasAsd = ASD_IDS_LIST.some((id) => org.allowedModuleIds.includes(id))
-  const orgHasCareers = CAREERS_IDS_LIST.some((id) => org.allowedModuleIds.includes(id))
-
-  function toggle(plan: 'asd' | 'careers') {
-    const ids = plan === 'asd' ? ASD_IDS_LIST : CAREERS_IDS_LIST
-    const isOn = plan === 'asd' ? userHasAsd : userHasCareers
-    const newModules = isOn
-      ? user.allowedModuleIds.filter((m) => !ids.includes(m))
-      : [...user.allowedModuleIds, ...ids.filter((id) => !user.allowedModuleIds.includes(id))]
-    updateUser(user.id, { allowedModuleIds: newModules })
-    setOpen(false)
-  }
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="p-1.5 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
-        title="Edit training access"
-      >
-        <BookOpen className="h-4 w-4" />
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-8 z-20 w-64 bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 shadow-lg p-3 space-y-2">
-            <p className="text-xs font-semibold text-slate-500 mb-2">Training Access</p>
-            {orgHasAsd && (
-              <button
-                type="button"
-                onClick={() => toggle('asd')}
-                className={clsx(
-                  'flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors text-left',
-                  userHasAsd
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                    : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300'
-                )}
-              >
-                {userHasAsd ? <CheckCircle className="h-3.5 w-3.5 flex-shrink-0" /> : <div className="h-3.5 w-3.5 rounded-full border-2 border-slate-300 flex-shrink-0" />}
-                ASD Awareness Training
-              </button>
-            )}
-            {orgHasCareers && (
-              <button
-                type="button"
-                onClick={() => toggle('careers')}
-                className={clsx(
-                  'flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors text-left',
-                  userHasCareers
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                    : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300'
-                )}
-              >
-                {userHasCareers ? <CheckCircle className="h-3.5 w-3.5 flex-shrink-0" /> : <div className="h-3.5 w-3.5 rounded-full border-2 border-slate-300 flex-shrink-0" />}
-                Careers CPD Training
-              </button>
-            )}
-          </div>
-        </>
-      )}
     </div>
   )
 }

@@ -13,7 +13,7 @@ const updateSchema = z.object({
     (roles) => roles.every((r) => LEAF_ROLES.includes(r as any)),
     'Only leaf roles are allowed'
   ).optional(),
-  allowedModuleIds: z.array(z.string()).optional(),
+  allowedProgramIds: z.array(z.string()).optional(),
   active: z.boolean().optional(),
 })
 
@@ -32,7 +32,7 @@ export async function GET(
       users: {
         select: {
           id: true, name: true, email: true, role: true, active: true,
-          allowedModuleIds: true, mustChangePassword: true, createdAt: true,
+          mustChangePassword: true, createdAt: true,
           password: true,
           _count: { select: { trainingProgress: true } },
         },
