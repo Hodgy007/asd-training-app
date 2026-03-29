@@ -54,12 +54,12 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  ORG_ADMIN: 'bg-emerald-100 text-emerald-700',
-  CAREGIVER: 'bg-orange-100 text-orange-700',
-  CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700',
-  STUDENT: 'bg-teal-100 text-teal-700',
-  INTERN: 'bg-indigo-100 text-indigo-700',
-  EMPLOYEE: 'bg-slate-100 text-slate-700',
+  ORG_ADMIN: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  CAREGIVER: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+  CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
+  INTERN: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
+  EMPLOYEE: 'bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200',
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────

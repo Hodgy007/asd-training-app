@@ -31,11 +31,11 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  CAREGIVER: 'bg-orange-100 text-orange-700',
-  CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700',
-  STUDENT: 'bg-teal-100 text-teal-700',
-  INTERN: 'bg-yellow-100 text-yellow-700',
-  EMPLOYEE: 'bg-purple-100 text-purple-700',
+  CAREGIVER: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+  CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
+  INTERN: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+  EMPLOYEE: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
 }
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
