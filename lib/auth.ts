@@ -2,12 +2,11 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import AzureADProvider from 'next-auth/providers/azure-ad'
-import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // No adapter — we use JWT sessions and handle SSO linking manually in signIn callback
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
@@ -164,14 +163,31 @@ export const authOptions: NextAuthOptions = {
       }
       return true
     },
-    async jwt({ token, user, trigger }) {
-      if (user) {
+    async jwt({ token, user, account, trigger }) {
+      // Credentials login — user object already has DB fields
+      if (user && account?.provider === 'credentials') {
         token.id = user.id
         token.role = (user as { role?: string }).role ?? 'CAREGIVER'
         token.organisationId = (user as { organisationId?: string | null }).organisationId ?? null
         token.mustChangePassword = (user as { mustChangePassword?: boolean }).mustChangePassword ?? false
         token.totpEnabled = (user as { totpEnabled?: boolean }).totpEnabled ?? false
         token.mfaPending = (user as { mfaPending?: boolean }).mfaPending ?? false
+      }
+
+      // SSO login — look up DB user by email since there's no adapter
+      if (user && account?.provider !== 'credentials') {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email ?? '' },
+          select: { id: true, role: true, organisationId: true, mustChangePassword: true, totpEnabled: true },
+        })
+        if (dbUser) {
+          token.id = dbUser.id
+          token.role = dbUser.role
+          token.organisationId = dbUser.organisationId
+          token.mustChangePassword = dbUser.mustChangePassword
+          token.totpEnabled = dbUser.totpEnabled
+          token.mfaPending = dbUser.totpEnabled === true
+        }
       }
 
       if (trigger === 'update') {
