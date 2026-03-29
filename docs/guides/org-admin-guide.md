@@ -46,6 +46,10 @@ The Organisation Admin role requires two-factor authentication (2FA) for securit
   - Microsoft Authenticator (iOS / Android)
   - Authy (iOS / Android)
 
+**Signing in:**
+
+The login page has a toggle at the top to switch between **Email & Password** and **Single Sign-On** (Google / Microsoft). Org Admins typically sign in with email and password, since MFA is required after login.
+
 **Steps to set up 2FA:**
 
 1. Sign in with your email and password.
@@ -95,7 +99,8 @@ The Users page lists everyone in your organisation. Each row shows:
 - Their role
 - Whether their account is active or inactive
 - The date they joined
-- A count of how many children they have added and how many training lessons they have completed (where relevant)
+- **Activity** — for Caregiver users this shows both the number of children they have added and lessons completed; for all other roles it shows only the lesson count
+- **Actions** — a bin icon to delete the user, and a book icon to edit their training plan access (toggle ASD Awareness Training / Careers CPD Training per user)
 
 You can search by name or email using the search bar. You can also filter by role using the dropdown next to the search bar.
 
@@ -121,9 +126,9 @@ Not all roles may be available in your organisation. The roles shown in your pan
    - **Email Address** — this is what they will use to sign in
    - **Role** — choose the appropriate role from the list (see the table above)
 3. Choose how the person will sign in:
-   - **Standard login (email + password):** Leave the SSO toggle off and set a temporary password (minimum 8 characters). The person will be asked to change this when they first sign in.
-   - **SSO only (no password):** Turn the SSO toggle on if your organisation uses Google or Microsoft sign-in. The person will sign in with their existing work account — no password is needed.
-4. If your organisation has multiple training modules, you can choose which ones this person can access by clicking the module labels. Modules highlighted in green are enabled for the user.
+   - **Standard login (email + password):** Leave the "SSO only" checkbox unticked and set a temporary password (minimum 8 characters). The person will be asked to change this when they first sign in.
+   - **SSO only (no password):** Tick the "SSO only" checkbox if your organisation uses Google or Microsoft sign-in. The person will sign in with their existing Google or Microsoft account — no password is needed.
+4. Under **Training Plan Access**, use the **ASD Awareness Training** and **Careers CPD Training** toggles to control which training plans this person can access.
 5. Click **Create User**.
 
 The new account is active immediately. If you set a temporary password, the user will be prompted to change it on first login.
@@ -193,7 +198,7 @@ At the top of the page you will see three summary figures:
 
 ### Module completion table
 
-The main table shows each training module with a progress bar. The bar colour indicates:
+The main table shows each training module by its full name (e.g. "Understanding ASD: An Introduction") with a subtitle indicating the training plan (ASD Awareness Training or Careers CPD Training). Each module has a progress bar. The bar colour indicates:
 
 - **Green** — 80% or more of your members have completed this module
 - **Amber** — between 40% and 79% have completed it
@@ -237,6 +242,10 @@ You cannot:
 - Access or modify users in other organisations
 - Create or edit training module content (this is managed by the platform super admin)
 - Change platform-wide settings
+
+### Dark mode
+
+The platform fully supports dark mode. All interface elements — including role badges, status indicators, and form controls — remain clearly readable in both light and dark themes. Dark mode follows the user's system preference automatically.
 
 ### Signing out
 
