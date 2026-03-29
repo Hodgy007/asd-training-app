@@ -14,7 +14,8 @@
 6. [AI Quiz Generation](#6-ai-quiz-generation)
 7. [Announcements](#7-announcements)
 8. [Reports](#8-reports)
-9. [Security and MFA](#9-security-and-mfa)
+9. [Single Sign-On (SSO) Setup](#9-single-sign-on-sso-setup)
+10. [Security and MFA](#10-security-and-mfa)
 
 ---
 
@@ -50,6 +51,10 @@ This is not optional — you will be redirected to the MFA setup page automatica
   - **Google Authenticator** (free, iOS and Android)
   - **Microsoft Authenticator** (free, iOS and Android)
   - **Authy** (free, iOS and Android)
+
+### Signing in
+
+The login page has a toggle at the top to switch between **Email & Password** and **Single Sign-On** (Google / Microsoft). Super Admins typically sign in with email and password, since MFA is required after login regardless.
 
 ### Setting up MFA — step by step
 
@@ -112,7 +117,7 @@ This page lists every organisation on the platform in a table. You can see each 
    - **Caregiver** — accesses ASD awareness training and can log child observations
    - **Careers Professional** — accesses careers training only
    - **Student**, **Intern**, **Employee** — access both ASD and careers training
-4. Under **Allowed Modules**, tick which training modules this organisation's users may access. Modules are grouped into **ASD Training** and **Careers Training** sections.
+4. Under **Module Access**, use the **ASD Awareness Training** and **Careers CPD Training** toggles to control which training plans this organisation's users may access.
 5. The **Active** checkbox is ticked by default. Leave it ticked to make the organisation live immediately.
 6. Click **Create Organisation**.
 
@@ -128,7 +133,7 @@ Click the **Manage** link (or the organisation name) to open its detail page. He
 
 - Change the organisation's **Name** or **Slug**
 - Update the **Allowed Roles** — tick or untick the roles available to users in this organisation
-- Update the **Allowed Modules** — tick or untick which training modules are accessible
+- Update **Module Access** — toggle **ASD Awareness Training** and **Careers CPD Training** on or off
 - Toggle the **Active** status on or off
 
 Click **Save Changes** when you are done.
@@ -173,13 +178,17 @@ The Training Content page shows two sections — ASD Training Modules and Career
 - Whether it is **Active** (green) or **Inactive** (red)
 - How many lessons it contains
 
+### Previewing training content
+
+Each module card has a **View** button. Clicking it opens the training content as a learner would see it — `/training` for ASD modules or `/careers` for Careers modules — in a new browser tab. This lets you preview exactly what learners experience without leaving the admin area.
+
 ### Reordering modules
 
 Each module card has up and down arrow buttons on the left side. Click these to move a module higher or lower in the list. The order here is the order learners will see.
 
 ### Activating and deactivating a module
 
-Click the circle icon on the right of a module card to toggle it between active and inactive. An **X** icon means "click to deactivate"; a **tick** icon means "click to activate". Inactive modules are hidden from learners.
+Deactivating a module is done from inside the module editor (click **Edit** on the module card). There is no toggle on the module list itself. Inside the editor, you can deactivate or delete the module. Inactive modules are hidden from learners.
 
 ### Creating a new module
 
@@ -223,7 +232,7 @@ Click **Edit** on any lesson row. This opens the **Lesson Editor**, where you ca
 - Switch the lesson **Type** between Text and Video
 - For Video lessons: paste in a **Video URL** (e.g. a YouTube embed link)
 - Write or edit the lesson **Content** using the rich text editor (see below)
-- Click **Save Lesson** when finished
+- Click **Save Lesson** when finished — after saving, you are automatically returned to the module page
 
 ### Using the rich text editor
 
@@ -239,7 +248,7 @@ There is no auto-save — always click **Save Lesson** when you have finished ma
 
 ### Activating and deactivating a lesson
 
-On the module editor page, each lesson has the same toggle icon as modules. Click it to activate or deactivate the lesson. Inactive lessons are hidden from learners.
+To deactivate or delete a lesson, click **Edit** on the lesson to open the lesson editor. Inside the editor you can deactivate or delete the lesson. Inactive lessons are hidden from learners.
 
 ---
 
@@ -255,7 +264,7 @@ You can add questions manually, or use the built-in AI tool to generate them aut
 2. Scroll down to the **Quiz Questions** section at the bottom of the page.
 3. Click **Generate Quiz with AI** (the purple button with a sparkle icon).
 4. A panel appears. Set the **Number of questions** — you can choose between 3 and 10.
-5. Click **Generate**. The AI will read the lesson content and create questions. This usually takes a few seconds.
+5. Click **Generate**. The AI will read the content currently in the editor above and generate questions based on it. This usually takes a few seconds.
 6. Once generation is complete, a preview of the questions appears. Each question shows:
    - The question text
    - The answer options (A, B, C, D), with the correct answer highlighted in green
@@ -263,7 +272,7 @@ You can add questions manually, or use the built-in AI tool to generate them aut
 7. Review each question. If a question is not right, you can edit it directly in the preview (see below).
 8. When you are happy with the questions, click **Save Quiz**. If the lesson already has questions, you will be asked to confirm — saving the AI-generated questions will replace the existing ones.
 
-**Note:** The AI bases its questions on the lesson content. If the lesson content is thin or very short, the questions may be generic. It is worth saving your lesson content first before generating the quiz.
+**Note:** The AI generates questions from the content currently in the editor — not the last-saved version. If the lesson content is thin or very short, the questions may be generic. Make sure you have written substantial content in the editor before generating the quiz.
 
 ### Editing AI-generated questions before saving
 
@@ -329,8 +338,7 @@ The table has one row per organisation. The columns are:
 
 - **Organisation** — the organisation name and its internal slug
 - **Users** — total number of users in that organisation
-- **M1, M2, M3, M4, M5** — the five ASD training modules (Module 1 through 5)
-- **C1, C2, C3, C4** — the four Careers training modules
+- **Module columns** — one column per training module, showing the full module name (e.g. "Understanding ASD: An Introduction") with a subtitle indicating the training plan it belongs to (ASD Awareness Training or Careers CPD Training)
 
 Each module cell shows a completion figure in the format **completed/total (%)**, for example `8/10 (80%)`. The colour of each cell indicates progress at a glance:
 
@@ -339,13 +347,40 @@ Each module cell shows a completion figure in the format **completed/total (%)**
 - **Grey** — below 40% completion
 - **Dash (—)** — no users in this organisation have access to that module, or the organisation has no users
 
-A legend at the top of the page maps the short column headings (M1, C2, etc.) to their full module IDs.
-
 Click the circular arrow icon to refresh the report data.
 
 ---
 
-## 9. Security and MFA
+## 9. Single Sign-On (SSO) Setup
+
+SSO allows users across all organisations to sign in with their existing Google or Microsoft account instead of a platform-specific password. SSO is a one-time setup performed by the super admin or app owner — once configured, all organisations benefit automatically.
+
+### Google SSO
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and open your project.
+2. Navigate to **APIs & Services > Credentials** and create an OAuth 2.0 Client ID (Web application).
+3. Add the following as an **Authorised redirect URI**:
+   ```
+   https://asd-training-app-v2.vercel.app/api/auth/callback/google
+   ```
+4. Copy the **Client ID** and **Client Secret** into the Vercel environment variables `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+
+### Microsoft (Azure AD) SSO
+
+1. Go to the [Azure Portal](https://portal.azure.com/) and open **App registrations**.
+2. Register a new application (or use an existing one).
+3. Under **Authentication > Web**, add the following as a **Redirect URI**:
+   ```
+   https://asd-training-app-v2.vercel.app/api/auth/callback/azure-ad
+   ```
+4. Copy the **Application (client) ID** and **Client Secret** into the Vercel environment variables `AZURE_AD_CLIENT_ID` and `AZURE_AD_CLIENT_SECRET`.
+5. Set `AZURE_AD_TENANT_ID` to `common` (to allow both personal and work/school Microsoft accounts) or to your specific tenant ID.
+
+Once these environment variables are deployed, the login page will show Google and Microsoft options under the **Single Sign-On** tab. Users must still be pre-created by an admin before they can sign in via SSO — the platform does not allow self-registration through SSO.
+
+---
+
+## 10. Security and MFA
 
 ### MFA is mandatory for admin accounts
 
@@ -370,6 +405,12 @@ If you lose your phone or delete your authenticator app and cannot generate a co
 - If you suspect your account has been compromised, change your password immediately and re-enrol your MFA.
 - Users with a `mustChangePassword` flag on their account are forced to set a new password before they can access anything else — this is applied automatically to new Org Admins created through the platform.
 - Inactive user accounts cannot sign in, even if they have valid credentials. If an organisation is deactivated, all of its users are blocked from signing in as well.
+
+---
+
+### Dark mode
+
+The platform fully supports dark mode. All interface elements — including role badges, status indicators, and form controls — are designed to remain clearly readable in both light and dark themes. Dark mode follows the user's system preference automatically.
 
 ---
 
