@@ -460,7 +460,7 @@ export default function OrgAdminUsersPage() {
           {allowedRoles.map((role) => {
             const count = data.users.filter((u) => u.role === role).length
             const Icon = ROLE_ICONS[role] ?? UserCircle
-            const colors = ROLE_COLORS[role] ?? 'bg-slate-100 text-slate-700'
+            const colors = ROLE_COLORS[role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-200'
             return (
               <button
                 key={role}
@@ -551,7 +551,7 @@ export default function OrgAdminUsersPage() {
               ) : (
                 data?.users.map((user) => {
                   const Icon = ROLE_ICONS[user.role] ?? UserCircle
-                  const colors = ROLE_COLORS[user.role] ?? 'bg-slate-100 text-slate-700'
+                  const colors = ROLE_COLORS[user.role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-200'
                   const isSelf = user.id === session.user.id
                   const isLoading = actionLoading === user.id
 

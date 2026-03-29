@@ -519,7 +519,7 @@ export default function OrgDetailPage() {
                       <span
                         className={clsx(
                           'inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full',
-                          ROLE_COLORS[user.role] ?? 'bg-slate-100 text-slate-700'
+                          ROLE_COLORS[user.role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-200'
                         )}
                       >
                         {ROLE_LABELS[user.role] ?? user.role}

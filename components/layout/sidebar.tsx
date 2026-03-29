@@ -111,7 +111,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
         <div className="px-5 py-2 border-b border-calm-100 dark:border-slate-700">
           <span className={clsx(
             'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
-            ROLE_BADGE_STYLES[role] ?? 'bg-slate-100 text-slate-700',
+            ROLE_BADGE_STYLES[role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-200',
           )}>
             {ROLE_LABELS[role]}
           </span>
