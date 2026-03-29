@@ -78,7 +78,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
   const navItems = getNavItems(role)
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
+    <div className="flex flex-col h-full bg-orange-50 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
       {/* Logo */}
       <div className="flex items-center justify-between p-5 border-b border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <div className="flex items-center gap-3">
