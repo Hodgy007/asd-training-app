@@ -52,6 +52,8 @@ export interface User {
   organisationId?: string | null
   allowedModuleIds: string[]
   mustChangePassword: boolean
+  totpEnabled?: boolean
+  mfaPending?: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -195,6 +197,8 @@ declare module 'next-auth' {
       role: string
       organisationId?: string | null
       mustChangePassword: boolean
+      totpEnabled: boolean
+      mfaPending: boolean
     }
   }
 }
@@ -205,5 +209,7 @@ declare module 'next-auth/jwt' {
     role: string
     organisationId?: string | null
     mustChangePassword: boolean
+    totpEnabled: boolean
+    mfaPending: boolean
   }
 }
