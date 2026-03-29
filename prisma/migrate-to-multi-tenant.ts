@@ -4,11 +4,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('Step 1: Migrate ADMIN → SUPER_ADMIN...')
-  const adminUpdate = await prisma.$executeRawUnsafe(
-    `UPDATE "User" SET role = 'SUPER_ADMIN' WHERE role = 'ADMIN'`
-  )
-  console.log(`  Updated ${adminUpdate} user(s) from ADMIN to SUPER_ADMIN`)
+  console.log('Step 1: Migrate ADMIN → SUPER_ADMIN... (already done manually, skipping)')
 
   console.log('Step 2: Create Legacy organisation...')
   const existing = await prisma.$queryRawUnsafe<{ id: string }[]>(
