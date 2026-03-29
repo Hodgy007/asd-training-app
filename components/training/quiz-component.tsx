@@ -3,7 +3,14 @@
 import { useState } from 'react'
 import { CheckCircle, XCircle, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
-import { QuizQuestion } from '@/lib/training-data'
+
+export interface QuizQuestion {
+  id: string
+  question: string
+  options: string | string[]
+  correctAnswer: string
+  explanation: string
+}
 
 interface QuizComponentProps {
   questions: QuizQuestion[]

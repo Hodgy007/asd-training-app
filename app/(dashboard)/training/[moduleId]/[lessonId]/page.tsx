@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ChevronRight, BookOpen, Video, CheckCircle } from 'lucide-react'
-import { getModuleById, getLessonById } from '@/lib/training-data'
+import { ArrowLeft, ChevronRight, BookOpen, Video, CheckCircle, Loader2 } from 'lucide-react'
 import { VideoPlayer } from '@/components/training/video-player'
 import { QuizComponent } from '@/components/training/quiz-component'
 import { clsx } from 'clsx'
@@ -14,49 +13,28 @@ interface LessonPageProps {
   params: { moduleId: string; lessonId: string }
 }
 
-// Parses inline **bold** and <strong>bold</strong> into React elements
-function renderInline(text: string) {
-  // Normalise <strong>...</strong> to **...** first, then split on **
-  const normalised = text.replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
-  const parts = normalised.split(/\*\*(.*?)\*\*/)
-  return parts.map((part, j) =>
-    j % 2 === 1 ? <strong key={j} className="text-slate-900 dark:text-slate-100">{part}</strong> : part
-  )
-}
-
-function renderContent(content: string) {
-  const lines = content.split('\n')
-  return lines.map((line, i) => {
-    if (line.startsWith('**') && line.endsWith('**')) {
-      return (
-        <h3 key={i} className="font-semibold text-slate-900 dark:text-slate-100 mt-5 mb-2 text-base">
-          {line.replace(/\*\*/g, '')}
-        </h3>
-      )
-    }
-    if (line.startsWith('- ')) {
-      return (
-        <li key={i} className="text-slate-700 dark:text-slate-300 ml-4">
-          {renderInline(line.slice(2))}
-        </li>
-      )
-    }
-    if (/^\d+\./.test(line)) {
-      return (
-        <li key={i} className="text-slate-700 dark:text-slate-300 ml-4 list-decimal">
-          {renderInline(line.replace(/^\d+\.\s*/, ''))}
-        </li>
-      )
-    }
-    if (line.trim() === '') {
-      return <div key={i} className="h-2" />
-    }
-    return (
-      <p key={i} className="text-slate-700 dark:text-slate-300">
-        {renderInline(line)}
-      </p>
-    )
-  })
+interface LessonData {
+  id: string
+  title: string
+  type: 'VIDEO' | 'TEXT'
+  content: string
+  videoUrl?: string | null
+  order: number
+  quizQuestions: {
+    id: string
+    question: string
+    options: string
+    correctAnswer: string
+    explanation: string
+    order: number
+  }[]
+  module: {
+    id: string
+    title: string
+    type: string
+    order: number
+    lessons: { id: string; title: string; order: number }[]
+  }
 }
 
 export default function LessonPage({ params }: LessonPageProps) {
@@ -65,15 +43,41 @@ export default function LessonPage({ params }: LessonPageProps) {
   const [quizStarted, setQuizStarted] = useState(false)
   const [completed, setCompleted] = useState(false)
   const [saving, setSaving] = useState(false)
-
-  const module = getModuleById(params.moduleId)
-  const lesson = getLessonById(params.moduleId, params.lessonId)
+  const [lesson, setLesson] = useState<LessonData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
 
-  if (!module || !lesson) {
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    setLoading(true)
+    fetch('/api/training/lessons/' + params.lessonId)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found')
+        return res.json()
+      })
+      .then((data) => {
+        setLesson(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setError(true)
+        setLoading(false)
+      })
+  }, [params.lessonId, status])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+      </div>
+    )
+  }
+
+  if (error || !lesson) {
     return (
       <div className="text-center py-12">
         <p className="text-slate-500">Lesson not found.</p>
@@ -84,9 +88,15 @@ export default function LessonPage({ params }: LessonPageProps) {
     )
   }
 
-  const lessonIndex = module.lessons.findIndex((l) => l.id === lesson.id)
-  const nextLesson = module.lessons[lessonIndex + 1]
-  const isLastLesson = lessonIndex === module.lessons.length - 1
+  const moduleLessons = lesson.module.lessons
+  const lessonIndex = moduleLessons.findIndex((l) => l.id === lesson.id)
+  const nextLesson = moduleLessons[lessonIndex + 1]
+  const isLastLesson = lessonIndex === moduleLessons.length - 1
+
+  const quizQuestions = lesson.quizQuestions.map((q) => ({
+    ...q,
+    options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+  }))
 
   async function handleQuizComplete(score: number) {
     setSaving(true)
@@ -118,10 +128,10 @@ export default function LessonPage({ params }: LessonPageProps) {
         </Link>
         <span className="text-slate-300">/</span>
         <Link
-          href={`/training/${module.id}`}
+          href={`/training/${lesson.module.id}`}
           className="text-slate-400 hover:text-slate-600 transition-colors truncate max-w-[200px]"
         >
-          {module.title}
+          {lesson.module.title}
         </Link>
         <span className="text-slate-300">/</span>
         <span className="text-slate-700 font-medium truncate">{lesson.title}</span>
@@ -144,7 +154,7 @@ export default function LessonPage({ params }: LessonPageProps) {
           </div>
           <div>
             <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">
-              Module {module.order} &middot; Lesson {lessonIndex + 1}
+              Module {lesson.module.order} &middot; Lesson {lessonIndex + 1}
             </p>
             <h1 className="text-xl font-bold text-slate-900 mt-0.5">{lesson.title}</h1>
           </div>
@@ -153,13 +163,25 @@ export default function LessonPage({ params }: LessonPageProps) {
 
       {/* Video (if applicable) */}
       {lesson.type === 'VIDEO' && (
-        <VideoPlayer title={lesson.title} videoUrl={lesson.videoUrl} />
+        <VideoPlayer title={lesson.title} videoUrl={lesson.videoUrl ?? undefined} />
       )}
 
       {/* Lesson content */}
       <div className="card">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Lesson Content</h2>
-        <div className="space-y-1 prose-lesson">{renderContent(lesson.content)}</div>
+        <div
+          className="prose-lesson space-y-1 text-slate-700 dark:text-slate-300
+            [&_h1]:font-bold [&_h1]:text-xl [&_h1]:text-slate-900 [&_h1]:mt-6 [&_h1]:mb-3
+            [&_h2]:font-semibold [&_h2]:text-lg [&_h2]:text-slate-900 [&_h2]:mt-5 [&_h2]:mb-2
+            [&_h3]:font-semibold [&_h3]:text-base [&_h3]:text-slate-900 [&_h3]:mt-5 [&_h3]:mb-2
+            [&_p]:mb-2 [&_p]:leading-relaxed
+            [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-3
+            [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-3
+            [&_li]:mb-1 [&_li]:leading-relaxed
+            [&_strong]:text-slate-900 [&_strong]:font-semibold
+            [&_em]:italic"
+          dangerouslySetInnerHTML={{ __html: lesson.content }}
+        />
       </div>
 
       {/* Reflection prompt */}
@@ -180,7 +202,7 @@ export default function LessonPage({ params }: LessonPageProps) {
             </div>
             <h2 className="text-lg font-semibold text-slate-900 mb-2">Knowledge Check</h2>
             <p className="text-slate-500 text-sm mb-6">
-              {lesson.quizQuestions.length} questions to test your understanding
+              {quizQuestions.length} questions to test your understanding
             </p>
             <button onClick={() => setQuizStarted(true)} className="btn-primary px-8">
               Start quiz
@@ -195,7 +217,7 @@ export default function LessonPage({ params }: LessonPageProps) {
             <div className="flex flex-col sm:flex-row gap-3">
               {nextLesson && !isLastLesson ? (
                 <Link
-                  href={`/training/${module.id}/${nextLesson.id}`}
+                  href={`/training/${lesson.module.id}/${nextLesson.id}`}
                   className="btn-primary flex items-center justify-center gap-2"
                 >
                   Next lesson: {nextLesson.title}
@@ -203,7 +225,7 @@ export default function LessonPage({ params }: LessonPageProps) {
                 </Link>
               ) : (
                 <Link
-                  href={`/training/${module.id}`}
+                  href={`/training/${lesson.module.id}`}
                   className="btn-primary flex items-center justify-center gap-2"
                 >
                   Back to module overview
@@ -219,7 +241,7 @@ export default function LessonPage({ params }: LessonPageProps) {
         ) : (
           <div>
             <h2 className="text-lg font-semibold text-slate-900 mb-5">Knowledge Check</h2>
-            <QuizComponent questions={lesson.quizQuestions} onComplete={handleQuizComplete} />
+            <QuizComponent questions={quizQuestions} onComplete={handleQuizComplete} />
           </div>
         )}
       </div>

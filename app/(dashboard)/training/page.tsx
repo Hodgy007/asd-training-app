@@ -2,7 +2,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-import { TRAINING_MODULES } from '@/lib/training-data'
 import { ModuleCard } from '@/components/training/module-card'
 import { getEffectiveModules, hasAsdAccess } from '@/lib/modules'
 
@@ -25,7 +24,20 @@ export default async function TrainingPage() {
     redirect('/dashboard')
   }
 
-  const visibleModules = TRAINING_MODULES.filter((m) => effectiveModules.includes(m.id))
+  // Fetch active ASD modules from DB with lesson counts
+  const dbModules = await prisma.module.findMany({
+    where: { active: true, type: 'ASD' },
+    orderBy: { order: 'asc' },
+    include: {
+      lessons: {
+        where: { active: true },
+        orderBy: { order: 'asc' },
+        select: { id: true, title: true, type: true, order: true },
+      },
+    },
+  })
+
+  const visibleModules = dbModules.filter((m) => effectiveModules.includes(m.id))
 
   const progressRecords = await prisma.trainingProgress.findMany({
     where: { userId: session.user.id },

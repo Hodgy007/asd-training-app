@@ -2,7 +2,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-import { CAREERS_MODULES } from '@/lib/careers-training-data'
 import { getEffectiveModules, hasCareersAccess } from '@/lib/modules'
 import Link from 'next/link'
 import { Briefcase, CheckCircle, Circle, ChevronRight, Lock } from 'lucide-react'
@@ -26,7 +25,20 @@ export default async function CareersPage() {
     redirect('/dashboard')
   }
 
-  const visibleModules = CAREERS_MODULES.filter((m) => effectiveModules.includes(m.id))
+  // Fetch active CAREERS modules from DB with lessons
+  const dbModules = await prisma.module.findMany({
+    where: { active: true, type: 'CAREERS' },
+    orderBy: { order: 'asc' },
+    include: {
+      lessons: {
+        where: { active: true },
+        orderBy: { order: 'asc' },
+        select: { id: true, title: true, type: true, order: true },
+      },
+    },
+  })
+
+  const visibleModules = dbModules.filter((m) => effectiveModules.includes(m.id))
 
   const progressRecords = await prisma.trainingProgress.findMany({
     where: { userId: session.user.id },
@@ -131,7 +143,7 @@ export default async function CareersPage() {
               <div className="space-y-1.5 mb-4">
                 <div className="flex justify-between text-xs text-slate-400">
                   <span>{completedCount}/{totalCount} lessons</span>
-                  <span>{Math.round((completedCount / totalCount) * 100)}%</span>
+                  <span>{totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-calm-200 rounded-full overflow-hidden">
                   <div
@@ -139,7 +151,7 @@ export default async function CareersPage() {
                       'h-full rounded-full transition-all',
                       isComplete ? 'bg-sage-500' : 'bg-blue-500'
                     )}
-                    style={{ width: `${(completedCount / totalCount) * 100}%` }}
+                    style={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
                   />
                 </div>
               </div>

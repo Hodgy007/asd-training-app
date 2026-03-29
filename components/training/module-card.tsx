@@ -1,10 +1,17 @@
 import Link from 'next/link'
 import { Lock, CheckCircle, ChevronRight, BookOpen, Video, FileText } from 'lucide-react'
-import { TrainingModule } from '@/lib/training-data'
 import { clsx } from 'clsx'
 
+interface ModuleForCard {
+  id: string
+  title: string
+  description: string
+  order: number
+  lessons: { id: string; title: string; type: string; order: number }[]
+}
+
 interface ModuleCardProps {
-  module: TrainingModule
+  module: ModuleForCard
   completedLessons: number
   locked: boolean
 }
