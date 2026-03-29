@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 import { isSuperAdmin } from '@/lib/rbac'
 import { getAllModules } from '@/lib/training-db'
 import prisma from '@/lib/prisma'
-import { ModuleType } from '@prisma/client'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -23,14 +22,16 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { id, title, description, type, order } = body
+  const { id, title, description, programId, order } = body
 
-  if (!id || !title || !description || !type || order == null) {
-    return NextResponse.json({ error: 'Missing required fields: id, title, description, type, order' }, { status: 400 })
+  if (!id || !title || !description || !programId || order == null) {
+    return NextResponse.json({ error: 'Missing required fields: id, title, description, programId, order' }, { status: 400 })
   }
 
-  if (!Object.values(ModuleType).includes(type)) {
-    return NextResponse.json({ error: `Invalid type. Must be one of: ${Object.values(ModuleType).join(', ')}` }, { status: 400 })
+  // Verify the program exists
+  const program = await prisma.trainingProgram.findUnique({ where: { id: programId } })
+  if (!program) {
+    return NextResponse.json({ error: 'Program not found' }, { status: 404 })
   }
 
   const existing = await prisma.module.findUnique({ where: { id } })
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
   }
 
   const module = await prisma.module.create({
-    data: { id, title, description, type, order },
+    data: { id, title, description, programId, order },
   })
 
   return NextResponse.json(module, { status: 201 })
