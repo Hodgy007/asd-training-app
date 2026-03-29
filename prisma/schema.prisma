@@ -83,6 +83,7 @@ model Organisation {
   announcements Announcement[]
   sessions      ClassSession[]
   meetingConfig OrgMeetingConfig?
+  ssoConfig     OrgSsoConfig?
 }
 
 model Announcement {
@@ -256,6 +257,23 @@ model OrgMeetingConfig {
   configured     Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+}
+
+model OrgSsoConfig {
+  id             String   @id @default(cuid())
+  organisationId String   @unique
+  emailDomain    String   @unique
+  metadataUrl    String?
+  ssoUrl         String
+  entityId       String
+  certificate    String   @db.Text
+  autoProvision  Boolean  @default(false)
+  defaultRole    String?
+  configured     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   organisation Organisation @relation(fields: [organisationId], references: [id])
 }
