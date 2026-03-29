@@ -22,7 +22,7 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
     : 'U'
 
   return (
-    <header className="h-16 bg-white dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
+    <header className="h-16 bg-orange-50 dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuClick}
