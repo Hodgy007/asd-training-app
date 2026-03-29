@@ -6,6 +6,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
   Building2,
+  BookOpen,
   Megaphone,
   BarChart3,
   LogOut,
@@ -24,6 +25,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/super-admin/organisations', label: 'Organisations', icon: Building2 },
+  { href: '/super-admin/training', label: 'Training Content', icon: BookOpen },
   { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3 },
 ]
