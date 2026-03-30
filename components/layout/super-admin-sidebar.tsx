@@ -13,6 +13,7 @@ import {
   LogOut,
   X,
   Crown,
+  HelpCircle,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -30,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin/surveys', label: 'Surveys', icon: ClipboardList },
   { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/super-admin/guide', label: 'How to Guide', icon: HelpCircle },
 ]
 
 interface SuperAdminSidebarProps {
