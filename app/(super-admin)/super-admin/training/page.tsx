@@ -13,8 +13,12 @@ import {
   Edit3,
   X,
   Trash2,
+  Upload,
+  Sparkles,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { ContentGenerationModal } from '@/components/super-admin/content-generation-modal'
+import type { GenerationMode } from '@/lib/content-generator-types'
 
 /* ──────────────────────────── Types ──────────────────────────── */
 
@@ -65,6 +69,9 @@ export default function TrainingContentPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showNewProgram, setShowNewProgram] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  const [generationModalOpen, setGenerationModalOpen] = useState(false)
+  const [generationMode, setGenerationMode] = useState<GenerationMode>('structure')
 
   // Track expanded programs (shows modules) and programs being edited
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -231,13 +238,29 @@ export default function TrainingContentPage() {
             Manage training programs, modules, and lessons.
           </p>
         </div>
-        <button
-          onClick={() => setShowNewProgram(!showNewProgram)}
-          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          New Training Program
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setGenerationMode('structure'); setGenerationModalOpen(true) }}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+          >
+            <Upload className="h-4 w-4" />
+            Import from Files
+          </button>
+          <button
+            onClick={() => { setGenerationMode('generate'); setGenerationModalOpen(true) }}
+            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+          >
+            <Sparkles className="h-4 w-4" />
+            Generate from Files
+          </button>
+          <button
+            onClick={() => setShowNewProgram(!showNewProgram)}
+            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            New Program
+          </button>
+        </div>
       </div>
 
       {/* New Program Form */}
@@ -516,6 +539,13 @@ export default function TrainingContentPage() {
           ))}
         </div>
       )}
+
+      <ContentGenerationModal
+        mode={generationMode}
+        isOpen={generationModalOpen}
+        onClose={() => setGenerationModalOpen(false)}
+        onComplete={() => fetchPrograms()}
+      />
     </div>
   )
 }
