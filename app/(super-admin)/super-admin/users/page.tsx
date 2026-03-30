@@ -388,68 +388,98 @@ export default function CharityUsersPage() {
           <p className="text-sm text-slate-400">No charity-level users found.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {users.map((user) => (
-            <div
-              key={user.id}
-              className={clsx(
-                'card p-4 flex items-center justify-between gap-4',
-                !user.active && 'opacity-60',
-              )}
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold text-slate-900 dark:text-white truncate">{user.name || 'Unnamed'}</p>
-                  <span
+        <div className="card overflow-hidden p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Name</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Email</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Role</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden md:table-cell">Permissions</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Active</th>
+                  <th className="px-4 py-3 w-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr
+                    key={user.id}
                     className={clsx(
-                      'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
-                      user.role === 'SUPER_ADMIN'
-                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
-                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                      'border-b border-calm-100 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-800/50 transition-colors',
+                      !user.active && 'opacity-60',
                     )}
                   >
-                    {user.role === 'SUPER_ADMIN' ? (
-                      <><Crown className="h-3 w-3" /> Charity Admin</>
-                    ) : (
-                      <><Shield className="h-3 w-3" /> Charity Employee</>
-                    )}
-                  </span>
-                  {!user.active && (
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
-                      Inactive
-                    </span>
-                  )}
-                  {isSelf(user.id) && (
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                      You
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
-                {user.role === 'CHARITY_EMPLOYEE' && user.charityPermissions.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    {user.charityPermissions.map((p) => (
-                      <span
-                        key={p}
-                        className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded"
-                      >
-                        {PERMISSION_LABELS[p] ?? p}
+                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
+                      <span className="inline-flex items-center gap-1.5">
+                        {user.name || <span className="text-slate-400 italic">Unnamed</span>}
+                        {isSelf(user.id) && (
+                          <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                            You
+                          </span>
+                        )}
                       </span>
-                    ))}
-                  </div>
-                )}
-                {user.role === 'CHARITY_EMPLOYEE' && user.charityPermissions.length === 0 && (
-                  <p className="text-xs text-amber-500 mt-1">No permissions assigned</p>
-                )}
-              </div>
-              <button
-                onClick={() => openEdit(user)}
-                className="flex-shrink-0 p-2 rounded-lg text-slate-400 hover:bg-calm-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs">{user.email}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={clsx(
+                          'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
+                          user.role === 'SUPER_ADMIN'
+                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                        )}
+                      >
+                        {user.role === 'SUPER_ADMIN' ? (
+                          <><Crown className="h-3 w-3" /> Admin</>
+                        ) : (
+                          <><Shield className="h-3 w-3" /> Employee</>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      {user.role === 'SUPER_ADMIN' ? (
+                        <span className="text-xs text-slate-400 dark:text-slate-500">Full access</span>
+                      ) : user.charityPermissions.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {user.charityPermissions.map((p) => (
+                            <span
+                              key={p}
+                              className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded"
+                            >
+                              {PERMISSION_LABELS[p] ?? p}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-amber-500">None</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {user.active ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
+                          <Check className="h-3 w-3" /> Yes
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400">
+                          <X className="h-3 w-3" /> No
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => openEdit(user)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:bg-calm-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                        title="Edit user"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
