@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Building2,
   BookOpen,
+  ClipboardList,
   Megaphone,
   BarChart3,
   LogOut,
@@ -26,6 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/super-admin/organisations', label: 'Organisations', icon: Building2 },
   { href: '/super-admin/training', label: 'Training Content', icon: BookOpen },
+  { href: '/super-admin/surveys', label: 'Surveys', icon: ClipboardList },
   { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3 },
 ]
