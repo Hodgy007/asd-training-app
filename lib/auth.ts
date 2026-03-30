@@ -179,13 +179,19 @@ export const authOptions: NextAuthOptions = {
         token.totpEnabled = (user as { totpEnabled?: boolean }).totpEnabled ?? false
         token.mfaPending = (user as { mfaPending?: boolean }).mfaPending ?? false
         token.effectivePrograms = await getUserEffectivePrograms(user.id)
+        // Fetch charityPermissions for charity-level users
+        const dbUserForPerms = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { charityPermissions: true },
+        })
+        token.charityPermissions = dbUserForPerms?.charityPermissions ?? []
       }
 
       // SSO login — look up DB user by email since there's no adapter
       if (user && account?.provider !== 'credentials') {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email ?? '' },
-          select: { id: true, role: true, organisationId: true, mustChangePassword: true, totpEnabled: true },
+          select: { id: true, role: true, organisationId: true, mustChangePassword: true, totpEnabled: true, charityPermissions: true },
         })
         if (dbUser) {
           token.id = dbUser.id
@@ -195,19 +201,21 @@ export const authOptions: NextAuthOptions = {
           token.totpEnabled = dbUser.totpEnabled
           token.mfaPending = dbUser.totpEnabled === true
           token.effectivePrograms = await getUserEffectivePrograms(dbUser.id)
+          token.charityPermissions = dbUser.charityPermissions ?? []
         }
       }
 
       if (trigger === 'update') {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true, organisationId: true, mustChangePassword: true, totpEnabled: true },
+          select: { role: true, organisationId: true, mustChangePassword: true, totpEnabled: true, charityPermissions: true },
         })
         if (dbUser) {
           token.role = dbUser.role
           token.organisationId = dbUser.organisationId
           token.mustChangePassword = dbUser.mustChangePassword
           token.totpEnabled = dbUser.totpEnabled
+          token.charityPermissions = dbUser.charityPermissions ?? []
         }
         token.mfaPending = false
         token.effectivePrograms = await getUserEffectivePrograms(token.id as string)

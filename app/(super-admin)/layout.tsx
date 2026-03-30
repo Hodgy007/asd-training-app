@@ -11,7 +11,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   const { data: session, status } = useSession()
 
   if (status === 'unauthenticated') redirect('/login')
-  if (status === 'authenticated' && session?.user?.role !== 'SUPER_ADMIN') redirect('/dashboard')
+  if (status === 'authenticated' && session?.user?.role !== 'SUPER_ADMIN' && session?.user?.role !== 'CHARITY_EMPLOYEE') redirect('/dashboard')
 
   return (
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900 overflow-hidden">

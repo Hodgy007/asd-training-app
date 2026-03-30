@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { Menu, Bell } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { getRoleLabel } from '@/lib/rbac'
 
 interface TopbarProps {
   onMenuClick: () => void
@@ -52,8 +53,8 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
             <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-tight">
               {session?.user?.name || 'Practitioner'}
             </p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 capitalize">
-              {session?.user?.role?.toLowerCase() || 'practitioner'}
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              {session?.user?.role ? getRoleLabel(session.user.role) : 'Practitioner'}
             </p>
           </div>
         </div>
