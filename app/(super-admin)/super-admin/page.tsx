@@ -4,11 +4,11 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Building2, Users, BookOpen, ArrowRight } from 'lucide-react'
-import { isSuperAdmin } from '@/lib/rbac'
+import { isCharityLevel, hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 
 export default async function SuperAdminPage() {
   const session = await getServerSession(authOptions)
-  if (!session || !isSuperAdmin(session)) redirect('/login')
+  if (!session || !isCharityLevel(session)) redirect('/login')
 
   const [orgCount, totalUsers, totalLessons, orgs] = await Promise.all([
     prisma.organisation.count(),
@@ -54,8 +54,8 @@ export default async function SuperAdminPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Super Admin Overview</h1>
-        <p className="text-slate-500 mt-1">Platform-wide statistics and organisation summary.</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Charity Admin Overview</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Platform-wide statistics and organisation summary.</p>
       </div>
 
       {/* Stat cards */}
