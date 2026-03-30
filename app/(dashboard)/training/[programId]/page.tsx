@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { ModuleCard } from '@/components/training/module-card'
-import { isSuperAdmin } from '@/lib/rbac'
+import { isCharityLevel } from '@/lib/rbac'
 
 export default async function ProgramPage({ params }: { params: { programId: string } }) {
   const session = await getServerSession(authOptions)
@@ -15,8 +15,8 @@ export default async function ProgramPage({ params }: { params: { programId: str
 
   if (!program) redirect('/dashboard')
 
-  // Check access: SUPER_ADMIN can preview all; others need org assignment
-  if (!isSuperAdmin(session)) {
+  // Check access: SUPER_ADMIN and CHARITY_EMPLOYEE can preview all; others need org assignment
+  if (!isCharityLevel(session)) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { organisation: { select: { allowedProgramIds: true } } },

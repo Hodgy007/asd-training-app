@@ -17,7 +17,7 @@ import { differenceInYears } from 'date-fns'
 import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
 import { PendingSurveys } from '@/components/dashboard/pending-surveys'
-import { isSuperAdmin } from '@/lib/rbac'
+import { isCharityLevel } from '@/lib/rbac'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
 
   // Determine which programs the user can access
   let allowedProgramIds: string[] = []
-  if (isSuperAdmin(session)) {
+  if (isCharityLevel(session)) {
     const allPrograms = await prisma.trainingProgram.findMany({
       where: { active: true },
       select: { id: true },

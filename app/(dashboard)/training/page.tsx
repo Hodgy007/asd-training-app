@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-import { isSuperAdmin } from '@/lib/rbac'
+import { isCharityLevel } from '@/lib/rbac'
 import Link from 'next/link'
 import { BookOpen, ChevronRight } from 'lucide-react'
 
@@ -13,8 +13,8 @@ export default async function TrainingPage() {
   // Determine which programs the user has access to
   let programs: { id: string; name: string; description: string | null }[]
 
-  if (isSuperAdmin(session)) {
-    // SUPER_ADMIN can preview all active programs
+  if (isCharityLevel(session)) {
+    // SUPER_ADMIN and CHARITY_EMPLOYEE can preview all active programs
     programs = await prisma.trainingProgram.findMany({
       where: { active: true },
       select: { id: true, name: true, description: true },

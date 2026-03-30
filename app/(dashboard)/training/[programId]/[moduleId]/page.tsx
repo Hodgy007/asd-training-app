@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
-import { isSuperAdmin } from '@/lib/rbac'
+import { isCharityLevel } from '@/lib/rbac'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -111,7 +111,7 @@ export default async function ProgramModulePage({
         <div className="space-y-2">
           {module.lessons.map((lesson, idx) => {
             const isLessonComplete = completedLessonIds.includes(lesson.id)
-            const isLessonLocked = !isSuperAdmin(session) && idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id)
+            const isLessonLocked = !isCharityLevel(session) && idx > 0 && !completedLessonIds.includes(module.lessons[idx - 1].id)
 
             return (
               <div
