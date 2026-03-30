@@ -138,7 +138,7 @@ export function canCreateSessions(session: Session | null): boolean {
 
 **Sidebar item:** "Settings" with `charityAdminOnly: true` — hidden from Charity Employees.
 
-**Two sections/tabs:**
+**Single page with both sections stacked vertically (no tabs):**
 
 ### Meeting Configuration
 
