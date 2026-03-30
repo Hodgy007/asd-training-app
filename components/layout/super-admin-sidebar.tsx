@@ -13,24 +13,31 @@ import {
   LogOut,
   X,
   Crown,
+  Users,
   HelpCircle,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { CHARITY_PERMISSIONS } from '@/lib/rbac'
 
 interface NavItem {
   href: string
   label: string
   icon: React.ElementType
   exact?: boolean
+  /** If set, only shown when user has this permission (SUPER_ADMIN always passes) */
+  permission?: string
+  /** If true, only visible to SUPER_ADMIN (not CHARITY_EMPLOYEE) */
+  charityAdminOnly?: boolean
 }
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/super-admin/organisations', label: 'Organisations', icon: Building2 },
-  { href: '/super-admin/training', label: 'Training Content', icon: BookOpen },
-  { href: '/super-admin/surveys', label: 'Surveys', icon: ClipboardList },
-  { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone },
-  { href: '/super-admin/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/super-admin/users', label: 'Users', icon: Users, charityAdminOnly: true },
+  { href: '/super-admin/organisations', label: 'Organisations', icon: Building2, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
+  { href: '/super-admin/training', label: 'Training Content', icon: BookOpen, permission: CHARITY_PERMISSIONS.MANAGE_TRAINING },
+  { href: '/super-admin/surveys', label: 'Surveys', icon: ClipboardList, permission: CHARITY_PERMISSIONS.MANAGE_SURVEYS },
+  { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone, permission: CHARITY_PERMISSIONS.MANAGE_ANNOUNCEMENTS },
+  { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
   { href: '/super-admin/guide', label: 'How to Guide', icon: HelpCircle },
 ]
 
@@ -42,6 +49,29 @@ interface SuperAdminSidebarProps {
 export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
+
+  const role = session?.user?.role
+  const isCharityAdmin = role === 'SUPER_ADMIN'
+  const charityPermissions: string[] = session?.user?.charityPermissions ?? []
+
+  /** Check if the user can see a given nav item */
+  function canSee(item: NavItem): boolean {
+    // SUPER_ADMIN sees everything
+    if (isCharityAdmin) return true
+    // Charity Admin-only items are hidden from CHARITY_EMPLOYEE
+    if (item.charityAdminOnly) return false
+    // Items with a permission requirement: check the permissions array
+    if (item.permission) return charityPermissions.includes(item.permission)
+    // Items with no gating are always visible
+    return true
+  }
+
+  const visibleItems = NAV_ITEMS.filter(canSee)
+
+  const badgeLabel = isCharityAdmin ? 'Charity Admin' : 'Charity Employee'
+  const badgeStyle = isCharityAdmin
+    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
 
   return (
     <div className="flex flex-col h-full bg-orange-50 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
@@ -69,17 +99,20 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
         )}
       </div>
 
-      {/* Super Admin badge */}
+      {/* Role badge */}
       <div className="px-5 py-2 border-b border-calm-100 dark:border-slate-700">
-        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+        <span className={clsx(
+          'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
+          badgeStyle,
+        )}>
           <Crown className="h-3 w-3" />
-          Super Admin
+          {badgeLabel}
         </span>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1" aria-label="Super admin navigation">
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon
           const isActive = item.exact
             ? pathname === item.href
