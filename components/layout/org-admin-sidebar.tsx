@@ -10,6 +10,7 @@ import {
   BarChart3,
   Video,
   Shield,
+  HelpCircle,
   LogOut,
   X,
   ShieldCheck,
@@ -30,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
   { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
   { href: '/admin/settings/sso', label: 'Enterprise SSO', icon: Shield },
+  { href: '/admin/guide', label: 'How to Guide', icon: HelpCircle },
 ]
 
 interface OrgAdminSidebarProps {

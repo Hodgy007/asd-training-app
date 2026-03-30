@@ -99,7 +99,7 @@ export async function middleware(req: NextRequest) {
     const previewPaths = ['/training', '/careers']
     const isPreview = role === 'SUPER_ADMIN' && previewPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
     if (!isPreview) {
-      const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/children', '/reports', '/settings']
+      const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/children', '/reports', '/settings', '/guide']
       if (leafOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
         return NextResponse.redirect(new URL(homeForRole(role), req.url))
       }
