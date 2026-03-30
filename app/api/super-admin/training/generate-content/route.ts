@@ -14,6 +14,9 @@ import type {
   SSEEvent,
 } from '@/lib/content-generator-types'
 
+export const maxDuration = 300
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !isSuperAdmin(session)) {

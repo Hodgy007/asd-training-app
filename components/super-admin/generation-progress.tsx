@@ -61,17 +61,6 @@ const STEPS: Step[] = [
 
 type StepStatus = 'done' | 'current' | 'pending'
 
-function getStepStatus(stepKey: ProgressPhase, activePhase: ProgressPhase): StepStatus {
-  if (activePhase === 'error') return 'pending'
-  const stepIdx = getPhaseIndex(stepKey)
-  const activeIdx = getPhaseIndex(activePhase)
-  if (stepIdx < activeIdx) return 'done'
-  if (stepIdx === activeIdx) return 'current'
-  // The 'content' step covers both 'content' and 'quiz' active phases
-  if (stepKey === 'content' && (activePhase === 'content' || activePhase === 'quiz')) return 'current'
-  return 'pending'
-}
-
 function resolvedStepStatus(stepKey: ProgressPhase, activePhase: ProgressPhase): StepStatus {
   if (activePhase === 'complete' && stepKey !== 'complete') return 'done'
 

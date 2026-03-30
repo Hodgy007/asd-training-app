@@ -13,6 +13,9 @@ import type {
   SSEEvent,
 } from '@/lib/content-generator-types'
 
+export const maxDuration = 300
+export const dynamic = 'force-dynamic'
+
 interface RegenerateMetadata {
   existingParsedContent: ParsedFile[]
   program: GeneratedProgram

@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
       const program = await tx.trainingProgram.create({
         data: {
           name: programName.trim(),
+          description: 'AI-generated training program',
           order: programOrder,
           status: 'DRAFT',
         },

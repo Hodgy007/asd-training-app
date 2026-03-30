@@ -77,13 +77,7 @@ async function parseDocx(buffer: Buffer): Promise<ParsedSection[]> {
   const headingPattern = /<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/gi
   const sections: ParsedSection[] = []
 
-  let lastIndex = 0
-  let pendingHeading: string | undefined
-
   // Collect preamble text before the first heading
-  const firstHeadingMatch = headingPattern.exec(html)
-  headingPattern.lastIndex = 0 // reset after the probe
-
   const matches: Array<{ heading: string; index: number; fullMatchLength: number }> = []
 
   let match: RegExpExecArray | null
@@ -149,7 +143,12 @@ function collectTextNodes(node: unknown): string[] {
     const results: string[] = []
     for (const key of Object.keys(obj)) {
       if (key === 'a:t') {
-        results.push(...collectTextNodes(obj[key]))
+        // Extract text values directly from a:t elements
+        const vals = Array.isArray(obj[key]) ? obj[key] : [obj[key]]
+        for (const v of vals as unknown[]) {
+          if (typeof v === 'string') results.push(v)
+          else if (v && typeof v === 'object' && '_' in v) results.push(String((v as Record<string, unknown>)._))
+        }
       } else {
         results.push(...collectTextNodes(obj[key]))
       }

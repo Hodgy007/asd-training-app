@@ -7,6 +7,7 @@ import type {
   GenerationMode,
   GenerationLens,
   GeneratedProgram,
+  ParsedFile,
   SSEEvent,
 } from '@/lib/content-generator-types'
 import { FileDropZone } from './file-drop-zone'
@@ -97,7 +98,7 @@ export function ContentGenerationModal({
   const [program, setProgram] = useState<GeneratedProgram | null>(null)
 
   // Saved parsed content for retry
-  const [parsedContent, setParsedContent] = useState<unknown[]>([])
+  const [parsedContent, setParsedContent] = useState<ParsedFile[]>([])
 
   // Save error
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -153,7 +154,8 @@ export function ContentGenerationModal({
       }
 
       const parsed = await parseRes.json()
-      setParsedContent(parsed)
+      const parsedFiles: ParsedFile[] = parsed.files
+      setParsedContent(parsedFiles)
 
       // Step 2: Generate outline
       setProgressPhase('outline')
@@ -162,7 +164,7 @@ export function ContentGenerationModal({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          parsedContent: parsed,
+          parsedContent: parsedFiles,
           mode,
           lens,
           programName,
@@ -182,7 +184,7 @@ export function ContentGenerationModal({
       const contentRes = await fetch('/api/super-admin/training/generate-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ outline, parsedContent: parsed, mode, lens }),
+        body: JSON.stringify({ outline, parsedContent: parsedFiles, mode, lens }),
       })
 
       if (!contentRes.ok) {

@@ -5,6 +5,8 @@ import { isSuperAdmin } from '@/lib/rbac'
 import { generateOutline, withRetry } from '@/lib/content-generator'
 import type { ParsedFile, GenerationMode, GenerationLens } from '@/lib/content-generator-types'
 
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !isSuperAdmin(session)) {

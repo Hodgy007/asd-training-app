@@ -34,11 +34,15 @@ export function FileDropZone({ files, onFilesChange, disabled = false }: FileDro
   const [isDragOver, setIsDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.pptx']
+
   const addFiles = useCallback((incoming: FileList | File[]) => {
     const arr = Array.from(incoming)
-    const filtered = arr.filter(
-      (f) => !files.some((existing) => existing.name === f.name && existing.size === f.size)
-    )
+    const filtered = arr.filter((f) => {
+      const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase()
+      if (!ALLOWED_EXTENSIONS.includes(ext)) return false
+      return !files.some((existing) => existing.name === f.name && existing.size === f.size)
+    })
     if (filtered.length > 0) {
       onFilesChange([...files, ...filtered])
     }
