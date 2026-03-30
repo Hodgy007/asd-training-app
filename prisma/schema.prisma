@@ -31,6 +31,8 @@ model User {
   hostedSessions   ClassSession[]     @relation("SessionHost")
   createdSessions  ClassSession[]     @relation("SessionCreator")
   sessionAttendees SessionAttendee[]
+  surveysCreated   Survey[]         @relation("SurveysCreated")
+  surveyResponses  SurveyResponse[] @relation("SurveyResponses")
 }
 
 model Account {
@@ -83,6 +85,7 @@ model Organisation {
   sessions      ClassSession[]
   meetingConfig OrgMeetingConfig?
   ssoConfig     OrgSsoConfig?
+  surveyTargets SurveyTarget[]
 }
 
 model Announcement {
@@ -290,6 +293,84 @@ model OrgSsoConfig {
   organisation Organisation @relation(fields: [organisationId], references: [id])
 }
 
+model Survey {
+  id          String       @id @default(cuid())
+  title       String
+  description String?      @db.Text
+  status      SurveyStatus @default(DRAFT)
+  closesAt    DateTime?
+  createdById String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  createdBy  User             @relation("SurveysCreated", fields: [createdById], references: [id])
+  questions  SurveyQuestion[]
+  targets    SurveyTarget[]
+  responses  SurveyResponse[]
+  insights   SurveyInsight[]
+}
+
+model SurveyQuestion {
+  id       String       @id @default(cuid())
+  surveyId String
+  type     QuestionType
+  question String       @db.Text
+  options  String?      @db.Text
+  required Boolean      @default(true)
+  order    Int
+
+  survey  Survey         @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  answers SurveyAnswer[]
+}
+
+model SurveyTarget {
+  id             String  @id @default(cuid())
+  surveyId       String
+  role           Role?
+  organisationId String?
+
+  survey       Survey        @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: SetNull)
+}
+
+model SurveyResponse {
+  id          String    @id @default(cuid())
+  surveyId    String
+  userId      String
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  survey  Survey         @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  user    User           @relation("SurveyResponses", fields: [userId], references: [id], onDelete: Cascade)
+  answers SurveyAnswer[]
+
+  @@unique([surveyId, userId])
+}
+
+model SurveyAnswer {
+  id         String @id @default(cuid())
+  responseId String
+  questionId String
+  value      String @db.Text
+
+  response SurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([responseId, questionId])
+}
+
+model SurveyInsight {
+  id          String      @id @default(cuid())
+  surveyId    String
+  type        InsightType
+  content     String      @db.Text
+  generatedAt DateTime    @default(now())
+
+  survey Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@unique([surveyId, type])
+}
+
 enum MeetingPlatform {
   ZOOM
   TEAMS
@@ -337,4 +418,24 @@ enum Context {
   NURSERY
   OUTDOORS
   OTHER
+}
+
+enum SurveyStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  YES_NO
+  FREE_TEXT
+  RATING_SCALE
+  MULTI_SELECT
+}
+
+enum InsightType {
+  SUMMARY
+  COMPARATIVE
+  RECOMMENDATIONS
 }
