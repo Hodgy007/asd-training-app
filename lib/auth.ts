@@ -232,6 +232,7 @@ export const authOptions: NextAuthOptions = {
         session.user.totpEnabled = token.totpEnabled as boolean
         session.user.mfaPending = token.mfaPending as boolean
         session.user.effectivePrograms = (token.effectivePrograms as ProgramInfo[]) ?? []
+        session.user.charityPermissions = (token.charityPermissions as string[]) ?? []
       }
       return session
     },
