@@ -67,7 +67,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Force MFA setup for admin roles
-  const isAdmin = role === 'SUPER_ADMIN' || role === 'ORG_ADMIN'
+  const isAdmin = role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE' || role === 'ORG_ADMIN'
   if (isAdmin && !totpEnabled && !mfaPending) {
     const allowedPaths = ['/mfa-setup', '/api/auth/mfa', '/api/auth']
     if (allowedPaths.some((p) => pathname.startsWith(p))) {
@@ -84,8 +84,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(homeForRole(role), req.url))
   }
 
-  // Route protection: /super-admin/* — SUPER_ADMIN only
-  if (pathname.startsWith('/super-admin') && role !== 'SUPER_ADMIN') {
+  // Route protection: /super-admin/* — SUPER_ADMIN and CHARITY_EMPLOYEE
+  if (pathname.startsWith('/super-admin') && role !== 'SUPER_ADMIN' && role !== 'CHARITY_EMPLOYEE') {
     return NextResponse.redirect(new URL(homeForRole(role), req.url))
   }
 
@@ -94,10 +94,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(homeForRole(role), req.url))
   }
 
-  // SUPER_ADMIN and ORG_ADMIN cannot access leaf-role routes (except training/careers preview for super admins)
-  if (role === 'SUPER_ADMIN' || role === 'ORG_ADMIN') {
+  // Charity-level, ORG_ADMIN cannot access leaf-role routes (except training/careers preview for charity-level users)
+  if (role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE' || role === 'ORG_ADMIN') {
     const previewPaths = ['/training', '/careers']
-    const isPreview = role === 'SUPER_ADMIN' && previewPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
+    const isPreview = (role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE') && previewPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
     if (!isPreview) {
       const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/children', '/reports', '/settings', '/guide']
       if (leafOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
@@ -122,6 +122,7 @@ export async function middleware(req: NextRequest) {
 function homeForRole(role: string): string {
   switch (role) {
     case 'SUPER_ADMIN':
+    case 'CHARITY_EMPLOYEE':
       return '/super-admin'
     case 'ORG_ADMIN':
       return '/admin'
