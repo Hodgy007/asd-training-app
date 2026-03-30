@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Users, Building2, Check } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -44,6 +44,9 @@ function buildTargets(
   const roles: (string | null)[] = allRoles ? [null] : selectedRoles
   const orgs: (string | null)[] = allOrgs ? [null] : selectedOrgIds
 
+  // If either dimension is empty, no valid targets can be produced
+  if (roles.length === 0 || orgs.length === 0) return []
+
   const targets: SurveyTargetConfig[] = []
   for (const role of roles) {
     for (const organisationId of orgs) {
@@ -51,6 +54,20 @@ function buildTargets(
     }
   }
   return targets
+}
+
+// ─── Derive internal state from value prop ────────────────────────────────────
+
+function deriveState(value: SurveyTargetConfig[]) {
+  const allRoles = value.some((t) => t.role === null)
+  const allOrgs = value.some((t) => t.organisationId === null)
+  const selectedRoles = allRoles
+    ? []
+    : Array.from(new Set(value.map((t) => t.role).filter((r): r is string => r !== null)))
+  const selectedOrgIds = allOrgs
+    ? []
+    : Array.from(new Set(value.map((t) => t.organisationId).filter((o): o is string => o !== null)))
+  return { allRoles, selectedRoles, allOrgs, selectedOrgIds }
 }
 
 // ─── Toggle button ─────────────────────────────────────────────────────────────
@@ -87,19 +104,34 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
   const [organisations, setOrganisations] = useState<Organisation[]>([])
   const [loadingOrgs, setLoadingOrgs] = useState(true)
 
-  // Derive current selection state from the `value` prop
-  const allRolesSelected = value.some((t) => t.role === null)
-  const allOrgsSelected = value.some((t) => t.organisationId === null)
+  // ─── Internal state (independent of cartesian product) ────────────────────
+  // This prevents one empty dimension from wiping out the other.
+  const [allRoles, setAllRoles] = useState(false)
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([])
+  const [allOrgs, setAllOrgs] = useState(false)
+  const [selectedOrgIds, setSelectedOrgIds] = useState<string[]>([])
 
-  const selectedRoles = allRolesSelected
-    ? []
-    : Array.from(new Set(value.map((t) => t.role).filter((r): r is string => r !== null)))
+  // Seed internal state from value prop on mount
+  const initialised = useRef(false)
+  useEffect(() => {
+    if (!initialised.current && value.length > 0) {
+      const derived = deriveState(value)
+      setAllRoles(derived.allRoles)
+      setSelectedRoles(derived.selectedRoles)
+      setAllOrgs(derived.allOrgs)
+      setSelectedOrgIds(derived.selectedOrgIds)
+      initialised.current = true
+    }
+  }, [value])
 
-  const selectedOrgIds = allOrgsSelected
-    ? []
-    : Array.from(
-        new Set(value.map((t) => t.organisationId).filter((o): o is string => o !== null))
-      )
+  // ─── Emit changes to parent whenever internal state changes ───────────────
+  const emit = useCallback(
+    (ar: boolean, sr: string[], ao: boolean, so: string[]) => {
+      const targets = buildTargets(ar, sr, ao, so)
+      onChange(targets)
+    },
+    [onChange]
+  )
 
   // ─── Fetch orgs on mount ───────────────────────────────────────────────────
 
@@ -124,62 +156,65 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
     }
   }, [])
 
-  // ─── Emit helper ──────────────────────────────────────────────────────────
-
-  const emit = useCallback(
-    (
-      nextAllRoles: boolean,
-      nextSelectedRoles: string[],
-      nextAllOrgs: boolean,
-      nextSelectedOrgIds: string[]
-    ) => {
-      onChange(buildTargets(nextAllRoles, nextSelectedRoles, nextAllOrgs, nextSelectedOrgIds))
-    },
-    [onChange]
-  )
-
   // ─── Role handlers ────────────────────────────────────────────────────────
 
   const handleToggleAllRoles = () => {
-    if (allRolesSelected) {
-      // Deselect all — fall back to no roles selected
-      emit(false, [], allOrgsSelected, selectedOrgIds)
-    } else {
-      // When selecting "All roles" and no orgs are chosen yet, default to "All orgs" too
-      const needDefaultOrgs = !allOrgsSelected && selectedOrgIds.length === 0
-      emit(true, [], needDefaultOrgs ? true : allOrgsSelected, needDefaultOrgs ? [] : selectedOrgIds)
-    }
+    const nextAllRoles = !allRoles
+    const nextSelectedRoles: string[] = []
+
+    setAllRoles(nextAllRoles)
+    if (nextAllRoles) setSelectedRoles([])
+
+    emit(
+      nextAllRoles,
+      nextAllRoles ? [] : selectedRoles,
+      allOrgs,
+      selectedOrgIds
+    )
   }
 
   const handleToggleRole = (role: string) => {
-    const next = selectedRoles.includes(role)
+    const nextSelected = selectedRoles.includes(role)
       ? selectedRoles.filter((r) => r !== role)
       : [...selectedRoles, role]
-    // If selecting a role and no orgs are chosen yet, default to "All orgs"
-    const needDefaultOrgs = !allOrgsSelected && selectedOrgIds.length === 0 && next.length > 0
-    emit(false, next, needDefaultOrgs ? true : allOrgsSelected, needDefaultOrgs ? [] : selectedOrgIds)
+
+    setAllRoles(false)
+    setSelectedRoles(nextSelected)
+
+    emit(false, nextSelected, allOrgs, selectedOrgIds)
   }
 
   // ─── Org handlers ─────────────────────────────────────────────────────────
 
   const handleToggleAllOrgs = () => {
-    if (allOrgsSelected) {
-      emit(allRolesSelected, selectedRoles, false, [])
-    } else {
-      // When selecting "All orgs" and no roles are chosen yet, default to "All roles" too
-      const needDefaultRoles = !allRolesSelected && selectedRoles.length === 0
-      emit(needDefaultRoles ? true : allRolesSelected, needDefaultRoles ? [] : selectedRoles, true, [])
-    }
+    const nextAllOrgs = !allOrgs
+
+    setAllOrgs(nextAllOrgs)
+    if (nextAllOrgs) setSelectedOrgIds([])
+
+    emit(
+      allRoles,
+      selectedRoles,
+      nextAllOrgs,
+      nextAllOrgs ? [] : selectedOrgIds
+    )
   }
 
   const handleToggleOrg = (orgId: string) => {
-    const next = selectedOrgIds.includes(orgId)
+    const nextSelected = selectedOrgIds.includes(orgId)
       ? selectedOrgIds.filter((o) => o !== orgId)
       : [...selectedOrgIds, orgId]
-    // If selecting an org and no roles are chosen yet, default to "All roles"
-    const needDefaultRoles = !allRolesSelected && selectedRoles.length === 0 && next.length > 0
-    emit(needDefaultRoles ? true : allRolesSelected, needDefaultRoles ? [] : selectedRoles, false, next)
+
+    setAllOrgs(false)
+    setSelectedOrgIds(nextSelected)
+
+    emit(allRoles, selectedRoles, false, nextSelected)
   }
+
+  // ─── Derived display state ────────────────────────────────────────────────
+  const hasRoleSelection = allRoles || selectedRoles.length > 0
+  const hasOrgSelection = allOrgs || selectedOrgIds.length > 0
+  const targetCount = value.length
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -195,11 +230,11 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <ToggleButton selected={allRolesSelected} onClick={handleToggleAllRoles}>
+          <ToggleButton selected={allRoles} onClick={handleToggleAllRoles}>
             All roles
           </ToggleButton>
 
-          {!allRolesSelected &&
+          {!allRoles &&
             LEAF_ROLES.map((r) => (
               <ToggleButton
                 key={r.value}
@@ -210,6 +245,12 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
               </ToggleButton>
             ))}
         </div>
+
+        {!hasRoleSelection && (
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
+            Select at least one role.
+          </p>
+        )}
       </div>
 
       {/* ── Target Organisations ──────────────────────────────────────────── */}
@@ -225,11 +266,11 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
           <p className="text-sm text-slate-400 dark:text-slate-500">Loading organisations…</p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            <ToggleButton selected={allOrgsSelected} onClick={handleToggleAllOrgs}>
+            <ToggleButton selected={allOrgs} onClick={handleToggleAllOrgs}>
               All organisations
             </ToggleButton>
 
-            {!allOrgsSelected &&
+            {!allOrgs &&
               organisations.map((org) => (
                 <ToggleButton
                   key={org.id}
@@ -241,14 +282,25 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
               ))}
           </div>
         )}
+
+        {!hasOrgSelection && (
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
+            Select at least one organisation.
+          </p>
+        )}
       </div>
 
       {/* ── Summary ───────────────────────────────────────────────────────── */}
-      {value.length > 0 && (
+      {targetCount > 0 && (
         <p className="text-xs text-slate-400 dark:text-slate-500">
-          {value.length === 1 && value[0].role === null && value[0].organisationId === null
+          {targetCount === 1 && value[0].role === null && value[0].organisationId === null
             ? 'Targeting all roles across all organisations.'
-            : `${value.length} target combination${value.length === 1 ? '' : 's'} selected.`}
+            : `${targetCount} target combination${targetCount === 1 ? '' : 's'} selected.`}
+        </p>
+      )}
+      {hasRoleSelection && hasOrgSelection && targetCount === 0 && (
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          Computing targets…
         </p>
       )}
     </div>
