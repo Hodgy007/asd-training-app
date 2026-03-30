@@ -102,6 +102,8 @@ export default function OrgDetailPage() {
 
   // Delete
   const [deleting, setDeleting] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
@@ -213,7 +215,6 @@ export default function OrgDetailPage() {
 
   async function handleDelete() {
     if (!org) return
-    if (!confirm(`Delete "${org.name}"? This cannot be undone.`)) return
     setDeleting(true)
     try {
       const res = await fetch(`/api/super-admin/organisations/${orgId}`, { method: 'DELETE' })
@@ -225,6 +226,8 @@ export default function OrgDetailPage() {
       }
     } finally {
       setDeleting(false)
+      setShowDeleteModal(false)
+      setDeleteConfirmText('')
     }
   }
 
@@ -571,24 +574,24 @@ export default function OrgDetailPage() {
       </div>
 
       {/* Danger zone */}
-      <div className="card border border-red-200 space-y-3">
-        <h2 className="text-base font-semibold text-red-700">Danger Zone</h2>
-        <p className="text-sm text-slate-500">
+      <div className="card border border-red-200 dark:border-red-900 space-y-3">
+        <h2 className="text-base font-semibold text-red-700 dark:text-red-400">Danger Zone</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Permanently delete this organisation. Only available when there are no users.
         </p>
         <button
-          onClick={handleDelete}
+          onClick={() => setShowDeleteModal(true)}
           disabled={deleting || org._count.users > 0}
           className={clsx(
             'inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors',
             org._count.users > 0
-              ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              ? 'bg-slate-100 text-slate-400 cursor-not-allowed dark:bg-slate-700 dark:text-slate-500'
               : 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
           )}
           title={org._count.users > 0 ? 'Remove all users before deleting this organisation' : undefined}
         >
           <Trash2 className="h-4 w-4" />
-          {deleting ? 'Deleting...' : 'Delete Organisation'}
+          Delete Organisation
         </button>
         {org._count.users > 0 && (
           <p className="text-xs text-slate-400">
@@ -596,6 +599,58 @@ export default function OrgDetailPage() {
           </p>
         )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Delete Organisation</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              To confirm, type{' '}
+              <span className="font-mono font-bold text-red-600 dark:text-red-400">
+                Yes I want to delete this
+              </span>{' '}
+              below:
+            </p>
+
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="Type the confirmation phrase..."
+              className="input w-full text-sm"
+              autoFocus
+            />
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => { setShowDeleteModal(false); setDeleteConfirmText('') }}
+                className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleteConfirmText !== 'Yes I want to delete this' || deleting}
+                className="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {deleting ? 'Deleting...' : 'Delete Permanently'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )
