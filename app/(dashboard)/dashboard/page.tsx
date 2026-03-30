@@ -16,6 +16,7 @@ import { formatObservationDate } from '@/lib/observations'
 import { differenceInYears } from 'date-fns'
 import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
+import { PendingSurveys } from '@/components/dashboard/pending-surveys'
 import { isSuperAdmin } from '@/lib/rbac'
 
 export default async function DashboardPage() {
@@ -101,6 +102,9 @@ export default async function DashboardPage() {
 
       {/* Upcoming Sessions */}
       <UpcomingSessions />
+
+      {/* Pending Surveys */}
+      <PendingSurveys />
 
       {/* Stats row */}
       <div className={`grid grid-cols-1 ${isCaregiver ? 'sm:grid-cols-3' : 'sm:grid-cols-1 max-w-sm'} gap-4`}>
