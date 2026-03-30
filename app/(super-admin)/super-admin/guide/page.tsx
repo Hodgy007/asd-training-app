@@ -64,7 +64,7 @@ export default function SuperAdminGuidePage() {
           How to Guide
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          A comprehensive reference for managing the platform as a Super Admin. Each section below covers a key area of the admin panel with step-by-step instructions.
+          A comprehensive reference for managing the platform as a Charity Admin. Each section below covers a key area of the admin panel with step-by-step instructions.
         </p>
       </div>
 
@@ -82,7 +82,37 @@ export default function SuperAdminGuidePage() {
         <Tip>Use the Overview page as your daily starting point to spot trends and quickly navigate to areas that need attention.</Tip>
       </SectionCard>
 
-      {/* 2. Managing Organisations */}
+      {/* 2. Managing Charity Users */}
+      <SectionCard icon={Users} title="Managing Charity Users">
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          As a Charity Admin, you can create and manage other Charity Admin and Charity Employee accounts from the <strong>Users</strong> page.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a new user</h3>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Navigate to <strong>Users</strong> from the sidebar.</li>
+          <li>Click <strong>Add User</strong>.</li>
+          <li>Enter the user&apos;s name, email, and a temporary password.</li>
+          <li>Select the role: <strong>Charity Admin</strong> (full access) or <strong>Charity Employee</strong> (delegated access).</li>
+          <li>If Charity Employee, select which permissions to grant (Manage Organisations, Manage Training, Manage Surveys, Manage Announcements, View Reports).</li>
+          <li>Click <strong>Create User</strong>. The user will be prompted to change their password on first login.</li>
+        </ol>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing a user</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Click the edit button on any user to change their name, role, permissions, or active status. You can also reset their password. Note that you cannot deactivate your own account.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Charity Admin vs Charity Employee</h3>
+        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li><strong>Charity Admin</strong> &mdash; full platform access including user management. Multiple Charity Admins can exist.</li>
+          <li><strong>Charity Employee</strong> &mdash; can only access areas they have been granted permission for. Cannot manage other users.</li>
+        </ul>
+
+        <Tip>Use Charity Employee accounts for staff who only need access to specific areas. This follows the principle of least privilege.</Tip>
+      </SectionCard>
+
+      {/* 3. Managing Organisations */}
       <SectionCard icon={Building2} title="Managing Organisations">
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           Organisations are the top-level tenants on the platform. Each organisation has its own users, training access, and configuration.
@@ -335,7 +365,8 @@ export default function SuperAdminGuidePage() {
 
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Roles explained</h3>
         <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Super Admin</strong> <Crown className="inline h-3.5 w-3.5 text-purple-500" /> &mdash; full platform access. Manages organisations, training content, surveys, announcements, and reports across the entire platform.</li>
+          <li><strong>Charity Admin</strong> <Crown className="inline h-3.5 w-3.5 text-purple-500" /> &mdash; full platform access including user management. Manages organisations, training content, surveys, announcements, and reports across the entire platform.</li>
+          <li><strong>Charity Employee</strong> <Shield className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; delegated platform access with specific permissions granted by a Charity Admin. Can manage organisations, training, surveys, announcements, and/or reports depending on assigned permissions.</li>
           <li><strong>Org Admin</strong> <Users className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; manages users, announcements, sessions, and reports within their own organisation.</li>
           <li><strong>Practitioner</strong> (Caregiver) &mdash; accesses ASD training, child observations, and reports.</li>
           <li><strong>Career Dev Officer</strong> &mdash; accesses careers CPD training.</li>
@@ -346,7 +377,7 @@ export default function SuperAdminGuidePage() {
 
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">MFA / TOTP requirement</h3>
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Multi-factor authentication (TOTP) is <strong>mandatory</strong> for Super Admin and Org Admin roles. Admin users without MFA configured will be redirected to the MFA setup page and cannot access any other part of the platform until it is enabled.
+          Multi-factor authentication (TOTP) is <strong>mandatory</strong> for Charity Admin, Charity Employee, and Org Admin roles. Admin users without MFA configured will be redirected to the MFA setup page and cannot access any other part of the platform until it is enabled.
         </p>
 
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">How users are managed</h3>
