@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Loader2, BarChart3, Pencil, Trash2, Send, XCircle, Sparkles } from 'lucide-react'
+import { Plus, Loader2, BarChart3, Pencil, Trash2, Send, XCircle, Sparkles, Eye, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { clsx } from 'clsx'
 import { SurveyBuilder } from '@/components/super-admin/survey-builder'
@@ -93,6 +93,7 @@ export default function SurveysPage() {
   const [showAiModal, setShowAiModal] = useState(false)
   const [aiGeneratedData, setAiGeneratedData] = useState<GeneratedSurvey | null>(null)
   const [saving, setSaving] = useState(false)
+  const [viewingSurvey, setViewingSurvey] = useState<Survey | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   /* ── Fetch surveys ──────────────────────────────────────────────── */
@@ -189,6 +190,22 @@ export default function SurveysPage() {
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  /* ── View survey ─────────────────────────────────────────────────── */
+
+  async function viewSurvey(surveyId: string) {
+    try {
+      const res = await fetch(`/api/super-admin/surveys/${surveyId}`)
+      if (res.ok) {
+        const full: Survey = await res.json()
+        setViewingSurvey(full)
+      } else {
+        showToast('Failed to load survey', 'error')
+      }
+    } catch {
+      showToast('Failed to load survey', 'error')
     }
   }
 
@@ -395,6 +412,15 @@ export default function SurveysPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => viewSurvey(survey.id)}
+                    title="View survey"
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-calm-50 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    View
+                  </button>
+
                   {survey.status === 'DRAFT' && (
                     <>
                       <button
@@ -457,6 +483,121 @@ export default function SurveysPage() {
         onClose={() => setShowAiModal(false)}
         onGenerated={handleAiGenerated}
       />
+
+      {/* View Survey Modal */}
+      {viewingSurvey && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+              <div className="flex items-center gap-3 min-w-0">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate">
+                  {viewingSurvey.title}
+                </h3>
+                <span
+                  className={clsx(
+                    'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0',
+                    STATUS_BADGE[viewingSurvey.status] ?? STATUS_BADGE.DRAFT
+                  )}
+                >
+                  {STATUS_LABEL[viewingSurvey.status] ?? viewingSurvey.status}
+                </span>
+              </div>
+              <button
+                onClick={() => setViewingSurvey(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-calm-100 dark:hover:bg-slate-700 flex-shrink-0"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6">
+              {/* Description */}
+              {viewingSurvey.description && (
+                <div>
+                  <p className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Description</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">{viewingSurvey.description}</p>
+                </div>
+              )}
+
+              {/* Meta info */}
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+                <span>Created {format(new Date(viewingSurvey.createdAt), 'dd MMM yyyy')}</span>
+                {viewingSurvey.closesAt && (
+                  <span>Closes {format(new Date(viewingSurvey.closesAt), 'dd MMM yyyy, HH:mm')}</span>
+                )}
+                <span>{viewingSurvey._count.responses} response{viewingSurvey._count.responses !== 1 ? 's' : ''}</span>
+                <span>{getTargetSummary(viewingSurvey.targets)}</span>
+              </div>
+
+              {/* Questions */}
+              <div>
+                <p className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
+                  Questions ({viewingSurvey.questions?.length ?? 0})
+                </p>
+                <div className="space-y-3">
+                  {(viewingSurvey.questions ?? [])
+                    .slice()
+                    .sort((a, b) => a.order - b.order)
+                    .map((q, idx) => {
+                      const parsedOptions: string[] = q.options ? (() => { try { return JSON.parse(q.options) } catch { return [] } })() : []
+                      return (
+                        <div
+                          key={q.id}
+                          className="rounded-lg border border-calm-200 dark:border-slate-700 p-4 bg-calm-50 dark:bg-slate-700/50"
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-xs font-bold flex items-center justify-center mt-0.5">
+                              {idx + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                {q.question}
+                                {q.required && <span className="text-red-500 ml-1">*</span>}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-500 dark:bg-slate-600 dark:text-slate-400">
+                                  {q.type.replace(/_/g, ' ')}
+                                </span>
+                                {!q.required && (
+                                  <span className="text-xs text-slate-400 dark:text-slate-500">Optional</span>
+                                )}
+                              </div>
+                              {parsedOptions.length > 0 && (
+                                <ul className="mt-2 space-y-1">
+                                  {parsedOptions.map((opt, oi) => (
+                                    <li key={oi} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-500 flex-shrink-0" />
+                                      {opt}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                              {q.type === 'RATING_SCALE' && (
+                                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Scale: 1 to 5</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-calm-200 dark:border-slate-700 px-6 py-4 flex justify-end">
+              <button
+                onClick={() => setViewingSurvey(null)}
+                className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

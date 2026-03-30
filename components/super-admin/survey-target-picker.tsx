@@ -145,7 +145,9 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
       // Deselect all — fall back to no roles selected
       emit(false, [], allOrgsSelected, selectedOrgIds)
     } else {
-      emit(true, [], allOrgsSelected, selectedOrgIds)
+      // When selecting "All roles" and no orgs are chosen yet, default to "All orgs" too
+      const needDefaultOrgs = !allOrgsSelected && selectedOrgIds.length === 0
+      emit(true, [], needDefaultOrgs ? true : allOrgsSelected, needDefaultOrgs ? [] : selectedOrgIds)
     }
   }
 
@@ -153,7 +155,9 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
     const next = selectedRoles.includes(role)
       ? selectedRoles.filter((r) => r !== role)
       : [...selectedRoles, role]
-    emit(false, next, allOrgsSelected, selectedOrgIds)
+    // If selecting a role and no orgs are chosen yet, default to "All orgs"
+    const needDefaultOrgs = !allOrgsSelected && selectedOrgIds.length === 0 && next.length > 0
+    emit(false, next, needDefaultOrgs ? true : allOrgsSelected, needDefaultOrgs ? [] : selectedOrgIds)
   }
 
   // ─── Org handlers ─────────────────────────────────────────────────────────
@@ -162,7 +166,9 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
     if (allOrgsSelected) {
       emit(allRolesSelected, selectedRoles, false, [])
     } else {
-      emit(allRolesSelected, selectedRoles, true, [])
+      // When selecting "All orgs" and no roles are chosen yet, default to "All roles" too
+      const needDefaultRoles = !allRolesSelected && selectedRoles.length === 0
+      emit(needDefaultRoles ? true : allRolesSelected, needDefaultRoles ? [] : selectedRoles, true, [])
     }
   }
 
@@ -170,7 +176,9 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
     const next = selectedOrgIds.includes(orgId)
       ? selectedOrgIds.filter((o) => o !== orgId)
       : [...selectedOrgIds, orgId]
-    emit(allRolesSelected, selectedRoles, false, next)
+    // If selecting an org and no roles are chosen yet, default to "All roles"
+    const needDefaultRoles = !allRolesSelected && selectedRoles.length === 0 && next.length > 0
+    emit(needDefaultRoles ? true : allRolesSelected, needDefaultRoles ? [] : selectedRoles, false, next)
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────
