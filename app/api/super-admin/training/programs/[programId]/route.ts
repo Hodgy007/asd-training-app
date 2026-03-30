@@ -89,11 +89,24 @@ export async function DELETE(
     return NextResponse.json({ error: 'Program not found' }, { status: 404 })
   }
 
+  // Cascade delete: remove all modules (and their lessons + quiz questions) first
   if (program._count.modules > 0) {
-    return NextResponse.json(
-      { error: 'Cannot delete a program that has modules. Remove all modules first.' },
-      { status: 400 }
-    )
+    // Delete training progress records referencing this program's modules
+    const moduleIds = (
+      await prisma.module.findMany({
+        where: { programId },
+        select: { id: true },
+      })
+    ).map((m) => m.id)
+
+    if (moduleIds.length > 0) {
+      await prisma.trainingProgress.deleteMany({
+        where: { moduleId: { in: moduleIds } },
+      })
+
+      // Lessons and quiz questions cascade automatically via onDelete: Cascade
+      await prisma.module.deleteMany({ where: { programId } })
+    }
   }
 
   await prisma.trainingProgram.delete({ where: { id: programId } })

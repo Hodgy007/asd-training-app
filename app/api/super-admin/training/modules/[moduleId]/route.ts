@@ -70,17 +70,12 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'Module not found' }, { status: 404 })
   }
 
-  // Safety check: block deletion if any TrainingProgress records reference this module
-  const progressCount = await prisma.trainingProgress.count({
+  // Cascade: remove any training progress records referencing this module first
+  await prisma.trainingProgress.deleteMany({
     where: { moduleId: params.moduleId },
   })
-  if (progressCount > 0) {
-    return NextResponse.json(
-      { error: `Cannot delete module: ${progressCount} training progress record(s) reference it.` },
-      { status: 400 }
-    )
-  }
 
+  // Lessons and quiz questions cascade automatically via onDelete: Cascade in schema
   await prisma.module.delete({ where: { id: params.moduleId } })
   return NextResponse.json({ success: true })
 }

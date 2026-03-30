@@ -194,6 +194,31 @@ export default function TrainingContentPage() {
     }
   }
 
+  async function deleteModule(moduleId: string, moduleTitle: string, programId: string) {
+    const ok = window.confirm(`Delete "${moduleTitle}"? All lessons, quizzes, and any related training progress will be permanently deleted.`)
+    if (!ok) return
+    setActionLoading(moduleId)
+    try {
+      const res = await fetch(`/api/super-admin/training/modules/${moduleId}`, { method: 'DELETE' })
+      if (res.ok) {
+        // Refresh modules for this program
+        const progRes = await fetch(`/api/super-admin/training/programs/${programId}`)
+        if (progRes.ok) {
+          const full = await progRes.json()
+          setPrograms((prev) =>
+            prev.map((p) => (p.id === programId ? { ...p, modules: full.modules ?? [] } : p))
+          )
+        }
+        showToast('Module deleted', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Failed to delete module', 'error')
+      }
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   async function toggleModuleActive(moduleId: string, currentActive: boolean, programId: string) {
     setActionLoading(moduleId)
     try {
@@ -515,6 +540,13 @@ export default function TrainingContentPage() {
                           >
                             {mod.active ? 'Disable' : 'Enable'}
                           </button>
+                          <button
+                            onClick={() => deleteModule(mod.id, mod.title, program.id)}
+                            disabled={actionLoading === mod.id}
+                            className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
                           <Link
                             href={`/training/${program.id}`}
                             className="inline-flex items-center gap-1 border border-calm-200 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-600 dark:text-slate-300 transition-colors"
@@ -739,7 +771,11 @@ function EditProgramForm({
   }
 
   const handleDelete = async () => {
-    const ok = window.confirm(`Delete "${program.name}"? This will fail if the program still has modules. Remove all modules first.`)
+    const moduleCount = program._count?.modules ?? 0
+    const msg = moduleCount > 0
+      ? `Delete "${program.name}"? This program has ${moduleCount} module${moduleCount > 1 ? 's' : ''} assigned. All modules, lessons, quizzes, and any related training progress will be permanently deleted. Are you sure?`
+      : `Delete "${program.name}"? This cannot be undone.`
+    const ok = window.confirm(msg)
     if (!ok) return
     setSubmitting(true)
     try {
