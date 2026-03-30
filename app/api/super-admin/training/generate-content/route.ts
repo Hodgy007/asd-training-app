@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { isSuperAdmin } from '@/lib/rbac'
+import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { generateLessonContent, generateQuizForLesson, withRetry } from '@/lib/content-generator'
 import type {
   ParsedFile,
@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session || !isSuperAdmin(session)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 })
   }
 

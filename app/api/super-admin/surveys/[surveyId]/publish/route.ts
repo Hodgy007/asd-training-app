@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { isSuperAdmin } from '@/lib/rbac'
+import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(
@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: { surveyId: string } }
 ) {
   const session = await getServerSession(authOptions)
-  if (!session || !isSuperAdmin(session)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SURVEYS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

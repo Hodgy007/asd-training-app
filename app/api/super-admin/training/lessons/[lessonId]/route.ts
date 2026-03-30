@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { isSuperAdmin } from '@/lib/rbac'
+import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { getLessonById } from '@/lib/training-db'
 import prisma from '@/lib/prisma'
 import { LessonType } from '@prisma/client'
@@ -12,7 +12,7 @@ interface Params {
 
 export async function GET(_req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions)
-  if (!session || !isSuperAdmin(session)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -35,7 +35,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions)
-  if (!session || !isSuperAdmin(session)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -68,7 +68,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const session = await getServerSession(authOptions)
-  if (!session || !isSuperAdmin(session)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

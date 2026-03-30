@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { isSuperAdmin } from '@/lib/rbac'
+import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { generateOutline, withRetry } from '@/lib/content-generator'
 import type { ParsedFile, GenerationMode, GenerationLens } from '@/lib/content-generator-types'
 
@@ -9,7 +9,7 @@ export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session || !isSuperAdmin(session)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
