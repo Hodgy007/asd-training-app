@@ -19,6 +19,7 @@ model User {
   mustChangePassword Boolean            @default(false)
   totpSecret         String?
   totpEnabled        Boolean            @default(false)
+  charityPermissions String[]           @default([])
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
@@ -393,6 +394,7 @@ enum ProgramStatus {
 
 enum Role {
   SUPER_ADMIN
+  CHARITY_EMPLOYEE
   ORG_ADMIN
   CAREGIVER
   CAREER_DEV_OFFICER

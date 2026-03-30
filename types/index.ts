@@ -1,5 +1,6 @@
 export type Role =
   | 'SUPER_ADMIN'
+  | 'CHARITY_EMPLOYEE'
   | 'ORG_ADMIN'
   | 'CAREGIVER'
   | 'CAREER_DEV_OFFICER'
@@ -53,6 +54,7 @@ export interface User {
   mustChangePassword: boolean
   totpEnabled?: boolean
   mfaPending?: boolean
+  charityPermissions?: string[]
   createdAt: Date
   updatedAt: Date
 }
@@ -199,6 +201,7 @@ declare module 'next-auth' {
       totpEnabled: boolean
       mfaPending: boolean
       effectivePrograms: { id: string; name: string }[]
+      charityPermissions: string[]
     }
   }
 }
@@ -212,5 +215,6 @@ declare module 'next-auth/jwt' {
     totpEnabled: boolean
     mfaPending: boolean
     effectivePrograms: { id: string; name: string }[]
+    charityPermissions: string[]
   }
 }
