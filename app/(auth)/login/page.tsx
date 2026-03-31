@@ -24,7 +24,13 @@ function LoginForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [loginMethod, setLoginMethod] = useState<'password' | 'sso'>('password')
-  const [ssoOrg, setSsoOrg] = useState<{ sso: boolean; orgName: string } | null>(null)
+  const [ssoOrg, setSsoOrg] = useState<{
+    sso: boolean
+    orgName?: string
+    type?: 'charity'
+    displayName?: string
+    enforced?: boolean
+  } | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -80,10 +86,11 @@ function LoginForm() {
     setLoading(true)
     setError('')
     try {
+      const isCharity = ssoOrg?.type === 'charity'
       const res = await fetch('/api/auth/saml/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, charity: isCharity }),
       })
       const data = await res.json()
       if (data.redirectUrl) {
@@ -143,14 +150,18 @@ function LoginForm() {
             />
           </div>
 
-          {ssoOrg?.sso === true ? (
-            /* Enterprise SSO detected */
+          {ssoOrg?.sso === true && (ssoOrg.type !== 'charity' || ssoOrg.enforced) ? (
+            /* Full-screen SSO button (org SSO or enforced charity SSO) */
             <div className="space-y-4 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl mx-auto">
                 <Building2 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-slate-500 mb-4">Your organisation uses Enterprise SSO</p>
+                <p className="text-sm text-slate-500 mb-4">
+                  {ssoOrg.type === 'charity'
+                    ? 'Your organisation uses Charity SSO'
+                    : 'Your organisation uses Enterprise SSO'}
+                </p>
                 <button
                   type="button"
                   onClick={handleEnterpriseSso}
@@ -163,7 +174,7 @@ function LoginForm() {
                       Redirecting...
                     </span>
                   ) : (
-                    `Sign in with ${ssoOrg.orgName}`
+                    `Sign in with ${ssoOrg.type === 'charity' ? ssoOrg.displayName : ssoOrg.orgName}`
                   )}
                 </button>
               </div>
@@ -171,6 +182,26 @@ function LoginForm() {
           ) : (
             /* Normal login — password / SSO tabs */
             <>
+              {/* Optional charity SSO button (non-enforced) */}
+              {ssoOrg?.sso === true && ssoOrg.type === 'charity' && !ssoOrg.enforced && (
+                <div className="mb-4">
+                  <button
+                    type="button"
+                    onClick={handleEnterpriseSso}
+                    disabled={loading}
+                    className="flex items-center justify-center gap-3 w-full py-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20 text-sm font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+                  >
+                    <Building2 className="h-4 w-4" />
+                    Sign in with {ssoOrg.displayName}
+                  </button>
+                  <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 h-px bg-calm-200 dark:bg-slate-700" />
+                    <span className="text-xs text-slate-400">or</span>
+                    <div className="flex-1 h-px bg-calm-200 dark:bg-slate-700" />
+                  </div>
+                </div>
+              )}
+
               {/* Login method toggle */}
               <div className="flex rounded-xl bg-calm-100 dark:bg-slate-700 p-1 mb-6">
                 <button

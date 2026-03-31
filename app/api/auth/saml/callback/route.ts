@@ -16,7 +16,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const email = relayState.toLowerCase().trim()
+    // Determine if this is a charity SSO callback
+    const isCharity = relayState.startsWith('charity:')
+    const email = isCharity
+      ? relayState.replace('charity:', '').toLowerCase().trim()
+      : relayState.toLowerCase().trim()
+
     const domain = email.split('@')[1]
     if (!domain) {
       return NextResponse.redirect(
@@ -24,18 +29,33 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Look up SSO config for this domain
-    const config = await prisma.orgSsoConfig.findFirst({
-      where: { emailDomain: domain, configured: true },
-    })
-    if (!config) {
-      return NextResponse.redirect(
-        new URL('/login?error=No+SSO+configuration+found', req.url)
-      )
+    // Look up the appropriate SSO config
+    let certificate: string
+
+    if (isCharity) {
+      const charityConfig = await prisma.charitySsoConfig.findFirst({
+        where: { configured: true },
+      })
+      if (!charityConfig || !charityConfig.certificate) {
+        return NextResponse.redirect(
+          new URL('/login?error=No+charity+SSO+configuration+found', req.url)
+        )
+      }
+      certificate = charityConfig.certificate
+    } else {
+      const orgConfig = await prisma.orgSsoConfig.findFirst({
+        where: { emailDomain: domain, configured: true },
+      })
+      if (!orgConfig) {
+        return NextResponse.redirect(
+          new URL('/login?error=No+SSO+configuration+found', req.url)
+        )
+      }
+      certificate = orgConfig.certificate
     }
 
     // Validate the SAML response
-    const result = await validateSamlResponse(samlResponse, config.certificate)
+    const result = await validateSamlResponse(samlResponse, certificate)
     if (!result.valid) {
       console.error('SAML validation failed:', result.error)
       return NextResponse.redirect(
@@ -46,33 +66,53 @@ export async function POST(req: NextRequest) {
     const validatedEmail = (result.email || email).toLowerCase().trim()
     const validatedName = result.name
 
-    // Find or create user
+    // Find user
     let user = await prisma.user.findUnique({
       where: { email: validatedEmail },
       include: { organisation: { select: { active: true } } },
     })
 
-    if (!user && config.autoProvision) {
-      user = await prisma.user.create({
-        data: {
-          email: validatedEmail,
-          name: validatedName || validatedEmail.split('@')[0],
-          password: '', // SSO user, no password
-          role: (config.defaultRole as any) || 'EMPLOYEE', // eslint-disable-line @typescript-eslint/no-explicit-any
-          organisationId: config.organisationId,
-          active: true,
-        },
-        include: { organisation: { select: { active: true } } },
-      })
-    }
-
-    if (!user) {
-      return NextResponse.redirect(
-        new URL(
-          '/login?error=Account+not+found.+Contact+your+organisation+administrator.',
-          req.url
+    if (isCharity) {
+      // Charity SSO: user must exist as SUPER_ADMIN or CHARITY_EMPLOYEE (no auto-provision)
+      if (!user) {
+        return NextResponse.redirect(
+          new URL('/login?error=No+charity+account+found+for+this+email', req.url)
         )
-      )
+      }
+      if (user.role !== 'SUPER_ADMIN' && user.role !== 'CHARITY_EMPLOYEE') {
+        return NextResponse.redirect(
+          new URL('/login?error=This+account+is+not+a+charity+staff+account', req.url)
+        )
+      }
+    } else {
+      // Org SSO: existing auto-provision logic
+      if (!user) {
+        const orgConfig = await prisma.orgSsoConfig.findFirst({
+          where: { emailDomain: domain, configured: true },
+        })
+        if (orgConfig?.autoProvision) {
+          user = await prisma.user.create({
+            data: {
+              email: validatedEmail,
+              name: validatedName || validatedEmail.split('@')[0],
+              password: '', // SSO user, no password
+              role: (orgConfig.defaultRole as any) || 'EMPLOYEE', // eslint-disable-line @typescript-eslint/no-explicit-any
+              organisationId: orgConfig.organisationId,
+              active: true,
+            },
+            include: { organisation: { select: { active: true } } },
+          })
+        }
+      }
+
+      if (!user) {
+        return NextResponse.redirect(
+          new URL(
+            '/login?error=Account+not+found.+Contact+your+organisation+administrator.',
+            req.url
+          )
+        )
+      }
     }
 
     // Build JWT token
@@ -89,6 +129,7 @@ export async function POST(req: NextRequest) {
         totpEnabled: user.totpEnabled ?? false,
         mfaPending: false, // SAML users skip MFA (already authenticated by corporate IdP)
         effectivePrograms,
+        charityPermissions: user.charityPermissions ?? [],
       },
       secret: process.env.NEXTAUTH_SECRET!,
     })
