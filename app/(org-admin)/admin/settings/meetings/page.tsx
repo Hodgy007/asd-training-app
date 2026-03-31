@@ -59,8 +59,14 @@ export default function MeetingSettingsPage() {
         if (data) {
           setPlatform(data.platform)
           setApiKey(data.apiKey ?? '')
-          setApiSecret(data.apiSecret ?? '')
-          setTenantId(data.tenantId ?? '')
+          if (data.platform === 'ZOOM' && data.apiSecret?.includes('|')) {
+            const [cid, csec] = data.apiSecret.split('|')
+            setApiSecret(cid ?? '')
+            setTenantId(csec ?? '')
+          } else {
+            setApiSecret(data.apiSecret ?? '')
+            setTenantId(data.tenantId ?? '')
+          }
           setConfigured(data.configured)
         }
       })
@@ -75,8 +81,13 @@ export default function MeetingSettingsPage() {
   async function handleSave() {
     setSaving(true)
     try {
-      const body: Record<string, string> = { platform, apiKey, apiSecret }
-      if (platform === 'TEAMS' && tenantId) body.tenantId = tenantId
+      const body: Record<string, string> = { platform, apiKey }
+      if (platform === 'ZOOM') {
+        body.apiSecret = `${apiSecret}|${tenantId}`
+      } else {
+        body.apiSecret = apiSecret
+        if (tenantId) body.tenantId = tenantId
+      }
 
       const res = await fetch('/api/admin/settings/meetings', {
         method: 'PUT',
@@ -100,8 +111,13 @@ export default function MeetingSettingsPage() {
     setTesting(true)
     setTestResult(null)
     try {
-      const body: Record<string, string> = { platform, apiKey, apiSecret }
-      if (platform === 'TEAMS' && tenantId) body.tenantId = tenantId
+      const body: Record<string, string> = { platform, apiKey }
+      if (platform === 'ZOOM') {
+        body.apiSecret = `${apiSecret}|${tenantId}`
+      } else {
+        body.apiSecret = apiSecret
+        if (tenantId) body.tenantId = tenantId
+      }
 
       const res = await fetch('/api/admin/settings/meetings/test', {
         method: 'POST',

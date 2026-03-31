@@ -114,14 +114,18 @@ export default function CharitySessionListPage() {
     setError(null)
     try {
       const params = new URLSearchParams()
-      if (filter === 'UPCOMING') params.set('status', 'SCHEDULED')
-      else if (filter === 'COMPLETED') params.set('status', 'COMPLETED')
+      if (filter === 'COMPLETED') params.set('status', 'COMPLETED')
       else if (filter === 'CANCELLED') params.set('status', 'CANCELLED')
+      // UPCOMING fetches all and filters client-side to include both SCHEDULED + IN_PROGRESS
 
       const res = await fetch(`/api/super-admin/sessions?${params}`)
       if (res.ok) {
-        const data = await res.json()
-        setSessions(data.sessions ?? data)
+        let data = await res.json()
+        let list = data.sessions ?? data
+        if (filter === 'UPCOMING') {
+          list = list.filter((s: { status: string }) => s.status === 'SCHEDULED' || s.status === 'IN_PROGRESS')
+        }
+        setSessions(list)
       } else {
         setError('Failed to load sessions.')
       }

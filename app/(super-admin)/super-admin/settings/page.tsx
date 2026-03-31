@@ -84,8 +84,14 @@ export default function CharitySettingsPage() {
         if (data) {
           setPlatform(data.platform ?? 'ZOOM')
           setApiKey(data.apiKey ?? '')
-          setApiSecret(data.apiSecret ?? '')
-          setTenantId(data.tenantId ?? '')
+          if (data.platform === 'ZOOM' && data.apiSecret?.includes('|')) {
+            const [cid, csec] = data.apiSecret.split('|')
+            setApiSecret(cid ?? '')
+            setTenantId(csec ?? '')
+          } else {
+            setApiSecret(data.apiSecret ?? '')
+            setTenantId(data.tenantId ?? '')
+          }
           setMeetingConfigured(data.configured)
         }
       })
@@ -111,8 +117,13 @@ export default function CharitySettingsPage() {
   async function handleSaveMeeting() {
     setSavingMeeting(true)
     try {
-      const body: Record<string, string> = { platform, apiKey, apiSecret }
-      if (tenantId) body.tenantId = tenantId
+      const body: Record<string, string> = { platform, apiKey }
+      if (platform === 'ZOOM') {
+        body.apiSecret = `${apiSecret}|${tenantId}`
+      } else {
+        body.apiSecret = apiSecret
+        if (tenantId) body.tenantId = tenantId
+      }
 
       const res = await fetch('/api/super-admin/settings/meetings', {
         method: 'PUT',
@@ -136,8 +147,13 @@ export default function CharitySettingsPage() {
     setTestingMeeting(true)
     setMeetingTestResult(null)
     try {
-      const body: Record<string, string> = { platform, apiKey, apiSecret }
-      if (tenantId) body.tenantId = tenantId
+      const body: Record<string, string> = { platform, apiKey }
+      if (platform === 'ZOOM') {
+        body.apiSecret = `${apiSecret}|${tenantId}`
+      } else {
+        body.apiSecret = apiSecret
+        if (tenantId) body.tenantId = tenantId
+      }
 
       const res = await fetch('/api/super-admin/settings/meetings/test', {
         method: 'POST',
