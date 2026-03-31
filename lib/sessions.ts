@@ -127,6 +127,109 @@ export async function resolveAttendees(
   return Array.from(idSet)
 }
 
+// ─── Charity session queries ─────────────────────────────────────────────────
+
+/** All charity-level sessions, optionally filtered by status, ordered by scheduledAt desc. */
+export async function getCharitySessions(
+  status?: SessionStatus
+): Promise<SessionWithDetails[]> {
+  return prisma.classSession.findMany({
+    where: {
+      isCharitySession: true,
+      ...(status ? { status } : {}),
+    },
+    orderBy: { scheduledAt: 'desc' },
+    include: {
+      host: true,
+      createdBy: true,
+      attendees: { include: { user: true } },
+      _count: { select: { attendees: true } },
+    },
+  })
+}
+
+// ─── Charity session attendee resolution ─────────────────────────────────────
+
+interface CharityAttendeeSelection {
+  /** Include all active organisations */
+  allOrgs?: boolean
+  /** Include these specific organisation IDs */
+  organisationIds?: string[]
+  /** Include all non-admin roles across selected orgs */
+  allRoles?: boolean
+  /** Include these specific roles across selected orgs */
+  roles?: Role[]
+  /** Include specific user IDs */
+  userIds?: string[]
+  /** Also include charity-level users (SUPER_ADMIN + CHARITY_EMPLOYEE) */
+  includeCharityStaff?: boolean
+}
+
+/**
+ * Resolves attendees for a charity-level session across multiple organisations.
+ * Supports org × role cartesian product plus explicit user IDs.
+ */
+export async function resolveCharitySessionAttendees(
+  selection: CharityAttendeeSelection
+): Promise<string[]> {
+  const ADMIN_ROLES: Role[] = ['SUPER_ADMIN', 'CHARITY_EMPLOYEE', 'ORG_ADMIN']
+  const idSet = new Set<string>()
+
+  // Determine target org filter
+  let orgFilter: { organisationId: { in: string[] } } | { organisationId: { not: null } } | undefined
+
+  if (selection.allOrgs) {
+    orgFilter = { organisationId: { not: null } }
+  } else if (selection.organisationIds && selection.organisationIds.length > 0) {
+    orgFilter = { organisationId: { in: selection.organisationIds } }
+  }
+
+  // Fetch by all non-admin roles across target orgs
+  if (orgFilter && selection.allRoles) {
+    const users = await prisma.user.findMany({
+      where: {
+        ...orgFilter,
+        active: true,
+        role: { notIn: ADMIN_ROLES },
+      },
+      select: { id: true },
+    })
+    users.forEach((u) => idSet.add(u.id))
+  }
+
+  // Fetch by specific roles across target orgs
+  if (orgFilter && selection.roles && selection.roles.length > 0) {
+    const users = await prisma.user.findMany({
+      where: {
+        ...orgFilter,
+        active: true,
+        role: { in: selection.roles },
+      },
+      select: { id: true },
+    })
+    users.forEach((u) => idSet.add(u.id))
+  }
+
+  // Include charity-level staff
+  if (selection.includeCharityStaff) {
+    const charityUsers = await prisma.user.findMany({
+      where: {
+        active: true,
+        role: { in: ['SUPER_ADMIN', 'CHARITY_EMPLOYEE'] },
+      },
+      select: { id: true },
+    })
+    charityUsers.forEach((u) => idSet.add(u.id))
+  }
+
+  // Add explicit user IDs
+  if (selection.userIds && selection.userIds.length > 0) {
+    selection.userIds.forEach((id) => idSet.add(id))
+  }
+
+  return Array.from(idSet)
+}
+
 // ─── Authorisation ────────────────────────────────────────────────────────────
 
 interface SessionManagerUser {

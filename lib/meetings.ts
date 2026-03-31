@@ -199,6 +199,50 @@ export async function generateMeetingLink(
   }
 }
 
+// ─── Charity meeting link generation ─────────────────────────────────────────
+
+/**
+ * Reads the CharityMeetingConfig and calls the appropriate
+ * platform API to create a meeting link. Returns the URL on success.
+ */
+export async function generateCharityMeetingLink(
+  title: string,
+  scheduledAt: Date,
+  duration: number
+): Promise<MeetingResult> {
+  const config = await prisma.charityMeetingConfig.findFirst()
+
+  if (!config || !config.configured) {
+    return { success: false, error: 'No meeting platform configured for charity.' }
+  }
+
+  switch (config.platform) {
+    case 'ZOOM': {
+      if (!config.apiKey || !config.apiSecret) {
+        return { success: false, error: 'Zoom credentials (Account ID / Client ID / Secret) are not set.' }
+      }
+      const [zoomClientId, zoomClientSecret] = (config.apiSecret ?? '').split('|')
+      if (!zoomClientId || !zoomClientSecret) {
+        return { success: false, error: 'Zoom apiSecret must be formatted as "clientId|clientSecret".' }
+      }
+      return createZoomMeeting(config.apiKey, zoomClientId, zoomClientSecret, title, scheduledAt, duration)
+    }
+
+    case 'TEAMS': {
+      if (!config.apiKey || !config.apiSecret || !config.tenantId) {
+        return { success: false, error: 'Teams credentials (Client ID / Secret / Tenant ID) are not set.' }
+      }
+      return createTeamsMeeting(config.apiKey, config.apiSecret, config.tenantId, title, scheduledAt, duration)
+    }
+
+    case 'CUSTOM':
+      return { success: false, error: 'Custom platform does not support automatic meeting link generation.' }
+
+    default:
+      return { success: false, error: 'Unknown meeting platform.' }
+  }
+}
+
 // ─── Connection test ──────────────────────────────────────────────────────────
 
 /**
