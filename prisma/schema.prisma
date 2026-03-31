@@ -238,15 +238,16 @@ model ClassSession {
   recordingUrl   String?
   platform       MeetingPlatform @default(CUSTOM)
   status         SessionStatus   @default(SCHEDULED)
-  hostId         String
-  createdById    String
-  organisationId String
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  hostId            String
+  createdById       String
+  organisationId    String?
+  isCharitySession  Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   host         User                @relation("SessionHost", fields: [hostId], references: [id])
   createdBy    User                @relation("SessionCreator", fields: [createdById], references: [id])
-  organisation Organisation        @relation(fields: [organisationId], references: [id])
+  organisation Organisation?       @relation(fields: [organisationId], references: [id])
   attendees    SessionAttendee[]
 }
 
@@ -277,6 +278,17 @@ model OrgMeetingConfig {
   organisation Organisation @relation(fields: [organisationId], references: [id])
 }
 
+model CharityMeetingConfig {
+  id         String          @id @default(cuid())
+  platform   MeetingPlatform @default(CUSTOM)
+  apiKey     String?
+  apiSecret  String?
+  tenantId   String?
+  configured Boolean         @default(false)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
 model OrgSsoConfig {
   id             String   @id @default(cuid())
   organisationId String   @unique
@@ -292,6 +304,19 @@ model OrgSsoConfig {
   updatedAt      DateTime @updatedAt
 
   organisation Organisation @relation(fields: [organisationId], references: [id])
+}
+
+model CharitySsoConfig {
+  id                     String   @id @default(cuid())
+  displayName            String   @default("Charity")
+  provider               String   @default("saml")
+  entityId               String?
+  ssoUrl                 String?
+  certificate            String?  @db.Text
+  enforceForCharityUsers Boolean  @default(false)
+  configured             Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 model Survey {

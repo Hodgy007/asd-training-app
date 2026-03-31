@@ -9,6 +9,7 @@ export const CHARITY_PERMISSIONS = {
   MANAGE_SURVEYS: 'manage_surveys',
   MANAGE_ANNOUNCEMENTS: 'manage_announcements',
   VIEW_REPORTS: 'view_reports',
+  MANAGE_SESSIONS: 'manage_sessions',
 } as const
 
 export type CharityPermission = (typeof CHARITY_PERMISSIONS)[keyof typeof CHARITY_PERMISSIONS]
@@ -21,6 +22,7 @@ export const PERMISSION_LABELS: Record<string, string> = {
   manage_surveys: 'Manage Surveys',
   manage_announcements: 'Manage Announcements',
   view_reports: 'View Reports',
+  manage_sessions: 'Manage Sessions',
 }
 
 // ─── Display labels ────────────────────────────────────────────────────────────
@@ -104,6 +106,8 @@ export function canAccessCaregiving(session: Session | null): boolean {
 
 /** Roles that can create and manage virtual classroom sessions */
 export function canCreateSessions(session: Session | null): boolean {
+  if (!session?.user?.role) return false
+  if (hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SESSIONS)) return true
   return hasRole(session, 'ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER')
 }
 
