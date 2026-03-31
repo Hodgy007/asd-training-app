@@ -31,8 +31,10 @@ export async function PUT(
   const body = await req.json()
   const { allRoles, roles, userIds } = body
 
-  const orgId = classSession.organisationId
-  const resolvedIds = await resolveAttendees(orgId, { allRoles, roles, userIds })
+  if (!classSession.organisationId) {
+    return NextResponse.json({ error: 'Not an org session' }, { status: 400 })
+  }
+  const resolvedIds = await resolveAttendees(classSession.organisationId, { allRoles, roles, userIds })
 
   // Replace all attendees in a transaction
   const attendees = await prisma.$transaction(async (tx) => {

@@ -29,6 +29,10 @@ export async function POST(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
+  if (!classSession.organisationId) {
+    return NextResponse.json({ error: 'Not an org session' }, { status: 400 })
+  }
+
   const result = await generateMeetingLink(
     classSession.organisationId,
     classSession.title,

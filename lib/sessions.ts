@@ -143,7 +143,7 @@ export function canManageSession(
   session: ClassSession,
   user: SessionManagerUser
 ): boolean {
-  if (user.role === 'ORG_ADMIN' && user.organisationId === session.organisationId) {
+  if (user.role === 'ORG_ADMIN' && user.organisationId != null && user.organisationId === session.organisationId) {
     return true
   }
   if (session.hostId === user.id) return true
