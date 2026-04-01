@@ -378,14 +378,14 @@ export default function CollectionDetailPage() {
               />
             </div>
 
-            {/* AI-generated thumbnail preview */}
-            {formThumbnailUrl && (
-              <div>
-                <label className="label">AI-Generated Image</label>
+            {/* Thumbnail — manual upload or AI-generated */}
+            <div>
+              <label className="label">Thumbnail Image (optional)</label>
+              {formThumbnailUrl ? (
                 <div className="flex items-start gap-3">
                   <img
                     src={formThumbnailUrl}
-                    alt="AI generated"
+                    alt="Thumbnail preview"
                     className="h-24 w-24 rounded-xl object-cover border border-calm-200 dark:border-slate-600"
                   />
                   <button
@@ -397,8 +397,39 @@ export default function CollectionDetailPage() {
                     Remove image
                   </button>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
+                    <ImageIcon className="h-4 w-4" />
+                    Upload thumbnail
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={async (e) => {
+                        const imgFile = e.target.files?.[0]
+                        if (!imgFile) return
+                        try {
+                          const fd = new FormData()
+                          fd.append('file', imgFile)
+                          fd.append('folder', 'library/thumbnails')
+                          const res = await fetch('/api/super-admin/library/upload', { method: 'POST', body: fd })
+                          if (res.ok) {
+                            const data = await res.json()
+                            setFormThumbnailUrl(data.url)
+                          } else {
+                            showToast('Thumbnail upload failed.', 'error')
+                          }
+                        } catch {
+                          showToast('Thumbnail upload failed.', 'error')
+                        }
+                      }}
+                    />
+                  </label>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">PNG, JPG or WebP — or use AI Assist above</span>
+                </div>
+              )}
+            </div>
 
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700">

@@ -13,7 +13,7 @@ const requestSchema = z.object({
 })
 
 const TEXT_MODEL = 'gemini-2.5-flash'
-const IMAGE_MODEL = 'gemini-2.0-flash-exp'
+const IMAGE_MODEL = 'gemini-2.0-flash-exp-image-generation'
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -99,8 +99,8 @@ Return ONLY valid JSON in this exact format, no markdown:
           break
         }
       }
-    } catch {
-      // Image generation failed — continue without thumbnail
+    } catch (imgErr) {
+      console.error('AI image generation failed:', imgErr)
     }
   }
 
