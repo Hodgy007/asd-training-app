@@ -128,7 +128,11 @@ export default function CollectionDetailPage() {
           if (data.description) setFormDescription(data.description)
         }
         if (data.thumbnailUrl) setFormThumbnailUrl(data.thumbnailUrl)
-        showToast(generateImage ? 'AI image generated.' : 'AI generated title and description.', 'success')
+        if (generateImage && !data.thumbnailUrl) {
+          showToast(data.imageError || 'AI image generation failed.', 'error')
+        } else {
+          showToast(generateImage ? 'AI image generated.' : 'AI generated title and description.', 'success')
+        }
       } else {
         showToast('AI generation failed.', 'error')
       }

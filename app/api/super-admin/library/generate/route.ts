@@ -138,5 +138,5 @@ Return ONLY valid JSON in this exact format, no markdown:
     }
   }
 
-  return NextResponse.json({ title, description, thumbnailUrl })
+  return NextResponse.json({ title, description, thumbnailUrl, imageError: generateImage && !thumbnailUrl ? 'Image generation failed — check runtime logs for details' : undefined })
 }
