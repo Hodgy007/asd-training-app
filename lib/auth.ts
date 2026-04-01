@@ -91,6 +91,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Password is required')
         }
 
+        if (!user.password) {
+          throw new Error('This account uses Single Sign-On. Please sign in using the SSO option.')
+        }
+
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
 
         if (!isPasswordValid) {

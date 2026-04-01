@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { sanitizeHtml } from '@/lib/sanitize'
 import { ArrowLeft, Loader2, BarChart3, Sparkles, RefreshCw, AlertTriangle } from 'lucide-react'
 import { SurveyResultsView } from '@/components/super-admin/survey-results-view'
 
@@ -329,7 +330,7 @@ export default function SurveyResultsPage() {
                       [&_td]:border [&_td]:border-calm-200 [&_td]:dark:border-slate-600 [&_td]:px-2 [&_td]:py-1
                       [&_th]:border [&_th]:border-calm-200 [&_th]:dark:border-slate-600 [&_th]:px-2 [&_th]:py-1 [&_th]:text-left [&_th]:font-semibold
                       [&_tr]:border-b [&_tr]:border-calm-100 [&_tr]:dark:border-slate-700"
-                    dangerouslySetInnerHTML={{ __html: insight.content }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(insight.content) }}
                   />
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">
                     Generated {new Date(insight.generatedAt).toLocaleString()}

@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
             data: {
               email: validatedEmail,
               name: validatedName || validatedEmail.split('@')[0],
-              password: '', // SSO user, no password
+              password: null, // SSO user, no password
               role: (orgConfig.defaultRole as any) || 'EMPLOYEE', // eslint-disable-line @typescript-eslint/no-explicit-any
               organisationId: orgConfig.organisationId,
               active: true,
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
       secure: isProduction,
       sameSite: 'lax',
       path: '/',
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: 8 * 60 * 60, // 8 hours — matches NextAuth session maxAge
     })
 
     return response

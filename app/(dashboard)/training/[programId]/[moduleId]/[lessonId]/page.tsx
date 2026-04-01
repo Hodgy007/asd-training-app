@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { sanitizeHtml } from '@/lib/sanitize'
 import Link from 'next/link'
 import { ArrowLeft, ChevronRight, BookOpen, Video, CheckCircle, Loader2 } from 'lucide-react'
 import { VideoPlayer } from '@/components/training/video-player'
@@ -192,7 +193,7 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
             [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg
             [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block [&_table]:text-sm
             [&_pre]:overflow-x-auto [&_pre]:max-w-full"
-          dangerouslySetInnerHTML={{ __html: lesson.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.content) }}
         />
       </div>
 
