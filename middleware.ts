@@ -3,7 +3,7 @@ import { getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rate-limit'
 
-const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/privacy', '/api/auth']
+const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/privacy', '/terms', '/api/auth']
 
 // Rate limit config: { path-prefix: [limit, windowMs] }
 const RATE_LIMITS: Record<string, [number, number]> = {

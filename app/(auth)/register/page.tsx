@@ -246,6 +246,10 @@ export default function RegisterPage() {
                 I have read and agree to the{' '}
                 <a href="/privacy" target="_blank" className="text-primary-600 underline">
                   Privacy Policy
+                </a>{' '}
+                and{' '}
+                <a href="/terms" target="_blank" className="text-primary-600 underline">
+                  Terms of Service
                 </a>
                 . I consent to my personal data being processed for the purpose of ASD observation
                 tracking and training. I understand this tool is not a diagnostic instrument and I
