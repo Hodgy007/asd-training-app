@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { usePathname } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Topbar } from '@/components/layout/topbar'
@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900 overflow-hidden">
       <div className="hidden md:flex w-64 flex-shrink-0 flex-col">
-        <Sidebar />
+        <Suspense><Sidebar /></Suspense>
       </div>
 
       {sidebarOpen && (
@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             onClick={() => setSidebarOpen(false)}
           />
           <div className="absolute left-0 top-0 h-full w-72">
-            <Sidebar onClose={() => setSidebarOpen(false)} mobile />
+            <Suspense><Sidebar onClose={() => setSidebarOpen(false)} mobile /></Suspense>
           </div>
         </div>
       )}

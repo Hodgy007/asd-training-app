@@ -1,7 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
@@ -26,13 +27,13 @@ interface NavItem {
 function getNavItems(
   role?: string,
   programs: { id: string; name: string }[] = [],
+  collections: { id: string; title: string }[] = [],
 ): NavItem[] {
   const items: NavItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ]
 
   if (role === 'CAREGIVER') {
-    // Show all assigned programs
     for (const program of programs) {
       items.push({ href: `/training/${program.id}`, label: program.name, icon: BookOpen })
     }
@@ -41,13 +42,16 @@ function getNavItems(
       { href: '/reports', label: 'Reports', icon: FileText },
     )
   } else if (role === 'CAREER_DEV_OFFICER' || role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
-    // Show all assigned programs
     for (const program of programs) {
       items.push({ href: `/training/${program.id}`, label: program.name, icon: BookOpen })
     }
   }
 
-  items.push({ href: '/library', label: 'Document Library', icon: FolderOpen })
+  // Show each document collection directly in the nav
+  for (const col of collections) {
+    items.push({ href: `/library?c=${col.id}`, label: col.title, icon: FolderOpen })
+  }
+
   items.push({ href: '/guide', label: 'How to Guide', icon: HelpCircle })
   items.push({ href: '/sessions', label: 'Workshops', icon: Calendar })
   items.push({ href: '/settings', label: 'Settings', icon: Settings })
@@ -78,10 +82,20 @@ interface SidebarProps {
 
 export function Sidebar({ onClose, mobile }: SidebarProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { data: session } = useSession()
   const role = session?.user?.role
   const programs = session?.user?.effectivePrograms ?? []
-  const navItems = getNavItems(role, programs)
+  const [collections, setCollections] = useState<{ id: string; title: string }[]>([])
+
+  useEffect(() => {
+    fetch('/api/library')
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setCollections(data.map((c: { id: string; title: string }) => ({ id: c.id, title: c.title }))))
+      .catch(() => {})
+  }, [])
+
+  const navItems = getNavItems(role, programs, collections)
 
   return (
     <div className="flex flex-col h-full bg-orange-50 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
@@ -125,7 +139,11 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
       <nav className="flex-1 p-4 space-y-1" aria-label="Main navigation">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          // For library collection links like /library?c=xxx, match on both path and query param
+          const [itemPath, itemQuery] = item.href.split('?')
+          const isActive = itemQuery
+            ? pathname === itemPath && searchParams.get('c') === new URLSearchParams(itemQuery).get('c')
+            : pathname === item.href || pathname.startsWith(item.href + '/')
 
           return (
             <Link

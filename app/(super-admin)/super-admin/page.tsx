@@ -3,14 +3,14 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Building2, Users, BookOpen, ArrowRight } from 'lucide-react'
+import { Building2, Users, BookOpen, Download, ArrowRight } from 'lucide-react'
 import { isCharityLevel, hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 
 export default async function SuperAdminPage() {
   const session = await getServerSession(authOptions)
   if (!session || !isCharityLevel(session)) redirect('/login')
 
-  const [orgCount, totalUsers, totalLessons, orgs] = await Promise.all([
+  const [orgCount, totalUsers, totalLessons, orgs, totalDownloads, downloadsPerOrg] = await Promise.all([
     prisma.organisation.count(),
     prisma.user.count({
       where: { role: { notIn: ['SUPER_ADMIN'] } },
@@ -21,6 +21,12 @@ export default async function SuperAdminPage() {
         _count: { select: { users: true } },
       },
       orderBy: { createdAt: 'desc' },
+    }),
+    prisma.libraryDocumentEvent.count({ where: { action: 'download' } }),
+    prisma.libraryDocumentEvent.groupBy({
+      by: ['organisationId'],
+      where: { action: 'download', organisationId: { not: null } },
+      _count: { _all: true },
     }),
   ])
 
@@ -50,6 +56,11 @@ export default async function SuperAdminPage() {
     orgLessonsMap.set(u.organisationId, (orgLessonsMap.get(u.organisationId) ?? 0) + lessons)
   }
 
+  const orgDownloadsMap = new Map<string, number>()
+  for (const row of downloadsPerOrg) {
+    if (row.organisationId) orgDownloadsMap.set(row.organisationId, row._count._all)
+  }
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
@@ -59,40 +70,49 @@ export default async function SuperAdminPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Building2 className="h-6 w-6 text-primary-600" />
+          <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Building2 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-slate-900">{orgCount}</p>
-            <p className="text-sm text-slate-500">Organisations</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{orgCount}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Organisations</p>
           </div>
         </div>
         <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Users className="h-6 w-6 text-sage-600" />
+          <div className="w-12 h-12 bg-sage-100 dark:bg-sage-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Users className="h-6 w-6 text-sage-600 dark:text-sage-400" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-slate-900">{totalUsers}</p>
-            <p className="text-sm text-slate-500">Total users</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalUsers}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Total users</p>
           </div>
         </div>
         <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-warm-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <BookOpen className="h-6 w-6 text-warm-500" />
+          <div className="w-12 h-12 bg-warm-100 dark:bg-warm-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <BookOpen className="h-6 w-6 text-warm-500 dark:text-warm-400" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-slate-900">{totalLessons}</p>
-            <p className="text-sm text-slate-500">Completed lessons</p>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalLessons}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Completed lessons</p>
+          </div>
+        </div>
+        <div className="card flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Download className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalDownloads}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Downloads</p>
           </div>
         </div>
       </div>
 
       {/* Org summary table */}
       <div className="card overflow-hidden p-0">
-        <div className="flex items-center justify-between px-4 py-4 border-b border-calm-200">
-          <h2 className="text-lg font-semibold text-slate-900">Organisations</h2>
+        <div className="flex items-center justify-between px-4 py-4 border-b border-calm-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Organisations</h2>
           <Link
             href="/super-admin/organisations"
             className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
@@ -103,41 +123,43 @@ export default async function SuperAdminPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-calm-200 bg-calm-50">
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Name</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Slug</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Users</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Lessons</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Status</th>
+              <tr className="border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800/50">
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Name</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">URL ID</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Users</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Lessons</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Downloads</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Status</th>
               </tr>
             </thead>
             <tbody>
               {orgs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">
                     No organisations yet.
                   </td>
                 </tr>
               ) : (
                 orgs.map((org) => (
-                  <tr key={org.id} className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
+                  <tr key={org.id} className="border-b border-calm-100 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-4 py-3">
                       <Link
                         href={`/super-admin/organisations/${org.id}`}
-                        className="font-medium text-primary-600 hover:text-primary-700"
+                        className="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                       >
                         {org.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-slate-500 font-mono text-xs">{org.slug}</td>
-                    <td className="px-4 py-3 text-slate-700">{org._count.users}</td>
-                    <td className="px-4 py-3 text-slate-700">{orgLessonsMap.get(org.id) ?? 0}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-mono text-xs">{org.slug}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{org._count.users}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{orgLessonsMap.get(org.id) ?? 0}</td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{orgDownloadsMap.get(org.id) ?? 0}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${
                           org.active
-                            ? 'bg-sage-100 text-sage-700'
-                            : 'bg-red-100 text-red-700'
+                            ? 'bg-sage-100 text-sage-700 dark:bg-sage-900/40 dark:text-sage-300'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
                         }`}
                       >
                         {org.active ? 'Active' : 'Inactive'}

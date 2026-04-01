@@ -37,6 +37,7 @@ model User {
   collectionsCreated LibraryCollection[]    @relation("CollectionsCreated")
   uploadedDocuments  LibraryDocument[]     @relation("UploadedDocuments")
   documentEvents     LibraryDocumentEvent[] @relation("DocumentEvents")
+  integrationKeys    IntegrationApiKey[]    @relation("IntegrationKeys")
 }
 
 model Account {
@@ -528,4 +529,18 @@ model LibraryDocumentEvent {
 
   @@index([documentId, action])
   @@index([organisationId])
+}
+
+model IntegrationApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  keyHash     String    @unique
+  keyPrefix   String    // first 8 chars for display (e.g. "int_abc1...")
+  createdById String
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  createdBy User @relation("IntegrationKeys", fields: [createdById], references: [id])
 }

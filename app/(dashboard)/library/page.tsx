@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { clsx } from 'clsx'
 import {
   FolderOpen,
@@ -64,7 +65,17 @@ function getFileTypeBadge(fileType: string): string {
   return ext.length > 4 ? 'FILE' : ext
 }
 
-export default function LibraryPage() {
+export default function LibraryPageWrapper() {
+  return (
+    <Suspense fallback={<div className="text-center py-16 text-slate-400"><RefreshCw className="h-6 w-6 animate-spin mx-auto mb-3" />Loading...</div>}>
+      <LibraryPage />
+    </Suspense>
+  )
+}
+
+function LibraryPage() {
+  const searchParams = useSearchParams()
+  const collectionParam = searchParams.get('c')
   const [collections, setCollections] = useState<LibraryCollection[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -75,15 +86,33 @@ export default function LibraryPage() {
     setLoading(true)
     try {
       const res = await fetch('/api/library')
-      if (res.ok) setCollections(await res.json())
+      if (res.ok) {
+        const data: LibraryCollection[] = await res.json()
+        setCollections(data)
+        // Auto-select from ?c= query param, or auto-select if only one collection
+        if (collectionParam) {
+          const match = data.find((col) => col.id === collectionParam)
+          if (match) setSelectedCollection(match)
+        } else if (data.length === 1) {
+          setSelectedCollection(data[0])
+        }
+      }
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [collectionParam])
 
   useEffect(() => {
     fetchCollections()
   }, [fetchCollections])
+
+  // React to query param changes (sidebar clicks)
+  useEffect(() => {
+    if (collectionParam && collections.length > 0) {
+      const match = collections.find((col) => col.id === collectionParam)
+      if (match) setSelectedCollection(match)
+    }
+  }, [collectionParam, collections])
 
   function trackDownload(documentId: string) {
     fetch('/api/library/track', {
