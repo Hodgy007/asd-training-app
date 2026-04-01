@@ -304,7 +304,7 @@ function LoginForm() {
                   ) : (
                     <>
                       <p className="text-sm text-slate-500 mb-4">
-                        Sign in using your organisation&apos;s {ssoProviders.google && ssoProviders.microsoft ? 'Google or Microsoft' : ssoProviders.google ? 'Google' : 'Microsoft'} account.
+                        Sign in using your {ssoProviders.google && ssoProviders.microsoft ? 'Google or Microsoft' : ssoProviders.google ? 'Google' : 'Microsoft'} account.
                       </p>
                       {ssoProviders.google && (
                         <button
