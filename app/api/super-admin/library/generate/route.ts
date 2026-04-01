@@ -13,7 +13,7 @@ const requestSchema = z.object({
 })
 
 const TEXT_MODEL = 'gemini-2.5-flash'
-const IMAGE_MODEL = 'gemini-2.0-flash-exp-image-generation'
+const IMAGE_MODEL = 'imagen-3.0-generate-002'
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -76,28 +76,25 @@ Return ONLY valid JSON in this exact format, no markdown:
 - Related to the topic of the document
 - Professional but approachable`
 
-      const imageResult = await ai.models.generateContent({
+      const imageResult = await ai.models.generateImages({
         model: IMAGE_MODEL,
-        contents: imagePrompt,
+        prompt: imagePrompt,
         config: {
-          responseModalities: ['TEXT', 'IMAGE'],
+          numberOfImages: 1,
         },
       })
 
-      // Extract the generated image
-      const parts = imageResult.candidates?.[0]?.content?.parts ?? []
-      for (const part of parts) {
-        if (part.inlineData?.mimeType?.startsWith('image/')) {
-          const imageBuffer = Buffer.from(part.inlineData.data!, 'base64')
-          const ext = part.inlineData.mimeType === 'image/png' ? 'png' : 'jpg'
-          const blob = await put(
-            `library/thumbnails/ai-generated-${Date.now()}.${ext}`,
-            imageBuffer,
-            { access: 'public', addRandomSuffix: true, contentType: part.inlineData.mimeType }
-          )
-          thumbnailUrl = blob.url
-          break
-        }
+      const generated = imageResult.generatedImages?.[0]
+      if (generated?.image?.imageBytes) {
+        const imageBuffer = Buffer.from(generated.image.imageBytes, 'base64')
+        const mimeType = generated.image.mimeType || 'image/png'
+        const ext = mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg' : 'png'
+        const blob = await put(
+          `library/thumbnails/ai-generated-${Date.now()}.${ext}`,
+          imageBuffer,
+          { access: 'public', addRandomSuffix: true, contentType: mimeType }
+        )
+        thumbnailUrl = blob.url
       }
     } catch (imgErr) {
       console.error('AI image generation failed:', imgErr)
