@@ -122,10 +122,13 @@ export default function CollectionDetailPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        if (data.title) setFormTitle(data.title)
-        if (data.description) setFormDescription(data.description)
+        if (!generateImage) {
+          // Text only — update title and description
+          if (data.title) setFormTitle(data.title)
+          if (data.description) setFormDescription(data.description)
+        }
         if (data.thumbnailUrl) setFormThumbnailUrl(data.thumbnailUrl)
-        showToast(generateImage ? 'AI generated title, description, and image.' : 'AI generated title and description.', 'success')
+        showToast(generateImage ? 'AI image generated.' : 'AI generated title and description.', 'success')
       } else {
         showToast('AI generation failed.', 'error')
       }
@@ -350,7 +353,8 @@ export default function CollectionDetailPage() {
                   onClick={() => handleAiGenerate(true)}
                   className="text-xs font-medium px-3 py-1.5 rounded-lg bg-purple-100 dark:bg-purple-800/40 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/60 transition-colors disabled:opacity-40"
                 >
-                  {aiGenerating ? 'Generating…' : 'Generate All + Image'}
+                  <ImageIcon className="h-3 w-3 inline mr-1" />
+                  {aiGenerating ? 'Generating…' : 'Generate AI Image'}
                 </button>
               </div>
             )}

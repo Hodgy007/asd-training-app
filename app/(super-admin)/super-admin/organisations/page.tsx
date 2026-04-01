@@ -60,6 +60,12 @@ export default function OrganisationsPage() {
   const [formPrograms, setFormPrograms] = useState<string[]>([])
   const [formActive, setFormActive] = useState(true)
   const [formSubmitting, setFormSubmitting] = useState(false)
+  const [formAddress1, setFormAddress1] = useState('')
+  const [formAddress2, setFormAddress2] = useState('')
+  const [formCity, setFormCity] = useState('')
+  const [formCounty, setFormCounty] = useState('')
+  const [formPostcode, setFormPostcode] = useState('')
+  const [formCountry, setFormCountry] = useState('United Kingdom')
 
   const fetchOrgs = useCallback(async () => {
     setLoading(true)
@@ -140,6 +146,12 @@ export default function OrganisationsPage() {
           allowedRoles: formRoles,
           allowedProgramIds: formPrograms,
           active: formActive,
+          addressLine1: formAddress1 || undefined,
+          addressLine2: formAddress2 || undefined,
+          city: formCity || undefined,
+          county: formCounty || undefined,
+          postcode: formPostcode || undefined,
+          country: formCountry || undefined,
         }),
       })
       if (res.ok) {
@@ -150,6 +162,12 @@ export default function OrganisationsPage() {
         setFormRoles([])
         setFormPrograms([])
         setFormActive(true)
+        setFormAddress1('')
+        setFormAddress2('')
+        setFormCity('')
+        setFormCounty('')
+        setFormPostcode('')
+        setFormCountry('United Kingdom')
         fetchOrgs()
       } else {
         const d = await res.json()
@@ -221,6 +239,34 @@ export default function OrganisationsPage() {
                   placeholder="e.g. sunrise-care"
                 />
               </div>
+            </div>
+
+            {/* Address */}
+            <div>
+              <label className="label">Address Line 1</label>
+              <input className="input w-full" type="text" value={formAddress1} onChange={(e) => setFormAddress1(e.target.value)} placeholder="e.g. 10 High Street" />
+            </div>
+            <div>
+              <label className="label">Address Line 2</label>
+              <input className="input w-full" type="text" value={formAddress2} onChange={(e) => setFormAddress2(e.target.value)} placeholder="Optional" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="label">City / Town</label>
+                <input className="input w-full" type="text" value={formCity} onChange={(e) => setFormCity(e.target.value)} placeholder="e.g. London" />
+              </div>
+              <div>
+                <label className="label">County</label>
+                <input className="input w-full" type="text" value={formCounty} onChange={(e) => setFormCounty(e.target.value)} placeholder="e.g. Hertfordshire" />
+              </div>
+              <div>
+                <label className="label">Postcode</label>
+                <input className="input w-full" type="text" value={formPostcode} onChange={(e) => setFormPostcode(e.target.value)} placeholder="e.g. AL5 2QP" />
+              </div>
+            </div>
+            <div>
+              <label className="label">Country</label>
+              <input className="input w-full" type="text" value={formCountry} onChange={(e) => setFormCountry(e.target.value)} />
             </div>
 
             {/* Allowed Roles */}

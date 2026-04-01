@@ -24,6 +24,7 @@ interface LibraryDoc {
   fileName: string
   fileSize: number
   fileType: string
+  thumbnailUrl: string | null
   createdAt: string
 }
 
@@ -149,9 +150,15 @@ export default function LibraryPage() {
               return (
                 <div key={doc.id} className="card p-0 overflow-hidden hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-4 px-4 py-3">
-                    <div className="h-12 w-12 rounded-lg bg-calm-50 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
-                      <FileIcon className="h-6 w-6 text-slate-400 dark:text-slate-500" />
-                    </div>
+                    {doc.thumbnailUrl ? (
+                      <div className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600">
+                        <img src={doc.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="h-12 w-12 rounded-lg bg-calm-50 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                        <FileIcon className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-slate-800 dark:text-slate-200 truncate">{doc.title}</h3>

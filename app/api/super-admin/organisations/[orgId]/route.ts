@@ -15,6 +15,12 @@ const updateSchema = z.object({
   ).optional(),
   allowedProgramIds: z.array(z.string()).optional(),
   active: z.boolean().optional(),
+  addressLine1: z.string().max(200).optional(),
+  addressLine2: z.string().max(200).optional(),
+  city: z.string().max(100).optional(),
+  county: z.string().max(100).optional(),
+  postcode: z.string().max(20).optional(),
+  country: z.string().max(100).optional(),
 })
 
 export async function GET(

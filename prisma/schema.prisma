@@ -81,6 +81,12 @@ model Organisation {
   allowedProgramIds String[]
   allowedRoles      String[]
   logoUrl           String?
+  addressLine1      String?
+  addressLine2      String?
+  city              String?
+  county            String?
+  postcode          String?
+  country           String         @default("United Kingdom")
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 

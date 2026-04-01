@@ -38,6 +38,12 @@ interface OrgDetail {
   active: boolean
   allowedRoles: string[]
   allowedProgramIds: string[]
+  addressLine1: string | null
+  addressLine2: string | null
+  city: string | null
+  county: string | null
+  postcode: string | null
+  country: string
   users: OrgUser[]
   _count: { users: number }
 }
@@ -91,6 +97,12 @@ export default function OrgDetailPage() {
   const [editRoles, setEditRoles] = useState<string[]>([])
   const [editProgramIds, setEditProgramIds] = useState<string[]>([])
   const [editActive, setEditActive] = useState(true)
+  const [editAddress1, setEditAddress1] = useState('')
+  const [editAddress2, setEditAddress2] = useState('')
+  const [editCity, setEditCity] = useState('')
+  const [editCounty, setEditCounty] = useState('')
+  const [editPostcode, setEditPostcode] = useState('')
+  const [editCountry, setEditCountry] = useState('United Kingdom')
   const [saving, setSaving] = useState(false)
 
   // Add org admin form
@@ -120,6 +132,12 @@ export default function OrgDetailPage() {
         setEditRoles(data.allowedRoles)
         setEditProgramIds(data.allowedProgramIds)
         setEditActive(data.active)
+        setEditAddress1(data.addressLine1 || '')
+        setEditAddress2(data.addressLine2 || '')
+        setEditCity(data.city || '')
+        setEditCounty(data.county || '')
+        setEditPostcode(data.postcode || '')
+        setEditCountry(data.country || 'United Kingdom')
       }
     } finally {
       setLoading(false)
@@ -170,6 +188,12 @@ export default function OrgDetailPage() {
           allowedRoles: editRoles,
           allowedProgramIds: editProgramIds,
           active: editActive,
+          addressLine1: editAddress1 || undefined,
+          addressLine2: editAddress2 || undefined,
+          city: editCity || undefined,
+          county: editCounty || undefined,
+          postcode: editPostcode || undefined,
+          country: editCountry || undefined,
         }),
       })
       if (res.ok) {
@@ -342,6 +366,34 @@ export default function OrgDetailPage() {
                 title="Lowercase letters, numbers, and hyphens only"
               />
             </div>
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="label">Address Line 1</label>
+            <input className="input w-full" type="text" value={editAddress1} onChange={(e) => setEditAddress1(e.target.value)} placeholder="e.g. 10 High Street" />
+          </div>
+          <div>
+            <label className="label">Address Line 2</label>
+            <input className="input w-full" type="text" value={editAddress2} onChange={(e) => setEditAddress2(e.target.value)} placeholder="Optional" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="label">City / Town</label>
+              <input className="input w-full" type="text" value={editCity} onChange={(e) => setEditCity(e.target.value)} placeholder="e.g. London" />
+            </div>
+            <div>
+              <label className="label">County</label>
+              <input className="input w-full" type="text" value={editCounty} onChange={(e) => setEditCounty(e.target.value)} placeholder="e.g. Hertfordshire" />
+            </div>
+            <div>
+              <label className="label">Postcode</label>
+              <input className="input w-full" type="text" value={editPostcode} onChange={(e) => setEditPostcode(e.target.value)} placeholder="e.g. AL5 2QP" />
+            </div>
+          </div>
+          <div>
+            <label className="label">Country</label>
+            <input className="input w-full" type="text" value={editCountry} onChange={(e) => setEditCountry(e.target.value)} />
           </div>
 
           {/* Allowed Roles */}

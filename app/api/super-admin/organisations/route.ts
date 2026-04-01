@@ -15,6 +15,12 @@ const createSchema = z.object({
   ),
   allowedProgramIds: z.array(z.string()),
   active: z.boolean().default(true),
+  addressLine1: z.string().max(200).optional(),
+  addressLine2: z.string().max(200).optional(),
+  city: z.string().max(100).optional(),
+  county: z.string().max(100).optional(),
+  postcode: z.string().max(20).optional(),
+  country: z.string().max(100).optional(),
 })
 
 export async function GET() {

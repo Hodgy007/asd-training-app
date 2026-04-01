@@ -27,6 +27,7 @@ export async function GET() {
           fileName: true,
           fileSize: true,
           fileType: true,
+          thumbnailUrl: true,
           createdAt: true,
         },
       },
