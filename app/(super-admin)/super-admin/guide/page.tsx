@@ -19,6 +19,10 @@ import {
   Settings,
   HelpCircle,
   Plug,
+  FolderOpen,
+  Download,
+  Lock,
+  Video,
 } from 'lucide-react'
 
 export const metadata = {
@@ -150,6 +154,16 @@ export default function SuperAdminGuidePage() {
           <li>To deactivate an organisation, toggle the <strong>Active</strong> switch off. Deactivated organisations&apos; users will be blocked from signing in.</li>
         </ol>
 
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Assigning document collections</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          From the organisation detail page, scroll to the <strong>Document Collections</strong> section. Toggle collections on or off to control which document libraries are available to users in this organisation. Collections with no organisation filter are visible to everyone by default.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Assigning surveys</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          In the <strong>Surveys</strong> section of the organisation detail page, toggle published surveys to assign them to this organisation. Only published and closed surveys appear in the list (drafts are excluded). Users in the organisation will see assigned surveys in their dashboard.
+        </p>
+
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Viewing organisation users</h3>
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           From the organisation detail view, you can see all users belonging to that organisation along with their roles and activity status.
@@ -158,7 +172,7 @@ export default function SuperAdminGuidePage() {
         <Tip>Deactivating an organisation immediately prevents all its users from logging in. Use this for offboarding or temporarily suspending access.</Tip>
       </SectionCard>
 
-      {/* 3. Training Content Management */}
+      {/* 4. Training Content Management */}
       <SectionCard icon={BookOpen} title="Training Content Management">
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           Manage all training programs, modules, lessons, and quizzes from the <strong>Training Content</strong> page.
@@ -229,7 +243,52 @@ export default function SuperAdminGuidePage() {
         <Tip>Use &ldquo;Import from Files&rdquo; when you want to preserve your existing training material as-is. Use &ldquo;Generate from Files&rdquo; when you want AI to create new, pedagogically-structured content inspired by your source documents.</Tip>
       </SectionCard>
 
-      {/* 4. Survey Management */}
+      {/* 5. Document Library */}
+      <SectionCard icon={FolderOpen} title="Document Library">
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          The Document Library lets you organise and distribute files (PDFs, documents, spreadsheets, etc.) to organisations. Documents are grouped into collections that can be targeted to specific organisations and roles.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a collection</h3>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Navigate to <strong>Document Library</strong> from the sidebar.</li>
+          <li>Click <strong>New Collection</strong>.</li>
+          <li>Enter a title and description for the collection.</li>
+          <li>Optionally upload a thumbnail image to visually identify the collection.</li>
+          <li>Select target organisations &mdash; leave empty to make the collection available to all organisations.</li>
+          <li>Select target roles &mdash; choose which user roles can see the collection (e.g. Practitioner, Student, Org Admin).</li>
+          <li>Click <strong>Save</strong> to create the collection.</li>
+        </ol>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Uploading documents</h3>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Click on a collection to open its detail page.</li>
+          <li>Click <strong>Upload Document</strong> and select the file(s) you want to add.</li>
+          <li>Each document can have its own title and description.</li>
+          <li>Documents are stored securely and users download them directly from the platform.</li>
+        </ol>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing collection details</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Click the <Pencil className="inline h-3.5 w-3.5 text-slate-400" /> edit button next to the collection title on the detail page to update the name and description. Org Admins can also edit the title and description of collections assigned to their organisation.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Managing collection visibility</h3>
+        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li><strong>Active / Inactive</strong> &mdash; toggle a collection on or off. Inactive collections are hidden from all users.</li>
+          <li><strong>Target organisations</strong> &mdash; collections with no organisation filter are visible to everyone. Assigning specific organisations restricts access.</li>
+          <li><strong>Target roles</strong> &mdash; restrict which user roles can see the collection within the targeted organisations.</li>
+        </ul>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Library reports</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Click <strong>Reports</strong> from the Library page to view download analytics. Reports show total downloads per collection and per document, with an organisation breakdown. You can filter by organisation and export the data as CSV.
+        </p>
+
+        <Tip>Collections with no organisation filter are visible to all users. To restrict access, assign specific organisations either from the collection settings or from the Organisation detail page.</Tip>
+      </SectionCard>
+
+      {/* 6. Survey Management */}
       <SectionCard icon={ClipboardList} title="Survey Management">
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           Create and manage surveys to collect feedback from users across the platform.
@@ -300,7 +359,7 @@ export default function SuperAdminGuidePage() {
         <Tip>Publish a survey only after you have finalised all questions and configured the target audience. Once published, questions cannot be edited to ensure response consistency.</Tip>
       </SectionCard>
 
-      {/* 5. Announcements */}
+      {/* 7. Announcements */}
       <SectionCard icon={Megaphone} title="Announcements">
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           Announcements allow you to communicate important information to users across the platform.
@@ -334,7 +393,7 @@ export default function SuperAdminGuidePage() {
         <Tip>Use global announcements sparingly for platform-wide updates. For organisation-specific news, always scope the announcement to the relevant organisation.</Tip>
       </SectionCard>
 
-      {/* 6. Reports */}
+      {/* 8. Reports */}
       <SectionCard icon={BarChart3} title="Reports">
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           The Reports page provides platform-wide insights into training progress and engagement.
@@ -355,10 +414,25 @@ export default function SuperAdminGuidePage() {
           Drill down into individual modules and lessons to see completion counts. Reports display proper module names and training plan labels (&ldquo;ASD Awareness Training&rdquo;, &ldquo;Careers CPD Training&rdquo;) rather than raw identifiers.
         </p>
 
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Survey reports</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          The Reports page includes a survey section showing totals for published, closed, and draft surveys. Expand any survey to see per-question response breakdowns, answer distributions, rating averages, and organisation-level response rates. Click <strong>Export CSV</strong> <Download className="inline h-3.5 w-3.5 text-slate-400" /> to download survey response data.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Document library reports</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Access library analytics from <strong>Document Library &rarr; Reports</strong>. View download counts per collection and per document, filter by organisation, and export the data as CSV.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Downloading overview data</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          The Overview dashboard displays key platform statistics including total organisations, users, completed lessons, and document downloads. The organisation summary table shows per-organisation metrics at a glance.
+        </p>
+
         <Tip>Check reports regularly to identify organisations with low engagement. Consider reaching out to their Org Admins or creating targeted announcements to boost participation.</Tip>
       </SectionCard>
 
-      {/* 7. User & Access Management */}
+      {/* 9. User & Access Management */}
       <SectionCard icon={Shield} title="User & Access Management">
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           Understanding the role hierarchy and access controls is essential for managing the platform securely.
@@ -404,7 +478,7 @@ export default function SuperAdminGuidePage() {
         <Tip>Always ensure Org Admins have MFA configured before granting them access. The platform enforces this automatically, but it is good practice to communicate the requirement during onboarding.</Tip>
       </SectionCard>
 
-      {/* 8. Integrations */}
+      {/* 10. Integrations */}
       <SectionCard icon={Plug} title="Integrations (Power Automate / Dynamics 365)">
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           The platform provides a reporting API that external tools like Microsoft Power Automate or Dynamics 365 can connect to. This allows you to automatically sync training, survey, and document library data into your existing Microsoft ecosystem.
@@ -452,6 +526,52 @@ export default function SuperAdminGuidePage() {
         </ul>
 
         <Tip>Create separate API keys for different integrations (e.g. one for Power Automate, one for a BI tool). This way you can revoke one without affecting others.</Tip>
+      </SectionCard>
+
+      {/* 11. Settings */}
+      <SectionCard icon={Settings} title="Settings">
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Platform-wide configuration is managed from the <strong>Settings</strong> page. This includes meeting platform integration and SAML SSO configuration.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+          <span className="inline-flex items-center gap-1.5"><Video className="h-4 w-4 text-purple-500" /> Meeting Platform Integration</span>
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Configure a meeting platform (Zoom or Microsoft Teams) to enable auto-generated meeting links for virtual classroom sessions.
+        </p>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Navigate to <strong>Settings</strong> from the sidebar.</li>
+          <li>Select the meeting platform (<strong>Zoom</strong> or <strong>Teams</strong>).</li>
+          <li>Enter the required API credentials (Client ID, Client Secret, and Account/Tenant ID).</li>
+          <li>Click <strong>Test Connection</strong> to verify the credentials work.</li>
+          <li>Click <strong>Save</strong> to store the configuration.</li>
+        </ol>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Once configured, Org Admins can auto-generate meeting links when creating virtual classroom sessions.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+          <span className="inline-flex items-center gap-1.5"><Lock className="h-4 w-4 text-purple-500" /> SAML SSO Configuration</span>
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Configure SAML-based Single Sign-On for Charity Admin and Charity Employee users. This allows your team to log in using your organisation&apos;s identity provider (e.g. Azure AD, Okta, Google Workspace).
+        </p>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>In the SAML SSO section, enter a <strong>Display Name</strong> for your SSO provider (shown on the login page).</li>
+          <li>Paste the <strong>Metadata URL</strong> from your identity provider and click <strong>Parse Metadata</strong> to auto-populate the Entity ID, SSO URL, and certificate.</li>
+          <li>Alternatively, enter the <strong>Entity ID</strong>, <strong>SSO URL</strong>, and <strong>X.509 Certificate</strong> manually.</li>
+          <li>Toggle <strong>Enforce for Charity Users</strong> to require SSO for all Charity Admin and Charity Employee logins.</li>
+          <li>Click <strong>Test Connection</strong> to verify the configuration.</li>
+          <li>Click <strong>Save</strong> to enable SAML SSO.</li>
+        </ol>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Configuring your identity provider</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          When setting up the application in your identity provider, you will need the platform&apos;s <strong>ACS (Assertion Consumer Service) URL</strong> and <strong>Entity ID</strong>. These are displayed on the Settings page for easy copying.
+        </p>
+
+        <Tip>Test the SAML connection before enforcing SSO. If enforcement is enabled and the configuration is incorrect, Charity Admin users may be locked out. You can always disable enforcement by signing in with email and password if needed.</Tip>
       </SectionCard>
     </div>
   )

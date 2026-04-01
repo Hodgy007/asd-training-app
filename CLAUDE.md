@@ -33,6 +33,7 @@ Copy `.env.example` to `.env.local` for local dev. For production (Vercel), the 
 | `AZURE_AD_CLIENT_ID` | Azure AD app client ID (optional -- disables Microsoft SSO if absent) |
 | `AZURE_AD_CLIENT_SECRET` | Azure AD client secret |
 | `AZURE_AD_TENANT_ID` | Use `common` for personal + work accounts; or your tenant ID |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage token (used for document uploads and AI-generated thumbnails) |
 
 **Critical:** `DATABASE_URL` must use the Neon pooler (port 6543) in production. Using the direct connection (5432) exhausts connection limits on serverless. `DIRECT_URL` is used only by Prisma for migrations.
 
@@ -50,7 +51,7 @@ Next.js 14 App Router app. TypeScript throughout. Deployed to Vercel (`asd-train
 - `app/api/` -- all API routes; auth state is checked via `getServerSession(authOptions)` at the top of each handler
 - `app/privacy/` -- public privacy policy page
 
-**Authentication:** NextAuth v4 with `CredentialsProvider` (email + bcrypt password) plus `GoogleProvider` and `AzureADProvider` for SSO. Uses `strategy: 'jwt'` (JWT sessions, not database sessions). **No PrismaAdapter** -- SSO account linking is handled manually in the `signIn` callback, which checks for an existing `Account` record by `provider + providerAccountId` and creates one if missing. This replaces the previous PrismaAdapter approach and avoids `OAuthAccountNotLinked` errors. The JWT callback extends the token with `id`, `role`, `organisationId`, `mustChangePassword`, `totpEnabled`, `mfaPending`, and `effectiveModules` (the user's resolved module IDs); the session callback surfaces all of those onto `session.user`. SSO users must be pre-created by an admin (no self-registration via SSO); the `signIn` callback rejects unknown emails and returns an error redirect. Deactivated users (`active: false`) and users in deactivated organisations are blocked at sign-in. Session is accessed on the server via `getServerSession(authOptions)` and on the client via `SessionProvider` in `components/providers/session-provider.tsx`.
+**Authentication:** NextAuth v4 with `CredentialsProvider` (email + bcrypt password) plus `GoogleProvider` and `AzureADProvider` for SSO. Uses `strategy: 'jwt'` (JWT sessions, not database sessions). **No PrismaAdapter** -- SSO account linking is handled manually in the `signIn` callback, which checks for an existing `Account` record by `provider + providerAccountId` and creates one if missing. This replaces the previous PrismaAdapter approach and avoids `OAuthAccountNotLinked` errors. The JWT callback extends the token with `id`, `role`, `organisationId`, `mustChangePassword`, `totpEnabled`, `mfaPending`, `hasPassword`, `effectivePrograms` (array of `{ id, name }` objects for the user's resolved training programs), and `charityPermissions` (array of permission strings for CHARITY_EMPLOYEE users); the session callback surfaces all of those onto `session.user`. SSO users must be pre-created by an admin (no self-registration via SSO); the `signIn` callback rejects unknown emails and returns an error redirect. Deactivated users (`active: false`) and users in deactivated organisations are blocked at sign-in. Session maxAge is set to 8 hours (industry standard for training platforms with sensitive data). Session is accessed on the server via `getServerSession(authOptions)` and on the client via `SessionProvider` in `components/providers/session-provider.tsx`.
 
 **SSO setup:** Google OAuth and Azure AD are configured as app-level one-time setup (not per-org). Redirect URIs:
 - Google: `https://asd-training-app-v2.vercel.app/api/auth/callback/google`
@@ -58,33 +59,47 @@ Next.js 14 App Router app. TypeScript throughout. Deployed to Vercel (`asd-train
 
 **Login page:** Redesigned with a segmented toggle between "Email & Password" (credentials form with forgot-password link) and "Single Sign-On" (Google and Microsoft buttons). No demo credentials are shown. SSO errors from the `error` query param are displayed in the same error banner as credentials errors.
 
-**effectiveModules in session:** The JWT token includes the user's effective module IDs (`effectiveModules`), computed by `lib/modules.ts:getEffectiveModules()`. Priority: user-level `allowedModuleIds` > org-level `allowedModuleIds` > fallback (ASD modules only). This is set on credentials login, SSO login, and session update triggers. The session type is extended in `types/index.ts` to include `effectiveModules: string[]`.
+**effectivePrograms in session:** The JWT token includes the user's effective training programs (`effectivePrograms`), computed by `lib/modules.ts:getUserPrograms()`. This resolves the user's organisation's `allowedProgramIds` to active `TrainingProgram` records, returning `ProgramInfo[]` (array of `{ id, name }`). This is set on credentials login, SSO login, and session update triggers. The session type is extended in `types/index.ts` to include `effectivePrograms`. The `lib/modules.ts` file exports `getUserPrograms()`, `getOrgPrograms()`, `hasAccess()`, and the `ProgramInfo` interface.
 
 **MFA/TOTP:** SUPER_ADMIN and ORG_ADMIN roles are required to enable TOTP MFA. Uses the `otpauth` library with `qrcode` for QR display. The middleware enforces MFA in three stages: (1) `mustChangePassword` -- redirect to `/change-password`, (2) `mfaPending` -- redirect to `/mfa-verify` for users with TOTP enabled who haven't verified yet this session, (3) admin roles without TOTP enabled -- redirect to `/mfa-setup` until configured. Login flow for MFA users: password check --> `mfaPending: true` in JWT --> redirect to `/mfa-verify` --> TOTP code submitted via second `signIn()` call with `totpCode` --> `mfaPending: false` --> session active.
 
-**Multi-tenant organisations:** The `Organisation` model supports multi-tenancy. Each org has `allowedModuleIds` (which training modules its users can access) and `allowedRoles` (which roles can be assigned). Users belong to an organisation via `organisationId`. Org admins manage their own org's users, announcements, and reports at `/admin/*`. Super admins manage all organisations at `/super-admin/organisations`.
+**Multi-tenant organisations:** The `Organisation` model supports multi-tenancy. Each org has `allowedProgramIds` (which training programs its users can access), `allowedRoles` (which roles can be assigned), contact details (`contactName`, `contactEmail`, `contactPhone`), and address fields (`addressLine1`, `addressLine2`, `city`, `county`, `postcode`, `country`). Users belong to an organisation via `organisationId`. Org admins manage their own org's users, announcements, and reports at `/admin/*`. Super admins manage all organisations at `/super-admin/organisations`.
 
-**Module access as training plans:** Org admin user creation and super admin org settings present module access as two toggles -- "ASD Awareness Training" (covers `module-1` through `module-5`) and "Careers CPD Training" (covers `careers-module-1` through `careers-module-4`) -- rather than exposing individual module IDs. The mapping lives in `lib/modules.ts` which exports `ASD_MODULE_IDS`, `CAREERS_MODULE_IDS`, and helper functions `hasAsdAccess()` / `hasCareersAccess()`.
+**Training programs:** Training is organised into `TrainingProgram` containers, each with a name, description, status (`DRAFT` / `UNDER_REVIEW` / `APPROVED` / `ARCHIVED`), version, and ordered modules. Organisations are assigned programs via `allowedProgramIds`. The `lib/modules.ts` file resolves these to `ProgramInfo[]` objects for the session. The sidebar dynamically renders one nav link per assigned program (e.g. "ASD Awareness Training", "Careers CPD Training") using the program's `name` field.
 
 **Database:** Prisma ORM. Core models:
 - `User`, `Child`, `Observation`, `TrainingProgress`, `AiInsight` -- original models for caregiving features
 - `Account`, `Session`, `VerificationToken` -- NextAuth tables (Account used for SSO linking; Session and VerificationToken retained in schema but not used by JWT strategy)
-- `Organisation` -- multi-tenant org with `allowedModuleIds`, `allowedRoles`, `slug`
+- `Organisation` -- multi-tenant org with `allowedProgramIds`, `allowedRoles`, `slug`, contact details (`contactName`, `contactEmail`, `contactPhone`), and address fields (`addressLine1`, `addressLine2`, `city`, `county`, `postcode`, `country`)
 - `Announcement` -- org-scoped or global announcements with optional expiry
-- `Module`, `Lesson`, `QuizQuestion` -- training content CMS (replaces hardcoded TS files)
+- `TrainingProgram` -- training program container with name, description, order, version, status (`DRAFT` / `UNDER_REVIEW` / `APPROVED` / `ARCHIVED`), review tracking fields
+- `Module`, `Lesson`, `QuizQuestion` -- training content CMS; `Module` belongs to a `TrainingProgram` via `programId`
 - `PasswordResetToken` -- for forgot-password email flow
-- `ClassSession`, `SessionAttendee` -- virtual classroom sessions (named `ClassSession` to avoid collision with the NextAuth `Session` table; always access via `prisma.classSession`)
+- `ClassSession`, `SessionAttendee` -- virtual classroom sessions (named `ClassSession` to avoid collision with the NextAuth `Session` table; always access via `prisma.classSession`). `ClassSession` has `isCharitySession` flag for charity-level workshops.
 - `OrgMeetingConfig` -- per-org Zoom/Teams API credentials and settings for auto-generating meeting links
+- `CharityMeetingConfig` -- charity-level meeting API credentials (Zoom/Teams)
+- `Survey`, `SurveyQuestion`, `SurveyTarget`, `SurveyResponse`, `SurveyAnswer`, `SurveyInsight` -- complete survey system with targeted audiences, multiple question types (`MULTIPLE_CHOICE`, `YES_NO`, `FREE_TEXT`, `RATING_SCALE`, `MULTI_SELECT`), lifecycle (`DRAFT` / `PUBLISHED` / `CLOSED`), and AI-generated insights (`SUMMARY`, `COMPARATIVE`, `RECOMMENDATIONS`)
+- `LibraryCollection`, `LibraryDocument`, `LibraryDocumentEvent` -- document library with collections, file uploads (Vercel Blob), targeted visibility (`targetOrgIds`, `targetRoles`), AI-generated thumbnails, and download/view tracking per user/org
+- `IntegrationApiKey` -- API key management for external integrations (e.g. Power Automate). Keys are SHA-256 hashed (`keyHash`), with a display prefix (`keyPrefix`), expiry, and last-used tracking.
+- `OrgSsoConfig` -- per-org SAML SSO configuration with email domain, SSO URL, entity ID, certificate, auto-provisioning, and default role
+- `CharitySsoConfig` -- charity-level SAML SSO configuration with enforce-for-charity-users option
 
-All child/observation data cascades on user delete. Module/Lesson/QuizQuestion cascade on parent delete. The Prisma singleton lives in `lib/prisma.ts`.
+All child/observation data cascades on user delete. Module/Lesson/QuizQuestion cascade on parent delete. Survey/Library cascades on parent delete. The Prisma singleton lives in `lib/prisma.ts`.
 
-**Roles and RBAC:** Seven roles -- `SUPER_ADMIN`, `ORG_ADMIN`, `CAREGIVER` (displayed as "Practitioner"), `CAREER_DEV_OFFICER`, `STUDENT`, `INTERN`, `EMPLOYEE`. Role helpers live in `lib/rbac.ts`:
-- `isSuperAdmin(session)` -- platform-wide admin
+**Roles and RBAC:** Eight roles -- `SUPER_ADMIN` (displayed as "Charity Admin"), `CHARITY_EMPLOYEE`, `ORG_ADMIN`, `CAREGIVER` (displayed as "Practitioner"), `CAREER_DEV_OFFICER` (displayed as "Careers Professional"), `STUDENT`, `INTERN`, `EMPLOYEE`. Role helpers live in `lib/rbac.ts`:
+- `isSuperAdmin(session)` -- platform-wide charity admin (aliased as `isCharityAdmin`)
+- `isCharityEmployee(session)` -- delegated charity-level access with configurable permissions
+- `isCharityLevel(session)` -- returns true for SUPER_ADMIN or CHARITY_EMPLOYEE
 - `isOrgAdmin(session)` -- manages one organisation
 - `isLeafRole(session)` -- any of the five end-user roles (CAREGIVER, CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE)
 - `isAdmin(session)` -- backwards-compat alias for `isSuperAdmin`
 - `canAccessCareers(session)` -- CAREER_DEV_OFFICER only
 - `canAccessCaregiving(session)` -- CAREGIVER only
+- `canCreateSessions(session)` -- ORG_ADMIN, CAREGIVER, CAREER_DEV_OFFICER, or CHARITY_EMPLOYEE with `MANAGE_SESSIONS` permission
+- `hasPermission(session, permission)` -- permission check; SUPER_ADMIN always returns true, CHARITY_EMPLOYEE checks their `charityPermissions` array, all other roles return false
+- `hasRole(session, ...roles)` -- generic role check helper
+
+**Charity permission system:** `CHARITY_PERMISSIONS` constant defines seven permissions: `manage_organisations`, `manage_training`, `manage_surveys`, `manage_announcements`, `view_reports`, `manage_sessions`, `manage_library`. SUPER_ADMIN has all permissions implicitly. CHARITY_EMPLOYEE users have only those permissions listed in their `charityPermissions` array (stored on the `User` model). The super admin sidebar dynamically shows/hides nav items based on permissions. `PERMISSION_LABELS` provides human-readable labels. `ROLE_LABELS` maps role enums to display names (e.g. `SUPER_ADMIN` -> "Charity Admin").
 
 Leaf role types are also exported from `types/index.ts` as `LEAF_ROLES`. Navigation is role-gated via three sidebars: `components/layout/super-admin-sidebar.tsx` (super admin), `components/layout/org-admin-sidebar.tsx` (org admin), `components/layout/sidebar.tsx` (leaf roles). The middleware enforces route access: SUPER_ADMIN and ORG_ADMIN cannot access leaf-role routes (`/dashboard`, `/training`, `/careers`, `/children`, `/reports`, `/settings`), **except** SUPER_ADMIN can access `/training` and `/careers` for content preview. ORG_ADMIN is always redirected away from leaf-role routes.
 
@@ -102,11 +117,10 @@ Leaf role types are also exported from `types/index.ts` as `LEAF_ROLES`. Navigat
 **Training content (database-driven):** Training content lives in `Module`, `Lesson`, and `QuizQuestion` database tables. Two module types: `ASD` (for practitioners) and `CAREERS` (for career dev officers). Data access layer at `lib/training-db.ts` provides two sets of queries: super-admin queries (include inactive records for editing) and user-facing queries (active records only). Super admins edit content via a WYSIWYG editor (`react-quill-new`) at `/super-admin/training` and can generate quiz questions with AI (Gemini). Seed training data with `npx tsx prisma/seed-training-content.ts`. Progress API is shared: `POST /api/training/progress` accepts any `moduleId`/`lessonId` combination. The `TrainingProgress` model tracks completion per user.
 
 **Sidebar navigation by role:**
-- SUPER_ADMIN: Overview, Organisations, Training Content, Announcements, Reports
-- ORG_ADMIN: Users, Announcements, Reports, Sessions
-- CAREGIVER (Practitioner): Dashboard, ASD Training, Child Observations, Reports, Sessions, Settings
-- CAREER_DEV_OFFICER: Dashboard, Careers Training, Sessions, Settings
-- STUDENT / INTERN / EMPLOYEE: Dashboard, then **only** the training links matching their `effectiveModules` (ASD Training if any `module-*` IDs present, Careers Training if any `careers-*` IDs present), Sessions, Settings
+- SUPER_ADMIN (Charity Admin): Overview, Users, Organisations, Document Library, Training Content, Surveys, Announcements, Workshops, Reports, Integrations, Settings, How to Guide (CHARITY_EMPLOYEE sees a subset based on their `charityPermissions`)
+- ORG_ADMIN: Users, Workshops, Announcements, Document Library, Reports, Meeting Settings, Enterprise SSO, How to Guide
+- CAREGIVER (Practitioner): Dashboard, [one link per assigned training program], Child Observations, Reports, [document collection links], How to Guide, Workshops, Settings
+- CAREER_DEV_OFFICER / STUDENT / INTERN / EMPLOYEE: Dashboard, [one link per assigned training program from `effectivePrograms`], [document collection links], How to Guide, Workshops, Settings
 
 **Dark mode role badges:** All role badges across all admin views (sidebar, org admin user list, super admin org settings) have dark mode color variants using `dark:bg-*/40 dark:text-*-300` patterns.
 
@@ -115,6 +129,14 @@ Leaf role types are also exported from `types/index.ts` as `LEAF_ROLES`. Navigat
 **AI layer:** `lib/gemini.ts` contains four functions that call `gemini-2.5-flash` via `@google/genai`. All prompts explicitly instruct the model never to diagnose or suggest autism. Full reports are persisted to the `AiInsight` table; the API route is `app/api/children/[childId]/insights/route.ts`. Gemini is also used for AI-generated quiz questions in the training CMS.
 
 **Virtual Classroom Sessions:** Org admins create sessions at `/admin/sessions`. Each session has a title, date/time, duration, platform (Zoom / Teams / Custom), host, and a list of attendees. Attendees can be selected as: all org members, specific roles, or individual users. Both the host and the org admin have full management rights over a session. Meeting links can be pasted manually or auto-generated via the Zoom or Teams API using per-org credentials stored in `OrgMeetingConfig` (configured at `/admin/settings/meetings`). Status flow: `SCHEDULED` → `IN_PROGRESS` → `COMPLETED` (or `CANCELLED`). Attendance is tracked via checkboxes on the `SessionAttendee` join model; a recording URL can be added after the session completes. Users view their upcoming and past sessions at `/sessions`, and the dashboard shows an "Upcoming Sessions" card. Data access helpers live in `lib/sessions.ts`; Zoom/Teams API integration lives in `lib/meetings.ts`. **Important:** the Prisma model is `ClassSession` (not `Session`) to avoid colliding with the NextAuth `Session` table — always use `prisma.classSession`.
+
+**Document Library:** Super admins manage document collections at `/super-admin/library`. Each collection has a title, description, optional AI-generated thumbnail, and targeted org/role visibility via `targetOrgIds` and `targetRoles` arrays. Documents are uploaded to Vercel Blob (`@vercel/blob`). Download and view events are tracked per user/org via `LibraryDocumentEvent`. Org admins can view collections at `/admin/library` and edit collection title/description. Users see targeted collections in the sidebar (as individual nav items linking to `/library?c=<id>`) and at `/library`. Super admin library reports show download stats per org and per document. AI-assisted metadata generation uses Gemini for title/description and Imagen for thumbnails.
+
+**Surveys:** Super admins create surveys at `/super-admin/surveys`. Each survey has questions (multiple choice, yes/no, free text, rating scale, multi-select), targeted audiences (by org and/or role via `SurveyTarget`), and a lifecycle: `DRAFT` -> `PUBLISHED` -> `CLOSED`. Users see pending surveys on their dashboard and respond at `/surveys/[surveyId]`. AI insights can be generated per survey using Gemini (types: `SUMMARY`, `COMPARATIVE`, `RECOMMENDATIONS`). Survey results are viewable at `/super-admin/surveys/[surveyId]/results`. Survey reports with CSV export are available at `/super-admin/reports`.
+
+**Integration API:** External systems (e.g. Microsoft Dynamics 365 via Power Automate) can pull reporting data from `/api/integrations/reports`. Authentication uses SHA-256 hashed API keys with Bearer token auth. Keys are managed at `/super-admin/integrations` (create, revoke, view prefix/last used). The endpoint supports `?section=training|library|surveys` filtering. API keys are stored as hashed values (`IntegrationApiKey` model) -- the raw key is shown only once on creation.
+
+**SAML SSO:** Per-org SAML/SSO configuration is stored in `OrgSsoConfig` (fields: `emailDomain`, `ssoUrl`, `entityId`, `certificate`, `autoProvision`, `defaultRole`). Org admins configure SSO at `/admin/settings/sso`. Charity-level SAML SSO is stored in `CharitySsoConfig` with an `enforceForCharityUsers` option. Super admins configure charity SSO at `/super-admin/settings/sso`. The SAML callback is handled at `/api/auth/saml/callback` and login initiation at `/api/auth/saml/login`. SSO check endpoint at `/api/auth/sso-check` determines if a user's email domain has an SSO config.
 
 **Observations:** The three enums (`Domain`, `Frequency`, `Context`) are the vocabulary for logging behaviours. Behaviour lists per domain live in `lib/constants.ts`. Helper functions for aggregating observations are in `lib/observations.ts`. Charts on the reports page use Recharts.
 
@@ -130,3 +152,6 @@ Leaf role types are also exported from `types/index.ts` as `LEAF_ROLES`. Navigat
 - **SSO users must be pre-created:** SSO login rejects emails not already in the database. Admins must create user accounts first; SSO then links via manual Account record creation in the signIn callback.
 - **Forced password change:** Users with `mustChangePassword: true` are redirected to `/change-password` by middleware and cannot access any other route until they change their password.
 - **MFA enforcement:** SUPER_ADMIN and ORG_ADMIN users without TOTP enabled are redirected to `/mfa-setup` by middleware and cannot access any other route until MFA is configured.
+- **Dev/Prod environments:** Neon database branching is set up. Production uses the main Neon branch; Development uses the `dev` branch (endpoint: `ep-lucky-cherry-a8toqlw5`). Vercel has separate env vars for Production and Development environments. Local dev pulls Development env vars via `npx vercel env pull .env.local`. Git workflow: work on `dev` branch -> merge to `main` -> deploy with `npx vercel --prod --yes`.
+- **Vercel Blob:** Document uploads and AI-generated thumbnails use `@vercel/blob`. Requires `BLOB_READ_WRITE_TOKEN` env var.
+- **CHARITY_EMPLOYEE role:** Delegated charity-level access. Permissions are configured per-user via the `charityPermissions` array. The super admin sidebar dynamically filters nav items based on these permissions.
