@@ -72,11 +72,17 @@ export default function CollectionDetailPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
-  // Edit state
+  // Edit state (documents)
   const [editingDoc, setEditingDoc] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [editSaving, setEditSaving] = useState(false)
+
+  // Edit state (collection)
+  const [editingCollection, setEditingCollection] = useState(false)
+  const [colEditTitle, setColEditTitle] = useState('')
+  const [colEditDescription, setColEditDescription] = useState('')
+  const [colEditSaving, setColEditSaving] = useState(false)
 
   const fetchCollection = useCallback(async () => {
     setLoading(true)
@@ -95,6 +101,34 @@ export default function CollectionDetailPage() {
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
+  }
+
+  function startEditCollection() {
+    if (!collection) return
+    setColEditTitle(collection.title)
+    setColEditDescription(collection.description)
+    setEditingCollection(true)
+  }
+
+  async function handleSaveCollection() {
+    setColEditSaving(true)
+    try {
+      const res = await fetch(`/api/super-admin/library/${collectionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: colEditTitle, description: colEditDescription }),
+      })
+      if (res.ok) {
+        showToast('Collection updated.', 'success')
+        setEditingCollection(false)
+        fetchCollection()
+      } else {
+        const d = await res.json()
+        showToast(d.error || 'Save failed.', 'error')
+      }
+    } finally {
+      setColEditSaving(false)
+    }
   }
 
   function resetForm() {
@@ -289,26 +323,81 @@ export default function CollectionDetailPage() {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <Link href="/super-admin/library" className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
               <ArrowLeft className="h-4 w-4" />
             </Link>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <FolderOpen className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-              {collection.title}
-            </h1>
+            {editingCollection ? (
+              <div className="flex-1 space-y-3">
+                <div>
+                  <label className="label">Collection Name</label>
+                  <input
+                    className="input w-full text-lg font-bold"
+                    type="text"
+                    value={colEditTitle}
+                    onChange={(e) => setColEditTitle(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="label">Description</label>
+                  <textarea
+                    className="input w-full"
+                    rows={2}
+                    value={colEditDescription}
+                    onChange={(e) => setColEditDescription(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSaveCollection}
+                    disabled={colEditSaving || !colEditTitle.trim() || !colEditDescription.trim()}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
+                  >
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    {colEditSaving ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    onClick={() => setEditingCollection(false)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <FolderOpen className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                    {collection.title}
+                  </h1>
+                  <button
+                    onClick={startEditCollection}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0"
+                    title="Edit collection name and description"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                </div>
+                <p className="text-slate-500 dark:text-slate-400 mt-1">{collection.description}</p>
+              </div>
+            )}
           </div>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">{collection.description}</p>
         </div>
-        <button
-          onClick={() => { setShowForm((v) => !v); if (showForm) resetForm() }}
-          className="btn-primary flex items-center gap-2"
-        >
-          {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {showForm ? 'Cancel' : 'Add Document'}
-        </button>
+        {!editingCollection && (
+          <button
+            onClick={() => { setShowForm((v) => !v); if (showForm) resetForm() }}
+            className="btn-primary flex items-center gap-2 flex-shrink-0"
+          >
+            {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {showForm ? 'Cancel' : 'Add Document'}
+          </button>
+        )}
       </div>
 
       {/* Add document form */}
