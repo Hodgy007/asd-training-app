@@ -81,6 +81,9 @@ model Organisation {
   allowedProgramIds String[]
   allowedRoles      String[]
   logoUrl           String?
+  contactName       String?
+  contactEmail      String?
+  contactPhone      String?
   addressLine1      String?
   addressLine2      String?
   city              String?

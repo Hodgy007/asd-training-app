@@ -60,6 +60,9 @@ export default function OrganisationsPage() {
   const [formPrograms, setFormPrograms] = useState<string[]>([])
   const [formActive, setFormActive] = useState(true)
   const [formSubmitting, setFormSubmitting] = useState(false)
+  const [formContactName, setFormContactName] = useState('')
+  const [formContactEmail, setFormContactEmail] = useState('')
+  const [formContactPhone, setFormContactPhone] = useState('')
   const [formAddress1, setFormAddress1] = useState('')
   const [formAddress2, setFormAddress2] = useState('')
   const [formCity, setFormCity] = useState('')
@@ -146,6 +149,9 @@ export default function OrganisationsPage() {
           allowedRoles: formRoles,
           allowedProgramIds: formPrograms,
           active: formActive,
+          contactName: formContactName || undefined,
+          contactEmail: formContactEmail || undefined,
+          contactPhone: formContactPhone || undefined,
           addressLine1: formAddress1 || undefined,
           addressLine2: formAddress2 || undefined,
           city: formCity || undefined,
@@ -162,6 +168,9 @@ export default function OrganisationsPage() {
         setFormRoles([])
         setFormPrograms([])
         setFormActive(true)
+        setFormContactName('')
+        setFormContactEmail('')
+        setFormContactPhone('')
         setFormAddress1('')
         setFormAddress2('')
         setFormCity('')
@@ -238,6 +247,22 @@ export default function OrganisationsPage() {
                   required
                   placeholder="e.g. sunrise-care"
                 />
+              </div>
+            </div>
+
+            {/* Primary Contact */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="label">Contact Name</label>
+                <input className="input w-full" type="text" value={formContactName} onChange={(e) => setFormContactName(e.target.value)} placeholder="e.g. Jane Smith" />
+              </div>
+              <div>
+                <label className="label">Contact Email</label>
+                <input className="input w-full" type="email" value={formContactEmail} onChange={(e) => setFormContactEmail(e.target.value)} placeholder="e.g. jane@example.com" />
+              </div>
+              <div>
+                <label className="label">Contact Phone</label>
+                <input className="input w-full" type="tel" value={formContactPhone} onChange={(e) => setFormContactPhone(e.target.value)} placeholder="e.g. 07700 123456" />
               </div>
             </div>
 

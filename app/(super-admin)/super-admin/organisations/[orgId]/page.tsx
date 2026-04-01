@@ -38,6 +38,9 @@ interface OrgDetail {
   active: boolean
   allowedRoles: string[]
   allowedProgramIds: string[]
+  contactName: string | null
+  contactEmail: string | null
+  contactPhone: string | null
   addressLine1: string | null
   addressLine2: string | null
   city: string | null
@@ -97,6 +100,9 @@ export default function OrgDetailPage() {
   const [editRoles, setEditRoles] = useState<string[]>([])
   const [editProgramIds, setEditProgramIds] = useState<string[]>([])
   const [editActive, setEditActive] = useState(true)
+  const [editContactName, setEditContactName] = useState('')
+  const [editContactEmail, setEditContactEmail] = useState('')
+  const [editContactPhone, setEditContactPhone] = useState('')
   const [editAddress1, setEditAddress1] = useState('')
   const [editAddress2, setEditAddress2] = useState('')
   const [editCity, setEditCity] = useState('')
@@ -132,6 +138,9 @@ export default function OrgDetailPage() {
         setEditRoles(data.allowedRoles)
         setEditProgramIds(data.allowedProgramIds)
         setEditActive(data.active)
+        setEditContactName(data.contactName || '')
+        setEditContactEmail(data.contactEmail || '')
+        setEditContactPhone(data.contactPhone || '')
         setEditAddress1(data.addressLine1 || '')
         setEditAddress2(data.addressLine2 || '')
         setEditCity(data.city || '')
@@ -188,6 +197,9 @@ export default function OrgDetailPage() {
           allowedRoles: editRoles,
           allowedProgramIds: editProgramIds,
           active: editActive,
+          contactName: editContactName || undefined,
+          contactEmail: editContactEmail || undefined,
+          contactPhone: editContactPhone || undefined,
           addressLine1: editAddress1 || undefined,
           addressLine2: editAddress2 || undefined,
           city: editCity || undefined,
@@ -365,6 +377,22 @@ export default function OrgDetailPage() {
                 pattern="[a-z0-9-]+"
                 title="Lowercase letters, numbers, and hyphens only"
               />
+            </div>
+          </div>
+
+          {/* Primary Contact */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="label">Contact Name</label>
+              <input className="input w-full" type="text" value={editContactName} onChange={(e) => setEditContactName(e.target.value)} placeholder="e.g. Jane Smith" />
+            </div>
+            <div>
+              <label className="label">Contact Email</label>
+              <input className="input w-full" type="email" value={editContactEmail} onChange={(e) => setEditContactEmail(e.target.value)} placeholder="e.g. jane@example.com" />
+            </div>
+            <div>
+              <label className="label">Contact Phone</label>
+              <input className="input w-full" type="tel" value={editContactPhone} onChange={(e) => setEditContactPhone(e.target.value)} placeholder="e.g. 07700 123456" />
             </div>
           </div>
 
