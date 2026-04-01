@@ -70,6 +70,7 @@ export default function CollectionDetailPage() {
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [aiGenerating, setAiGenerating] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
   // Edit state
   const [editingDoc, setEditingDoc] = useState<string | null>(null)
@@ -394,7 +395,8 @@ export default function CollectionDetailPage() {
                   <img
                     src={formThumbnailUrl}
                     alt="Thumbnail preview"
-                    className="h-24 w-24 rounded-xl object-cover border border-calm-200 dark:border-slate-600"
+                    className="h-24 w-24 rounded-xl object-cover border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => setZoomedImage(formThumbnailUrl)}
                   />
                   <button
                     type="button"
@@ -529,7 +531,10 @@ export default function CollectionDetailPage() {
                 >
                   {/* Thumbnail or icon */}
                   {doc.thumbnailUrl ? (
-                    <div className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600">
+                    <div
+                      className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setZoomedImage(doc.thumbnailUrl)}
+                    >
                       <img src={doc.thumbnailUrl} alt="" className="h-full w-full object-cover" />
                     </div>
                   ) : (
@@ -599,6 +604,28 @@ export default function CollectionDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Image zoom lightbox */}
+      {zoomedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 cursor-pointer"
+          onClick={() => setZoomedImage(null)}
+        >
+          <div className="relative max-w-3xl max-h-[80vh] mx-4">
+            <img
+              src={zoomedImage}
+              alt="Zoomed thumbnail"
+              className="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain"
+            />
+            <button
+              onClick={() => setZoomedImage(null)}
+              className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-white dark:bg-slate-700 shadow-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

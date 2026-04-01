@@ -14,6 +14,7 @@ import {
   Presentation,
   ArrowLeft,
   ChevronRight,
+  X,
 } from 'lucide-react'
 
 interface LibraryDoc {
@@ -68,6 +69,7 @@ export default function LibraryPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedCollection, setSelectedCollection] = useState<LibraryCollection | null>(null)
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
   const fetchCollections = useCallback(async () => {
     setLoading(true)
@@ -151,7 +153,10 @@ export default function LibraryPage() {
                 <div key={doc.id} className="card p-0 overflow-hidden hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-4 px-4 py-3">
                     {doc.thumbnailUrl ? (
-                      <div className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600">
+                      <div
+                        className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setZoomedImage(doc.thumbnailUrl)}
+                      >
                         <img src={doc.thumbnailUrl} alt="" className="h-full w-full object-cover" />
                       </div>
                     ) : (
@@ -184,6 +189,18 @@ export default function LibraryPage() {
                 </div>
               )
             })}
+          </div>
+        )}
+
+        {/* Image zoom lightbox */}
+        {zoomedImage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 cursor-pointer" onClick={() => setZoomedImage(null)}>
+            <div className="relative max-w-3xl max-h-[80vh] mx-4">
+              <img src={zoomedImage} alt="Zoomed thumbnail" className="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain" />
+              <button onClick={() => setZoomedImage(null)} className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-white dark:bg-slate-700 shadow-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
