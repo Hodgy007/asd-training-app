@@ -34,8 +34,9 @@ model User {
   sessionAttendees SessionAttendee[]
   surveysCreated   Survey[]         @relation("SurveysCreated")
   surveyResponses  SurveyResponse[] @relation("SurveyResponses")
-  uploadedDocuments LibraryDocument[]      @relation("UploadedDocuments")
-  documentEvents    LibraryDocumentEvent[] @relation("DocumentEvents")
+  collectionsCreated LibraryCollection[]    @relation("CollectionsCreated")
+  uploadedDocuments  LibraryDocument[]     @relation("UploadedDocuments")
+  documentEvents     LibraryDocumentEvent[] @relation("DocumentEvents")
 }
 
 model Account {
@@ -469,8 +470,25 @@ enum InsightType {
   RECOMMENDATIONS
 }
 
+model LibraryCollection {
+  id            String   @id @default(cuid())
+  title         String
+  description   String   @db.Text
+  thumbnailUrl  String?
+  targetOrgIds  String[]
+  targetRoles   String[]
+  active        Boolean  @default(true)
+  createdById   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  createdBy User              @relation("CollectionsCreated", fields: [createdById], references: [id])
+  documents LibraryDocument[]
+}
+
 model LibraryDocument {
   id            String   @id @default(cuid())
+  collectionId  String
   title         String
   description   String   @db.Text
   fileUrl       String
@@ -478,14 +496,13 @@ model LibraryDocument {
   fileSize      Int
   fileType      String
   thumbnailUrl  String?
-  targetOrgIds  String[]
-  targetRoles   String[]
   active        Boolean  @default(true)
   uploadedById  String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  uploadedBy User @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+  collection LibraryCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  uploadedBy User              @relation("UploadedDocuments", fields: [uploadedById], references: [id])
   events     LibraryDocumentEvent[]
 }
 

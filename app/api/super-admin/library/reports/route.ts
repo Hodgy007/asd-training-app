@@ -10,65 +10,77 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  // Fetch all documents with event counts
-  const documents = await prisma.libraryDocument.findMany({
+  // Fetch all collections with documents and events
+  const collections = await prisma.libraryCollection.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
-      uploadedBy: { select: { name: true } },
-      events: {
-        select: { action: true, organisationId: true },
+      createdBy: { select: { name: true } },
+      documents: {
+        include: {
+          events: { select: { action: true, organisationId: true } },
+        },
       },
     },
   })
 
-  // Fetch all organisations for name lookup
-  const orgs = await prisma.organisation.findMany({
-    select: { id: true, name: true },
-  })
+  // Fetch orgs for name lookup
+  const orgs = await prisma.organisation.findMany({ select: { id: true, name: true } })
   const orgMap = Object.fromEntries(orgs.map((o) => [o.id, o.name]))
 
-  // Build per-document stats
-  const documentStats = documents.map((doc) => {
-    const views = doc.events.filter((e) => e.action === 'view').length
-    const downloads = doc.events.filter((e) => e.action === 'download').length
-
-    // Per-org breakdown
+  // Build per-collection stats
+  const collectionStats = collections.map((col) => {
+    let totalViews = 0
+    let totalDownloads = 0
     const orgBreakdown: Record<string, { views: number; downloads: number; orgName: string }> = {}
-    for (const event of doc.events) {
-      const orgId = event.organisationId || 'unassigned'
-      if (!orgBreakdown[orgId]) {
-        orgBreakdown[orgId] = {
-          views: 0,
-          downloads: 0,
-          orgName: orgId === 'unassigned' ? 'No organisation' : (orgMap[orgId] || orgId),
+
+    for (const doc of col.documents) {
+      for (const event of doc.events) {
+        if (event.action === 'view') totalViews++
+        if (event.action === 'download') totalDownloads++
+
+        const orgId = event.organisationId || 'unassigned'
+        if (!orgBreakdown[orgId]) {
+          orgBreakdown[orgId] = {
+            views: 0,
+            downloads: 0,
+            orgName: orgId === 'unassigned' ? 'No organisation' : (orgMap[orgId] || orgId),
+          }
         }
+        if (event.action === 'view') orgBreakdown[orgId].views++
+        if (event.action === 'download') orgBreakdown[orgId].downloads++
       }
-      if (event.action === 'view') orgBreakdown[orgId].views++
-      if (event.action === 'download') orgBreakdown[orgId].downloads++
     }
 
     return {
-      id: doc.id,
-      title: doc.title,
-      fileName: doc.fileName,
-      fileType: doc.fileType,
-      active: doc.active,
-      targetOrgIds: doc.targetOrgIds,
-      createdAt: doc.createdAt,
-      uploadedBy: doc.uploadedBy.name,
-      totalViews: views,
-      totalDownloads: downloads,
+      id: col.id,
+      title: col.title,
+      active: col.active,
+      targetOrgIds: col.targetOrgIds,
+      targetRoles: col.targetRoles,
+      documentCount: col.documents.length,
+      createdAt: col.createdAt,
+      createdBy: col.createdBy.name,
+      totalViews,
+      totalDownloads,
       orgBreakdown: Object.values(orgBreakdown).sort((a, b) => (b.views + b.downloads) - (a.views + a.downloads)),
+      documents: col.documents.map((doc) => ({
+        id: doc.id,
+        title: doc.title,
+        fileName: doc.fileName,
+        views: doc.events.filter((e) => e.action === 'view').length,
+        downloads: doc.events.filter((e) => e.action === 'download').length,
+      })),
     }
   })
 
   // Overall totals
   const totals = {
-    totalDocuments: documents.length,
-    activeDocuments: documents.filter((d) => d.active).length,
-    totalViews: documentStats.reduce((sum, d) => sum + d.totalViews, 0),
-    totalDownloads: documentStats.reduce((sum, d) => sum + d.totalDownloads, 0),
+    totalCollections: collections.length,
+    activeCollections: collections.filter((c) => c.active).length,
+    totalDocuments: collections.reduce((sum, c) => sum + c.documents.length, 0),
+    totalViews: collectionStats.reduce((sum, c) => sum + c.totalViews, 0),
+    totalDownloads: collectionStats.reduce((sum, c) => sum + c.totalDownloads, 0),
   }
 
-  return NextResponse.json({ totals, documents: documentStats, organisations: orgs })
+  return NextResponse.json({ totals, collections: collectionStats, organisations: orgs })
 }

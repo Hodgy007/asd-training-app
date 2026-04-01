@@ -8,30 +8,31 @@ import { z } from 'zod'
 const createSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().min(1),
-  fileUrl: z.string().url(),
-  fileName: z.string().min(1),
-  fileSize: z.number().int().positive(),
-  fileType: z.string().min(1),
   thumbnailUrl: z.string().url().nullable().optional(),
   targetOrgIds: z.array(z.string()).default([]),
   targetRoles: z.array(z.string()).default([]),
   active: z.boolean().default(true),
 })
 
+// GET — list all collections
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const documents = await prisma.libraryDocument.findMany({
+  const collections = await prisma.libraryCollection.findMany({
     orderBy: { createdAt: 'desc' },
-    include: { uploadedBy: { select: { name: true } } },
+    include: {
+      createdBy: { select: { name: true } },
+      _count: { select: { documents: true } },
+    },
   })
 
-  return NextResponse.json(documents)
+  return NextResponse.json(collections)
 }
 
+// POST — create a new collection
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
@@ -44,21 +45,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
   }
 
-  const document = await prisma.libraryDocument.create({
+  const collection = await prisma.libraryCollection.create({
     data: {
       title: parsed.data.title,
       description: parsed.data.description,
-      fileUrl: parsed.data.fileUrl,
-      fileName: parsed.data.fileName,
-      fileSize: parsed.data.fileSize,
-      fileType: parsed.data.fileType,
       thumbnailUrl: parsed.data.thumbnailUrl ?? null,
       targetOrgIds: parsed.data.targetOrgIds,
       targetRoles: parsed.data.targetRoles,
       active: parsed.data.active,
-      uploadedById: session.user.id,
+      createdById: session.user.id,
     },
   })
 
-  return NextResponse.json(document, { status: 201 })
+  return NextResponse.json(collection, { status: 201 })
 }

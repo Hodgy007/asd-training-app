@@ -178,6 +178,7 @@ export const authOptions: NextAuthOptions = {
         token.mustChangePassword = (user as { mustChangePassword?: boolean }).mustChangePassword ?? false
         token.totpEnabled = (user as { totpEnabled?: boolean }).totpEnabled ?? false
         token.mfaPending = (user as { mfaPending?: boolean }).mfaPending ?? false
+        token.hasPassword = true // Credentials users always have a password
         token.effectivePrograms = await getUserEffectivePrograms(user.id)
         // Fetch charityPermissions for charity-level users
         const dbUserForPerms = await prisma.user.findUnique({
@@ -191,7 +192,7 @@ export const authOptions: NextAuthOptions = {
       if (user && account?.provider !== 'credentials') {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email ?? '' },
-          select: { id: true, role: true, organisationId: true, mustChangePassword: true, totpEnabled: true, charityPermissions: true },
+          select: { id: true, role: true, organisationId: true, mustChangePassword: true, totpEnabled: true, charityPermissions: true, password: true },
         })
         if (dbUser) {
           token.id = dbUser.id
@@ -200,6 +201,7 @@ export const authOptions: NextAuthOptions = {
           token.mustChangePassword = dbUser.mustChangePassword
           token.totpEnabled = dbUser.totpEnabled
           token.mfaPending = dbUser.totpEnabled === true
+          token.hasPassword = !!dbUser.password
           token.effectivePrograms = await getUserEffectivePrograms(dbUser.id)
           token.charityPermissions = dbUser.charityPermissions ?? []
         }
@@ -208,13 +210,14 @@ export const authOptions: NextAuthOptions = {
       if (trigger === 'update') {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true, organisationId: true, mustChangePassword: true, totpEnabled: true, charityPermissions: true },
+          select: { role: true, organisationId: true, mustChangePassword: true, totpEnabled: true, charityPermissions: true, password: true },
         })
         if (dbUser) {
           token.role = dbUser.role
           token.organisationId = dbUser.organisationId
           token.mustChangePassword = dbUser.mustChangePassword
           token.totpEnabled = dbUser.totpEnabled
+          token.hasPassword = !!dbUser.password
           token.charityPermissions = dbUser.charityPermissions ?? []
         }
         token.mfaPending = false
@@ -231,6 +234,7 @@ export const authOptions: NextAuthOptions = {
         session.user.mustChangePassword = token.mustChangePassword as boolean
         session.user.totpEnabled = token.totpEnabled as boolean
         session.user.mfaPending = token.mfaPending as boolean
+        session.user.hasPassword = (token.hasPassword as boolean) ?? true
         session.user.effectivePrograms = (token.effectivePrograms as ProgramInfo[]) ?? []
         session.user.charityPermissions = (token.charityPermissions as string[]) ?? []
       }

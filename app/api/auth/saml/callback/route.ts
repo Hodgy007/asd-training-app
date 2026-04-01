@@ -128,6 +128,7 @@ export async function POST(req: NextRequest) {
         mustChangePassword: user.mustChangePassword ?? false,
         totpEnabled: user.totpEnabled ?? false,
         mfaPending: false, // SAML users skip MFA (already authenticated by corporate IdP)
+        hasPassword: !!user.password,
         effectivePrograms,
         charityPermissions: user.charityPermissions ?? [],
       },

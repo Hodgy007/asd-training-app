@@ -200,6 +200,7 @@ declare module 'next-auth' {
       mustChangePassword: boolean
       totpEnabled: boolean
       mfaPending: boolean
+      hasPassword: boolean
       effectivePrograms: { id: string; name: string }[]
       charityPermissions: string[]
     }
@@ -214,6 +215,7 @@ declare module 'next-auth/jwt' {
     mustChangePassword: boolean
     totpEnabled: boolean
     mfaPending: boolean
+    hasPassword: boolean
     effectivePrograms: { id: string; name: string }[]
     charityPermissions: string[]
   }

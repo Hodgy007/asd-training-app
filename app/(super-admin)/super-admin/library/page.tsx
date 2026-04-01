@@ -11,9 +11,10 @@ import {
   ChevronUp,
   Trash2,
   Upload,
-  FileText,
   Image as ImageIcon,
   BarChart3,
+  FileText,
+  ChevronRight,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -22,20 +23,17 @@ interface Organisation {
   name: string
 }
 
-interface LibraryDoc {
+interface LibraryCollection {
   id: string
   title: string
   description: string
-  fileUrl: string
-  fileName: string
-  fileSize: number
-  fileType: string
   thumbnailUrl: string | null
   targetOrgIds: string[]
   targetRoles: string[]
   active: boolean
   createdAt: string
-  uploadedBy: { name: string | null }
+  createdBy: { name: string | null }
+  _count: { documents: number }
 }
 
 const ROLE_OPTIONS = [
@@ -47,14 +45,8 @@ const ROLE_OPTIONS = [
   { value: 'ORG_ADMIN', label: 'Org Admin' },
 ]
 
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
 export default function LibraryPage() {
-  const [documents, setDocuments] = useState<LibraryDoc[]>([])
+  const [collections, setCollections] = useState<LibraryCollection[]>([])
   const [orgs, setOrgs] = useState<Organisation[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -64,7 +56,6 @@ export default function LibraryPage() {
   // Form state
   const [formTitle, setFormTitle] = useState('')
   const [formDescription, setFormDescription] = useState('')
-  const [formFile, setFormFile] = useState<File | null>(null)
   const [formThumbnail, setFormThumbnail] = useState<File | null>(null)
   const [formTargetOrgIds, setFormTargetOrgIds] = useState<string[]>([])
   const [formTargetRoles, setFormTargetRoles] = useState<string[]>([])
@@ -72,11 +63,11 @@ export default function LibraryPage() {
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null)
 
-  const fetchDocuments = useCallback(async () => {
+  const fetchCollections = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch('/api/super-admin/library')
-      if (res.ok) setDocuments(await res.json())
+      if (res.ok) setCollections(await res.json())
     } finally {
       setLoading(false)
     }
@@ -85,19 +76,14 @@ export default function LibraryPage() {
   const fetchOrgs = useCallback(async () => {
     try {
       const res = await fetch('/api/super-admin/organisations')
-      if (res.ok) {
-        const data = await res.json()
-        setOrgs(data)
-      }
-    } catch {
-      // ignore
-    }
+      if (res.ok) setOrgs(await res.json())
+    } catch { /* ignore */ }
   }, [])
 
   useEffect(() => {
-    fetchDocuments()
+    fetchCollections()
     fetchOrgs()
-  }, [fetchDocuments, fetchOrgs])
+  }, [fetchCollections, fetchOrgs])
 
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })
@@ -116,55 +102,35 @@ export default function LibraryPage() {
   }
 
   function toggleOrgId(id: string) {
-    setFormTargetOrgIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    )
+    setFormTargetOrgIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
   }
 
   function toggleRole(role: string) {
-    setFormTargetRoles((prev) =>
-      prev.includes(role) ? prev.filter((x) => x !== role) : [...prev, role]
-    )
-  }
-
-  async function uploadFile(file: File, folder: string): Promise<{ url: string; fileName: string; size: number }> {
-    const fd = new FormData()
-    fd.append('file', file)
-    fd.append('folder', folder)
-    const res = await fetch('/api/super-admin/library/upload', { method: 'POST', body: fd })
-    if (!res.ok) throw new Error('Upload failed')
-    return res.json()
+    setFormTargetRoles((prev) => prev.includes(role) ? prev.filter((x) => x !== role) : [...prev, role])
   }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!formFile) {
-      showToast('Please select a file to upload.', 'error')
-      return
-    }
     setFormSubmitting(true)
     try {
-      // Upload file
-      const fileResult = await uploadFile(formFile, 'library/documents')
-
-      // Upload thumbnail if provided
       let thumbnailUrl: string | null = null
       if (formThumbnail) {
-        const thumbResult = await uploadFile(formThumbnail, 'library/thumbnails')
-        thumbnailUrl = thumbResult.url
+        const fd = new FormData()
+        fd.append('file', formThumbnail)
+        fd.append('folder', 'library/thumbnails')
+        const uploadRes = await fetch('/api/super-admin/library/upload', { method: 'POST', body: fd })
+        if (uploadRes.ok) {
+          const data = await uploadRes.json()
+          thumbnailUrl = data.url
+        }
       }
 
-      // Create document record
       const res = await fetch('/api/super-admin/library', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: formTitle,
           description: formDescription,
-          fileUrl: fileResult.url,
-          fileName: fileResult.fileName,
-          fileSize: fileResult.size,
-          fileType: formFile.type,
           thumbnailUrl,
           targetOrgIds: formTargetOrgIds,
           targetRoles: formTargetRoles,
@@ -173,74 +139,67 @@ export default function LibraryPage() {
       })
 
       if (res.ok) {
-        showToast('Document uploaded successfully.', 'success')
+        showToast('Collection created.', 'success')
         setShowForm(false)
         setFormTitle('')
         setFormDescription('')
-        setFormFile(null)
         setFormThumbnail(null)
         setThumbnailPreview(null)
         setFormTargetOrgIds([])
         setFormTargetRoles([])
         setFormActive(true)
-        fetchDocuments()
+        fetchCollections()
       } else {
         const d = await res.json()
         showToast(d.error || 'Create failed.', 'error')
       }
     } catch {
-      showToast('Upload failed. Please try again.', 'error')
+      showToast('Failed. Please try again.', 'error')
     } finally {
       setFormSubmitting(false)
     }
   }
 
-  async function toggleActive(doc: LibraryDoc) {
-    setActionLoading(doc.id + '-toggle')
+  async function toggleActive(col: LibraryCollection) {
+    setActionLoading(col.id + '-toggle')
     try {
-      const res = await fetch(`/api/super-admin/library/${doc.id}`, {
+      const res = await fetch(`/api/super-admin/library/${col.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ active: !doc.active }),
+        body: JSON.stringify({ active: !col.active }),
       })
       if (res.ok) {
-        showToast(`Document ${!doc.active ? 'activated' : 'deactivated'}.`, 'success')
-        fetchDocuments()
-      } else {
-        const d = await res.json()
-        showToast(d.error || 'Update failed.', 'error')
+        showToast(`Collection ${!col.active ? 'activated' : 'deactivated'}.`, 'success')
+        fetchCollections()
       }
     } finally {
       setActionLoading(null)
     }
   }
 
-  async function handleDelete(doc: LibraryDoc) {
-    if (!confirm(`Delete "${doc.title}"? This will also delete the uploaded file.`)) return
-    setActionLoading(doc.id + '-delete')
+  async function handleDelete(col: LibraryCollection) {
+    if (!confirm(`Delete "${col.title}" and all its documents? This cannot be undone.`)) return
+    setActionLoading(col.id + '-delete')
     try {
-      const res = await fetch(`/api/super-admin/library/${doc.id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/super-admin/library/${col.id}`, { method: 'DELETE' })
       if (res.ok) {
-        showToast('Document deleted.', 'success')
-        fetchDocuments()
-      } else {
-        const d = await res.json()
-        showToast(d.error || 'Delete failed.', 'error')
+        showToast('Collection deleted.', 'success')
+        fetchCollections()
       }
     } finally {
       setActionLoading(null)
     }
   }
 
-  function targetLabel(doc: LibraryDoc): string {
+  function targetLabel(col: LibraryCollection): string {
+    if (col.targetOrgIds.length === 0 && col.targetRoles.length === 0) return 'All users'
     const parts: string[] = []
-    if (doc.targetOrgIds.length === 0 && doc.targetRoles.length === 0) return 'All users'
-    if (doc.targetOrgIds.length > 0) {
-      const orgNames = doc.targetOrgIds.map((id) => orgs.find((o) => o.id === id)?.name || id)
+    if (col.targetOrgIds.length > 0) {
+      const orgNames = col.targetOrgIds.map((id) => orgs.find((o) => o.id === id)?.name || id)
       parts.push(orgNames.join(', '))
     }
-    if (doc.targetRoles.length > 0) {
-      const roleNames = doc.targetRoles.map((r) => ROLE_OPTIONS.find((o) => o.value === r)?.label || r)
+    if (col.targetRoles.length > 0) {
+      const roleNames = col.targetRoles.map((r) => ROLE_OPTIONS.find((o) => o.value === r)?.label || r)
       parts.push(roleNames.join(', '))
     }
     return parts.join(' · ')
@@ -250,12 +209,10 @@ export default function LibraryPage() {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Toast */}
       {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-sage-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
+        <div className={clsx(
+          'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
+          toast.type === 'success' ? 'bg-sage-600 text-white' : 'bg-red-600 text-white'
+        )}>
           {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
           {toast.message}
         </div>
@@ -268,7 +225,9 @@ export default function LibraryPage() {
             <FolderOpen className="h-6 w-6 text-primary-600 dark:text-primary-400" />
             Document Library
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Upload documents for users to download. Target by organisation and role.</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Create collections of documents and target them to specific organisations or roles.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
@@ -283,7 +242,7 @@ export default function LibraryPage() {
             className="btn-primary flex items-center gap-2"
           >
             {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            {showForm ? 'Cancel' : 'Upload Document'}
+            {showForm ? 'Cancel' : 'New Collection'}
           </button>
         </div>
       </div>
@@ -291,7 +250,7 @@ export default function LibraryPage() {
       {/* Create form */}
       {showForm && (
         <div className="card space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">New Document</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">New Collection</h2>
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label className="label">Title</label>
@@ -301,7 +260,7 @@ export default function LibraryPage() {
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
                 required
-                placeholder="e.g. ASD Awareness Handbook"
+                placeholder="e.g. Safeguarding Policies"
               />
             </div>
 
@@ -312,47 +271,20 @@ export default function LibraryPage() {
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 required
-                placeholder="Brief description of this document…"
+                placeholder="Describe what this collection contains…"
               />
             </div>
 
             <div>
-              <label className="label">File</label>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
-                  <Upload className="h-4 w-4" />
-                  Choose file
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => setFormFile(e.target.files?.[0] || null)}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.png,.jpg,.jpeg"
-                  />
-                </label>
-                {formFile && (
-                  <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                    <FileText className="h-4 w-4" />
-                    {formFile.name} ({formatFileSize(formFile.size)})
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label className="label">Thumbnail <span className="text-slate-400 font-normal">(optional)</span></label>
+              <label className="label">Cover Image <span className="text-slate-400 font-normal">(optional)</span></label>
               <div className="flex items-center gap-3">
                 <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
                   <ImageIcon className="h-4 w-4" />
                   Choose image
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => handleThumbnailChange(e.target.files?.[0] || null)}
-                    accept="image/*"
-                  />
+                  <input type="file" className="hidden" onChange={(e) => handleThumbnailChange(e.target.files?.[0] || null)} accept="image/*" />
                 </label>
                 {thumbnailPreview && (
-                  <img src={thumbnailPreview} alt="Thumbnail preview" className="h-12 w-12 rounded-lg object-cover border border-calm-200 dark:border-slate-600" />
+                  <img src={thumbnailPreview} alt="Preview" className="h-12 w-12 rounded-lg object-cover border border-calm-200 dark:border-slate-600" />
                 )}
               </div>
             </div>
@@ -376,9 +308,7 @@ export default function LibraryPage() {
                     {org.name}
                   </button>
                 ))}
-                {orgs.length === 0 && (
-                  <p className="text-xs text-slate-400">No organisations found.</p>
-                )}
+                {orgs.length === 0 && <p className="text-xs text-slate-400">No organisations found.</p>}
               </div>
             </div>
 
@@ -406,139 +336,112 @@ export default function LibraryPage() {
 
             <div>
               <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formActive}
-                  onChange={(e) => setFormActive(e.target.checked)}
-                  className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-                />
+                <input type="checkbox" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} className="rounded border-calm-300 text-primary-600 focus:ring-primary-500" />
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Active (visible to users immediately)</span>
               </label>
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700"
-              >
+              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700">
                 Cancel
               </button>
               <button type="submit" disabled={formSubmitting} className="btn-primary">
-                {formSubmitting ? 'Uploading…' : 'Upload Document'}
+                {formSubmitting ? 'Creating…' : 'Create Collection'}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* List */}
-      <div className="card overflow-hidden p-0">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-calm-200 dark:border-slate-700">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {documents.length} document{documents.length !== 1 ? 's' : ''}
-          </p>
-          <button
-            onClick={fetchDocuments}
-            className="p-2 rounded-xl border border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors text-slate-500 dark:text-slate-400"
-            title="Refresh"
-          >
-            <RefreshCw className={clsx('h-4 w-4', loading && 'animate-spin')} />
-          </button>
-        </div>
+      {/* Collection list */}
+      <div className="space-y-3">
+        {loading ? (
+          <div className="text-center py-16 text-slate-400">
+            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-3" />
+            Loading…
+          </div>
+        ) : collections.length === 0 ? (
+          <div className="text-center py-16">
+            <FolderOpen className="h-12 w-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+            <p className="text-slate-500 dark:text-slate-400 font-medium">
+              No collections yet. Create your first one above.
+            </p>
+          </div>
+        ) : (
+          collections.map((col) => (
+            <div
+              key={col.id}
+              className="card p-0 overflow-hidden hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center">
+                {/* Thumbnail */}
+                {col.thumbnailUrl ? (
+                  <div className="w-24 h-24 flex-shrink-0 bg-calm-50 dark:bg-slate-700 overflow-hidden hidden sm:block">
+                    <img src={col.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 flex-shrink-0 bg-calm-50 dark:bg-slate-700 items-center justify-center hidden sm:flex">
+                    <FolderOpen className="h-8 w-8 text-slate-300 dark:text-slate-500" />
+                  </div>
+                )}
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Document</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Active</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden md:table-cell">Target</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden lg:table-cell">Size</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden lg:table-cell">Uploaded</th>
-                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
-                    <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
-                    Loading…
-                  </td>
-                </tr>
-              ) : documents.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-slate-400 dark:text-slate-500">
-                    <FolderOpen className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                    No documents yet. Upload your first document above.
-                  </td>
-                </tr>
-              ) : (
-                documents.map((doc) => (
-                  <tr key={doc.id} className="border-b border-calm-100 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        {doc.thumbnailUrl ? (
-                          <img src={doc.thumbnailUrl} alt="" className="h-10 w-10 rounded-lg object-cover border border-calm-200 dark:border-slate-600 flex-shrink-0" />
-                        ) : (
-                          <div className="h-10 w-10 rounded-lg bg-calm-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
-                            <FileText className="h-5 w-5 text-slate-400" />
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="font-medium text-slate-800 dark:text-slate-200 truncate">{doc.title}</p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{doc.fileName}</p>
-                        </div>
+                {/* Content */}
+                <div className="flex-1 px-4 py-3 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <Link
+                        href={`/super-admin/library/${col.id}`}
+                        className="font-semibold text-slate-800 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                      >
+                        {col.title}
+                      </Link>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{col.description}</p>
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <FileText className="h-3 w-3" />
+                          {col._count.documents} document{col._count.documents !== 1 ? 's' : ''}
+                        </span>
+                        <span>·</span>
+                        <span>{targetLabel(col)}</span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       <button
-                        disabled={actionLoading === doc.id + '-toggle'}
-                        onClick={() => toggleActive(doc)}
+                        disabled={actionLoading === col.id + '-toggle'}
+                        onClick={(e) => { e.preventDefault(); toggleActive(col) }}
                         className={clsx(
                           'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-colors',
-                          doc.active
+                          col.active
                             ? 'bg-sage-100 text-sage-700 hover:bg-sage-200 dark:bg-sage-900/30 dark:text-sage-400'
                             : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400'
                         )}
                       >
-                        {doc.active ? (
-                          <><CheckCircle className="h-3 w-3" />Active</>
-                        ) : (
-                          <><XCircle className="h-3 w-3" />Inactive</>
-                        )}
+                        {col.active ? <><CheckCircle className="h-3 w-3" />Active</> : <><XCircle className="h-3 w-3" />Inactive</>}
                       </button>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 hidden md:table-cell max-w-[200px] truncate">
-                      {targetLabel(doc)}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 hidden lg:table-cell">
-                      {formatFileSize(doc.fileSize)}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-slate-400 dark:text-slate-500 hidden lg:table-cell">
-                      {new Date(doc.createdAt).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </td>
-                    <td className="px-4 py-3 text-center">
                       <button
-                        disabled={actionLoading === doc.id + '-delete'}
-                        onClick={() => handleDelete(doc)}
+                        disabled={actionLoading === col.id + '-delete'}
+                        onClick={(e) => { e.preventDefault(); handleDelete(col) }}
                         className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-40"
-                        title="Delete document"
+                        title="Delete collection"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                      <Link
+                        href={`/super-admin/library/${col.id}`}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                        title="Manage documents"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )
