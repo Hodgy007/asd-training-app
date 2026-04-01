@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isSuperAdmin, ALL_CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { validatePassword } from '@/lib/password-validation'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
@@ -11,7 +12,7 @@ const updateSchema = z.object({
   role: z.enum(['SUPER_ADMIN', 'CHARITY_EMPLOYEE']).optional(),
   charityPermissions: z.array(z.string()).optional(),
   active: z.boolean().optional(),
-  password: z.string().min(8).optional(),
+  password: z.string().optional(),
 })
 
 export async function PATCH(
@@ -79,6 +80,10 @@ export async function PATCH(
   }
 
   if (parsed.data.password) {
+    const passwordCheck = validatePassword(parsed.data.password)
+    if (!passwordCheck.valid) {
+      return NextResponse.json({ error: passwordCheck.error }, { status: 400 })
+    }
     updateData.password = await bcrypt.hash(parsed.data.password, 12)
     updateData.mustChangePassword = true
   }

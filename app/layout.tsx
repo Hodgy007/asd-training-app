@@ -3,6 +3,7 @@ import './globals.css'
 import { SessionProvider } from '@/components/providers/session-provider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { CaregiverDisclaimer } from '@/components/ui/caregiver-disclaimer'
+import { CookieConsent } from '@/components/ui/cookie-consent'
 
 export const metadata: Metadata = {
   title: 'Ambitious about Autism — Training & Observation Platform',
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex-1">{children}</div>
             </div>
           </SessionProvider>
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>

@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { validatePassword } from '@/lib/password-validation'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
 const schema = z.object({
   currentPassword: z.string().optional(),
-  newPassword: z.string().min(8).max(128),
+  newPassword: z.string().min(1).max(128),
 })
 
 export async function POST(req: NextRequest) {
@@ -19,7 +20,12 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid input.' }, { status: 400 })
+  }
+
+  const passwordCheck = validatePassword(parsed.data.newPassword)
+  if (!passwordCheck.valid) {
+    return NextResponse.json({ error: passwordCheck.error }, { status: 400 })
   }
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })

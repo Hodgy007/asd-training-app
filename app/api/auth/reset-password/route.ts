@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { validatePassword } from '@/lib/password-validation'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
 const schema = z.object({
   token: z.string().min(1),
-  password: z.string().min(8).max(128),
+  password: z.string().min(1).max(128),
 })
 
 export async function POST(req: NextRequest) {
@@ -16,6 +17,11 @@ export async function POST(req: NextRequest) {
   }
 
   const { token, password } = parsed.data
+
+  const passwordCheck = validatePassword(password)
+  if (!passwordCheck.valid) {
+    return NextResponse.json({ error: passwordCheck.error }, { status: 400 })
+  }
 
   const resetToken = await prisma.passwordResetToken.findUnique({ where: { token } })
 

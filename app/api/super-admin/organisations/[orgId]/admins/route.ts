@@ -3,13 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { validatePassword } from '@/lib/password-validation'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
 const createAdminSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
-  password: z.string().min(8).max(128),
+  password: z.string().min(1).max(128),
 })
 
 export async function POST(
@@ -28,6 +29,11 @@ export async function POST(
   const parsed = createAdminSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
+  }
+
+  const passwordCheck = validatePassword(parsed.data.password)
+  if (!passwordCheck.valid) {
+    return NextResponse.json({ error: passwordCheck.error }, { status: 400 })
   }
 
   const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } })

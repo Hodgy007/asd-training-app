@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { validatePassword } from '@/lib/password-validation'
 import { Role } from '@prisma/client'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
@@ -11,7 +12,7 @@ const createSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
   role: z.string(),
-  password: z.string().min(8).max(128).optional(),
+  password: z.string().max(128).optional(),
   ssoOnly: z.boolean().default(false),
 })
 
@@ -106,6 +107,10 @@ export async function POST(req: NextRequest) {
   } else {
     if (!parsed.data.password) {
       return NextResponse.json({ error: 'Password is required for non-SSO users' }, { status: 400 })
+    }
+    const passwordCheck = validatePassword(parsed.data.password)
+    if (!passwordCheck.valid) {
+      return NextResponse.json({ error: passwordCheck.error }, { status: 400 })
     }
     hashedPassword = await bcrypt.hash(parsed.data.password, 12)
     mustChangePassword = true

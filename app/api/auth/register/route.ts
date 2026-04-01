@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
+import { validatePassword } from '@/lib/password-validation'
 import { z } from 'zod'
 
 const registerSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
-  password: z.string().min(8).max(128),
+  password: z.string().min(1).max(128),
   role: z.enum(['CAREGIVER', 'CAREER_DEV_OFFICER']).default('CAREGIVER'),
 })
 
@@ -23,6 +24,11 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, email, password, role } = parsed.data
+
+    const passwordCheck = validatePassword(password)
+    if (!passwordCheck.valid) {
+      return NextResponse.json({ error: passwordCheck.error }, { status: 400 })
+    }
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {

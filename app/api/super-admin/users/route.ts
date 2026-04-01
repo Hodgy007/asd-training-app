@@ -3,13 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isSuperAdmin, ALL_CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { validatePassword } from '@/lib/password-validation'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
 const createSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
   email: z.string().email('Valid email required'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(1),
   role: z.enum(['SUPER_ADMIN', 'CHARITY_EMPLOYEE']),
   charityPermissions: z.array(z.string()).default([]),
 })
@@ -55,6 +56,12 @@ export async function POST(req: NextRequest) {
   )
   if (invalidPerms.length > 0) {
     return NextResponse.json({ error: `Invalid permissions: ${invalidPerms.join(', ')}` }, { status: 400 })
+  }
+
+  // Validate password complexity
+  const passwordCheck = validatePassword(parsed.data.password)
+  if (!passwordCheck.valid) {
+    return NextResponse.json({ error: passwordCheck.error }, { status: 400 })
   }
 
   // Check email uniqueness
