@@ -14,6 +14,9 @@ import {
   Presentation,
   ArrowLeft,
   ChevronRight,
+  Pencil,
+  Check,
+  X,
 } from 'lucide-react'
 
 interface LibraryDoc {
@@ -67,6 +70,11 @@ export default function OrgAdminLibraryPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedCollection, setSelectedCollection] = useState<LibraryCollection | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const fetchCollections = useCallback(async () => {
     setLoading(true)
@@ -81,6 +89,44 @@ export default function OrgAdminLibraryPage() {
   useEffect(() => {
     fetchCollections()
   }, [fetchCollections])
+
+  function showToast(message: string, type: 'success' | 'error') {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  function startEditing() {
+    if (!selectedCollection) return
+    setEditTitle(selectedCollection.title)
+    setEditDescription(selectedCollection.description)
+    setEditing(true)
+  }
+
+  async function handleSaveEdit() {
+    if (!selectedCollection) return
+    setEditSaving(true)
+    try {
+      const res = await fetch(`/api/admin/library/${selectedCollection.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editTitle, description: editDescription }),
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setSelectedCollection({ ...selectedCollection, title: updated.title, description: updated.description })
+        setCollections((prev) =>
+          prev.map((c) => c.id === selectedCollection.id ? { ...c, title: updated.title, description: updated.description } : c)
+        )
+        setEditing(false)
+        showToast('Collection updated.', 'success')
+      } else {
+        const d = await res.json()
+        showToast(d.error || 'Save failed.', 'error')
+      }
+    } finally {
+      setEditSaving(false)
+    }
+  }
 
   function trackEvent(documentId: string, action: 'view' | 'download') {
     fetch('/api/library/track', {
@@ -109,16 +155,79 @@ export default function OrgAdminLibraryPage() {
 
     return (
       <div className="max-w-5xl mx-auto space-y-6">
+        {/* Toast */}
+        {toast && (
+          <div className={clsx(
+            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
+            toast.type === 'success' ? 'bg-sage-600 text-white' : 'bg-red-600 text-white'
+          )}>
+            {toast.type === 'success' ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            {toast.message}
+          </div>
+        )}
+
         <div>
-          <button onClick={() => { setSelectedCollection(null); setSearch('') }} className="flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 mb-2 transition-colors">
+          <button onClick={() => { setSelectedCollection(null); setSearch(''); setEditing(false) }} className="flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 mb-2 transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back to library
           </button>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <FolderOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-            {selectedCollection.title}
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">{selectedCollection.description}</p>
+          {editing ? (
+            <div className="space-y-3">
+              <div>
+                <label className="label">Collection Name</label>
+                <input
+                  className="input w-full text-lg font-bold"
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label">Description</label>
+                <textarea
+                  className="input w-full"
+                  rows={2}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={editSaving || !editTitle.trim() || !editDescription.trim()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                  {editSaving ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={() => setEditing(false)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-start justify-between gap-3">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <FolderOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                  {selectedCollection.title}
+                </h1>
+                <button
+                  onClick={startEditing}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors flex-shrink-0"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit
+                </button>
+              </div>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">{selectedCollection.description}</p>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
@@ -163,10 +272,11 @@ export default function OrgAdminLibraryPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => trackEvent(doc.id, 'download')}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors flex-shrink-0"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-2.5 sm:px-4 sm:py-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors flex-shrink-0"
+                      title="Download"
                     >
                       <Download className="h-4 w-4" />
-                      Download
+                      <span className="hidden sm:inline">Download</span>
                     </a>
                   </div>
                 </div>

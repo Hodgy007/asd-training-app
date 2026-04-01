@@ -13,6 +13,8 @@ import {
   Users,
   RefreshCw,
   ShieldCheck,
+  FolderOpen,
+  ClipboardList,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { LEAF_ROLES } from '@/types'
@@ -49,6 +51,8 @@ interface OrgDetail {
   country: string
   users: OrgUser[]
   _count: { users: number }
+  assignedCollectionIds: string[]
+  assignedSurveyIds: string[]
 }
 
 interface ProgramSummary {
@@ -56,6 +60,19 @@ interface ProgramSummary {
   name: string
   active: boolean
   _count: { modules: number }
+}
+
+interface CollectionSummary {
+  id: string
+  title: string
+  active: boolean
+  _count: { documents: number }
+}
+
+interface SurveySummary {
+  id: string
+  title: string
+  status: string
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -88,6 +105,8 @@ export default function OrgDetailPage() {
   // Data
   const [org, setOrg] = useState<OrgDetail | null>(null)
   const [programs, setPrograms] = useState<ProgramSummary[]>([])
+  const [collections, setCollections] = useState<CollectionSummary[]>([])
+  const [surveys, setSurveys] = useState<SurveySummary[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -109,6 +128,8 @@ export default function OrgDetailPage() {
   const [editCounty, setEditCounty] = useState('')
   const [editPostcode, setEditPostcode] = useState('')
   const [editCountry, setEditCountry] = useState('United Kingdom')
+  const [editCollectionIds, setEditCollectionIds] = useState<string[]>([])
+  const [editSurveyIds, setEditSurveyIds] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
   // Add org admin form
@@ -147,17 +168,27 @@ export default function OrgDetailPage() {
         setEditCounty(data.county || '')
         setEditPostcode(data.postcode || '')
         setEditCountry(data.country || 'United Kingdom')
+        setEditCollectionIds(data.assignedCollectionIds || [])
+        setEditSurveyIds(data.assignedSurveyIds || [])
       }
     } finally {
       setLoading(false)
     }
   }, [orgId])
 
-  // Fetch programs list
+  // Fetch programs, collections, and surveys
   useEffect(() => {
     fetch('/api/super-admin/training/programs')
       .then((r) => r.json())
       .then((data: ProgramSummary[]) => setPrograms(data))
+      .catch(() => {})
+    fetch('/api/super-admin/library')
+      .then((r) => r.json())
+      .then((data: CollectionSummary[]) => setCollections(data))
+      .catch(() => {})
+    fetch('/api/super-admin/surveys')
+      .then((r) => r.json())
+      .then((data: SurveySummary[]) => setSurveys(data))
       .catch(() => {})
   }, [])
 
@@ -184,6 +215,18 @@ export default function OrgDetailPage() {
     )
   }
 
+  function toggleCollection(collectionId: string) {
+    setEditCollectionIds((prev) =>
+      prev.includes(collectionId) ? prev.filter((id) => id !== collectionId) : [...prev, collectionId]
+    )
+  }
+
+  function toggleSurvey(surveyId: string) {
+    setEditSurveyIds((prev) =>
+      prev.includes(surveyId) ? prev.filter((id) => id !== surveyId) : [...prev, surveyId]
+    )
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
@@ -206,6 +249,8 @@ export default function OrgDetailPage() {
           county: editCounty || undefined,
           postcode: editPostcode || undefined,
           country: editCountry || undefined,
+          assignedCollectionIds: editCollectionIds,
+          assignedSurveyIds: editSurveyIds,
         }),
       })
       if (res.ok) {
@@ -470,6 +515,92 @@ export default function OrgDetailPage() {
                         <p className="font-bold">{program.name}</p>
                         <p className="text-xs opacity-75">
                           {program._count.modules} {program._count.modules === 1 ? 'module' : 'modules'}
+                        </p>
+                      </div>
+                    </button>
+                  )
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Document Collections */}
+          <div>
+            <label className="label mb-2 block flex items-center gap-2">
+              <FolderOpen className="h-4 w-4 text-emerald-600" />
+              Document Collections
+            </label>
+            <p className="text-xs text-slate-400 mb-2">
+              Select which document collections are available to this organisation. Unassigned collections with no org filter are visible to all.
+            </p>
+            <div className="space-y-2">
+              {collections.filter((c) => c.active).length === 0 ? (
+                <p className="text-sm text-slate-400">No document collections available.</p>
+              ) : (
+                collections.filter((c) => c.active).map((col) => {
+                  const isEnabled = editCollectionIds.includes(col.id)
+                  return (
+                    <button
+                      key={col.id}
+                      type="button"
+                      onClick={() => toggleCollection(col.id)}
+                      className={clsx(
+                        'flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
+                        isEnabled
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
+                          : 'bg-white text-slate-500 border-calm-200 hover:border-emerald-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
+                      )}
+                    >
+                      {isEnabled
+                        ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                        : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                      <div>
+                        <p className="font-bold">{col.title}</p>
+                        <p className="text-xs opacity-75">
+                          {col._count.documents} {col._count.documents === 1 ? 'document' : 'documents'}
+                        </p>
+                      </div>
+                    </button>
+                  )
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Surveys */}
+          <div>
+            <label className="label mb-2 block flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-blue-600" />
+              Surveys
+            </label>
+            <p className="text-xs text-slate-400 mb-2">
+              Select which surveys are assigned to this organisation.
+            </p>
+            <div className="space-y-2">
+              {surveys.filter((s) => s.status !== 'DRAFT').length === 0 ? (
+                <p className="text-sm text-slate-400">No published surveys available.</p>
+              ) : (
+                surveys.filter((s) => s.status !== 'DRAFT').map((survey) => {
+                  const isEnabled = editSurveyIds.includes(survey.id)
+                  return (
+                    <button
+                      key={survey.id}
+                      type="button"
+                      onClick={() => toggleSurvey(survey.id)}
+                      className={clsx(
+                        'flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium border transition-colors text-left',
+                        isEnabled
+                          ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
+                          : 'bg-white text-slate-500 border-calm-200 hover:border-blue-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
+                      )}
+                    >
+                      {isEnabled
+                        ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                        : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                      <div>
+                        <p className="font-bold">{survey.title}</p>
+                        <p className="text-xs opacity-75">
+                          {survey.status === 'PUBLISHED' ? 'Active' : survey.status === 'CLOSED' ? 'Closed' : survey.status}
                         </p>
                       </div>
                     </button>

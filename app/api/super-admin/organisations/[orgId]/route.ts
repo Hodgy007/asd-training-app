@@ -24,6 +24,8 @@ const updateSchema = z.object({
   county: z.string().max(100).optional(),
   postcode: z.string().max(20).optional(),
   country: z.string().max(100).optional(),
+  assignedCollectionIds: z.array(z.string()).optional(),
+  assignedSurveyIds: z.array(z.string()).optional(),
 })
 
 export async function GET(
@@ -53,10 +55,24 @@ export async function GET(
 
   if (!org) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  // Fetch collections assigned to this org
+  const assignedCollections = await prisma.libraryCollection.findMany({
+    where: { targetOrgIds: { has: params.orgId } },
+    select: { id: true },
+  })
+
+  // Fetch survey targets for this org
+  const surveyTargets = await prisma.surveyTarget.findMany({
+    where: { organisationId: params.orgId },
+    select: { surveyId: true },
+  })
+
   // Strip password hashes and add ssoOnly flag
   const orgWithSso = {
     ...org,
     users: org.users.map(({ password, ...rest }) => ({ ...rest, ssoOnly: password === '' })),
+    assignedCollectionIds: assignedCollections.map((c) => c.id),
+    assignedSurveyIds: surveyTargets.map((t) => t.surveyId),
   }
   return NextResponse.json(orgWithSso)
 }
@@ -86,10 +102,69 @@ export async function PATCH(
     }
   }
 
+  // Extract collection/survey assignment arrays before passing to org update
+  const { assignedCollectionIds, assignedSurveyIds, ...orgData } = parsed.data
+
   const updated = await prisma.organisation.update({
     where: { id: params.orgId },
-    data: parsed.data,
+    data: orgData,
   })
+
+  // ── Update library collection targeting ────────────────────────────────────
+  if (assignedCollectionIds !== undefined) {
+    // Get all collections that currently include this org
+    const allCollections = await prisma.libraryCollection.findMany({
+      select: { id: true, targetOrgIds: true },
+    })
+
+    for (const col of allCollections) {
+      const isCurrentlyAssigned = col.targetOrgIds.includes(params.orgId)
+      const shouldBeAssigned = assignedCollectionIds.includes(col.id)
+
+      if (shouldBeAssigned && !isCurrentlyAssigned) {
+        // Add org to this collection's targetOrgIds
+        await prisma.libraryCollection.update({
+          where: { id: col.id },
+          data: { targetOrgIds: [...col.targetOrgIds, params.orgId] },
+        })
+      } else if (!shouldBeAssigned && isCurrentlyAssigned) {
+        // Remove org from this collection's targetOrgIds
+        await prisma.libraryCollection.update({
+          where: { id: col.id },
+          data: { targetOrgIds: col.targetOrgIds.filter((id) => id !== params.orgId) },
+        })
+      }
+    }
+  }
+
+  // ── Update survey targeting ────────────────────────────────────────────────
+  if (assignedSurveyIds !== undefined) {
+    // Get current survey targets for this org
+    const currentTargets = await prisma.surveyTarget.findMany({
+      where: { organisationId: params.orgId },
+      select: { id: true, surveyId: true },
+    })
+    const currentSurveyIds = currentTargets.map((t) => t.surveyId)
+
+    // Add new targets
+    const toAdd = assignedSurveyIds.filter((id) => !currentSurveyIds.includes(id))
+    if (toAdd.length > 0) {
+      await prisma.surveyTarget.createMany({
+        data: toAdd.map((surveyId) => ({
+          surveyId,
+          organisationId: params.orgId,
+        })),
+      })
+    }
+
+    // Remove old targets
+    const toRemove = currentTargets.filter((t) => !assignedSurveyIds.includes(t.surveyId))
+    if (toRemove.length > 0) {
+      await prisma.surveyTarget.deleteMany({
+        where: { id: { in: toRemove.map((t) => t.id) } },
+      })
+    }
+  }
 
   return NextResponse.json(updated)
 }

@@ -209,10 +209,11 @@ function LibraryPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => trackDownload(doc.id)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-sm font-semibold hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors flex-shrink-0"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-2.5 sm:px-4 sm:py-2 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-sm font-semibold hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors flex-shrink-0"
+                      title="Download"
                     >
                       <Download className="h-4 w-4" />
-                      Download
+                      <span className="hidden sm:inline">Download</span>
                     </a>
                   </div>
                 </div>
