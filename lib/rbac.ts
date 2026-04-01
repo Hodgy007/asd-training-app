@@ -18,13 +18,13 @@ export type CharityPermission = (typeof CHARITY_PERMISSIONS)[keyof typeof CHARIT
 export const ALL_CHARITY_PERMISSIONS: CharityPermission[] = Object.values(CHARITY_PERMISSIONS)
 
 export const PERMISSION_LABELS: Record<string, string> = {
-  manage_organisations: 'Manage Organisations',
-  manage_training: 'Manage Training',
-  manage_surveys: 'Manage Surveys',
   manage_announcements: 'Manage Announcements',
-  view_reports: 'View Reports',
-  manage_sessions: 'Manage Sessions',
   manage_library: 'Manage Library',
+  manage_organisations: 'Manage Organisations',
+  manage_surveys: 'Manage Surveys',
+  manage_training: 'Manage Training',
+  manage_sessions: 'Manage Workshops',
+  view_reports: 'View Reports',
 }
 
 // ─── Display labels ────────────────────────────────────────────────────────────
