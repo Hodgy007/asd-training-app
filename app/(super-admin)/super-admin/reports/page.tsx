@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { BarChart3, RefreshCw, FolderOpen, FileText, Eye, Download, ChevronDown, ChevronRight } from 'lucide-react'
+import { BarChart3, RefreshCw, FolderOpen, FileText, Download, ChevronDown, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
 
 interface ModuleStat {
@@ -38,13 +38,11 @@ interface LibDocStat {
   id: string
   title: string
   fileName: string
-  views: number
   downloads: number
 }
 
 interface LibOrgBreakdown {
   orgName: string
-  views: number
   downloads: number
 }
 
@@ -53,7 +51,6 @@ interface LibCollectionStat {
   title: string
   active: boolean
   documentCount: number
-  totalViews: number
   totalDownloads: number
   orgBreakdown: LibOrgBreakdown[]
   documents: LibDocStat[]
@@ -63,7 +60,6 @@ interface LibTotals {
   totalCollections: number
   activeCollections: number
   totalDocuments: number
-  totalViews: number
   totalDownloads: number
 }
 
@@ -283,7 +279,7 @@ export default function SuperAdminReportsPage() {
           Document Library Reports
         </h2>
         <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
-          Views and downloads across all document collections.
+          Downloads across all document collections.
         </p>
       </div>
 
@@ -296,7 +292,7 @@ export default function SuperAdminReportsPage() {
         <>
           {/* Library summary cards */}
           {libTotals && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="card text-center">
                 <FolderOpen className="h-5 w-5 text-primary-500 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{libTotals.totalCollections}</p>
@@ -308,14 +304,9 @@ export default function SuperAdminReportsPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400">Documents</p>
               </div>
               <div className="card text-center">
-                <Eye className="h-5 w-5 text-blue-500 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{libTotals.totalViews}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Total Views</p>
-              </div>
-              <div className="card text-center">
                 <Download className="h-5 w-5 text-emerald-500 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{libTotals.totalDownloads}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Total Downloads</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Downloads</p>
               </div>
             </div>
           )}
@@ -329,7 +320,6 @@ export default function SuperAdminReportsPage() {
                     <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 w-8"></th>
                     <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Collection</th>
                     <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Docs</th>
-                    <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Views</th>
                     <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Downloads</th>
                   </tr>
                 </thead>
@@ -379,11 +369,6 @@ function LibCollectionRow({ col, isExpanded, onToggle }: { col: LibCollectionSta
           </span>
         </td>
         <td className="px-4 py-3 text-center">
-          <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-semibold">
-            <Eye className="h-3.5 w-3.5" /> {col.totalViews}
-          </span>
-        </td>
-        <td className="px-4 py-3 text-center">
           <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
             <Download className="h-3.5 w-3.5" /> {col.totalDownloads}
           </span>
@@ -391,7 +376,7 @@ function LibCollectionRow({ col, isExpanded, onToggle }: { col: LibCollectionSta
       </tr>
       {isExpanded && (
         <tr className="border-b border-calm-100 dark:border-slate-700">
-          <td colSpan={5} className="px-6 py-4 bg-calm-50/50 dark:bg-slate-800/30 space-y-3">
+          <td colSpan={4} className="px-6 py-4 bg-calm-50/50 dark:bg-slate-800/30 space-y-3">
             {col.orgBreakdown && col.orgBreakdown.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">By Organisation</p>
@@ -399,10 +384,9 @@ function LibCollectionRow({ col, isExpanded, onToggle }: { col: LibCollectionSta
                   {col.orgBreakdown.map((ob, idx) => (
                     <div key={idx} className="flex items-center justify-between bg-white dark:bg-slate-700 rounded-lg px-3 py-2 border border-calm-200 dark:border-slate-600">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate mr-3">{ob.orgName}</span>
-                      <div className="flex items-center gap-3 text-xs flex-shrink-0">
-                        <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400"><Eye className="h-3 w-3" /> {ob.views}</span>
-                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><Download className="h-3 w-3" /> {ob.downloads}</span>
-                      </div>
+                      <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                        <Download className="h-3 w-3" /> {ob.downloads}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -419,10 +403,9 @@ function LibCollectionRow({ col, isExpanded, onToggle }: { col: LibCollectionSta
                         <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{doc.title}</p>
                         <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{doc.fileName}</p>
                       </div>
-                      <div className="flex items-center gap-3 text-xs flex-shrink-0">
-                        <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400"><Eye className="h-3 w-3" /> {doc.views}</span>
-                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><Download className="h-3 w-3" /> {doc.downloads}</span>
-                      </div>
+                      <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                        <Download className="h-3 w-3" /> {doc.downloads}
+                      </span>
                     </div>
                   ))}
                 </div>

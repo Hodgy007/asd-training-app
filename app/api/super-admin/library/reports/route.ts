@@ -17,7 +17,7 @@ export async function GET() {
       createdBy: { select: { name: true } },
       documents: {
         include: {
-          events: { select: { action: true, organisationId: true } },
+          events: { select: { organisationId: true } },
         },
       },
     },
@@ -29,25 +29,21 @@ export async function GET() {
 
   // Build per-collection stats
   const collectionStats = collections.map((col) => {
-    let totalViews = 0
     let totalDownloads = 0
-    const orgBreakdown: Record<string, { views: number; downloads: number; orgName: string }> = {}
+    const orgBreakdown: Record<string, { downloads: number; orgName: string }> = {}
 
     for (const doc of col.documents) {
       for (const event of doc.events) {
-        if (event.action === 'view') totalViews++
-        if (event.action === 'download') totalDownloads++
+        totalDownloads++
 
         const orgId = event.organisationId || 'unassigned'
         if (!orgBreakdown[orgId]) {
           orgBreakdown[orgId] = {
-            views: 0,
             downloads: 0,
             orgName: orgId === 'unassigned' ? 'No organisation' : (orgMap[orgId] || orgId),
           }
         }
-        if (event.action === 'view') orgBreakdown[orgId].views++
-        if (event.action === 'download') orgBreakdown[orgId].downloads++
+        orgBreakdown[orgId].downloads++
       }
     }
 
@@ -60,15 +56,13 @@ export async function GET() {
       documentCount: col.documents.length,
       createdAt: col.createdAt,
       createdBy: col.createdBy.name,
-      totalViews,
       totalDownloads,
-      orgBreakdown: Object.values(orgBreakdown).sort((a, b) => (b.views + b.downloads) - (a.views + a.downloads)),
+      orgBreakdown: Object.values(orgBreakdown).sort((a, b) => b.downloads - a.downloads),
       documents: col.documents.map((doc) => ({
         id: doc.id,
         title: doc.title,
         fileName: doc.fileName,
-        views: doc.events.filter((e) => e.action === 'view').length,
-        downloads: doc.events.filter((e) => e.action === 'download').length,
+        downloads: doc.events.length,
       })),
     }
   })
@@ -78,7 +72,6 @@ export async function GET() {
     totalCollections: collections.length,
     activeCollections: collections.filter((c) => c.active).length,
     totalDocuments: collections.reduce((sum, c) => sum + c.documents.length, 0),
-    totalViews: collectionStats.reduce((sum, c) => sum + c.totalViews, 0),
     totalDownloads: collectionStats.reduce((sum, c) => sum + c.totalDownloads, 0),
   }
 

@@ -23,7 +23,7 @@ export async function GET() {
         include: {
           events: {
             where: { organisationId: orgId },
-            select: { action: true },
+            select: { id: true },
           },
         },
       },
@@ -36,19 +36,15 @@ export async function GET() {
   })
 
   const collectionStats = targeted.map((col) => {
-    let totalViews = 0
     let totalDownloads = 0
 
     const documents = col.documents.map((doc) => {
-      const views = doc.events.filter((e) => e.action === 'view').length
-      const downloads = doc.events.filter((e) => e.action === 'download').length
-      totalViews += views
+      const downloads = doc.events.length
       totalDownloads += downloads
       return {
         id: doc.id,
         title: doc.title,
         fileName: doc.fileName,
-        views,
         downloads,
       }
     })
@@ -57,7 +53,6 @@ export async function GET() {
       id: col.id,
       title: col.title,
       documentCount: col.documents.length,
-      totalViews,
       totalDownloads,
       documents,
     }
@@ -66,7 +61,6 @@ export async function GET() {
   const totals = {
     totalCollections: targeted.length,
     totalDocuments: collectionStats.reduce((sum, c) => sum + c.documentCount, 0),
-    totalViews: collectionStats.reduce((sum, c) => sum + c.totalViews, 0),
     totalDownloads: collectionStats.reduce((sum, c) => sum + c.totalDownloads, 0),
   }
 

@@ -6,7 +6,6 @@ import { z } from 'zod'
 
 const trackSchema = z.object({
   documentId: z.string().min(1),
-  action: z.enum(['view', 'download']),
 })
 
 export async function POST(req: NextRequest) {
@@ -26,7 +25,7 @@ export async function POST(req: NextRequest) {
       documentId: parsed.data.documentId,
       userId: session.user.id,
       organisationId: session.user.organisationId ?? null,
-      action: parsed.data.action,
+      action: 'download',
     },
   })
 

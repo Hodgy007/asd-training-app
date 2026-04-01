@@ -82,11 +82,11 @@ export default function LibraryPage() {
     fetchCollections()
   }, [fetchCollections])
 
-  function trackEvent(documentId: string, action: 'view' | 'download') {
+  function trackDownload(documentId: string) {
     fetch('/api/library/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ documentId, action }),
+      body: JSON.stringify({ documentId }),
     }).catch(() => {})
   }
 
@@ -167,7 +167,7 @@ export default function LibraryPage() {
                       download={doc.fileName}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => trackEvent(doc.id, 'download')}
+                      onClick={() => trackDownload(doc.id)}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-sm font-semibold hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors flex-shrink-0"
                     >
                       <Download className="h-4 w-4" />
