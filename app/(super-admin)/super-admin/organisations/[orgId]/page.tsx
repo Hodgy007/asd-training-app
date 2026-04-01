@@ -367,7 +367,7 @@ export default function OrgDetailPage() {
               />
             </div>
             <div>
-              <label className="label">Slug</label>
+              <label className="label">URL Identifier</label>
               <input
                 className="input w-full font-mono text-sm"
                 type="text"

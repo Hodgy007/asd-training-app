@@ -67,12 +67,12 @@ export default function GuidePage() {
           </p>
           <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
             <li>Announcements from your organisation appear at the top of the page</li>
-            <li>Upcoming virtual classroom sessions are displayed so you never miss a session</li>
+            <li>Upcoming virtual workshops are displayed so you never miss one</li>
             <li>Pending surveys (if any) appear as cards — click to complete them inline</li>
             <li>Training progress statistics show your completion rate across all assigned modules</li>
             <li>Use the sidebar to quickly access all features available to your role</li>
           </ol>
-          <Tip>Check your dashboard regularly for new announcements and upcoming sessions.</Tip>
+          <Tip>Check your dashboard regularly for new announcements and upcoming workshops.</Tip>
         </>
       ),
     },
@@ -117,21 +117,21 @@ export default function GuidePage() {
       ),
     },
     {
-      title: 'Virtual Classroom Sessions',
+      title: 'Virtual Workshops',
       icon: Calendar,
       content: (
         <>
           <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-            Virtual classroom sessions let you attend live training with your colleagues.
+            Virtual workshops let you attend live training with your colleagues.
           </p>
-          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Joining sessions</h3>
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Joining workshops</h3>
           <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-            <li>View your upcoming and past sessions on the Sessions page</li>
-            <li>Upcoming sessions show the date, time, host, and platform (Zoom/Teams/Custom)</li>
-            <li>Click &quot;Join Meeting&quot; to join a session when it&apos;s live</li>
-            <li>Past sessions may include a recording URL if one was added by the host</li>
+            <li>View your upcoming and past workshops on the Workshops page</li>
+            <li>Upcoming workshops show the date, time, host, and platform (Zoom/Teams/Custom)</li>
+            <li>Click &quot;Join Meeting&quot; to join a workshop when it&apos;s live</li>
+            <li>Past workshops may include a recording URL if one was added by the host</li>
           </ol>
-          <Tip>Your dashboard also shows upcoming sessions in a quick-view card for easy access.</Tip>
+          <Tip>Your dashboard also shows upcoming workshops in a quick-view card for easy access.</Tip>
         </>
       ),
     },
@@ -235,7 +235,7 @@ export default function GuidePage() {
         <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 rounded-r-lg p-4">
           <p className="text-sm text-blue-800 dark:text-blue-300">
             <strong>Your Role: {roleLabel}</strong> — Your primary focus is completing your assigned training programs.
-            Check your dashboard regularly for new announcements, surveys, and upcoming sessions.
+            Check your dashboard regularly for new announcements, surveys, and upcoming workshops.
           </p>
         </div>
       )}

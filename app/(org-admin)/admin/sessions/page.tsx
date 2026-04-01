@@ -126,10 +126,10 @@ export default function SessionListPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Calendar className="h-6 w-6 text-emerald-600" />
-            Virtual Classroom Sessions
+            Virtual Workshops
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Schedule and manage virtual training sessions for your organisation.
+            Schedule and manage virtual workshops for your organisation.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -145,7 +145,7 @@ export default function SessionListPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors"
           >
             <Plus className="h-4 w-4" />
-            Create Session
+            Create Workshop
           </Link>
         </div>
       </div>

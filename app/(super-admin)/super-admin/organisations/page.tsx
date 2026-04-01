@@ -238,7 +238,7 @@ export default function OrganisationsPage() {
                 />
               </div>
               <div>
-                <label className="label">Slug</label>
+                <label className="label">URL Identifier</label>
                 <input
                   className="input w-full font-mono text-sm"
                   type="text"
@@ -379,7 +379,7 @@ export default function OrganisationsPage() {
             <thead>
               <tr className="border-b border-calm-200 bg-calm-50">
                 <th className="text-left px-4 py-3 font-semibold text-slate-600">Name</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Slug</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">URL ID</th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600">Users</th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600">Active</th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">Created</th>

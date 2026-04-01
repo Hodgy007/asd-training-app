@@ -159,9 +159,9 @@ export default function SessionsPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your Sessions</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your Workshops</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Virtual classroom sessions you&apos;re hosting or attending.
+            Virtual workshops you&apos;re hosting or attending.
           </p>
         </div>
         {['ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER'].includes(authSession?.user?.role ?? '') && (
@@ -170,7 +170,7 @@ export default function SessionsPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold transition-colors flex-shrink-0"
           >
             <Plus className="h-4 w-4" />
-            Create Session
+            Create Workshop
           </Link>
         )}
       </div>
@@ -180,9 +180,9 @@ export default function SessionsPage() {
           <div className="w-16 h-16 bg-calm-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-4">
             <Calendar className="h-8 w-8 text-slate-400" />
           </div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">No upcoming sessions</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">No upcoming workshops</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            You don&apos;t have any scheduled or in-progress sessions right now.
+            You don&apos;t have any scheduled or in-progress workshops right now.
           </p>
         </div>
       ) : (
@@ -190,7 +190,7 @@ export default function SessionsPage() {
           {hosted.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Sessions You&apos;re Hosting
+                Workshops You&apos;re Hosting
               </h2>
               {hosted.map((s) => (
                 <SessionCard key={s.id} session={s} isHosted />
@@ -201,7 +201,7 @@ export default function SessionsPage() {
           {invited.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Upcoming Sessions
+                Upcoming Workshops
               </h2>
               {invited.map((s) => (
                 <SessionCard key={s.id} session={s} isHosted={false} />

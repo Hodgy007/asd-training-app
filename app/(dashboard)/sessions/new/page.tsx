@@ -198,17 +198,17 @@ export default function NewSessionPage() {
         className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Sessions
+        Back to Workshops
       </Link>
 
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
           <Plus className="h-6 w-6 text-primary-500" />
-          Create Session
+          Create Workshop
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Schedule a new virtual classroom session.
+          Schedule a new virtual workshop.
         </p>
       </div>
 
@@ -218,7 +218,7 @@ export default function NewSessionPage() {
         <div className="card space-y-4">
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary-500" />
-            Session Details
+            Workshop Details
           </h2>
 
           <div>
@@ -466,7 +466,7 @@ export default function NewSessionPage() {
             className="px-6 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-60 text-white text-sm font-bold transition-colors flex items-center gap-2"
           >
             {submitting && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
-            Create Session
+            Create Workshop
           </button>
         </div>
       </form>

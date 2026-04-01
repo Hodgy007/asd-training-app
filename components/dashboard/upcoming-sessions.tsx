@@ -71,7 +71,7 @@ export function UpcomingSessions() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-primary-500" />
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Upcoming Sessions</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Upcoming Workshops</h2>
         </div>
         <Link
           href="/sessions"

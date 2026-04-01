@@ -27,7 +27,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Users', icon: Users, exact: true },
-  { href: '/admin/sessions', label: 'Sessions', icon: Calendar },
+  { href: '/admin/sessions', label: 'Workshops', icon: Calendar },
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/admin/library', label: 'Document Library', icon: FolderOpen },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },

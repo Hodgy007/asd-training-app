@@ -52,7 +52,6 @@ Return ONLY valid JSON in this exact format, no markdown:
       contents: textPrompt,
     })
     const text = textResult.text?.trim() ?? ''
-    // Extract JSON from response (handle possible markdown wrapping)
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0])
@@ -60,18 +59,17 @@ Return ONLY valid JSON in this exact format, no markdown:
       if (parsed.description) description = parsed.description
     }
   } catch {
-    // Fall back to cleaned filename
     description = `Document from the ${collectionTitle || 'library'} collection.`
   }
 
   // Generate a young-person-friendly illustration if requested
   let thumbnailUrl: string | null = null
+  let imageError: string | undefined
   if (generateImage) {
     const imagePrompt = `Create a simple, friendly, colourful illustration for a training document titled "${title}". The image should be a clean, modern flat illustration style with bright welcoming colours. No text in the image. Professional but approachable.`
 
-    // Try Imagen 3 first, then fall back to Gemini multimodal
+    // Try Imagen 3 first
     try {
-      console.log('Attempting Imagen 3 image generation...')
       const imageResult = await ai.models.generateImages({
         model: IMAGE_MODEL,
         prompt: imagePrompt,
@@ -82,7 +80,7 @@ Return ONLY valid JSON in this exact format, no markdown:
 
       const generated = imageResult.generatedImages?.[0]
       if (generated?.raiFilteredReason) {
-        console.log('Imagen 3 image filtered by safety:', generated.raiFilteredReason)
+        imageError = `Safety filter: ${generated.raiFilteredReason}`
       }
       if (generated?.image?.imageBytes) {
         const imageBuffer = Buffer.from(generated.image.imageBytes, 'base64')
@@ -94,17 +92,16 @@ Return ONLY valid JSON in this exact format, no markdown:
           { access: 'public', addRandomSuffix: true, contentType: mimeType }
         )
         thumbnailUrl = blob.url
-        console.log('Imagen 3 succeeded, url:', thumbnailUrl)
-      } else {
-        console.log('Imagen 3 returned no image bytes. Full response keys:', JSON.stringify(Object.keys(imageResult)))
+        imageError = undefined
+      } else if (!imageError) {
+        imageError = 'Imagen 3 returned no image data'
       }
     } catch (imgErr: unknown) {
       const errMsg = imgErr instanceof Error ? imgErr.message : String(imgErr)
-      console.error('Imagen 3 failed:', errMsg)
+      imageError = `Imagen 3: ${errMsg}`
 
       // Fallback: try Gemini 2.0 Flash with image output
       try {
-        console.log('Falling back to Gemini 2.0 Flash for image generation...')
         const fallbackResult = await ai.models.generateContent({
           model: 'gemini-2.0-flash-exp',
           contents: imagePrompt,
@@ -117,26 +114,27 @@ Return ONLY valid JSON in this exact format, no markdown:
         for (const part of parts) {
           if (part.inlineData?.mimeType?.startsWith('image/')) {
             const imageBuffer = Buffer.from(part.inlineData.data!, 'base64')
-            const ext = part.inlineData.mimeType === 'image/png' ? 'png' : 'jpg'
+            const mimeType = part.inlineData.mimeType
+            const ext = mimeType === 'image/png' ? 'png' : 'jpg'
             const blob = await put(
               `library/thumbnails/ai-generated-${Date.now()}.${ext}`,
               imageBuffer,
-              { access: 'public', addRandomSuffix: true, contentType: part.inlineData.mimeType }
+              { access: 'public', addRandomSuffix: true, contentType: mimeType }
             )
             thumbnailUrl = blob.url
-            console.log('Gemini 2.0 Flash fallback succeeded, url:', thumbnailUrl)
+            imageError = undefined
             break
           }
         }
-        if (!thumbnailUrl) {
-          console.log('Gemini 2.0 Flash returned no image parts. Parts count:', parts.length)
+        if (!thumbnailUrl && imageError) {
+          imageError += ' | Gemini fallback: no image parts returned'
         }
       } catch (fallbackErr: unknown) {
         const fbMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)
-        console.error('Gemini 2.0 Flash fallback also failed:', fbMsg)
+        imageError += ` | Gemini fallback: ${fbMsg}`
       }
     }
   }
 
-  return NextResponse.json({ title, description, thumbnailUrl, imageError: generateImage && !thumbnailUrl ? 'Image generation failed — check runtime logs for details' : undefined })
+  return NextResponse.json({ title, description, thumbnailUrl, imageError })
 }
