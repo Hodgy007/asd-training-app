@@ -13,7 +13,8 @@ const requestSchema = z.object({
 })
 
 const TEXT_MODEL = 'gemini-2.5-flash'
-const IMAGE_MODEL = 'imagen-3.0-generate-002'
+const IMAGE_MODEL = 'gemini-2.5-flash-image'
+const IMAGEN_FALLBACK = 'imagen-4.0-fast-generate-001'
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -68,70 +69,69 @@ Return ONLY valid JSON in this exact format, no markdown:
   if (generateImage) {
     const imagePrompt = `Create a simple, friendly, colourful illustration for a training document titled "${title}". The image should be a clean, modern flat illustration style with bright welcoming colours. No text in the image. Professional but approachable.`
 
-    // Try Imagen 3 first
+    // Try Gemini 2.5 Flash Image (multimodal with image output)
     try {
-      const imageResult = await ai.models.generateImages({
+      const imageResult = await ai.models.generateContent({
         model: IMAGE_MODEL,
-        prompt: imagePrompt,
+        contents: imagePrompt,
         config: {
-          numberOfImages: 1,
+          responseModalities: ['TEXT', 'IMAGE'],
         },
       })
 
-      const generated = imageResult.generatedImages?.[0]
-      if (generated?.raiFilteredReason) {
-        imageError = `Safety filter: ${generated.raiFilteredReason}`
+      const parts = imageResult.candidates?.[0]?.content?.parts ?? []
+      for (const part of parts) {
+        if (part.inlineData?.mimeType?.startsWith('image/')) {
+          const imageBuffer = Buffer.from(part.inlineData.data!, 'base64')
+          const mimeType = part.inlineData.mimeType
+          const ext = mimeType === 'image/png' ? 'png' : 'jpg'
+          const blob = await put(
+            `library/thumbnails/ai-generated-${Date.now()}.${ext}`,
+            imageBuffer,
+            { access: 'public', addRandomSuffix: true, contentType: mimeType }
+          )
+          thumbnailUrl = blob.url
+          break
+        }
       }
-      if (generated?.image?.imageBytes) {
-        const imageBuffer = Buffer.from(generated.image.imageBytes, 'base64')
-        const mimeType = generated.image.mimeType || 'image/png'
-        const ext = mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg' : 'png'
-        const blob = await put(
-          `library/thumbnails/ai-generated-${Date.now()}.${ext}`,
-          imageBuffer,
-          { access: 'public', addRandomSuffix: true, contentType: mimeType }
-        )
-        thumbnailUrl = blob.url
-        imageError = undefined
-      } else if (!imageError) {
-        imageError = 'Imagen 3 returned no image data'
+      if (!thumbnailUrl) {
+        imageError = 'Gemini 2.5 Flash Image returned no image parts'
       }
     } catch (imgErr: unknown) {
       const errMsg = imgErr instanceof Error ? imgErr.message : String(imgErr)
-      imageError = `Imagen 3: ${errMsg}`
+      imageError = `Gemini 2.5 Flash Image: ${errMsg}`
 
-      // Fallback: try Gemini 2.0 Flash with image output
+      // Fallback: try Imagen 4.0 Fast
       try {
-        const fallbackResult = await ai.models.generateContent({
-          model: 'gemini-2.0-flash-exp',
-          contents: imagePrompt,
+        const fallbackResult = await ai.models.generateImages({
+          model: IMAGEN_FALLBACK,
+          prompt: imagePrompt,
           config: {
-            responseModalities: ['TEXT', 'IMAGE'],
+            numberOfImages: 1,
           },
         })
 
-        const parts = fallbackResult.candidates?.[0]?.content?.parts ?? []
-        for (const part of parts) {
-          if (part.inlineData?.mimeType?.startsWith('image/')) {
-            const imageBuffer = Buffer.from(part.inlineData.data!, 'base64')
-            const mimeType = part.inlineData.mimeType
-            const ext = mimeType === 'image/png' ? 'png' : 'jpg'
-            const blob = await put(
-              `library/thumbnails/ai-generated-${Date.now()}.${ext}`,
-              imageBuffer,
-              { access: 'public', addRandomSuffix: true, contentType: mimeType }
-            )
-            thumbnailUrl = blob.url
-            imageError = undefined
-            break
-          }
+        const generated = fallbackResult.generatedImages?.[0]
+        if (generated?.raiFilteredReason) {
+          imageError += ` | Imagen 4: safety filter: ${generated.raiFilteredReason}`
         }
-        if (!thumbnailUrl && imageError) {
-          imageError += ' | Gemini fallback: no image parts returned'
+        if (generated?.image?.imageBytes) {
+          const imageBuffer = Buffer.from(generated.image.imageBytes, 'base64')
+          const mimeType = generated.image.mimeType || 'image/png'
+          const ext = mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg' : 'png'
+          const blob = await put(
+            `library/thumbnails/ai-generated-${Date.now()}.${ext}`,
+            imageBuffer,
+            { access: 'public', addRandomSuffix: true, contentType: mimeType }
+          )
+          thumbnailUrl = blob.url
+          imageError = undefined
+        } else if (!thumbnailUrl) {
+          imageError += ' | Imagen 4 returned no image data'
         }
       } catch (fallbackErr: unknown) {
         const fbMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)
-        imageError += ` | Gemini fallback: ${fbMsg}`
+        imageError += ` | Imagen 4 fallback: ${fbMsg}`
       }
     }
   }
