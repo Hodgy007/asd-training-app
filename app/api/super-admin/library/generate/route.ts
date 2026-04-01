@@ -67,15 +67,11 @@ Return ONLY valid JSON in this exact format, no markdown:
   // Generate a young-person-friendly illustration if requested
   let thumbnailUrl: string | null = null
   if (generateImage) {
-    try {
-      const imagePrompt = `Create a simple, friendly, colourful illustration for a training document titled "${title}". The image should be:
-- Suitable for young people (16-25 years old)
-- Clean, modern flat illustration style
-- Bright and welcoming colours
-- No text in the image
-- Related to the topic of the document
-- Professional but approachable`
+    const imagePrompt = `Create a simple, friendly, colourful illustration for a training document titled "${title}". The image should be a clean, modern flat illustration style with bright welcoming colours. No text in the image. Professional but approachable.`
 
+    // Try Imagen 3 first, then fall back to Gemini multimodal
+    try {
+      console.log('Attempting Imagen 3 image generation...')
       const imageResult = await ai.models.generateImages({
         model: IMAGE_MODEL,
         prompt: imagePrompt,
@@ -85,6 +81,9 @@ Return ONLY valid JSON in this exact format, no markdown:
       })
 
       const generated = imageResult.generatedImages?.[0]
+      if (generated?.raiFilteredReason) {
+        console.log('Imagen 3 image filtered by safety:', generated.raiFilteredReason)
+      }
       if (generated?.image?.imageBytes) {
         const imageBuffer = Buffer.from(generated.image.imageBytes, 'base64')
         const mimeType = generated.image.mimeType || 'image/png'
@@ -95,9 +94,47 @@ Return ONLY valid JSON in this exact format, no markdown:
           { access: 'public', addRandomSuffix: true, contentType: mimeType }
         )
         thumbnailUrl = blob.url
+        console.log('Imagen 3 succeeded, url:', thumbnailUrl)
+      } else {
+        console.log('Imagen 3 returned no image bytes. Full response keys:', JSON.stringify(Object.keys(imageResult)))
       }
-    } catch (imgErr) {
-      console.error('AI image generation failed:', imgErr)
+    } catch (imgErr: unknown) {
+      const errMsg = imgErr instanceof Error ? imgErr.message : String(imgErr)
+      console.error('Imagen 3 failed:', errMsg)
+
+      // Fallback: try Gemini 2.0 Flash with image output
+      try {
+        console.log('Falling back to Gemini 2.0 Flash for image generation...')
+        const fallbackResult = await ai.models.generateContent({
+          model: 'gemini-2.0-flash-exp',
+          contents: imagePrompt,
+          config: {
+            responseModalities: ['TEXT', 'IMAGE'],
+          },
+        })
+
+        const parts = fallbackResult.candidates?.[0]?.content?.parts ?? []
+        for (const part of parts) {
+          if (part.inlineData?.mimeType?.startsWith('image/')) {
+            const imageBuffer = Buffer.from(part.inlineData.data!, 'base64')
+            const ext = part.inlineData.mimeType === 'image/png' ? 'png' : 'jpg'
+            const blob = await put(
+              `library/thumbnails/ai-generated-${Date.now()}.${ext}`,
+              imageBuffer,
+              { access: 'public', addRandomSuffix: true, contentType: part.inlineData.mimeType }
+            )
+            thumbnailUrl = blob.url
+            console.log('Gemini 2.0 Flash fallback succeeded, url:', thumbnailUrl)
+            break
+          }
+        }
+        if (!thumbnailUrl) {
+          console.log('Gemini 2.0 Flash returned no image parts. Parts count:', parts.length)
+        }
+      } catch (fallbackErr: unknown) {
+        const fbMsg = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)
+        console.error('Gemini 2.0 Flash fallback also failed:', fbMsg)
+      }
     }
   }
 
