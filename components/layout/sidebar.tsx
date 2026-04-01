@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   BookOpen,
   Users,
-  FileText,
   LogOut,
   X,
   Calendar,
@@ -39,7 +38,6 @@ function getNavItems(
     }
     items.push(
       { href: '/children', label: 'Child Observations', icon: Users },
-      { href: '/reports', label: 'Reports', icon: FileText },
     )
   } else if (role === 'CAREER_DEV_OFFICER' || role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
     for (const program of programs) {
