@@ -17,6 +17,7 @@ import {
   HelpCircle,
   Calendar,
   Settings,
+  FolderOpen,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -40,6 +41,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin/surveys', label: 'Surveys', icon: ClipboardList, permission: CHARITY_PERMISSIONS.MANAGE_SURVEYS },
   { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone, permission: CHARITY_PERMISSIONS.MANAGE_ANNOUNCEMENTS },
   { href: '/super-admin/sessions', label: 'Sessions', icon: Calendar, permission: CHARITY_PERMISSIONS.MANAGE_SESSIONS },
+  { href: '/super-admin/library', label: 'Document Library', icon: FolderOpen, permission: CHARITY_PERMISSIONS.MANAGE_LIBRARY },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
   { href: '/super-admin/settings', label: 'Settings', icon: Settings, charityAdminOnly: true },
   { href: '/super-admin/guide', label: 'How to Guide', icon: HelpCircle },

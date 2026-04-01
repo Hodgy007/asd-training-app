@@ -13,6 +13,7 @@ import {
   Calendar,
   Settings,
   HelpCircle,
+  FolderOpen,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -46,6 +47,7 @@ function getNavItems(
     }
   }
 
+  items.push({ href: '/library', label: 'Document Library', icon: FolderOpen })
   items.push({ href: '/guide', label: 'How to Guide', icon: HelpCircle })
   items.push({ href: '/sessions', label: 'Sessions', icon: Calendar })
   items.push({ href: '/settings', label: 'Settings', icon: Settings })

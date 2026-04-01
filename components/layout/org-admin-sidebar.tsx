@@ -14,6 +14,7 @@ import {
   LogOut,
   X,
   ShieldCheck,
+  FolderOpen,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -28,6 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Users', icon: Users, exact: true },
   { href: '/admin/sessions', label: 'Sessions', icon: Calendar },
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
+  { href: '/admin/library', label: 'Document Library', icon: FolderOpen },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
   { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
   { href: '/admin/settings/sso', label: 'Enterprise SSO', icon: Shield },

@@ -34,6 +34,8 @@ model User {
   sessionAttendees SessionAttendee[]
   surveysCreated   Survey[]         @relation("SurveysCreated")
   surveyResponses  SurveyResponse[] @relation("SurveyResponses")
+  uploadedDocuments LibraryDocument[]      @relation("UploadedDocuments")
+  documentEvents    LibraryDocumentEvent[] @relation("DocumentEvents")
 }
 
 model Account {
@@ -465,4 +467,39 @@ enum InsightType {
   SUMMARY
   COMPARATIVE
   RECOMMENDATIONS
+}
+
+model LibraryDocument {
+  id            String   @id @default(cuid())
+  title         String
+  description   String   @db.Text
+  fileUrl       String
+  fileName      String
+  fileSize      Int
+  fileType      String
+  thumbnailUrl  String?
+  targetOrgIds  String[]
+  targetRoles   String[]
+  active        Boolean  @default(true)
+  uploadedById  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  uploadedBy User @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+  events     LibraryDocumentEvent[]
+}
+
+model LibraryDocumentEvent {
+  id             String   @id @default(cuid())
+  documentId     String
+  userId         String
+  organisationId String?
+  action         String   // "view" or "download"
+  createdAt      DateTime @default(now())
+
+  document LibraryDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user     User            @relation("DocumentEvents", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([documentId, action])
+  @@index([organisationId])
 }

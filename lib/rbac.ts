@@ -10,6 +10,7 @@ export const CHARITY_PERMISSIONS = {
   MANAGE_ANNOUNCEMENTS: 'manage_announcements',
   VIEW_REPORTS: 'view_reports',
   MANAGE_SESSIONS: 'manage_sessions',
+  MANAGE_LIBRARY: 'manage_library',
 } as const
 
 export type CharityPermission = (typeof CHARITY_PERMISSIONS)[keyof typeof CHARITY_PERMISSIONS]
@@ -23,6 +24,7 @@ export const PERMISSION_LABELS: Record<string, string> = {
   manage_announcements: 'Manage Announcements',
   view_reports: 'View Reports',
   manage_sessions: 'Manage Sessions',
+  manage_library: 'Manage Library',
 }
 
 // ─── Display labels ────────────────────────────────────────────────────────────

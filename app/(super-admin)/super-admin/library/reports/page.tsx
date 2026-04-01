@@ -1,0 +1,286 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { clsx } from 'clsx'
+import {
+  BarChart3,
+  Eye,
+  Download,
+  FileText,
+  RefreshCw,
+  FolderOpen,
+  ChevronDown,
+  ChevronRight,
+  ArrowLeft,
+  Building2,
+} from 'lucide-react'
+import Link from 'next/link'
+
+interface OrgBreakdown {
+  orgName: string
+  views: number
+  downloads: number
+}
+
+interface DocumentStat {
+  id: string
+  title: string
+  fileName: string
+  fileType: string
+  active: boolean
+  targetOrgIds: string[]
+  createdAt: string
+  uploadedBy: string | null
+  totalViews: number
+  totalDownloads: number
+  orgBreakdown: OrgBreakdown[]
+}
+
+interface Totals {
+  totalDocuments: number
+  activeDocuments: number
+  totalViews: number
+  totalDownloads: number
+}
+
+interface Organisation {
+  id: string
+  name: string
+}
+
+export default function LibraryReportsPage() {
+  const [totals, setTotals] = useState<Totals | null>(null)
+  const [documents, setDocuments] = useState<DocumentStat[]>([])
+  const [orgs, setOrgs] = useState<Organisation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expandedDoc, setExpandedDoc] = useState<string | null>(null)
+  const [filterOrg, setFilterOrg] = useState<string>('')
+
+  const fetchReports = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/super-admin/library/reports')
+      if (res.ok) {
+        const data = await res.json()
+        setTotals(data.totals)
+        setDocuments(data.documents)
+        setOrgs(data.organisations)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchReports()
+  }, [fetchReports])
+
+  const filteredDocs = filterOrg
+    ? documents.filter((d) => d.targetOrgIds.length === 0 || d.targetOrgIds.includes(filterOrg))
+    : documents
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Link
+              href="/super-admin/library"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <BarChart3 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+              Library Reports
+            </h1>
+          </div>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Track document views and downloads across organisations.
+          </p>
+        </div>
+        <button
+          onClick={fetchReports}
+          className="p-2 rounded-xl border border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors text-slate-500"
+          title="Refresh"
+        >
+          <RefreshCw className={clsx('h-4 w-4', loading && 'animate-spin')} />
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-16 text-slate-400">
+          <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-3" />
+          Loading reports…
+        </div>
+      ) : (
+        <>
+          {/* Summary cards */}
+          {totals && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="card text-center">
+                <FolderOpen className="h-6 w-6 text-primary-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totals.totalDocuments}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Total Documents</p>
+              </div>
+              <div className="card text-center">
+                <FileText className="h-6 w-6 text-sage-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totals.activeDocuments}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Active</p>
+              </div>
+              <div className="card text-center">
+                <Eye className="h-6 w-6 text-blue-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totals.totalViews}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Total Views</p>
+              </div>
+              <div className="card text-center">
+                <Download className="h-6 w-6 text-emerald-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totals.totalDownloads}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Total Downloads</p>
+              </div>
+            </div>
+          )}
+
+          {/* Filter */}
+          <div className="flex items-center gap-3">
+            <Building2 className="h-4 w-4 text-slate-400" />
+            <select
+              className="input text-sm"
+              value={filterOrg}
+              onChange={(e) => setFilterOrg(e.target.value)}
+            >
+              <option value="">All organisations</option>
+              {orgs.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+            <span className="text-sm text-slate-400 dark:text-slate-500">
+              {filteredDocs.length} document{filteredDocs.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          {/* Per-document table */}
+          <div className="card overflow-hidden p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 w-8"></th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Document</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Views</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Downloads</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden md:table-cell">Status</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden lg:table-cell">Uploaded</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredDocs.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-12 text-center text-slate-400 dark:text-slate-500">
+                        <FolderOpen className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                        No documents found.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDocs.map((doc) => {
+                      const isExpanded = expandedDoc === doc.id
+                      return (
+                        <>
+                          <tr
+                            key={doc.id}
+                            className={clsx(
+                              'border-b border-calm-100 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer',
+                              isExpanded && 'bg-calm-50 dark:bg-slate-800/50'
+                            )}
+                            onClick={() => setExpandedDoc(isExpanded ? null : doc.id)}
+                          >
+                            <td className="px-4 py-3 text-slate-400">
+                              {isExpanded
+                                ? <ChevronDown className="h-4 w-4" />
+                                : <ChevronRight className="h-4 w-4" />
+                              }
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="font-medium text-slate-800 dark:text-slate-200">{doc.title}</p>
+                              <p className="text-xs text-slate-400 dark:text-slate-500">{doc.fileName}</p>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-semibold">
+                                <Eye className="h-3.5 w-3.5" />
+                                {doc.totalViews}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                                <Download className="h-3.5 w-3.5" />
+                                {doc.totalDownloads}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 hidden md:table-cell">
+                              <span className={clsx(
+                                'text-xs font-medium px-2 py-0.5 rounded-full',
+                                doc.active
+                                  ? 'bg-sage-100 text-sage-700 dark:bg-sage-900/30 dark:text-sage-400'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                              )}>
+                                {doc.active ? 'Active' : 'Inactive'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-slate-400 dark:text-slate-500 hidden lg:table-cell">
+                              {new Date(doc.createdAt).toLocaleDateString('en-GB', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
+                            </td>
+                          </tr>
+                          {/* Expanded org breakdown */}
+                          {isExpanded && (
+                            <tr key={doc.id + '-detail'} className="border-b border-calm-100 dark:border-slate-700">
+                              <td colSpan={6} className="px-8 py-3 bg-calm-50/50 dark:bg-slate-800/30">
+                                {doc.orgBreakdown.length === 0 ? (
+                                  <p className="text-xs text-slate-400 dark:text-slate-500 italic">No activity recorded yet.</p>
+                                ) : (
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                                      Breakdown by Organisation
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                      {doc.orgBreakdown.map((ob, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="flex items-center justify-between bg-white dark:bg-slate-700 rounded-lg px-3 py-2 border border-calm-200 dark:border-slate-600"
+                                        >
+                                          <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate mr-3">
+                                            {ob.orgName}
+                                          </span>
+                                          <div className="flex items-center gap-3 text-xs flex-shrink-0">
+                                            <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                                              <Eye className="h-3 w-3" /> {ob.views}
+                                            </span>
+                                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                              <Download className="h-3 w-3" /> {ob.downloads}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
