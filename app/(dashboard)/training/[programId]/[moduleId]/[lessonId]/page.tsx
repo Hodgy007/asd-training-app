@@ -179,16 +179,19 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
       <div className="card">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Lesson Content</h2>
         <div
-          className="prose-lesson space-y-1 text-slate-700 dark:text-slate-300
-            [&_h1]:font-bold [&_h1]:text-xl [&_h1]:text-slate-900 [&_h1]:mt-6 [&_h1]:mb-3
-            [&_h2]:font-semibold [&_h2]:text-lg [&_h2]:text-slate-900 [&_h2]:mt-5 [&_h2]:mb-2
-            [&_h3]:font-semibold [&_h3]:text-base [&_h3]:text-slate-900 [&_h3]:mt-5 [&_h3]:mb-2
+          className="prose-lesson space-y-1 text-slate-700 dark:text-slate-300 overflow-x-hidden break-words
+            [&_h1]:font-bold [&_h1]:text-xl [&_h1]:text-slate-900 [&_h1]:dark:text-slate-100 [&_h1]:mt-6 [&_h1]:mb-3
+            [&_h2]:font-semibold [&_h2]:text-lg [&_h2]:text-slate-900 [&_h2]:dark:text-slate-100 [&_h2]:mt-5 [&_h2]:mb-2
+            [&_h3]:font-semibold [&_h3]:text-base [&_h3]:text-slate-900 [&_h3]:dark:text-slate-100 [&_h3]:mt-5 [&_h3]:mb-2
             [&_p]:mb-2 [&_p]:leading-relaxed
-            [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-3
-            [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-3
+            [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:sm:ml-6 [&_ul]:mb-3
+            [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:sm:ml-6 [&_ol]:mb-3
             [&_li]:mb-1 [&_li]:leading-relaxed
-            [&_strong]:text-slate-900 [&_strong]:font-semibold
-            [&_em]:italic"
+            [&_strong]:text-slate-900 [&_strong]:dark:text-slate-100 [&_strong]:font-semibold
+            [&_em]:italic
+            [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg
+            [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block [&_table]:text-sm
+            [&_pre]:overflow-x-auto [&_pre]:max-w-full"
           dangerouslySetInnerHTML={{ __html: lesson.content }}
         />
       </div>
