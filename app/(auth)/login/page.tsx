@@ -14,10 +14,23 @@ export default function LoginPage() {
   )
 }
 
+const SSO_ERROR_MESSAGES: Record<string, string> = {
+  Configuration: 'Single Sign-On is not configured. Please sign in with email and password, or contact your administrator.',
+  OAuthSignin: 'Could not start the sign-in process. Please try again.',
+  OAuthCallback: 'Sign-in was interrupted. Please try again.',
+  OAuthCreateAccount: 'Could not link your account. Please contact your administrator.',
+  OAuthAccountNotLinked: 'This email is already linked to another sign-in method.',
+  AccessDenied: 'Access denied. Your account may be deactivated.',
+  Callback: 'Sign-in failed. Please try again.',
+}
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const ssoError = searchParams.get('error')
+  const rawSsoError = searchParams.get('error')
+  const ssoError = rawSsoError
+    ? SSO_ERROR_MESSAGES[rawSsoError] || rawSsoError
+    : null
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -31,7 +44,15 @@ function LoginForm() {
     displayName?: string
     enforced?: boolean
   } | null>(null)
+  const [ssoProviders, setSsoProviders] = useState<{ google: boolean; microsoft: boolean }>({ google: true, microsoft: true })
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/sso-providers')
+      .then((r) => r.json())
+      .then(setSsoProviders)
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -276,35 +297,47 @@ function LoginForm() {
                 </form>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-sm text-slate-500 mb-4">
-                    Sign in using your organisation&apos;s Google or Microsoft account.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => signIn('google', { callbackUrl: '/' })}
-                    className="flex items-center justify-center gap-3 w-full py-2.5 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-calm-50 dark:hover:bg-slate-600 transition-colors"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    Sign in with Google
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => signIn('azure-ad', { callbackUrl: '/' })}
-                    className="flex items-center justify-center gap-3 w-full py-2.5 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-calm-50 dark:hover:bg-slate-600 transition-colors"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 23 23">
-                      <rect x="1" y="1" width="10" height="10" fill="#f25022"/>
-                      <rect x="12" y="1" width="10" height="10" fill="#7fba00"/>
-                      <rect x="1" y="12" width="10" height="10" fill="#00a4ef"/>
-                      <rect x="12" y="12" width="10" height="10" fill="#ffb900"/>
-                    </svg>
-                    Sign in with Microsoft
-                  </button>
+                  {!ssoProviders.google && !ssoProviders.microsoft ? (
+                    <p className="text-sm text-slate-500 text-center py-4">
+                      Single Sign-On is not yet configured. Please sign in with email and password.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-slate-500 mb-4">
+                        Sign in using your organisation&apos;s {ssoProviders.google && ssoProviders.microsoft ? 'Google or Microsoft' : ssoProviders.google ? 'Google' : 'Microsoft'} account.
+                      </p>
+                      {ssoProviders.google && (
+                        <button
+                          type="button"
+                          onClick={() => signIn('google', { callbackUrl: '/' })}
+                          className="flex items-center justify-center gap-3 w-full py-2.5 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-calm-50 dark:hover:bg-slate-600 transition-colors"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                          </svg>
+                          Sign in with Google
+                        </button>
+                      )}
+                      {ssoProviders.microsoft && (
+                        <button
+                          type="button"
+                          onClick={() => signIn('azure-ad', { callbackUrl: '/' })}
+                          className="flex items-center justify-center gap-3 w-full py-2.5 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-calm-50 dark:hover:bg-slate-600 transition-colors"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 23 23">
+                            <rect x="1" y="1" width="10" height="10" fill="#f25022"/>
+                            <rect x="12" y="1" width="10" height="10" fill="#7fba00"/>
+                            <rect x="1" y="12" width="10" height="10" fill="#00a4ef"/>
+                            <rect x="12" y="12" width="10" height="10" fill="#ffb900"/>
+                          </svg>
+                          Sign in with Microsoft
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </>
