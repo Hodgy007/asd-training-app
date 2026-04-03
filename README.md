@@ -1,6 +1,6 @@
 # ASD Early Identification Training App
 
-Next.js 14 SaaS platform for ASD early identification training, child observation tracking, and careers support. Includes an AI-powered CV Builder for autistic students.
+Next.js 14 SaaS platform for ASD early identification training, child observation tracking, and careers support. Includes an AI-powered CV Builder and AI Careers Advisor for autistic young people.
 
 **Live URL:** https://asd-training-app-v2.vercel.app
 **Repo:** https://github.com/Hodgy007/asd-training-app
@@ -10,6 +10,7 @@ Next.js 14 SaaS platform for ASD early identification training, child observatio
 - **Training modules** — ASD awareness and Careers CPD training with quizzes
 - **Child observations** — behavioural tracking with AI-generated insights (practitioners)
 - **CV Builder** — 8-step autism-friendly wizard with AI writing assistance, PDF + Word export, 3 templates (Accessible/Modern/Classic), career professional student view, CV stats in admin reports
+- **AI Careers Advisor** — guided Q&A wizard (6 core + 4 optional questions) generates personalised careers reports via Gemini AI, with PDF export, career professional student view, and admin reports integration
 - **Document library** — file sharing with Vercel Blob storage
 - **Virtual workshops** — Zoom/Teams integration with attendance tracking
 - **Surveys** — targeted questionnaires with AI-generated insights
@@ -58,25 +59,31 @@ Next.js 14 SaaS platform for ASD early identification training, child observatio
 
 ```
 app/(dashboard)/cv-builder/     # CV Builder pages (wizard, preview, student view)
+app/(dashboard)/careers-advisor/ # AI Careers Advisor pages (wizard, student view)
 app/(dashboard)/training/       # Training module pages
 app/(dashboard)/children/       # Child observation pages (practitioners only)
 app/(super-admin)/              # Charity admin pages
 app/(org-admin)/                # Org admin pages
 app/api/cv-builder/             # CV Builder API (CRUD, AI, PDF, DOCX, students)
+app/api/careers-advisor/        # Careers Advisor API (sessions, AI report, PDF, students)
 app/api/children/               # Children + observations + AI insights API
 app/api/training/               # Training progress API
 components/cv-builder/          # CV Builder components (wizard, steps, shared)
+components/careers-advisor/     # Careers Advisor components (wizard, steps, pill selector)
 lib/cv-ai.ts                    # CV AI functions (statement, rephrase, skills, improve)
-lib/cv-templates/               # PDF templates (accessible, modern, classic)
+lib/careers-advisor-ai.ts       # Careers Advisor AI report generation
+lib/careers-advisor-pdf.tsx     # Careers Advisor PDF template
+lib/cv-templates/               # CV PDF templates (accessible, modern, classic)
 lib/gemini.ts                   # Observation AI functions
 lib/rbac.ts                     # Role-based access control helpers
-prisma/schema.prisma            # All database models (27+)
+prisma/schema.prisma            # All database models (28+)
 ```
 
 ### AI Integration
-Uses `gemini-2.5-flash` via `@google/genai`. Two AI modules:
+Uses `gemini-2.5-flash` via `@google/genai`. Three AI modules:
 - **`lib/gemini.ts`** — observation insights (summary, patterns, guidance, full report). All prompts: never diagnose, never suggest autism.
 - **`lib/cv-ai.ts`** — CV writing assistance (personal statements, bullet point rephrasing, skill suggestions, description improvement). All prompts: strength-focused, UK English, never mention disabilities.
+- **`lib/careers-advisor-ai.ts`** — personalised careers report generation from questionnaire answers (strengths, career suggestions, next steps, workplace support). All prompts: strength-focused, UK English, UK-specific resources, never mention autism/disability.
 
 ---
 
