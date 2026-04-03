@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, X, Wrench } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, X, Wrench, Check } from 'lucide-react'
 import { CvStepLayout } from '@/components/cv-builder/cv-step-layout'
 import { ExampleText } from '@/components/cv-builder/example-text'
 import { AiAssistButton } from '@/components/cv-builder/ai-assist-button'
@@ -71,29 +71,43 @@ function getColours(category?: string | null) {
 }
 
 export function SkillsStep({ cvId, data, onSectionChange }: StepProps) {
-  const currentSkills: Skill[] = data?.skills || []
+  // Keep a local copy of skills so we can update immediately on save
+  const [skills, setSkills] = useState<Skill[]>(data?.skills || [])
   const [newSkillName, setNewSkillName] = useState('')
   const [newSkillCategory, setNewSkillCategory] = useState<string>(CATEGORIES[0])
   const [saving, setSaving] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
   // AI state
   const [aiLoading, setAiLoading] = useState(false)
   const [suggestedSkills, setSuggestedSkills] = useState<Array<{ name: string; category: string }>>([])
 
-  async function saveSkills(skills: Skill[]) {
+  // Sync from parent when data changes (e.g. after parent re-fetches)
+  useEffect(() => {
+    if (data?.skills) {
+      setSkills(data.skills)
+    }
+  }, [data?.skills])
+
+  async function saveSkills(updatedSkills: Skill[]) {
     setSaving(true)
+    // Update local list immediately (optimistic)
+    setSkills(updatedSkills)
     try {
       await fetch(`/api/cv-builder/${cvId}/skills`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
-          skills.map((s, i) => ({
+          updatedSkills.map((s, i) => ({
             name: s.name,
             category: s.category || null,
             order: i,
           }))
         ),
       })
+      setJustSaved(true)
+      setTimeout(() => setJustSaved(false), 3000)
+      // Sync parent in background
       onSectionChange?.()
     } finally {
       setSaving(false)
@@ -102,33 +116,33 @@ export function SkillsStep({ cvId, data, onSectionChange }: StepProps) {
 
   function handleAddSkill() {
     if (!newSkillName.trim()) return
-    const already = currentSkills.some(
+    const already = skills.some(
       (s) => s.name.toLowerCase() === newSkillName.trim().toLowerCase()
     )
     if (already) return
 
     const updated = [
-      ...currentSkills,
-      { name: newSkillName.trim(), category: newSkillCategory, order: currentSkills.length },
+      ...skills,
+      { name: newSkillName.trim(), category: newSkillCategory, order: skills.length },
     ]
     setNewSkillName('')
     saveSkills(updated)
   }
 
   function handleRemoveSkill(index: number) {
-    const updated = currentSkills.filter((_, i) => i !== index)
+    const updated = skills.filter((_, i) => i !== index)
     saveSkills(updated)
   }
 
   function handleAddSuggested(skill: { name: string; category: string }) {
-    const already = currentSkills.some(
+    const already = skills.some(
       (s) => s.name.toLowerCase() === skill.name.toLowerCase()
     )
     if (already) return
 
     const updated = [
-      ...currentSkills,
-      { name: skill.name, category: skill.category, order: currentSkills.length },
+      ...skills,
+      { name: skill.name, category: skill.category, order: skills.length },
     ]
     setSuggestedSkills((prev) => prev.filter((s) => s.name !== skill.name))
     saveSkills(updated)
@@ -145,7 +159,7 @@ export function SkillsStep({ cvId, data, onSectionChange }: StepProps) {
       if (!res.ok) throw new Error('AI request failed')
       const json = await res.json()
       // Filter out skills already in the list
-      const existing = new Set(currentSkills.map((s) => s.name.toLowerCase()))
+      const existing = new Set(skills.map((s) => s.name.toLowerCase()))
       const suggestions = (json.result as Array<{ name: string; category: string }>).filter(
         (s) => !existing.has(s.name.toLowerCase())
       )
@@ -197,13 +211,13 @@ export function SkillsStep({ cvId, data, onSectionChange }: StepProps) {
       </div>
 
       {/* Current skills */}
-      {currentSkills.length > 0 && (
+      {skills.length > 0 && (
         <div className="mb-4">
           <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            Your skills ({currentSkills.length})
+            Your skills ({skills.length})
           </p>
           <div className="flex flex-wrap gap-2">
-            {currentSkills.map((skill, index) => {
+            {skills.map((skill, index) => {
               const colours = getColours(skill.category)
               return (
                 <span
@@ -228,7 +242,15 @@ export function SkillsStep({ cvId, data, onSectionChange }: StepProps) {
         </div>
       )}
 
-      {currentSkills.length === 0 && suggestedSkills.length === 0 && (
+      {/* Success message after saving */}
+      {justSaved && (
+        <div className="mb-4 flex items-center gap-2 text-sm text-sage-600 dark:text-sage-400">
+          <Check className="h-4 w-4" />
+          <span>Saved!</span>
+        </div>
+      )}
+
+      {skills.length === 0 && suggestedSkills.length === 0 && (
         <div className="text-center py-6 mb-4">
           <Wrench className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
           <p className="text-sm text-slate-500 dark:text-slate-400">

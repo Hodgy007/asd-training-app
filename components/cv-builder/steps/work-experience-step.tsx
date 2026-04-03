@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Pencil, Trash2, Briefcase, Save, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Pencil, Trash2, Briefcase, Save, X, Check } from 'lucide-react'
 import { CvStepLayout } from '@/components/cv-builder/cv-step-layout'
 import { ExampleText } from '@/components/cv-builder/example-text'
 import { AiAssistButton } from '@/components/cv-builder/ai-assist-button'
@@ -49,28 +49,39 @@ const EMPTY_FORM: FormData = {
 }
 
 export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
-  const experiences: WorkExperience[] = data?.workExperiences || []
+  // Keep a local copy of experiences so we can update immediately on save
+  const [experiences, setExperiences] = useState<WorkExperience[]>(data?.workExperiences || [])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [form, setForm] = useState<FormData>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [justSaved, setJustSaved] = useState(false)
 
   // AI state
   const [aiLoading, setAiLoading] = useState(false)
   const [aiResult, setAiResult] = useState('')
   const [showAiModal, setShowAiModal] = useState(false)
 
+  // Sync from parent when data changes (e.g. after parent re-fetches)
+  useEffect(() => {
+    if (data?.workExperiences) {
+      setExperiences(data.workExperiences)
+    }
+  }, [data?.workExperiences])
+
   function startAdd() {
     setEditingId(null)
     setForm(EMPTY_FORM)
     setIsAdding(true)
+    setJustSaved(false)
   }
 
   function startEdit(exp: WorkExperience) {
     setIsAdding(false)
     setEditingId(exp.id)
+    setJustSaved(false)
     setForm({
       jobTitle: exp.jobTitle,
       employer: exp.employer,
@@ -101,21 +112,40 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
         description: form.description || null,
       }
 
+      let res: Response
+
       if (isAdding) {
-        await fetch(`/api/cv-builder/${cvId}/work-experience`, {
+        res = await fetch(`/api/cv-builder/${cvId}/work-experience`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
+        if (res.ok) {
+          const created = await res.json()
+          // Add to local list immediately so user sees it
+          setExperiences((prev) => [...prev, created])
+        }
       } else if (editingId) {
-        await fetch(`/api/cv-builder/${cvId}/work-experience/${editingId}`, {
+        res = await fetch(`/api/cv-builder/${cvId}/work-experience/${editingId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
+        if (res!.ok) {
+          const updated = await res!.json()
+          // Update in local list immediately
+          setExperiences((prev) => prev.map((e) => (e.id === editingId ? updated : e)))
+        }
       }
 
-      cancelEdit()
+      // Clear the form and show success
+      setEditingId(null)
+      setIsAdding(false)
+      setForm(EMPTY_FORM)
+      setJustSaved(true)
+      setTimeout(() => setJustSaved(false), 3000)
+
+      // Sync parent in background
       onSectionChange?.()
     } finally {
       setSaving(false)
@@ -125,7 +155,11 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
   async function handleDelete(id: string) {
     setDeletingId(id)
     try {
-      await fetch(`/api/cv-builder/${cvId}/work-experience/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/cv-builder/${cvId}/work-experience/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        // Remove from local list immediately
+        setExperiences((prev) => prev.filter((e) => e.id !== id))
+      }
       setConfirmDeleteId(null)
       onSectionChange?.()
     } finally {
@@ -169,14 +203,9 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
   }
 
   function formatDateRange(start: string, end?: string | null, isCurrent?: boolean) {
-    const fmt = (d: string) => {
-      const date = new Date(d + '-01')
-      return date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
-    }
-    const startStr = fmt(start)
-    if (isCurrent) return `${startStr} - Present`
-    if (end) return `${startStr} - ${fmt(end)}`
-    return startStr
+    if (isCurrent) return `${start} – Present`
+    if (end) return `${start} – ${end}`
+    return start
   }
 
   const renderForm = () => (
@@ -234,14 +263,14 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
 
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className={LABEL_CLASS}>Description</label>
+          <label className={LABEL_CLASS}>What did you do in this job?</label>
           {form.description && (
             <AiAssistButton onClick={handleAiImprove} loading={aiLoading} label="Improve with AI" />
           )}
         </div>
         <textarea
           rows={4}
-          placeholder="Describe your responsibilities and achievements..."
+          placeholder="e.g. Served customers, restocked shelves, handled cash register..."
           value={form.description}
           onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
           className={`${INPUT_CLASS} resize-none`}
@@ -274,88 +303,106 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
       title="Work Experience"
       description="List any jobs, work placements, or volunteering you've done. Start with the most recent."
     >
+      <ExampleText>
+        Include job title, employer name, dates, and what you did. Even short placements, Saturday jobs, or volunteering count!
+      </ExampleText>
+
+      {/* Saved entries */}
+      {experiences.length > 0 && (
+        <div className="mt-4 space-y-3">
+          {experiences.map((exp) =>
+            editingId === exp.id ? (
+              <div key={exp.id}>{renderForm()}</div>
+            ) : (
+              <div
+                key={exp.id}
+                className="rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      {exp.jobTitle}
+                    </h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{exp.employer}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                      {formatDateRange(exp.startDate, exp.endDate, exp.isCurrent)}
+                    </p>
+                    {exp.description && (
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 whitespace-pre-line">
+                        {exp.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 ml-3 shrink-0">
+                    <button
+                      onClick={() => startEdit(exp)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                      aria-label="Edit"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    {confirmDeleteId === exp.id ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleDelete(exp.id)}
+                          disabled={deletingId === exp.id}
+                          className="px-2 py-1 rounded-lg text-xs font-medium text-red-600 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 transition-colors disabled:opacity-50"
+                        >
+                          {deletingId === exp.id ? 'Deleting...' : 'Confirm'}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="px-2 py-1 rounded-lg text-xs font-medium text-slate-500 hover:bg-calm-100 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(exp.id)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        aria-label="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+          )}
+        </div>
+      )}
+
+      {/* Success message after saving */}
+      {justSaved && !isAdding && !editingId && (
+        <div className="mt-3 flex items-center gap-2 text-sm text-sage-600 dark:text-sage-400">
+          <Check className="h-4 w-4" />
+          <span>Saved! You can add another entry below or click Next to continue.</span>
+        </div>
+      )}
+
+      {/* Add form */}
+      {isAdding && <div className="mt-3">{renderForm()}</div>}
+
+      {/* Empty state */}
       {experiences.length === 0 && !isAdding && (
-        <div className="text-center py-8">
-          <Briefcase className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+        <div className="mt-4 text-center py-6">
+          <Briefcase className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            No work experience yet? That&apos;s OK — you can skip this step and come back later.
+            No work experience added yet. That&apos;s OK — you can skip this step and come back later.
           </p>
         </div>
       )}
 
-      <div className="space-y-3">
-        {experiences.map((exp) =>
-          editingId === exp.id ? (
-            <div key={exp.id}>{renderForm()}</div>
-          ) : (
-            <div
-              key={exp.id}
-              className="rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-4"
-            >
-              <div className="flex items-start justify-between">
-                <div className="min-w-0">
-                  <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    {exp.jobTitle}
-                  </h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">{exp.employer}</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                    {formatDateRange(exp.startDate, exp.endDate, exp.isCurrent)}
-                  </p>
-                  {exp.description && (
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 whitespace-pre-line">
-                      {exp.description}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 ml-3 shrink-0">
-                  <button
-                    onClick={() => startEdit(exp)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                    aria-label="Edit"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  {confirmDeleteId === exp.id ? (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleDelete(exp.id)}
-                        disabled={deletingId === exp.id}
-                        className="px-2 py-1 rounded-lg text-xs font-medium text-red-600 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 transition-colors disabled:opacity-50"
-                      >
-                        {deletingId === exp.id ? 'Deleting...' : 'Confirm'}
-                      </button>
-                      <button
-                        onClick={() => setConfirmDeleteId(null)}
-                        className="px-2 py-1 rounded-lg text-xs font-medium text-slate-500 hover:bg-calm-100 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmDeleteId(exp.id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                      aria-label="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )
-        )}
-      </div>
-
-      {isAdding && <div className="mt-3">{renderForm()}</div>}
-
+      {/* Add button — always visible when not editing */}
       {!isAdding && !editingId && (
         <button
           onClick={startAdd}
           className="mt-4 inline-flex items-center gap-2 rounded-xl border-2 border-dashed border-calm-300 dark:border-slate-600 px-4 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:border-primary-300 hover:text-primary-600 dark:hover:border-primary-700 dark:hover:text-primary-400 transition-colors w-full justify-center"
         >
           <Plus className="h-4 w-4" />
-          Add work experience
+          {experiences.length > 0 ? 'Add another role' : 'Add work experience'}
         </button>
       )}
 
