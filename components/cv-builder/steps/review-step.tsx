@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   CheckCircle,
   XCircle,
   Download,
   FileText,
   FileCheck,
+  Check,
   Sparkles,
   Layout,
   Accessibility,
@@ -57,7 +59,9 @@ const TEMPLATES = [
 ]
 
 export function ReviewStep({ cvId, data, onUpdate }: StepProps) {
+  const router = useRouter()
   const [completing, setCompleting] = useState(false)
+  const [justCompleted, setJustCompleted] = useState(false)
   const currentTemplate = data?.template || 'CLASSIC'
 
   // Build completion checklist
@@ -88,6 +92,7 @@ export function ReviewStep({ cvId, data, onUpdate }: StepProps) {
     setCompleting(true)
     try {
       onUpdate({ status: 'COMPLETE' })
+      setJustCompleted(true)
     } finally {
       setCompleting(false)
     }
@@ -394,7 +399,7 @@ export function ReviewStep({ cvId, data, onUpdate }: StepProps) {
           Download as Word
         </a>
 
-        {!isComplete && (
+        {!isComplete && !justCompleted && (
           <button
             onClick={handleMarkComplete}
             disabled={completing || !allPassed}
@@ -411,11 +416,21 @@ export function ReviewStep({ cvId, data, onUpdate }: StepProps) {
           </button>
         )}
 
-        {isComplete && (
+        {(isComplete || justCompleted) && (
           <div className="inline-flex items-center gap-2 rounded-xl bg-sage-50 dark:bg-sage-900/20 border border-sage-200 dark:border-sage-800 px-4 py-2.5 text-sm font-medium text-sage-700 dark:text-sage-300">
             <CheckCircle className="h-4 w-4" />
             CV marked as complete
           </div>
+        )}
+
+        {(isComplete || justCompleted) && (
+          <button
+            onClick={() => router.push('/cv-builder')}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary-600 text-white px-6 py-2.5 text-sm font-medium hover:bg-primary-700 transition-colors"
+          >
+            <Check className="h-4 w-4" />
+            Done &mdash; back to my CVs
+          </button>
         )}
       </div>
     </CvStepLayout>
