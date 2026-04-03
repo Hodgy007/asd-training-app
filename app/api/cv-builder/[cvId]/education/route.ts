@@ -14,10 +14,10 @@ async function verifyCVOwnership(cvId: string, userId: string) {
 const createEducationSchema = z.object({
   institution: z.string().min(1).max(200),
   qualification: z.string().min(1).max(200),
-  grade: z.string().max(100).optional(),
+  grade: z.string().max(100).nullable().optional(),
   startDate: z.string().min(1),
-  endDate: z.string().optional(),
-  description: z.string().max(5000).optional(),
+  endDate: z.string().nullable().optional(),
+  description: z.string().max(5000).nullable().optional(),
   order: z.number().int().min(0).optional(),
 })
 

@@ -15,9 +15,9 @@ const createWorkExpSchema = z.object({
   jobTitle: z.string().min(1).max(200),
   employer: z.string().min(1).max(200),
   startDate: z.string().min(1),
-  endDate: z.string().optional(),
+  endDate: z.string().nullable().optional(),
   isCurrent: z.boolean().optional(),
-  description: z.string().max(5000).optional(),
+  description: z.string().max(5000).nullable().optional(),
   order: z.number().int().min(0).optional(),
 })
 
