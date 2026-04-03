@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     color: colours.text,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 14,
   },
   contact: {
     fontSize: 10,
