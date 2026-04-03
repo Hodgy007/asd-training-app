@@ -8,6 +8,20 @@ interface VideoPlayerProps {
   videoUrl?: string
 }
 
+function getEmbedUrl(url: string): string | null {
+  // YouTube: watch URLs, short URLs, and embed URLs
+  const ytWatch = url.match(/(?:youtube\.com\/watch\?.*v=|youtu\.be\/)([\w-]+)/)
+  if (ytWatch) return `https://www.youtube.com/embed/${ytWatch[1]}`
+  if (/youtube\.com\/embed\//.test(url)) return url
+
+  // Vimeo
+  const vimeo = url.match(/vimeo\.com\/(\d+)/)
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`
+  if (/player\.vimeo\.com\/video\//.test(url)) return url
+
+  return null
+}
+
 export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(false)
@@ -57,6 +71,24 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
     )
   }
 
+  const embedUrl = getEmbedUrl(videoUrl)
+
+  // YouTube/Vimeo: use iframe embed
+  if (embedUrl) {
+    return (
+      <div className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video">
+        <iframe
+          src={embedUrl}
+          title={title}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    )
+  }
+
+  // Direct video file: use native player
   return (
     <div className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video group">
       <video
