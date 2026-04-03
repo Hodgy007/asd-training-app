@@ -11,6 +11,15 @@ async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> 
   return getUserPrograms(userId)
 }
 
+async function getOrgCvBuilderEnabled(organisationId: string | null | undefined): Promise<boolean> {
+  if (!organisationId) return true
+  const org = await prisma.organisation.findUnique({
+    where: { id: organisationId },
+    select: { cvBuilderEnabled: true },
+  })
+  return org?.cvBuilderEnabled ?? true
+}
+
 export const authOptions: NextAuthOptions = {
   // No adapter — we use JWT sessions and handle SSO linking manually in signIn callback
   providers: [
@@ -191,6 +200,7 @@ export const authOptions: NextAuthOptions = {
           select: { charityPermissions: true },
         })
         token.charityPermissions = dbUserForPerms?.charityPermissions ?? []
+        token.cvBuilderEnabled = await getOrgCvBuilderEnabled(token.organisationId as string | null)
       }
 
       // SSO login — look up DB user by email since there's no adapter
@@ -209,6 +219,7 @@ export const authOptions: NextAuthOptions = {
           token.hasPassword = !!dbUser.password
           token.effectivePrograms = await getUserEffectivePrograms(dbUser.id)
           token.charityPermissions = dbUser.charityPermissions ?? []
+          token.cvBuilderEnabled = await getOrgCvBuilderEnabled(dbUser.organisationId)
         }
       }
 
@@ -224,6 +235,7 @@ export const authOptions: NextAuthOptions = {
           token.totpEnabled = dbUser.totpEnabled
           token.hasPassword = !!dbUser.password
           token.charityPermissions = dbUser.charityPermissions ?? []
+          token.cvBuilderEnabled = await getOrgCvBuilderEnabled(dbUser.organisationId)
         }
         token.mfaPending = false
         token.effectivePrograms = await getUserEffectivePrograms(token.id as string)
@@ -242,6 +254,7 @@ export const authOptions: NextAuthOptions = {
         session.user.hasPassword = (token.hasPassword as boolean) ?? true
         session.user.effectivePrograms = (token.effectivePrograms as ProgramInfo[]) ?? []
         session.user.charityPermissions = (token.charityPermissions as string[]) ?? []
+        session.user.cvBuilderEnabled = (token.cvBuilderEnabled as boolean) ?? true
       }
       return session
     },

@@ -84,6 +84,7 @@ model Organisation {
   active            Boolean  @default(true)
   allowedProgramIds String[]
   allowedRoles      String[]
+  cvBuilderEnabled  Boolean  @default(true)
   logoUrl           String?
   contactName       String?
   contactEmail      String?

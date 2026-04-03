@@ -203,6 +203,7 @@ declare module 'next-auth' {
       hasPassword: boolean
       effectivePrograms: { id: string; name: string }[]
       charityPermissions: string[]
+      cvBuilderEnabled: boolean
     }
   }
 }
@@ -218,6 +219,7 @@ declare module 'next-auth/jwt' {
     hasPassword: boolean
     effectivePrograms: { id: string; name: string }[]
     charityPermissions: string[]
+    cvBuilderEnabled: boolean
   }
 }
 

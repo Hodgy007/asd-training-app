@@ -117,6 +117,13 @@ export async function POST(req: NextRequest) {
 
     // Build JWT token
     const effectivePrograms = await getUserPrograms(user.id)
+    const orgForFeatures = user.organisationId
+      ? await prisma.organisation.findUnique({
+          where: { id: user.organisationId },
+          select: { cvBuilderEnabled: true },
+        })
+      : null
+    const cvBuilderEnabled = orgForFeatures?.cvBuilderEnabled ?? true
 
     const token = await encode({
       token: {
@@ -131,6 +138,7 @@ export async function POST(req: NextRequest) {
         hasPassword: !!user.password,
         effectivePrograms,
         charityPermissions: user.charityPermissions ?? [],
+        cvBuilderEnabled,
       },
       secret: process.env.NEXTAUTH_SECRET!,
     })

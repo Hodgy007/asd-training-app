@@ -53,6 +53,7 @@ interface OrgDetail {
   _count: { users: number }
   assignedCollectionIds: string[]
   assignedSurveyIds: string[]
+  cvBuilderEnabled: boolean
 }
 
 interface ProgramSummary {
@@ -130,6 +131,7 @@ export default function OrgDetailPage() {
   const [editCountry, setEditCountry] = useState('United Kingdom')
   const [editCollectionIds, setEditCollectionIds] = useState<string[]>([])
   const [editSurveyIds, setEditSurveyIds] = useState<string[]>([])
+  const [editCvBuilder, setEditCvBuilder] = useState(true)
   const [saving, setSaving] = useState(false)
 
   // Add org admin form
@@ -170,6 +172,7 @@ export default function OrgDetailPage() {
         setEditCountry(data.country || 'United Kingdom')
         setEditCollectionIds(data.assignedCollectionIds || [])
         setEditSurveyIds(data.assignedSurveyIds || [])
+        setEditCvBuilder(data.cvBuilderEnabled ?? true)
       }
     } finally {
       setLoading(false)
@@ -251,6 +254,7 @@ export default function OrgDetailPage() {
           country: editCountry || undefined,
           assignedCollectionIds: editCollectionIds,
           assignedSurveyIds: editSurveyIds,
+          cvBuilderEnabled: editCvBuilder,
         }),
       })
       if (res.ok) {
@@ -485,6 +489,20 @@ export default function OrgDetailPage() {
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Features */}
+          <div>
+            <label className="label mb-2 block">Features</label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={editCvBuilder}
+                onChange={(e) => setEditCvBuilder(e.target.checked)}
+                className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">CV Builder</span>
+            </label>
           </div>
 
           {/* Training Programs */}

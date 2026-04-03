@@ -26,6 +26,7 @@ const updateSchema = z.object({
   country: z.string().max(100).optional(),
   assignedCollectionIds: z.array(z.string()).optional(),
   assignedSurveyIds: z.array(z.string()).optional(),
+  cvBuilderEnabled: z.boolean().optional(),
 })
 
 export async function GET(

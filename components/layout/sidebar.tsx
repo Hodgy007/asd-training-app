@@ -28,6 +28,7 @@ function getNavItems(
   role?: string,
   programs: { id: string; name: string }[] = [],
   collections: { id: string; title: string }[] = [],
+  cvBuilderEnabled = true,
 ): NavItem[] {
   const items: NavItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -44,7 +45,9 @@ function getNavItems(
     for (const program of programs) {
       items.push({ href: `/training/${program.id}`, label: program.name, icon: BookOpen })
     }
-    items.push({ href: '/cv-builder', label: 'CV Builder', icon: FileText })
+    if (cvBuilderEnabled) {
+      items.push({ href: '/cv-builder', label: 'CV Builder', icon: FileText })
+    }
   }
 
   // Show each document collection directly in the nav
@@ -86,6 +89,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
   const { data: session } = useSession()
   const role = session?.user?.role
   const programs = session?.user?.effectivePrograms ?? []
+  const cvBuilderEnabled = (session?.user as { cvBuilderEnabled?: boolean })?.cvBuilderEnabled !== false
   const [collections, setCollections] = useState<{ id: string; title: string }[]>([])
 
   useEffect(() => {
@@ -95,7 +99,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
       .catch(() => {})
   }, [])
 
-  const navItems = getNavItems(role, programs, collections)
+  const navItems = getNavItems(role, programs, collections, cvBuilderEnabled)
 
   return (
     <div className="flex flex-col h-full bg-orange-50 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
