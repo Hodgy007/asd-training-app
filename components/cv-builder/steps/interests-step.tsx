@@ -82,15 +82,12 @@ export function InterestsStep({ cvId, data, onUpdate }: StepProps) {
       </ExampleText>
 
       <div className="mt-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="cv-interests"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-          >
-            Interests and hobbies
-          </label>
-          <AiAssistButton onClick={handleAiRequest} loading={aiLoading} label="Help me write this" />
-        </div>
+        <label
+          htmlFor="cv-interests"
+          className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+        >
+          Interests and hobbies
+        </label>
 
         <textarea
           id="cv-interests"
@@ -100,6 +97,8 @@ export function InterestsStep({ cvId, data, onUpdate }: StepProps) {
           onChange={(e) => handleChange(e.target.value)}
           className={TEXTAREA_CLASS}
         />
+
+        <AiAssistButton onClick={handleAiRequest} loading={aiLoading} label="Help me write this" />
       </div>
 
       <AiSuggestionModal

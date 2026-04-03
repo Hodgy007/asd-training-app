@@ -234,7 +234,8 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
         <div>
           <label className={LABEL_CLASS}>Start date *</label>
           <input
-            type="month"
+            type="text"
+            placeholder="e.g. Sept 2022"
             value={form.startDate}
             onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))}
             className={INPUT_CLASS}
@@ -243,7 +244,8 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
         <div>
           <label className={LABEL_CLASS}>End date</label>
           <input
-            type="month"
+            type="text"
+            placeholder="e.g. June 2024"
             value={form.endDate}
             disabled={form.isCurrent}
             onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))}
@@ -262,12 +264,7 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className={LABEL_CLASS}>What did you do in this job?</label>
-          {form.description && (
-            <AiAssistButton onClick={handleAiImprove} loading={aiLoading} label="Improve with AI" />
-          )}
-        </div>
+        <label className={LABEL_CLASS}>What did you do in this job?</label>
         <textarea
           rows={4}
           placeholder="e.g. Served customers, restocked shelves, handled cash register..."
@@ -275,6 +272,11 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
           onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
           className={`${INPUT_CLASS} resize-none`}
         />
+        {form.description && (
+          <div className="mt-2">
+            <AiAssistButton onClick={handleAiImprove} loading={aiLoading} label="Improve with AI" />
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2 justify-end">

@@ -223,7 +223,8 @@ export function EducationStep({ cvId, data, onSectionChange }: StepProps) {
         <div>
           <label className={LABEL_CLASS}>Start date *</label>
           <input
-            type="month"
+            type="text"
+            placeholder="e.g. Sept 2020"
             value={form.startDate}
             onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))}
             className={INPUT_CLASS}
@@ -232,7 +233,8 @@ export function EducationStep({ cvId, data, onSectionChange }: StepProps) {
         <div>
           <label className={LABEL_CLASS}>End date</label>
           <input
-            type="month"
+            type="text"
+            placeholder="e.g. June 2025"
             value={form.endDate}
             onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))}
             className={INPUT_CLASS}

@@ -78,15 +78,12 @@ export function PersonalStatementStep({ cvId, data, onUpdate }: StepProps) {
       </ExampleText>
 
       <div className="mt-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="cv-personal-statement"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-          >
-            Personal statement
-          </label>
-          <AiAssistButton onClick={handleAiRequest} loading={aiLoading} label="Write for me" />
-        </div>
+        <label
+          htmlFor="cv-personal-statement"
+          className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+        >
+          Personal statement
+        </label>
 
         <textarea
           id="cv-personal-statement"
@@ -96,6 +93,8 @@ export function PersonalStatementStep({ cvId, data, onUpdate }: StepProps) {
           onChange={(e) => handleChange(e.target.value)}
           className={TEXTAREA_CLASS}
         />
+
+        <AiAssistButton onClick={handleAiRequest} loading={aiLoading} label="Help me write this" />
 
         <div className="flex items-center justify-between text-xs">
           <span
