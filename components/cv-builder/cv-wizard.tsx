@@ -162,21 +162,29 @@ export function CvWizard({ cvId, initialData }: CvWizardProps) {
     patchCV({ currentStep: step })
   }
 
-  // AI assist
+  // AI assist — maps field names to AI action types
   async function requestAiHelp(field: string) {
     setAiField(field)
     setAiModalOpen(true)
     setAiLoading(true)
     setAiSuggestion('')
+
+    // Map the field to the correct AI type the API expects
+    const typeMap: Record<string, string> = {
+      personalStatement: 'statement',
+      interests: 'statement', // reuse statement generation for interests
+    }
+    const aiType = typeMap[field] || 'statement'
+
     try {
       const res = await fetch(`/api/cv-builder/${cvId}/ai`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field, currentData: cvData }),
+        body: JSON.stringify({ type: aiType, context: {} }),
       })
       if (res.ok) {
         const data = await res.json()
-        setAiSuggestion(data.suggestion ?? '')
+        setAiSuggestion(data.result ?? '')
       } else {
         setAiSuggestion('Sorry, something went wrong. Please try again.')
       }
