@@ -40,6 +40,7 @@ const nextConfig = {
               "img-src 'self' data: blob: https://via.placeholder.com https://placehold.co https://*.public.blob.vercel-storage.com",
               "font-src 'self'",
               "connect-src 'self' https://generativelanguage.googleapis.com",
+              "media-src 'self' https://*.public.blob.vercel-storage.com",
               "frame-src 'self' https://www.youtube.com https://player.vimeo.com",
               "frame-ancestors 'none'",
             ].join('; '),
