@@ -104,25 +104,11 @@ export default function CvBuilderListPage() {
         </nav>
       )}
 
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">CV Builder</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Create and manage your CVs step by step.
-          </p>
-        </div>
-        <button
-          onClick={createCV}
-          disabled={creating}
-          className="btn-primary flex items-center gap-2"
-        >
-          {creating ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Plus className="h-4 w-4" />
-          )}
-          New CV
-        </button>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">CV Builder</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">
+          Create and manage your CVs step by step.
+        </p>
       </div>
 
       {loading ? (

@@ -402,14 +402,8 @@ export function ReviewStep({ cvId, data, onUpdate }: StepProps) {
         {!isComplete && !justCompleted && (
           <button
             onClick={handleMarkComplete}
-            disabled={completing || !allPassed}
-            className={clsx(
-              'inline-flex items-center justify-center gap-2 rounded-xl px-6 py-2.5 text-sm font-medium transition-colors',
-              allPassed
-                ? 'bg-sage-600 text-white hover:bg-sage-700'
-                : 'bg-calm-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-            )}
-            title={allPassed ? undefined : 'Complete all checklist items first'}
+            disabled={completing}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-sage-600 text-white px-6 py-2.5 text-sm font-medium hover:bg-sage-700 transition-colors disabled:opacity-50"
           >
             <FileCheck className="h-4 w-4" />
             {completing ? 'Saving...' : 'Mark as Complete'}
