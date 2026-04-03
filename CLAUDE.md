@@ -14,7 +14,7 @@ npm run prisma:studio    # Open Prisma Studio (visual DB browser)
 npx tsx prisma/seed-training-content.ts  # Seed training modules/lessons/quizzes into DB
 ```
 
-There is no test suite. Linting is via TypeScript (`tsc --noEmit`).
+Build runs `prisma generate && vitest run && next build`. Unit tests via Vitest, E2E tests via Playwright.
 
 ## Environment Variables
 
@@ -80,6 +80,7 @@ Next.js 14 App Router app. TypeScript throughout. Deployed to Vercel (`asd-train
 - `CharityMeetingConfig` -- charity-level meeting API credentials (Zoom/Teams)
 - `Survey`, `SurveyQuestion`, `SurveyTarget`, `SurveyResponse`, `SurveyAnswer`, `SurveyInsight` -- complete survey system with targeted audiences, multiple question types (`MULTIPLE_CHOICE`, `YES_NO`, `FREE_TEXT`, `RATING_SCALE`, `MULTI_SELECT`), lifecycle (`DRAFT` / `PUBLISHED` / `CLOSED`), and AI-generated insights (`SUMMARY`, `COMPARATIVE`, `RECOMMENDATIONS`)
 - `LibraryCollection`, `LibraryDocument`, `LibraryDocumentEvent` -- document library with collections, file uploads (Vercel Blob), targeted visibility (`targetOrgIds`, `targetRoles`), AI-generated thumbnails, and download/view tracking per user/org
+- `CV`, `CVWorkExperience`, `CVEducation`, `CVSkill`, `CVReference` -- CV Builder for autistic students (UK format). Users can have multiple CVs. Each CV tracks wizard progress via `currentStep`, personal details, and has relations to work experience, education, skills, and references. Templates: `ACCESSIBLE` (default), `MODERN`, `CLASSIC`. Status: `DRAFT` / `COMPLETE`. Dates stored as strings ("MM/YYYY") for UK CV convention. Prisma accessor: `prisma.cV`.
 - `IntegrationApiKey` -- API key management for external integrations (e.g. Power Automate). Keys are SHA-256 hashed (`keyHash`), with a display prefix (`keyPrefix`), expiry, and last-used tracking.
 - `OrgSsoConfig` -- per-org SAML SSO configuration with email domain, SSO URL, entity ID, certificate, auto-provisioning, and default role
 - `CharitySsoConfig` -- charity-level SAML SSO configuration with enforce-for-charity-users option
@@ -96,6 +97,7 @@ All child/observation data cascades on user delete. Module/Lesson/QuizQuestion c
 - `canAccessCareers(session)` -- CAREER_DEV_OFFICER only
 - `canAccessCaregiving(session)` -- CAREGIVER only
 - `canCreateSessions(session)` -- ORG_ADMIN, CAREGIVER, CAREER_DEV_OFFICER, or CHARITY_EMPLOYEE with `MANAGE_SESSIONS` permission
+- `canAccessCVBuilder(session)` -- CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE
 - `hasPermission(session, permission)` -- permission check; SUPER_ADMIN always returns true, CHARITY_EMPLOYEE checks their `charityPermissions` array, all other roles return false
 - `hasRole(session, ...roles)` -- generic role check helper
 
@@ -120,13 +122,15 @@ Leaf role types are also exported from `types/index.ts` as `LEAF_ROLES`. Navigat
 - SUPER_ADMIN (Charity Admin): Overview, Users, Organisations, Document Library, Training Content, Surveys, Announcements, Workshops, Reports, Integrations, Settings, How to Guide (CHARITY_EMPLOYEE sees a subset based on their `charityPermissions`)
 - ORG_ADMIN: Users, Workshops, Announcements, Document Library, Reports, Meeting Settings, Enterprise SSO, How to Guide
 - CAREGIVER (Practitioner): Dashboard, [one link per assigned training program], Child Observations, Reports, [document collection links], How to Guide, Workshops, Settings
-- CAREER_DEV_OFFICER / STUDENT / INTERN / EMPLOYEE: Dashboard, [one link per assigned training program from `effectivePrograms`], [document collection links], How to Guide, Workshops, Settings
+- CAREER_DEV_OFFICER / STUDENT / INTERN / EMPLOYEE: Dashboard, [one link per assigned training program from `effectivePrograms`], CV Builder, [document collection links], How to Guide, Workshops, Settings
 
 **Dark mode role badges:** All role badges across all admin views (sidebar, org admin user list, super admin org settings) have dark mode color variants using `dark:bg-*/40 dark:text-*-300` patterns.
 
 **Org admin reports:** Reports show proper module names and training plan labels ("ASD Awareness Training", "Careers CPD Training") instead of raw module IDs.
 
-**AI layer:** `lib/gemini.ts` contains four functions that call `gemini-2.5-flash` via `@google/genai`. All prompts explicitly instruct the model never to diagnose or suggest autism. Full reports are persisted to the `AiInsight` table; the API route is `app/api/children/[childId]/insights/route.ts`. Gemini is also used for AI-generated quiz questions in the training CMS.
+**AI layer:** `lib/gemini.ts` contains four functions that call `gemini-2.5-flash` via `@google/genai`. All prompts explicitly instruct the model never to diagnose or suggest autism. Full reports are persisted to the `AiInsight` table; the API route is `app/api/children/[childId]/insights/route.ts`. Gemini is also used for AI-generated quiz questions in the training CMS. `lib/cv-ai.ts` contains four CV-specific AI functions: `generatePersonalStatement`, `rephraseBulletPoint`, `suggestSkills`, `improveDescription` -- all strength-focused, UK English, and never mentioning disabilities. The CV AI endpoint is `POST /api/cv-builder/[cvId]/ai` with rate limiting (10 requests per 5 minutes per user).
+
+**CV Builder:** An 8-step autism-friendly wizard at `/cv-builder` for building UK-format CVs. Accessible to CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE roles. Pages live in `app/(dashboard)/cv-builder/`, components in `components/cv-builder/`, API routes in `app/api/cv-builder/`. Key autism-friendly UX decisions: step-by-step wizard (not one form), visible example text (not placeholders), auto-save with 500ms debounce, skip-and-return with persisted `currentStep`, single AI suggestions (not multiple options), inline editing (not modals), plain language prompts, `prefers-reduced-motion` respected, and errors use icon+text (never colour alone). Wizard steps: (1) Personal Details, (2) Personal Statement, (3) Work Experience, (4) Education, (5) Skills, (6) Interests, (7) References, (8) Review & Download. Three templates: Accessible (single-column, 12pt, 1.5 line spacing -- recommended default), Modern (two-column with sidebar), Classic (traditional centred UK CV). Export as PDF (`@react-pdf/renderer` -- templates in `lib/cv-templates/`) or Word `.docx` (`docx` library). CAREER_DEV_OFFICER users see a "My Students" tab to view and download CVs for students in their organisation (read-only, same-org verified).
 
 **Virtual Classroom Sessions:** Org admins create sessions at `/admin/sessions`. Each session has a title, date/time, duration, platform (Zoom / Teams / Custom), host, and a list of attendees. Attendees can be selected as: all org members, specific roles, or individual users. Both the host and the org admin have full management rights over a session. Meeting links can be pasted manually or auto-generated via the Zoom or Teams API using per-org credentials stored in `OrgMeetingConfig` (configured at `/admin/settings/meetings`). Status flow: `SCHEDULED` → `IN_PROGRESS` → `COMPLETED` (or `CANCELLED`). Attendance is tracked via checkboxes on the `SessionAttendee` join model; a recording URL can be added after the session completes. Users view their upcoming and past sessions at `/sessions`, and the dashboard shows an "Upcoming Sessions" card. Data access helpers live in `lib/sessions.ts`; Zoom/Teams API integration lives in `lib/meetings.ts`. **Important:** the Prisma model is `ClassSession` (not `Session`) to avoid colliding with the NextAuth `Session` table — always use `prisma.classSession`.
 

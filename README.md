@@ -1,10 +1,22 @@
 # ASD Early Identification Training App
 
-Next.js 14 web app for caregivers and early years practitioners to complete ASD awareness training, manage child profiles, log behavioural observations, and receive AI-generated insights.
+Next.js 14 SaaS platform for ASD early identification training, child observation tracking, and careers support. Includes an AI-powered CV Builder for autistic students.
 
-**Live URL:** https://asd-training-app.vercel.app
+**Live URL:** https://asd-training-app-v2.vercel.app
 **Repo:** https://github.com/Hodgy007/asd-training-app
-**Stack:** Next.js 14 · TypeScript · Prisma · PostgreSQL (Supabase) · NextAuth v4 · Google Gemini AI · Tailwind CSS
+**Stack:** Next.js 14 · TypeScript · Prisma · PostgreSQL (Neon) · NextAuth v4 · Google Gemini AI · Tailwind CSS
+
+### Key Features
+- **Training modules** — ASD awareness and Careers CPD training with quizzes
+- **Child observations** — behavioural tracking with AI-generated insights (practitioners)
+- **CV Builder** — 8-step autism-friendly wizard with AI writing assistance, PDF + Word export, 3 templates (Accessible/Modern/Classic)
+- **Document library** — file sharing with Vercel Blob storage
+- **Virtual workshops** — Zoom/Teams integration with attendance tracking
+- **Surveys** — targeted questionnaires with AI-generated insights
+- **Multi-tenant** — organisation-scoped users, content, and reports
+- **8 roles** — Charity Admin, Charity Employee, Org Admin, Practitioner, Careers Professional, Student, Intern, Employee
+- **SSO** — Google, Azure AD, per-org SAML
+- **MFA** — TOTP enforcement for admin roles
 
 ---
 
@@ -12,11 +24,18 @@ Next.js 14 web app for caregivers and early years practitioners to complete ASD 
 
 | Variable | Notes |
 |---|---|
-| `DATABASE_URL` | Supabase pooler — port **6543** with `?pgbouncer=true` |
-| `DIRECT_URL` | Supabase direct — port **5432** (used by Prisma for migrations) |
-| `NEXTAUTH_SECRET` | JWT signing secret |
-| `NEXTAUTH_URL` | `https://asd-training-app.vercel.app` (no trailing slash) |
-| `GEMINI_API_KEY` | Google Gemini API key |
+| `DATABASE_URL` | Neon **pooler** — port **6543** with `?pgbouncer=true` |
+| `DIRECT_URL` | Neon **direct** — port **5432** (Prisma migrations only) |
+| `NEXTAUTH_SECRET` | JWT signing secret (32+ random chars) |
+| `NEXTAUTH_URL` | `https://asd-training-app-v2.vercel.app` (no trailing slash) |
+| `GEMINI_API_KEY` | Google Gemini API key (AI insights, quiz gen, CV writing) |
+| `RESEND_API_KEY` | Resend API key (forgot-password emails) |
+| `GOOGLE_CLIENT_ID` | Google OAuth (optional) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth secret |
+| `AZURE_AD_CLIENT_ID` | Azure AD (optional) |
+| `AZURE_AD_CLIENT_SECRET` | Azure AD secret |
+| `AZURE_AD_TENANT_ID` | `common` or specific tenant ID |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob (document uploads, AI thumbnails) |
 
 ---
 
@@ -35,73 +54,29 @@ Next.js 14 web app for caregivers and early years practitioners to complete ASD 
 
 ---
 
-## App Structure
+## Key Directories
 
 ```
-asd-training-app/
-├── app/
-│   ├── page.tsx                          # Root — redirects to /dashboard or /login
-│   ├── layout.tsx                        # Root layout
-│   ├── (auth)/
-│   │   ├── login/page.tsx               # Login form
-│   │   └── register/page.tsx            # Registration form
-│   ├── (dashboard)/
-│   │   ├── layout.tsx                   # Dashboard shell — sidebar + topbar
-│   │   ├── dashboard/page.tsx           # Main dashboard overview
-│   │   ├── training/
-│   │   │   ├── page.tsx                 # Training module listing
-│   │   │   ├── [moduleId]/page.tsx      # Lesson listing for a module
-│   │   │   └── [moduleId]/[lessonId]/page.tsx  # Lesson viewer + quiz
-│   │   ├── children/
-│   │   │   ├── page.tsx                 # Child profile listing
-│   │   │   └── [childId]/page.tsx       # Child detail + observations + AI insights
-│   │   └── reports/page.tsx             # Reports + Recharts visualisations
-│   └── api/
-│       ├── auth/[...nextauth]/route.ts  # NextAuth handler
-│       ├── auth/register/route.ts       # User registration
-│       ├── children/route.ts            # GET list / POST create child
-│       ├── children/[childId]/route.ts  # GET / PATCH / DELETE child
-│       ├── children/[childId]/observations/route.ts
-│       ├── children/[childId]/observations/[observationId]/route.ts
-│       ├── children/[childId]/insights/route.ts  # Triggers Gemini AI report
-│       └── training/progress/route.ts
-├── components/
-│   ├── layout/sidebar.tsx + topbar.tsx
-│   ├── training/module-card, video-player, quiz-component
-│   ├── children/child-card, add-child-form, observation-form
-│   ├── observations/observation-table, domain-chart, weekly-summary
-│   ├── ai/insights-panel, generate-report-btn
-│   ├── providers/session-provider.tsx   # NextAuth SessionProvider wrapper
-│   └── ui/button, card, badge, progress, modal, disclaimer
-├── lib/
-│   ├── auth.ts                          # NextAuth options + PrismaAdapter
-│   ├── prisma.ts                        # Prisma client singleton
-│   ├── gemini.ts                        # Gemini AI functions (summary, patterns, guidance, report)
-│   ├── constants.ts                     # Behaviour lists per domain
-│   ├── observations.ts                  # Observation helpers
-│   └── training-data.ts                 # Static training content
-├── prisma/
-│   ├── schema.prisma                    # DB models (User, Child, Observation, AiInsight, TrainingProgress)
-│   └── seed.ts                          # Seeds training content + demo user
-└── types/index.ts
+app/(dashboard)/cv-builder/     # CV Builder pages (wizard, preview, student view)
+app/(dashboard)/training/       # Training module pages
+app/(dashboard)/children/       # Child observation pages (practitioners only)
+app/(super-admin)/              # Charity admin pages
+app/(org-admin)/                # Org admin pages
+app/api/cv-builder/             # CV Builder API (CRUD, AI, PDF, DOCX, students)
+app/api/children/               # Children + observations + AI insights API
+app/api/training/               # Training progress API
+components/cv-builder/          # CV Builder components (wizard, steps, shared)
+lib/cv-ai.ts                    # CV AI functions (statement, rephrase, skills, improve)
+lib/cv-templates/               # PDF templates (accessible, modern, classic)
+lib/gemini.ts                   # Observation AI functions
+lib/rbac.ts                     # Role-based access control helpers
+prisma/schema.prisma            # All database models (27+)
 ```
-
-### Database Models
-- **User** — email, bcrypt password, name, role (CAREGIVER | ADMIN)
-- **Child** — name, DOB, notes, linked to User
-- **Observation** — behaviourType, domain, frequency, context, notes, linked to Child
-- **TrainingProgress** — moduleId, lessonId, score, completed, linked to User
-- **AiInsight** — summary, patterns, recommendations, disclaimer, linked to Child
-- **Account / Session / VerificationToken** — NextAuth adapter tables
 
 ### AI Integration
-Uses `gemini-1.5-flash`. Four functions in `lib/gemini.ts`:
-1. `generateObservationSummary` — carer-friendly 2–3 sentence summary
-2. `detectPatterns` — bulleted domain pattern list
-3. `generateActionGuidance` — 3–4 practical next steps
-4. `generateInsightReport` — full report saved to AiInsight table
-
-All prompts explicitly instruct the model: **never diagnose, never suggest autism**.
+Uses `gemini-2.5-flash` via `@google/genai`. Two AI modules:
+- **`lib/gemini.ts`** — observation insights (summary, patterns, guidance, full report). All prompts: never diagnose, never suggest autism.
+- **`lib/cv-ai.ts`** — CV writing assistance (personal statements, bullet point rephrasing, skill suggestions, description improvement). All prompts: strength-focused, UK English, never mention disabilities.
 
 ---
 
