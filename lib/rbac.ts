@@ -113,6 +113,12 @@ export function canCreateSessions(session: Session | null): boolean {
   return hasRole(session, 'ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER')
 }
 
+/** Roles that can access the CV Builder feature */
+export function canAccessCVBuilder(session: Session | null): boolean {
+  if (!session?.user?.role) return false
+  return ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE'].includes(session.user.role)
+}
+
 // ─── Permission checks ─────────────────────────────────────────────────────────
 
 /**

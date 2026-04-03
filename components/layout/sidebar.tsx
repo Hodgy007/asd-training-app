@@ -14,6 +14,7 @@ import {
   Settings,
   HelpCircle,
   FolderOpen,
+  FileText,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -43,6 +44,7 @@ function getNavItems(
     for (const program of programs) {
       items.push({ href: `/training/${program.id}`, label: program.name, icon: BookOpen })
     }
+    items.push({ href: '/cv-builder', label: 'CV Builder', icon: FileText })
   }
 
   // Show each document collection directly in the nav

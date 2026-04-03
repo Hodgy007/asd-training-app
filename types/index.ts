@@ -220,3 +220,72 @@ declare module 'next-auth/jwt' {
     charityPermissions: string[]
   }
 }
+
+// CV Builder types
+export interface CVData {
+  id: string
+  userId: string
+  title: string
+  template: 'CLASSIC' | 'MODERN' | 'ACCESSIBLE'
+  status: 'DRAFT' | 'COMPLETE'
+  currentStep: number
+  fullName: string | null
+  email: string | null
+  phone: string | null
+  city: string | null
+  postcode: string | null
+  linkedIn: string | null
+  personalStatement: string | null
+  interests: string | null
+  refsAvailableOnRequest: boolean
+  createdAt: string
+  updatedAt: string
+  workExperiences: CVWorkExperienceData[]
+  educationEntries: CVEducationData[]
+  skills: CVSkillData[]
+  references: CVReferenceData[]
+}
+
+export interface CVWorkExperienceData {
+  id: string
+  cvId: string
+  jobTitle: string
+  employer: string
+  startDate: string
+  endDate: string | null
+  isCurrent: boolean
+  description: string | null
+  order: number
+}
+
+export interface CVEducationData {
+  id: string
+  cvId: string
+  institution: string
+  qualification: string
+  grade: string | null
+  startDate: string
+  endDate: string | null
+  description: string | null
+  order: number
+}
+
+export interface CVSkillData {
+  id: string
+  cvId: string
+  name: string
+  category: string | null
+  order: number
+}
+
+export interface CVReferenceData {
+  id: string
+  cvId: string
+  name: string
+  jobTitle: string | null
+  organisation: string | null
+  email: string | null
+  phone: string | null
+  relationship: string | null
+  order: number
+}
