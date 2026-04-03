@@ -204,6 +204,7 @@ declare module 'next-auth' {
       effectivePrograms: { id: string; name: string }[]
       charityPermissions: string[]
       cvBuilderEnabled: boolean
+      careersAdvisorEnabled: boolean
     }
   }
 }
@@ -220,7 +221,35 @@ declare module 'next-auth/jwt' {
     effectivePrograms: { id: string; name: string }[]
     charityPermissions: string[]
     cvBuilderEnabled: boolean
+    careersAdvisorEnabled: boolean
   }
+}
+
+// Careers Advisor types
+export interface AdvisorAnswers {
+  interests?: string[]
+  strengths?: string[]
+  environment?: string[]
+  concerns?: string[]
+  concernsOther?: string
+  experience?: string
+  stage?: string
+  communication?: string[]
+  sensory?: string[]
+  values?: string[]
+  other?: string
+}
+
+export interface AdvisorCareerSuggestion {
+  name: string
+  explanation: string
+}
+
+export interface AdvisorReport {
+  strengths: string
+  careers: AdvisorCareerSuggestion[]
+  nextSteps: string[]
+  workplaceSupport: string
 }
 
 // CV Builder types

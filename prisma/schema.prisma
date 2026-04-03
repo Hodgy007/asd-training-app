@@ -38,7 +38,8 @@ model User {
   uploadedDocuments  LibraryDocument[]      @relation("UploadedDocuments")
   documentEvents     LibraryDocumentEvent[] @relation("DocumentEvents")
   integrationKeys    IntegrationApiKey[]    @relation("IntegrationKeys")
-  cvs                CV[]
+  cvs                    CV[]
+  careerAdvisorSessions  CareerAdvisorSession[]
 
   @@index([organisationId])
 }
@@ -84,8 +85,9 @@ model Organisation {
   active            Boolean  @default(true)
   allowedProgramIds String[]
   allowedRoles      String[]
-  cvBuilderEnabled  Boolean  @default(true)
-  logoUrl           String?
+  cvBuilderEnabled      Boolean  @default(true)
+  careersAdvisorEnabled Boolean  @default(true)
+  logoUrl               String?
   contactName       String?
   contactEmail      String?
   contactPhone      String?
@@ -662,4 +664,26 @@ model CVReference {
   cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
 
   @@index([cvId])
+}
+
+// ─── Careers Advisor ─────────────────────────────────────────────────────────
+
+enum AdvisorSessionStatus {
+  IN_PROGRESS
+  COMPLETE
+}
+
+model CareerAdvisorSession {
+  id          String               @id @default(cuid())
+  userId      String
+  status      AdvisorSessionStatus @default(IN_PROGRESS)
+  currentStep Int                  @default(0)
+  answers     Json?
+  report      Json?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

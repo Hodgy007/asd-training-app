@@ -89,5 +89,18 @@ export async function GET() {
     byTemplate: Object.fromEntries(cvByTemplate.map((t) => [t.template, t._count.id])),
   }
 
-  return NextResponse.json({ report, moduleMeta, cvStats })
+  // ── Careers Advisor stats ──
+  const [advisorTotal, advisorByStatus, advisorRecent] = await Promise.all([
+    prisma.careerAdvisorSession.count(),
+    prisma.careerAdvisorSession.groupBy({ by: ['status'], _count: { id: true } }),
+    prisma.careerAdvisorSession.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+  ])
+
+  const advisorStats = {
+    total: advisorTotal,
+    byStatus: Object.fromEntries(advisorByStatus.map((s) => [s.status, s._count.id])),
+    recentLast30Days: advisorRecent,
+  }
+
+  return NextResponse.json({ report, moduleMeta, cvStats, advisorStats })
 }

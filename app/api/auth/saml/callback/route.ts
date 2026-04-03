@@ -120,10 +120,11 @@ export async function POST(req: NextRequest) {
     const orgForFeatures = user.organisationId
       ? await prisma.organisation.findUnique({
           where: { id: user.organisationId },
-          select: { cvBuilderEnabled: true },
+          select: { cvBuilderEnabled: true, careersAdvisorEnabled: true },
         })
       : null
     const cvBuilderEnabled = orgForFeatures?.cvBuilderEnabled ?? true
+    const careersAdvisorEnabled = orgForFeatures?.careersAdvisorEnabled ?? true
 
     const token = await encode({
       token: {
@@ -139,6 +140,7 @@ export async function POST(req: NextRequest) {
         effectivePrograms,
         charityPermissions: user.charityPermissions ?? [],
         cvBuilderEnabled,
+        careersAdvisorEnabled,
       },
       secret: process.env.NEXTAUTH_SECRET!,
     })

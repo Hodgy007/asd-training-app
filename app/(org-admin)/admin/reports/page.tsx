@@ -28,11 +28,18 @@ interface CvStats {
   byTemplate: Record<string, number>
 }
 
+interface AdvisorStats {
+  total: number
+  byStatus: Record<string, number>
+  recentLast30Days: number
+}
+
 interface ReportData {
   totalUsers: number
   modules: ModuleStat[]
   users: UserSummary[]
   cvStats?: CvStats
+  advisorStats?: AdvisorStats
 }
 
 // Library report types
@@ -471,6 +478,49 @@ export default function OrgReportsPage() {
         <div className="card text-center py-10 text-slate-400 dark:text-slate-500">
           <FileCheck className="h-8 w-8 mx-auto mb-2 opacity-30" />
           No CV data available.
+        </div>
+      )}
+
+      {/* ── Careers Advisor Reports ── */}
+      <div className="pt-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          Careers Advisor Reports
+        </h2>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+          Careers advisor session activity for your organisation.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-10 text-slate-400">
+          <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
+          Loading advisor reports...
+        </div>
+      ) : data?.advisorStats ? (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="card text-center">
+            <BarChart3 className="h-5 w-5 text-indigo-500 mx-auto mb-1" />
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.advisorStats.total}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Total Sessions</p>
+          </div>
+          <div className="card text-center">
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.advisorStats.byStatus['COMPLETE'] ?? 0}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Complete</p>
+          </div>
+          <div className="card text-center">
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.advisorStats.byStatus['IN_PROGRESS'] ?? 0}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">In Progress</p>
+          </div>
+          <div className="card text-center">
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.advisorStats.recentLast30Days}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Last 30 days</p>
+          </div>
+        </div>
+      ) : (
+        <div className="card text-center py-10 text-slate-400 dark:text-slate-500">
+          <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-30" />
+          No careers advisor data available.
         </div>
       )}
     </div>

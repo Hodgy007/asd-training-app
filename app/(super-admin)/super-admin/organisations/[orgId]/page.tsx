@@ -54,6 +54,7 @@ interface OrgDetail {
   assignedCollectionIds: string[]
   assignedSurveyIds: string[]
   cvBuilderEnabled: boolean
+  careersAdvisorEnabled: boolean
 }
 
 interface ProgramSummary {
@@ -132,6 +133,7 @@ export default function OrgDetailPage() {
   const [editCollectionIds, setEditCollectionIds] = useState<string[]>([])
   const [editSurveyIds, setEditSurveyIds] = useState<string[]>([])
   const [editCvBuilder, setEditCvBuilder] = useState(true)
+  const [editCareersAdvisor, setEditCareersAdvisor] = useState(true)
   const [saving, setSaving] = useState(false)
 
   // Add org admin form
@@ -173,6 +175,7 @@ export default function OrgDetailPage() {
         setEditCollectionIds(data.assignedCollectionIds || [])
         setEditSurveyIds(data.assignedSurveyIds || [])
         setEditCvBuilder(data.cvBuilderEnabled ?? true)
+        setEditCareersAdvisor(data.careersAdvisorEnabled ?? true)
       }
     } finally {
       setLoading(false)
@@ -255,6 +258,7 @@ export default function OrgDetailPage() {
           assignedCollectionIds: editCollectionIds,
           assignedSurveyIds: editSurveyIds,
           cvBuilderEnabled: editCvBuilder,
+          careersAdvisorEnabled: editCareersAdvisor,
         }),
       })
       if (res.ok) {
@@ -502,6 +506,15 @@ export default function OrgDetailPage() {
                 className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm text-slate-700 dark:text-slate-300">CV Builder</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={editCareersAdvisor}
+                onChange={(e) => setEditCareersAdvisor(e.target.checked)}
+                className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300">Careers Advisor</span>
             </label>
           </div>
 

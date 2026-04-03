@@ -79,6 +79,19 @@ export async function GET() {
     byTemplate: Object.fromEntries(cvByTemplate.map((t) => [t.template, t._count.id])),
   }
 
+  // ── Careers Advisor stats (scoped to org) ──
+  const [advisorTotal, advisorByStatus, advisorRecent] = await Promise.all([
+    prisma.careerAdvisorSession.count({ where: { userId: { in: orgUserIds } } }),
+    prisma.careerAdvisorSession.groupBy({ by: ['status'], _count: { id: true }, where: { userId: { in: orgUserIds } } }),
+    prisma.careerAdvisorSession.count({ where: { userId: { in: orgUserIds }, createdAt: { gte: thirtyDaysAgo } } }),
+  ])
+
+  const advisorStats = {
+    total: advisorTotal,
+    byStatus: Object.fromEntries(advisorByStatus.map((s) => [s.status, s._count.id])),
+    recentLast30Days: advisorRecent,
+  }
+
   return NextResponse.json({
     totalUsers: users.length,
     modules: moduleStats,
@@ -88,5 +101,6 @@ export async function GET() {
       totalCompleted: u.trainingProgress.length,
     })),
     cvStats,
+    advisorStats,
   })
 }

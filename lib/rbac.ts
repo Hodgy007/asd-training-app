@@ -121,6 +121,14 @@ export function canAccessCVBuilder(session: Session | null): boolean {
   return hasRole && orgEnabled
 }
 
+/** Roles that can access the Careers Advisor feature (also requires org-level flag to be enabled) */
+export function canAccessCareersAdvisor(session: Session | null): boolean {
+  if (!session?.user?.role) return false
+  const hasRole = ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE'].includes(session.user.role)
+  const orgEnabled = (session.user as { careersAdvisorEnabled?: boolean }).careersAdvisorEnabled !== false
+  return hasRole && orgEnabled
+}
+
 // ─── Permission checks ─────────────────────────────────────────────────────────
 
 /**

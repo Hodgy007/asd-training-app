@@ -15,6 +15,7 @@ import {
   HelpCircle,
   FolderOpen,
   FileText,
+  Compass,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -29,6 +30,7 @@ function getNavItems(
   programs: { id: string; name: string }[] = [],
   collections: { id: string; title: string }[] = [],
   cvBuilderEnabled = true,
+  careersAdvisorEnabled = true,
 ): NavItem[] {
   const items: NavItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -47,6 +49,9 @@ function getNavItems(
     }
     if (cvBuilderEnabled) {
       items.push({ href: '/cv-builder', label: 'CV Builder', icon: FileText })
+    }
+    if (careersAdvisorEnabled) {
+      items.push({ href: '/careers-advisor', label: 'Careers Advisor', icon: Compass })
     }
   }
 
@@ -90,6 +95,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
   const role = session?.user?.role
   const programs = session?.user?.effectivePrograms ?? []
   const cvBuilderEnabled = (session?.user as { cvBuilderEnabled?: boolean })?.cvBuilderEnabled !== false
+  const careersAdvisorEnabled = (session?.user as { careersAdvisorEnabled?: boolean })?.careersAdvisorEnabled !== false
   const [collections, setCollections] = useState<{ id: string; title: string }[]>([])
 
   useEffect(() => {
@@ -99,7 +105,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
       .catch(() => {})
   }, [])
 
-  const navItems = getNavItems(role, programs, collections, cvBuilderEnabled)
+  const navItems = getNavItems(role, programs, collections, cvBuilderEnabled, careersAdvisorEnabled)
 
   return (
     <div className="flex flex-col h-full bg-orange-50 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
