@@ -9,7 +9,7 @@ Next.js 14 SaaS platform for ASD early identification training, child observatio
 ### Key Features
 - **Training modules** — ASD awareness and Careers CPD training with quizzes
 - **Child observations** — behavioural tracking with AI-generated insights (practitioners)
-- **CV Builder** — 8-step autism-friendly wizard with AI writing assistance, PDF + Word export, 3 templates (Accessible/Modern/Classic)
+- **CV Builder** — 8-step autism-friendly wizard with AI writing assistance, PDF + Word export, 3 templates (Accessible/Modern/Classic), career professional student view, CV stats in admin reports
 - **Document library** — file sharing with Vercel Blob storage
 - **Virtual workshops** — Zoom/Teams integration with attendance tracking
 - **Surveys** — targeted questionnaires with AI-generated insights
