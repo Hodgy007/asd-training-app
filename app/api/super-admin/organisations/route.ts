@@ -24,7 +24,7 @@ const createSchema = z.object({
   county: z.string().max(100).optional(),
   postcode: z.string().max(20).optional(),
   country: z.string().max(100).optional(),
-  organisationType: z.enum(['EDUCATION', 'BUSINESS']).optional(),
+  organisationType: z.enum(['SCHOOL', 'COLLEGE', 'ACADEMY', 'UNIVERSITY', 'EMPLOYER', 'EDUCATION', 'BUSINESS']).optional(),
 })
 
 export async function GET() {

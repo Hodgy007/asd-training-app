@@ -45,6 +45,30 @@ export function getRoleLabel(role: string): string {
   return ROLE_LABELS[role] ?? role
 }
 
+// ─── Organisation type labels & helpers ────────────────────────────────────────
+
+export const ORG_TYPE_LABELS: Record<string, string> = {
+  SCHOOL: 'School',
+  COLLEGE: 'College',
+  ACADEMY: 'Academy',
+  UNIVERSITY: 'University',
+  EMPLOYER: 'Employer',
+  EDUCATION: 'Education (legacy)',
+  BUSINESS: 'Business (legacy)',
+}
+
+/** All org types available for new organisations (excludes legacy values). */
+export const ORG_TYPES = ['SCHOOL', 'COLLEGE', 'ACADEMY', 'UNIVERSITY', 'EMPLOYER'] as const
+export type OrgType = (typeof ORG_TYPES)[number]
+
+/** Education-category org types — used to determine default self-registration role. */
+const EDUCATION_ORG_TYPES = new Set<string>(['SCHOOL', 'COLLEGE', 'ACADEMY', 'UNIVERSITY', 'EDUCATION'])
+
+/** Returns true if the org type is an education category (School, College, Academy, University, or legacy Education). */
+export function isEducationType(orgType: string): boolean {
+  return EDUCATION_ORG_TYPES.has(orgType)
+}
+
 // ─── Role checks ───────────────────────────────────────────────────────────────
 
 /**

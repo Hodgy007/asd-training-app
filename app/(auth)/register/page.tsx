@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, AlertCircle, CheckCircle, ChevronDown } from 'lucide-react'
-
-type OrgType = 'EDUCATION' | 'BUSINESS'
+import { isEducationType } from '@/lib/rbac'
 
 interface OrgOption {
   id: string
   name: string
-  organisationType: OrgType
+  organisationType: string
 }
 
 const EDUCATION_ROLES = [
@@ -83,7 +82,7 @@ export default function RegisterPage() {
           email: form.email,
           password: form.password,
           organisationId: form.organisationId,
-          educationRole: selectedOrg?.organisationType === 'EDUCATION' ? educationRole : undefined,
+          educationRole: selectedOrg && isEducationType(selectedOrg.organisationType) ? educationRole : undefined,
 
         }),
       })
@@ -173,7 +172,7 @@ export default function RegisterPage() {
               const selectedOrg = orgs.find((o) => o.id === form.organisationId)
               if (!selectedOrg) return null
 
-              if (selectedOrg.organisationType === 'EDUCATION') {
+              if (isEducationType(selectedOrg.organisationType)) {
                 return (
                   <div>
                     <label className="label mb-2">I am a…</label>

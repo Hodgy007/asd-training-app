@@ -451,8 +451,13 @@ enum ProgramStatus {
 }
 
 enum OrganisationType {
-  EDUCATION
-  BUSINESS
+  SCHOOL
+  COLLEGE
+  ACADEMY
+  UNIVERSITY
+  EMPLOYER
+  EDUCATION   // legacy — kept for existing rows
+  BUSINESS    // legacy — kept for existing rows
 }
 
 enum Role {

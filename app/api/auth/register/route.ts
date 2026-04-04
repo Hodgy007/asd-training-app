@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { validatePassword } from '@/lib/password-validation'
+import { isEducationType } from '@/lib/rbac'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -52,12 +53,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Selected organisation not found.' }, { status: 400 })
       }
       resolvedOrgId = org.id
-      if (org.organisationType === 'EDUCATION') {
+      if (isEducationType(org.organisationType)) {
         if (educationRole === 'CAREGIVER') defaultRole = 'CAREGIVER'
         else if (educationRole === 'CAREER_DEV_OFFICER') defaultRole = 'CAREER_DEV_OFFICER'
         else defaultRole = 'STUDENT'
       } else {
-        // BUSINESS
+        // Employer / Business
         defaultRole = 'EMPLOYEE'
       }
     }
