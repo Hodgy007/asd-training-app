@@ -355,10 +355,7 @@ function LoginForm() {
 
           <div className="mt-6 pt-5 border-t border-calm-200 text-center">
             <p className="text-sm text-slate-500">
-              Don&apos;t have an account?{' '}
-              <Link href="/register" className="font-bold text-primary-500 hover:text-primary-600">
-                Create one here
-              </Link>
+              Need an account? Contact your organisation administrator.
             </p>
           </div>
 

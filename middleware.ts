@@ -1,39 +1,11 @@
 // middleware.ts
 import { getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
-import { rateLimit } from '@/lib/rate-limit'
 
-const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/privacy', '/terms', '/api/auth']
-
-// Rate limit config: { path-prefix: [limit, windowMs] }
-const RATE_LIMITS: Record<string, [number, number]> = {
-  '/api/auth/callback/credentials': [10, 15 * 60 * 1000], // 10 per 15min
-  '/api/auth/register': [5, 15 * 60 * 1000],               // 5 per 15min
-  '/api/auth/forgot-password': [3, 15 * 60 * 1000],         // 3 per 15min
-  '/api/auth/reset-password': [5, 15 * 60 * 1000],          // 5 per 15min
-  '/api/auth/mfa/verify': [10, 15 * 60 * 1000],             // 10 per 15min
-}
+const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/privacy', '/terms', '/api/auth']
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
-
-  // Rate limiting on auth endpoints (POST only)
-  if (req.method === 'POST') {
-    for (const [path, [limit, windowMs]] of Object.entries(RATE_LIMITS)) {
-      if (pathname.startsWith(path)) {
-        const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-        const key = `${ip}:${path}`
-        const result = rateLimit(key, limit, windowMs)
-        if (!result.success) {
-          return NextResponse.json(
-            { error: 'Too many requests. Please try again later.' },
-            { status: 429, headers: { 'Retry-After': '900' } }
-          )
-        }
-        break
-      }
-    }
-  }
 
   // Allow public paths
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
