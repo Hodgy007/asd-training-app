@@ -5,18 +5,12 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, AlertCircle, CheckCircle, ChevronDown } from 'lucide-react'
 
-type OrgType = 'EDUCATION' | 'BUSINESS' | 'OTHER'
+type OrgType = 'EDUCATION' | 'BUSINESS'
 
 interface OrgOption {
   id: string
   name: string
   organisationType: OrgType
-}
-
-// For non-education orgs the role is fixed; education orgs let the user choose
-const ORG_TYPE_FIXED_ROLE: Partial<Record<OrgType, { label: string; description: string }>> = {
-  BUSINESS: { label: 'Employee', description: 'You will be registered as an Employee.' },
-  OTHER:    { label: 'Practitioner', description: 'You will be registered as a Practitioner.' },
 }
 
 const EDUCATION_ROLES = [
@@ -212,12 +206,12 @@ export default function RegisterPage() {
                 )
               }
 
-              const fixedRole = ORG_TYPE_FIXED_ROLE[selectedOrg.organisationType]
-              return fixedRole ? (
+              // BUSINESS — auto-assign Employee
+              return (
                 <p className="text-xs text-slate-500 bg-calm-50 dark:bg-slate-700/50 border border-calm-200 dark:border-slate-600 rounded-lg px-3 py-2">
-                  <span className="font-medium text-slate-700 dark:text-slate-300">{fixedRole.description}</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">You will be registered as an Employee.</span>
                 </p>
-              ) : null
+              )
             })()}
 
             {/* Full name */}

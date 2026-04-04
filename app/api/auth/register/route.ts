@@ -53,11 +53,11 @@ export async function POST(req: NextRequest) {
       }
       resolvedOrgId = org.id
       if (org.organisationType === 'EDUCATION') {
-        // Education orgs allow the user to choose their role
         if (educationRole === 'CAREGIVER') defaultRole = 'CAREGIVER'
         else if (educationRole === 'CAREER_DEV_OFFICER') defaultRole = 'CAREER_DEV_OFFICER'
         else defaultRole = 'STUDENT'
-      } else if (org.organisationType === 'BUSINESS') {
+      } else {
+        // BUSINESS
         defaultRole = 'EMPLOYEE'
       }
     }

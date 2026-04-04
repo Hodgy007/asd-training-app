@@ -84,7 +84,7 @@ model Organisation {
   name              String
   slug              String           @unique
   active            Boolean          @default(true)
-  organisationType  OrganisationType @default(OTHER)
+  organisationType  OrganisationType @default(BUSINESS)
   allowedProgramIds String[]
   allowedRoles      String[]
   cvBuilderEnabled      Boolean  @default(true)
@@ -453,7 +453,6 @@ enum ProgramStatus {
 enum OrganisationType {
   EDUCATION
   BUSINESS
-  OTHER
 }
 
 enum Role {

@@ -56,7 +56,7 @@ interface OrgDetail {
   assignedSurveyIds: string[]
   cvBuilderEnabled: boolean
   careersAdvisorEnabled: boolean
-  organisationType: 'EDUCATION' | 'BUSINESS' | 'OTHER'
+  organisationType: 'EDUCATION' | 'BUSINESS'
 }
 
 interface ProgramSummary {
@@ -136,7 +136,7 @@ export default function OrgDetailPage() {
   const [editSurveyIds, setEditSurveyIds] = useState<string[]>([])
   const [editCvBuilder, setEditCvBuilder] = useState(true)
   const [editCareersAdvisor, setEditCareersAdvisor] = useState(true)
-  const [editOrgType, setEditOrgType] = useState<'EDUCATION' | 'BUSINESS' | 'OTHER'>('OTHER')
+  const [editOrgType, setEditOrgType] = useState<'EDUCATION' | 'BUSINESS'>('BUSINESS')
   const [saving, setSaving] = useState(false)
 
   // Add org admin form
@@ -179,7 +179,7 @@ export default function OrgDetailPage() {
         setEditSurveyIds(data.assignedSurveyIds || [])
         setEditCvBuilder(data.cvBuilderEnabled ?? true)
         setEditCareersAdvisor(data.careersAdvisorEnabled ?? true)
-        setEditOrgType(data.organisationType ?? 'OTHER')
+        setEditOrgType(data.organisationType ?? 'BUSINESS')
       }
     } finally {
       setLoading(false)
@@ -507,12 +507,11 @@ export default function OrgDetailPage() {
             <div className="relative w-full sm:w-64">
               <select
                 value={editOrgType}
-                onChange={(e) => setEditOrgType(e.target.value as 'EDUCATION' | 'BUSINESS' | 'OTHER')}
+                onChange={(e) => setEditOrgType(e.target.value as 'EDUCATION' | 'BUSINESS')}
                 className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:border-slate-600 text-slate-700 dark:text-slate-200"
               >
-                <option value="EDUCATION">Education (School / College / University / Academy) → Student</option>
-                <option value="BUSINESS">Business / Employer → Employee</option>
-                <option value="OTHER">Other / Charity / Healthcare → Practitioner</option>
+                <option value="EDUCATION">Education (School / College / University / Academy)</option>
+                <option value="BUSINESS">Business / Employer</option>
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
             </div>
