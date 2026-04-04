@@ -174,7 +174,7 @@ export function ImpactReachModel({ orgId }: ImpactReachModelProps) {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatCard label="Total users" value={fmt(stats.totalUsers)} />
               <StatCard label="CVs built" value={fmt(stats.cvsBuilt)} sub={`${stats.cvsComplete} complete`} />
-              <StatCard label="Careers advisor reports" value={fmt(stats.advisorReports)} sub={`${stats.advisorComplete} complete`} highlight="green" />
+              <StatCard label="Careers advisor reports" value={fmt(stats.advisorReports)} sub={`${stats.advisorComplete} complete`} />
               <StatCard label="Training completions" value={fmt(stats.trainingCompletions)} />
             </div>
             {/* Row 2 */}
