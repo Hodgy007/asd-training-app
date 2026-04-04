@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { validatePassword } from '@/lib/password-validation'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { changePasswordLimiter, getClientIp } from '@/lib/rate-limit'
 
 const schema = z.object({
   currentPassword: z.string().optional(),
@@ -12,6 +13,15 @@ const schema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req)
+  const rateLimit = changePasswordLimiter.check(ip)
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rateLimit.retryAfterMs / 1000)) } }
+    )
+  }
+
   const session = await getServerSession(authOptions)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

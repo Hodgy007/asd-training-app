@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { TOTP } from 'otpauth'
+import { mfaVerifyLimiter, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req)
+  const rateLimit = mfaVerifyLimiter.check(ip)
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: 'Too many attempts. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rateLimit.retryAfterMs / 1000)) } }
+    )
+  }
+
   const { userId, code } = await req.json()
   if (!userId || !code) {
     return NextResponse.json({ error: 'userId and code are required' }, { status: 400 })
