@@ -13,11 +13,17 @@ interface OrgOption {
   organisationType: OrgType
 }
 
-const ORG_TYPE_ROLE: Record<OrgType, { role: string; label: string; description: string }> = {
-  EDUCATION: { role: 'Student', label: 'Student', description: 'You will be registered as a Student.' },
-  BUSINESS:  { role: 'Employee', label: 'Employee', description: 'You will be registered as an Employee.' },
-  OTHER:     { role: 'Practitioner', label: 'Practitioner', description: 'You will be registered as a Practitioner.' },
+// For non-education orgs the role is fixed; education orgs let the user choose
+const ORG_TYPE_FIXED_ROLE: Partial<Record<OrgType, { label: string; description: string }>> = {
+  BUSINESS: { label: 'Employee', description: 'You will be registered as an Employee.' },
+  OTHER:    { label: 'Practitioner', description: 'You will be registered as a Practitioner.' },
 }
+
+const EDUCATION_ROLES = [
+  { value: 'STUDENT',             label: 'Student',              description: 'I am a student at this school / college / university.' },
+  { value: 'CAREGIVER',           label: 'Practitioner',         description: 'I am a teacher, SENCO, or support professional.' },
+  { value: 'CAREER_DEV_OFFICER',  label: 'Careers Professional', description: 'I am a careers leader or careers adviser.' },
+]
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -30,6 +36,7 @@ export default function RegisterPage() {
   })
   const [orgs, setOrgs] = useState<OrgOption[]>([])
   const [orgsLoading, setOrgsLoading] = useState(true)
+  const [educationRole, setEducationRole] = useState<'STUDENT' | 'CAREGIVER' | 'CAREER_DEV_OFFICER'>('STUDENT')
   const [showPassword, setShowPassword] = useState(false)
   const [privacyConsent, setPrivacyConsent] = useState(false)
   const [error, setError] = useState('')
@@ -71,6 +78,7 @@ export default function RegisterPage() {
     }
 
     setLoading(true)
+    const selectedOrg = orgs.find((o) => o.id === form.organisationId)
 
     try {
       const res = await fetch('/api/auth/register', {
@@ -81,6 +89,8 @@ export default function RegisterPage() {
           email: form.email,
           password: form.password,
           organisationId: form.organisationId,
+          educationRole: selectedOrg?.organisationType === 'EDUCATION' ? educationRole : undefined,
+
         }),
       })
 
@@ -164,13 +174,48 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Auto-assigned role indicator */}
+            {/* Role — auto-assigned or picker for education orgs */}
             {form.organisationId && (() => {
               const selectedOrg = orgs.find((o) => o.id === form.organisationId)
-              const roleInfo = selectedOrg ? ORG_TYPE_ROLE[selectedOrg.organisationType] : null
-              return roleInfo ? (
-                <p className="text-xs text-slate-500 bg-calm-50 border border-calm-200 rounded-lg px-3 py-2">
-                  <span className="font-medium text-slate-700">{roleInfo.description}</span>
+              if (!selectedOrg) return null
+
+              if (selectedOrg.organisationType === 'EDUCATION') {
+                return (
+                  <div>
+                    <label className="label mb-2">I am a…</label>
+                    <div className="space-y-2">
+                      {EDUCATION_ROLES.map((option) => (
+                        <label
+                          key={option.value}
+                          className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                            educationRole === option.value
+                              ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                              : 'border-calm-200 hover:border-calm-300 dark:border-slate-600'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="educationRole"
+                            value={option.value}
+                            checked={educationRole === option.value}
+                            onChange={() => setEducationRole(option.value as 'STUDENT' | 'CAREGIVER' | 'CAREER_DEV_OFFICER')}
+                            className="mt-0.5 accent-primary-500"
+                          />
+                          <div>
+                            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{option.label}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">{option.description}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+
+              const fixedRole = ORG_TYPE_FIXED_ROLE[selectedOrg.organisationType]
+              return fixedRole ? (
+                <p className="text-xs text-slate-500 bg-calm-50 dark:bg-slate-700/50 border border-calm-200 dark:border-slate-600 rounded-lg px-3 py-2">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{fixedRole.description}</span>
                 </p>
               ) : null
             })()}

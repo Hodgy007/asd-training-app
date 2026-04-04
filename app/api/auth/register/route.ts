@@ -9,6 +9,8 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1).max(128),
   organisationId: z.string().cuid().optional(),
+  // Only honoured when the org is EDUCATION type; ignored otherwise
+  educationRole: z.enum(['STUDENT', 'CAREGIVER', 'CAREER_DEV_OFFICER']).optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { name, email, password, organisationId } = parsed.data
+    const { name, email, password, organisationId, educationRole } = parsed.data
 
     const passwordCheck = validatePassword(password)
     if (!passwordCheck.valid) {
@@ -40,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     // Validate the selected organisation and derive default role from its type
     let resolvedOrgId: string | null = null
-    let defaultRole: 'STUDENT' | 'EMPLOYEE' | 'CAREGIVER' = 'CAREGIVER'
+    let defaultRole: 'STUDENT' | 'EMPLOYEE' | 'CAREGIVER' | 'CAREER_DEV_OFFICER' = 'CAREGIVER'
     if (organisationId) {
       const org = await prisma.organisation.findUnique({
         where: { id: organisationId },
@@ -50,8 +52,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Selected organisation not found.' }, { status: 400 })
       }
       resolvedOrgId = org.id
-      if (org.organisationType === 'EDUCATION') defaultRole = 'STUDENT'
-      else if (org.organisationType === 'BUSINESS') defaultRole = 'EMPLOYEE'
+      if (org.organisationType === 'EDUCATION') {
+        // Education orgs allow the user to choose their role
+        if (educationRole === 'CAREGIVER') defaultRole = 'CAREGIVER'
+        else if (educationRole === 'CAREER_DEV_OFFICER') defaultRole = 'CAREER_DEV_OFFICER'
+        else defaultRole = 'STUDENT'
+      } else if (org.organisationType === 'BUSINESS') {
+        defaultRole = 'EMPLOYEE'
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 12)
