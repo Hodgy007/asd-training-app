@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Megaphone,
   BarChart3,
+  TrendingUp,
   LogOut,
   X,
   Crown,
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone, permission: CHARITY_PERMISSIONS.MANAGE_ANNOUNCEMENTS },
   { href: '/super-admin/sessions', label: 'Workshops', icon: Calendar, permission: CHARITY_PERMISSIONS.MANAGE_SESSIONS },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
+  { href: '/super-admin/impact', label: 'Impact & Reach', icon: TrendingUp, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
   { href: '/super-admin/settings', label: 'Settings', icon: Settings, charityAdminOnly: true },
   { href: '/super-admin/guide', label: 'How to Guide', icon: HelpCircle },
 ]
