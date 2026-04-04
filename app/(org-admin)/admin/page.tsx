@@ -22,6 +22,7 @@ import {
   UserCheck,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { CredentialCardModal } from '@/components/ui/credential-card-modal'
 
 const ROLE_LABELS: Record<string, string> = {
   CAREGIVER: 'Practitioner',
@@ -107,6 +108,9 @@ export default function OrgAdminUsersPage() {
     name: '', email: '', role: '', password: '', ssoOnly: false,
   })
   const [createLoading, setCreateLoading] = useState(false)
+  const [credentialCard, setCredentialCard] = useState<{
+    name: string; email: string; password: string
+  } | null>(null)
 
   const [activeTab, setActiveTab] = useState<'users' | 'pending'>('users')
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
@@ -249,6 +253,13 @@ export default function OrgAdminUsersPage() {
         body: JSON.stringify(payload),
       })
       if (res.ok) {
+        if (!createForm.ssoOnly) {
+          setCredentialCard({
+            name: createForm.name,
+            email: createForm.email,
+            password: createForm.password,
+          })
+        }
         showToast('User created successfully.', 'success')
         setShowCreate(false)
         setCreateForm({
@@ -792,7 +803,17 @@ export default function OrgAdminUsersPage() {
             </div>
           </div>
         )}
-      </div>}
+      </div>
+
+      {credentialCard && (
+        <CredentialCardModal
+          isOpen={!!credentialCard}
+          onClose={() => setCredentialCard(null)}
+          userName={credentialCard.name}
+          email={credentialCard.email}
+          temporaryPassword={credentialCard.password}
+        />
+      )}
     </div>
   )
 }

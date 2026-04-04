@@ -32,7 +32,7 @@ function LoginForm() {
     ? SSO_ERROR_MESSAGES[rawSsoError] || rawSsoError
     : null
   const registeredPending = searchParams.get('registered') === 'pending'
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')

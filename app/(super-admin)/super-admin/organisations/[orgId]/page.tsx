@@ -20,6 +20,7 @@ import {
 import { clsx } from 'clsx'
 import { LEAF_ROLES } from '@/types'
 import { ORG_TYPES, ORG_TYPE_LABELS } from '@/lib/rbac'
+import { CredentialCardModal } from '@/components/ui/credential-card-modal'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -145,6 +146,9 @@ export default function OrgDetailPage() {
   const [adminName, setAdminName] = useState('')
   const [adminEmail, setAdminEmail] = useState('')
   const [adminPassword, setAdminPassword] = useState('')
+  const [credentialCard, setCredentialCard] = useState<{
+    name: string; email: string; password: string
+  } | null>(null)
   const [adminSubmitting, setAdminSubmitting] = useState(false)
 
   // Delete
@@ -291,6 +295,11 @@ export default function OrgDetailPage() {
         body: JSON.stringify({ name: adminName, email: adminEmail, password: adminPassword }),
       })
       if (res.ok) {
+        setCredentialCard({
+          name: adminName,
+          email: adminEmail,
+          password: adminPassword,
+        })
         showToast('Org admin created.', 'success')
         setShowAdminForm(false)
         setAdminName('')
@@ -921,6 +930,15 @@ export default function OrgDetailPage() {
         </div>
       )}
 
+      {credentialCard && (
+        <CredentialCardModal
+          isOpen={!!credentialCard}
+          onClose={() => setCredentialCard(null)}
+          userName={credentialCard.name}
+          email={credentialCard.email}
+          temporaryPassword={credentialCard.password}
+        />
+      )}
     </div>
   )
 }
