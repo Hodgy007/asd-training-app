@@ -31,6 +31,7 @@ function LoginForm() {
   const ssoError = rawSsoError
     ? SSO_ERROR_MESSAGES[rawSsoError] || rawSsoError
     : null
+  const registeredPending = searchParams.get('registered') === 'pending'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -146,6 +147,15 @@ function LoginForm() {
         {/* Login Card */}
         <div className="card border-t-4 border-t-primary-500">
           <h2 className="text-xl font-bold text-slate-900 mb-6">Sign in to your account</h2>
+
+          {registeredPending && (
+            <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3 mb-5">
+              <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-amber-800">
+                Your account has been created and is awaiting approval by your organisation admin. You will be able to sign in once approved.
+              </p>
+            </div>
+          )}
 
           {(error || ssoError) && (
             <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-5">

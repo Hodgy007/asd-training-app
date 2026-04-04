@@ -58,6 +58,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error('No account found with that email address')
         }
 
+        if (user.pendingApproval) {
+          throw new Error('Your account is pending approval by your organisation admin. You will be able to sign in once approved.')
+        }
+
         if (!user.active) {
           throw new Error('Your account has been deactivated. Please contact an administrator.')
         }
@@ -143,6 +147,10 @@ export const authOptions: NextAuthOptions = {
 
         if (!dbUser) {
           return '/login?error=Account not found. Contact your organisation administrator.'
+        }
+
+        if (dbUser.pendingApproval) {
+          return '/login?error=Your+account+is+pending+approval+by+your+organisation+admin.'
         }
 
         if (!dbUser.active) {

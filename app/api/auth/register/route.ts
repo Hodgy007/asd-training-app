@@ -8,7 +8,7 @@ const registerSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
   password: z.string().min(1).max(128),
-  role: z.enum(['CAREGIVER', 'CAREER_DEV_OFFICER']).default('CAREGIVER'),
+  organisationId: z.string().cuid().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { name, email, password, role } = parsed.data
+    const { name, email, password, organisationId } = parsed.data
 
     const passwordCheck = validatePassword(password)
     if (!passwordCheck.valid) {
@@ -38,8 +38,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Assign to Legacy org — self-registered users go here by default
-    const legacyOrg = await prisma.organisation.findUnique({ where: { slug: 'legacy' } })
+    // Validate the selected organisation exists and is active
+    let resolvedOrgId: string | null = null
+    if (organisationId) {
+      const org = await prisma.organisation.findUnique({
+        where: { id: organisationId },
+        select: { id: true, active: true },
+      })
+      if (!org || !org.active) {
+        return NextResponse.json({ error: 'Selected organisation not found.' }, { status: 400 })
+      }
+      resolvedOrgId = org.id
+    }
 
     const hashedPassword = await bcrypt.hash(password, 12)
 
@@ -48,9 +58,10 @@ export async function POST(req: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        role,
-        active: true,
-        organisationId: legacyOrg?.id ?? null,
+        role: 'CAREGIVER',
+        active: false,
+        pendingApproval: true,
+        organisationId: resolvedOrgId,
       },
     })
 

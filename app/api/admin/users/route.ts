@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
   const pageSize = 20
 
-  const where: Record<string, unknown> = { organisationId: orgId }
+  const where: Record<string, unknown> = { organisationId: orgId, pendingApproval: false }
 
   if (search) {
     where.OR = [
