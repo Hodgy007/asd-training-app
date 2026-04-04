@@ -102,5 +102,12 @@ export async function GET() {
     recentLast30Days: advisorRecent,
   }
 
-  return NextResponse.json({ report, moduleMeta, cvStats, advisorStats })
+  // ── Workshop, download, and survey response counts ──
+  const [workshopCount, downloadCount, surveyResponseCount] = await Promise.all([
+    prisma.classSession.count(),
+    prisma.libraryDocumentEvent.count({ where: { action: 'download' } }),
+    prisma.surveyResponse.count(),
+  ])
+
+  return NextResponse.json({ report, moduleMeta, cvStats, advisorStats, workshopCount, downloadCount, surveyResponseCount })
 }

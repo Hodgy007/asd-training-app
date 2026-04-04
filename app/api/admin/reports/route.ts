@@ -92,6 +92,13 @@ export async function GET() {
     recentLast30Days: advisorRecent,
   }
 
+  // ── Workshop, download, and survey response counts (org-scoped) ──
+  const [workshopCount, downloadCount, surveyResponseCount] = await Promise.all([
+    prisma.classSession.count({ where: { organisationId: orgId } }),
+    prisma.libraryDocumentEvent.count({ where: { organisationId: orgId, action: 'download' } }),
+    prisma.surveyResponse.count({ where: { userId: { in: orgUserIds } } }),
+  ])
+
   return NextResponse.json({
     totalUsers: users.length,
     modules: moduleStats,
@@ -102,5 +109,8 @@ export async function GET() {
     })),
     cvStats,
     advisorStats,
+    workshopCount,
+    downloadCount,
+    surveyResponseCount,
   })
 }

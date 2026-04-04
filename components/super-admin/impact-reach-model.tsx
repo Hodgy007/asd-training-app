@@ -35,13 +35,12 @@ interface PlatformStats {
   totalUsers: number
   cvsBuilt: number
   cvsComplete: number
-  cvsLast30: number
-  cvDrafts: number
   advisorReports: number
   advisorComplete: number
-  advisorLast30: number
-  advisorInProgress: number
   trainingCompletions: number
+  totalWorkshops: number
+  totalDownloads: number
+  totalSurveyResponses: number
 }
 
 export function ImpactReachModel({ orgId }: ImpactReachModelProps) {
@@ -85,13 +84,12 @@ export function ImpactReachModel({ orgId }: ImpactReachModelProps) {
         totalUsers,
         cvsBuilt: cv.total ?? 0,
         cvsComplete: cv.byStatus?.COMPLETE ?? 0,
-        cvsLast30: cv.recentLast30Days ?? 0,
-        cvDrafts: cv.byStatus?.DRAFT ?? 0,
         advisorReports: adv.total ?? 0,
         advisorComplete: adv.byStatus?.COMPLETE ?? 0,
-        advisorLast30: adv.recentLast30Days ?? 0,
-        advisorInProgress: adv.byStatus?.IN_PROGRESS ?? 0,
         trainingCompletions,
+        totalWorkshops: data.workshopCount ?? 0,
+        totalDownloads: data.downloadCount ?? 0,
+        totalSurveyResponses: data.surveyResponseCount ?? 0,
       })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error')
@@ -180,11 +178,10 @@ export function ImpactReachModel({ orgId }: ImpactReachModelProps) {
               <StatCard label="Training completions" value={fmt(stats.trainingCompletions)} />
             </div>
             {/* Row 2 */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <StatCard label="CVs last 30 days" value={fmt(stats.cvsLast30)} />
-              <StatCard label="CV drafts in progress" value={fmt(stats.cvDrafts)} />
-              <StatCard label="Reports last 30 days" value={fmt(stats.advisorLast30)} />
-              <StatCard label="Reports in progress" value={fmt(stats.advisorInProgress)} />
+            <div className="grid grid-cols-3 gap-3">
+              <StatCard label="Total workshops" value={fmt(stats.totalWorkshops)} />
+              <StatCard label="Total downloads" value={fmt(stats.totalDownloads)} />
+              <StatCard label="Survey responses" value={fmt(stats.totalSurveyResponses)} />
             </div>
           </div>
         )}
