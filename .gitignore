@@ -10,6 +10,7 @@ node_modules/
 .env*.local
 .env.production
 .superpowers/
+docs/superpowers/
 
 # Playwright
 test-results/
