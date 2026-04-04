@@ -60,6 +60,7 @@ export default function OrganisationsPage() {
   const [formPrograms, setFormPrograms] = useState<string[]>([])
   const [formActive, setFormActive] = useState(true)
   const [formSubmitting, setFormSubmitting] = useState(false)
+  const [formOrgType, setFormOrgType] = useState<'EDUCATION' | 'BUSINESS' | 'OTHER'>('OTHER')
   const [formContactName, setFormContactName] = useState('')
   const [formContactEmail, setFormContactEmail] = useState('')
   const [formContactPhone, setFormContactPhone] = useState('')
@@ -149,6 +150,7 @@ export default function OrganisationsPage() {
           allowedRoles: formRoles,
           allowedProgramIds: formPrograms,
           active: formActive,
+          organisationType: formOrgType,
           contactName: formContactName || undefined,
           contactEmail: formContactEmail || undefined,
           contactPhone: formContactPhone || undefined,
@@ -168,6 +170,7 @@ export default function OrganisationsPage() {
         setFormRoles([])
         setFormPrograms([])
         setFormActive(true)
+        setFormOrgType('OTHER')
         setFormContactName('')
         setFormContactEmail('')
         setFormContactPhone('')
@@ -247,6 +250,24 @@ export default function OrganisationsPage() {
                   required
                   placeholder="e.g. sunrise-care"
                 />
+              </div>
+            </div>
+
+            {/* Organisation Type */}
+            <div>
+              <label className="label">Organisation Type</label>
+              <p className="text-xs text-slate-400 mb-1">Sets the default role for self-registered users.</p>
+              <div className="relative">
+                <select
+                  value={formOrgType}
+                  onChange={(e) => setFormOrgType(e.target.value as 'EDUCATION' | 'BUSINESS' | 'OTHER')}
+                  className="input w-full appearance-none pr-8"
+                >
+                  <option value="EDUCATION">Education (School / College / University / Academy) → Student</option>
+                  <option value="BUSINESS">Business / Employer → Employee</option>
+                  <option value="OTHER">Other / Charity / Healthcare → Practitioner</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
             </div>
 

@@ -38,17 +38,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Validate the selected organisation exists and is active
+    // Validate the selected organisation and derive default role from its type
     let resolvedOrgId: string | null = null
+    let defaultRole: 'STUDENT' | 'EMPLOYEE' | 'CAREGIVER' = 'CAREGIVER'
     if (organisationId) {
       const org = await prisma.organisation.findUnique({
         where: { id: organisationId },
-        select: { id: true, active: true },
+        select: { id: true, active: true, organisationType: true },
       })
       if (!org || !org.active) {
         return NextResponse.json({ error: 'Selected organisation not found.' }, { status: 400 })
       }
       resolvedOrgId = org.id
+      if (org.organisationType === 'EDUCATION') defaultRole = 'STUDENT'
+      else if (org.organisationType === 'BUSINESS') defaultRole = 'EMPLOYEE'
     }
 
     const hashedPassword = await bcrypt.hash(password, 12)
@@ -58,7 +61,7 @@ export async function POST(req: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        role: 'CAREGIVER',
+        role: defaultRole,
         active: false,
         pendingApproval: true,
         organisationId: resolvedOrgId,

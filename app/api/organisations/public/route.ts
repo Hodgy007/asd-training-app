@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   const orgs = await prisma.organisation.findMany({
     where: { active: true },
-    select: { id: true, name: true },
+    select: { id: true, name: true, organisationType: true },
     orderBy: { name: 'asc' },
   })
   return NextResponse.json(orgs)

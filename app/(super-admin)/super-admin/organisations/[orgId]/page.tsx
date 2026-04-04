@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   FolderOpen,
   ClipboardList,
+  ChevronDown,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { LEAF_ROLES } from '@/types'
@@ -55,6 +56,7 @@ interface OrgDetail {
   assignedSurveyIds: string[]
   cvBuilderEnabled: boolean
   careersAdvisorEnabled: boolean
+  organisationType: 'EDUCATION' | 'BUSINESS' | 'OTHER'
 }
 
 interface ProgramSummary {
@@ -134,6 +136,7 @@ export default function OrgDetailPage() {
   const [editSurveyIds, setEditSurveyIds] = useState<string[]>([])
   const [editCvBuilder, setEditCvBuilder] = useState(true)
   const [editCareersAdvisor, setEditCareersAdvisor] = useState(true)
+  const [editOrgType, setEditOrgType] = useState<'EDUCATION' | 'BUSINESS' | 'OTHER'>('OTHER')
   const [saving, setSaving] = useState(false)
 
   // Add org admin form
@@ -176,6 +179,7 @@ export default function OrgDetailPage() {
         setEditSurveyIds(data.assignedSurveyIds || [])
         setEditCvBuilder(data.cvBuilderEnabled ?? true)
         setEditCareersAdvisor(data.careersAdvisorEnabled ?? true)
+        setEditOrgType(data.organisationType ?? 'OTHER')
       }
     } finally {
       setLoading(false)
@@ -259,6 +263,7 @@ export default function OrgDetailPage() {
           assignedSurveyIds: editSurveyIds,
           cvBuilderEnabled: editCvBuilder,
           careersAdvisorEnabled: editCareersAdvisor,
+          organisationType: editOrgType,
         }),
       })
       if (res.ok) {
@@ -492,6 +497,24 @@ export default function OrgDetailPage() {
                   <span className="text-sm text-slate-700">{ROLE_LABELS[role] ?? role}</span>
                 </label>
               ))}
+            </div>
+          </div>
+
+          {/* Organisation type */}
+          <div>
+            <label className="label mb-1 block">Organisation Type</label>
+            <p className="text-xs text-slate-400 mb-2">Determines the default role assigned to self-registered users.</p>
+            <div className="relative w-full sm:w-64">
+              <select
+                value={editOrgType}
+                onChange={(e) => setEditOrgType(e.target.value as 'EDUCATION' | 'BUSINESS' | 'OTHER')}
+                className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+              >
+                <option value="EDUCATION">Education (School / College / University / Academy) → Student</option>
+                <option value="BUSINESS">Business / Employer → Employee</option>
+                <option value="OTHER">Other / Charity / Healthcare → Practitioner</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
             </div>
           </div>
 

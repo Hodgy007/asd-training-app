@@ -5,9 +5,18 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, AlertCircle, CheckCircle, ChevronDown } from 'lucide-react'
 
+type OrgType = 'EDUCATION' | 'BUSINESS' | 'OTHER'
+
 interface OrgOption {
   id: string
   name: string
+  organisationType: OrgType
+}
+
+const ORG_TYPE_ROLE: Record<OrgType, { role: string; label: string; description: string }> = {
+  EDUCATION: { role: 'Student', label: 'Student', description: 'You will be registered as a Student.' },
+  BUSINESS:  { role: 'Employee', label: 'Employee', description: 'You will be registered as an Employee.' },
+  OTHER:     { role: 'Practitioner', label: 'Practitioner', description: 'You will be registered as a Practitioner.' },
 }
 
 export default function RegisterPage() {
@@ -154,6 +163,17 @@ export default function RegisterPage() {
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
             </div>
+
+            {/* Auto-assigned role indicator */}
+            {form.organisationId && (() => {
+              const selectedOrg = orgs.find((o) => o.id === form.organisationId)
+              const roleInfo = selectedOrg ? ORG_TYPE_ROLE[selectedOrg.organisationType] : null
+              return roleInfo ? (
+                <p className="text-xs text-slate-500 bg-calm-50 border border-calm-200 rounded-lg px-3 py-2">
+                  <span className="font-medium text-slate-700">{roleInfo.description}</span>
+                </p>
+              ) : null
+            })()}
 
             {/* Full name */}
             <div>

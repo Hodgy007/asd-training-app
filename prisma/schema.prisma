@@ -80,10 +80,11 @@ model VerificationToken {
 }
 
 model Organisation {
-  id                String   @id @default(cuid())
+  id                String           @id @default(cuid())
   name              String
-  slug              String   @unique
-  active            Boolean  @default(true)
+  slug              String           @unique
+  active            Boolean          @default(true)
+  organisationType  OrganisationType @default(OTHER)
   allowedProgramIds String[]
   allowedRoles      String[]
   cvBuilderEnabled      Boolean  @default(true)
@@ -447,6 +448,12 @@ enum ProgramStatus {
   UNDER_REVIEW
   APPROVED
   ARCHIVED
+}
+
+enum OrganisationType {
+  EDUCATION
+  BUSINESS
+  OTHER
 }
 
 enum Role {
