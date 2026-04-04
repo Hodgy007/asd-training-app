@@ -10,7 +10,6 @@ import { EnvironmentStep } from './steps/environment-step'
 import { ConcernsStep } from './steps/concerns-step'
 import { ExperienceStep } from './steps/experience-step'
 import { StageStep } from './steps/stage-step'
-import { OptionalIntroStep } from './steps/optional-intro-step'
 import { CommunicationStep } from './steps/communication-step'
 import { SensoryStep } from './steps/sensory-step'
 import { ValuesStep } from './steps/values-step'
@@ -18,9 +17,8 @@ import { OtherStep } from './steps/other-step'
 import { ReportStep } from './steps/report-step'
 import type { AdvisorAnswers, AdvisorReport } from '@/types'
 
-const TOTAL_STEPS = 12
-const REPORT_STEP = 11
-const OPTIONAL_INTRO_STEP = 6
+const TOTAL_STEPS = 11
+const REPORT_STEP = 10
 
 interface AdvisorWizardProps {
   sessionId: string
@@ -103,11 +101,6 @@ export function AdvisorWizard({
     }
   }
 
-  function handleSkipToReport() {
-    setCurrentStep(REPORT_STEP)
-    saveToServer(answers, REPORT_STEP)
-  }
-
   function handleReportGenerated(newReport: AdvisorReport) {
     setReport(newReport)
   }
@@ -122,17 +115,15 @@ export function AdvisorWizard({
       case 3: return <ConcernsStep {...stepProps} />
       case 4: return <ExperienceStep {...stepProps} />
       case 5: return <StageStep {...stepProps} />
-      case 6: return <OptionalIntroStep onContinue={handleNext} onSkipToReport={handleSkipToReport} />
-      case 7: return <CommunicationStep {...stepProps} />
-      case 8: return <SensoryStep {...stepProps} />
-      case 9: return <ValuesStep {...stepProps} />
-      case 10: return <OtherStep {...stepProps} />
-      case 11: return <ReportStep sessionId={sessionId} report={report} onReportGenerated={handleReportGenerated} />
+      case 6: return <CommunicationStep {...stepProps} />
+      case 7: return <SensoryStep {...stepProps} />
+      case 8: return <ValuesStep {...stepProps} />
+      case 9: return <OtherStep {...stepProps} />
+      case 10: return <ReportStep sessionId={sessionId} report={report} onReportGenerated={handleReportGenerated} />
       default: return null
     }
   }
 
-  const isOptionalIntro = currentStep === OPTIONAL_INTRO_STEP
   const isReportStep = currentStep === REPORT_STEP
 
   return (
@@ -146,8 +137,7 @@ export function AdvisorWizard({
       </div>
 
       {/* Navigation */}
-      {!isOptionalIntro && (
-        <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
           <div>
             {currentStep > 0 && !isComplete && (
               <button
@@ -196,7 +186,6 @@ export function AdvisorWizard({
             ) : null}
           </div>
         </div>
-      )}
     </div>
   )
 }

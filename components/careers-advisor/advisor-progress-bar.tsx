@@ -3,7 +3,7 @@
 import { clsx } from 'clsx'
 import {
   Heart, Star, Building2, Shield, Briefcase, GraduationCap,
-  MoreHorizontal, MessageSquare, Eye, Target, FileText, Sparkles,
+  MessageSquare, Eye, Target, FileText, Sparkles,
 } from 'lucide-react'
 
 const STEPS = [
@@ -13,7 +13,6 @@ const STEPS = [
   { label: 'Concerns', icon: Shield },
   { label: 'Experience', icon: Briefcase },
   { label: 'Stage', icon: GraduationCap },
-  { label: 'Optional', icon: MoreHorizontal },
   { label: 'Communication', icon: MessageSquare },
   { label: 'Sensory', icon: Eye },
   { label: 'Values', icon: Target },
