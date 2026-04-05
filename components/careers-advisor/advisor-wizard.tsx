@@ -36,7 +36,14 @@ export function AdvisorWizard({
   initialStatus,
 }: AdvisorWizardProps) {
   const router = useRouter()
-  const [currentStep, setCurrentStep] = useState(initialStep)
+  // Clamp initialStep: completed sessions always land on the report step, and
+  // in-progress sessions can't exceed REPORT_STEP (handles legacy sessions
+  // from when the wizard had an extra intro step).
+  const clampedInitialStep =
+    initialStatus === 'COMPLETE'
+      ? REPORT_STEP
+      : Math.min(Math.max(initialStep, 0), REPORT_STEP)
+  const [currentStep, setCurrentStep] = useState(clampedInitialStep)
   const [answers, setAnswers] = useState<AdvisorAnswers>(initialAnswers)
   const [report, setReport] = useState<AdvisorReport | null>(initialReport)
   const [saving, setSaving] = useState(false)
