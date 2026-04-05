@@ -67,6 +67,30 @@ export const mfaVerifyLimiter = createRateLimiter('mfa-verify', 5 * 60 * 1000, 5
 // Change password: 5 attempts per 15 minutes per IP
 export const changePasswordLimiter = createRateLimiter('change-password', 15 * 60 * 1000, 5)
 
+// Backward-compatible simple API used by existing tests.
+const simpleStore = new Map<string, { count: number; resetAt: number }>()
+
+export function rateLimit(
+  key: string,
+  limit: number,
+  windowMs: number
+): { success: boolean; remaining: number } {
+  const now = Date.now()
+  const entry = simpleStore.get(key)
+
+  if (!entry || now > entry.resetAt) {
+    simpleStore.set(key, { count: 1, resetAt: now + windowMs })
+    return { success: true, remaining: limit - 1 }
+  }
+
+  if (entry.count >= limit) {
+    return { success: false, remaining: 0 }
+  }
+
+  entry.count++
+  return { success: true, remaining: limit - entry.count }
+}
+
 /**
  * Extract client IP from a NextRequest.
  * Prefers x-forwarded-for (set by Vercel/proxies), falls back to a default.
