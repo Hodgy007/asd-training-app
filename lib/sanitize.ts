@@ -16,6 +16,7 @@ const ALLOWED_ATTR = [
   'src', 'alt', 'width', 'height',
   'class', 'style',
   'colspan', 'rowspan',
+  'data-interactive-block',
 ]
 
 export function sanitizeHtml(dirty: string): string {

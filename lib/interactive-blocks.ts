@@ -23,14 +23,18 @@ export function splitContentAtBlocks(
   }
 
   const blockIds = new Set(blocks.map(b => b.id))
-  const pattern = /<div\s+data-interactive-block="([^"]+)"[^>]*>(?:<\/div>)?/gi
+  // Match placeholder markers using two strategies:
+  // 1. data-interactive-block attribute (if Quill preserved it)
+  // 2. Fallback: marker comment pattern <!--IBLOCK:blockId--> that survives Quill
+  // 3. Fallback: visible text marker pattern [INTERACTIVE:blockId] in any element
+  const pattern = /(?:<[^>]*data-interactive-block="([^"]+)"[^>]*>[\s\S]*?<\/[^>]+>)|(?:<!--IBLOCK:([^-]+)-->)|(?:<[^>]*>\s*\[INTERACTIVE:([^\]]+)\]\s*<\/[^>]+>)/gi
   const segments: ContentSegment[] = []
   let lastIndex = 0
   let match: RegExpExecArray | null
 
   while ((match = pattern.exec(html)) !== null) {
-    const blockId = match[1]
-    if (!blockIds.has(blockId)) continue
+    const blockId = match[1] || match[2] || match[3]
+    if (!blockId || !blockIds.has(blockId)) continue
 
     // Add the HTML before this marker
     if (match.index > lastIndex) {
@@ -76,7 +80,9 @@ export function validateInteractiveBlocks(
  * Generate the HTML placeholder string for a block to insert into Quill content.
  * The title is shown as a visual indicator in the editor.
  */
-export function generateBlockPlaceholder(blockId: string, title: string): string {
-  const safeTitle = title.replace(/"/g, '&quot;').replace(/</g, '&lt;')
-  return `<div data-interactive-block="${blockId}" style="background:#f0fdf4;border:2px dashed #86efac;border-radius:8px;padding:12px 16px;margin:8px 0;font-size:14px;color:#166534;text-align:center;">Interactive: ${safeTitle}</div>`
+export function generateBlockPlaceholder(blockId: string, _title: string): string {
+  // Use a text-based marker that survives Quill's HTML processing.
+  // Quill strips data attributes and may rewrite divs as paragraphs,
+  // but preserves visible text content inside styled elements.
+  return `<p style="background:#f0fdf4;border:2px dashed #86efac;border-radius:8px;padding:12px 16px;margin:8px 0;font-size:14px;color:#166534;text-align:center;">[INTERACTIVE:${blockId}]</p>`
 }
