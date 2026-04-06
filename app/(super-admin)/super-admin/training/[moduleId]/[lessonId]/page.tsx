@@ -21,6 +21,9 @@ import {
   Paperclip,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { InteractiveBlock } from '@/types/interactive'
+import { InteractiveBlocksPanel } from '@/components/admin/interactive-builder/interactive-blocks-panel'
+import { generateBlockPlaceholder, validateInteractiveBlocks } from '@/lib/interactive-blocks'
 
 import dynamic from 'next/dynamic'
 
@@ -58,6 +61,7 @@ interface LessonData {
   module: { id: string; title: string }
   quizQuestions: QuizQuestion[]
   attachments: { id: string; fileName: string; fileSize: number; url: string; createdAt: string }[]
+  interactiveBlocks?: unknown
 }
 
 interface GeneratedQuestion {
@@ -103,6 +107,9 @@ export default function LessonEditorPage() {
   // Attachment state
   const [attachments, setAttachments] = useState<LessonData['attachments']>([])
   const [uploadingAttachment, setUploadingAttachment] = useState(false)
+
+  // Interactive blocks state
+  const [interactiveBlocks, setInteractiveBlocks] = useState<InteractiveBlock[]>([])
 
   // Quill editor container ref for custom image handler
   const editorContainerRef = useRef<HTMLDivElement>(null)
@@ -180,6 +187,7 @@ export default function LessonEditorPage() {
         setEditVideoUrl(data.videoUrl || '')
         setQuestions(data.quizQuestions.map(parseQuestion))
         setAttachments(data.attachments ?? [])
+        setInteractiveBlocks(validateInteractiveBlocks(data.interactiveBlocks) ?? [])
       }
     } finally {
       setLoading(false)
@@ -200,10 +208,11 @@ export default function LessonEditorPage() {
   const saveLesson = async () => {
     setSaving(true)
     try {
-      const body: Record<string, string> = {
+      const body: Record<string, unknown> = {
         title: editTitle.trim(),
         type: editType,
         content: editContent,
+        interactiveBlocks: interactiveBlocks.length > 0 ? interactiveBlocks : null,
       }
       if (editType === 'VIDEO') body.videoUrl = editVideoUrl.trim()
       const res = await fetch(`/api/super-admin/training/lessons/${lessonId}`, {
@@ -417,6 +426,16 @@ export default function LessonEditorPage() {
             </div>
           )}
         </div>
+
+        {/* ─── Interactive Blocks ─── */}
+        <InteractiveBlocksPanel
+          blocks={interactiveBlocks}
+          onChange={setInteractiveBlocks}
+          onInsertPlaceholder={(blockId, title) => {
+            const placeholder = generateBlockPlaceholder(blockId, title)
+            setEditContent(prev => prev + placeholder)
+          }}
+        />
 
         <button
           onClick={saveLesson}

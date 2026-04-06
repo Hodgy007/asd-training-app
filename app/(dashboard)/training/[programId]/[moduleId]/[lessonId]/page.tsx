@@ -8,6 +8,9 @@ import Link from 'next/link'
 import { ArrowLeft, ChevronRight, BookOpen, Video, CheckCircle, Loader2, FileText, Download } from 'lucide-react'
 import { VideoPlayer } from '@/components/training/video-player'
 import { QuizComponent } from '@/components/training/quiz-component'
+import { InteractiveBlockRenderer } from '@/components/training/interactive/interactive-block-renderer'
+import { splitContentAtBlocks, validateInteractiveBlocks } from '@/lib/interactive-blocks'
+import { InteractiveBlock, InteractionData } from '@/types/interactive'
 import { clsx } from 'clsx'
 
 interface LessonPageProps {
@@ -29,6 +32,7 @@ interface LessonData {
     explanation: string
     order: number
   }[]
+  interactiveBlocks?: unknown
   attachments?: { id: string; fileName: string; fileSize: number; url: string }[]
   module: {
     id: string
@@ -49,6 +53,7 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [programName, setProgramName] = useState('')
+  const [interactionData, setInteractionData] = useState<InteractionData>({})
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -73,6 +78,13 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
       .then((data) => {
         setLesson(data)
         setLoading(false)
+        // Fetch interaction data for interactive blocks
+        if (data.interactiveBlocks && Array.isArray(data.interactiveBlocks) && data.interactiveBlocks.length > 0) {
+          fetch(`/api/training/interactions?lessonId=${params.lessonId}&moduleId=${params.moduleId}`)
+            .then(r => r.ok ? r.json() : { interactionData: {} })
+            .then(d => setInteractionData(d.interactionData ?? {}))
+            .catch(() => {})
+        }
       })
       .catch(() => {
         setError(true)
@@ -108,6 +120,32 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
     ...q,
     options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
   }))
+
+  // Parse interactive blocks and split content
+  const blocks: InteractiveBlock[] = validateInteractiveBlocks(lesson.interactiveBlocks) ?? []
+  const contentSegments = splitContentAtBlocks(lesson.content, blocks)
+  const blocksById = new Map(blocks.map(b => [b.id, b]))
+
+  async function handleBlockComplete(blockId: string) {
+    const current = interactionData[blockId]
+    const updated: InteractionData = {
+      ...interactionData,
+      [blockId]: { completed: true, attempts: (current?.attempts ?? 0) + 1 },
+    }
+    setInteractionData(updated)
+    // Persist in background
+    fetch('/api/training/interactions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lessonId: params.lessonId,
+        moduleId: params.moduleId,
+        blockId,
+        completed: true,
+        attempts: (current?.attempts ?? 0) + 1,
+      }),
+    }).catch(() => {})
+  }
 
   async function handleQuizComplete(score: number) {
     setSaving(true)

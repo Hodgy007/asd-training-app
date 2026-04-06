@@ -163,8 +163,9 @@ model TrainingProgress {
   moduleId    String
   lessonId    String?
   completed   Boolean   @default(false)
-  score       Int?
-  completedAt DateTime?
+  score           Int?
+  interactionData Json?
+  completedAt     DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -218,8 +219,9 @@ model Lesson {
   moduleId      String
   title         String
   type          LessonType
-  content       String         @db.Text
-  videoUrl      String?
+  content           String         @db.Text
+  interactiveBlocks Json?
+  videoUrl          String?
   order         Int
   active        Boolean        @default(true)
   createdAt     DateTime       @default(now())
