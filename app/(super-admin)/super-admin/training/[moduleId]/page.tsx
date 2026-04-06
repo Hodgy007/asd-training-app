@@ -85,9 +85,13 @@ export default function ModuleEditorPage() {
         body: JSON.stringify({ title: editTitle.trim(), description: editDescription.trim() }),
       })
       if (res.ok) {
-        setToast({ message: 'Module saved', type: 'success' })
-        setTimeout(() => router.push('/super-admin/training'), 500)
+        router.push('/super-admin/training')
+        return
+      } else {
+        setToast({ message: 'Failed to save module', type: 'error' })
       }
+    } catch {
+      setToast({ message: 'Failed to save module', type: 'error' })
     } finally {
       setSaving(false)
     }
