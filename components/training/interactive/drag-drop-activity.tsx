@@ -141,7 +141,7 @@ function CategorizeVariant({
                 <div
                   key={item.id}
                   onPointerDown={e => handlePointerDown(e, item.id)}
-                  className="select-none cursor-grab active:cursor-grabbing rounded-lg border-2 border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm font-medium text-slate-900 dark:text-white min-h-[48px] flex items-center gap-2 touch-manipulation"
+                  className="select-none cursor-grab active:cursor-grabbing rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm font-medium text-slate-900 dark:text-white min-h-[48px] flex items-center gap-2 touch-manipulation shadow-sm hover:shadow-md transition-shadow"
                   style={{
                     touchAction: 'none',
                     transform: isDragging ? `translate(${dragTransform.x}px, ${dragTransform.y}px)` : undefined,
@@ -175,19 +175,19 @@ function CategorizeVariant({
             <div
               key={cat.id}
               data-category-id={cat.id}
-              className={`rounded-xl border-2 transition-colors min-h-[120px] ${
+              className={`rounded-lg border transition-colors min-h-[120px] overflow-hidden ${
                 isHighlighted
-                  ? 'border-primary-400 dark:border-primary-500 bg-primary-50/50 dark:bg-primary-900/20'
-                  : 'border-dashed border-calm-300 dark:border-slate-600 bg-calm-50/50 dark:bg-slate-800/50'
+                  ? 'border-primary-400 dark:border-primary-500 bg-primary-50/30 dark:bg-primary-900/10 shadow-md'
+                  : 'border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm'
               }`}
             >
               <div
-                className="rounded-t-[10px] px-3 py-2 text-xs font-bold uppercase tracking-wide text-white"
+                className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-white"
                 style={{ backgroundColor: cat.color || '#6366f1' }}
               >
                 {cat.label}
               </div>
-              <div className="p-2 space-y-1.5" data-category-id={cat.id}>
+              <div className="p-2.5 space-y-1.5" data-category-id={cat.id}>
                 {catItems.length === 0 && (
                   <p className="text-xs text-slate-400 dark:text-slate-500 italic p-2" data-category-id={cat.id}>
                     Drop items here
@@ -198,12 +198,12 @@ function CategorizeVariant({
                   return (
                     <div
                       key={item.id}
-                      className={`rounded-lg border px-3 py-2 text-sm font-medium flex items-center gap-2 min-h-[48px] ${
+                      className={`rounded-md border px-3 py-2 text-sm font-medium flex items-center gap-2 min-h-[48px] ${
                         res === 'correct'
                           ? 'border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-950/30 text-green-900 dark:text-green-200'
                           : res === 'wrong'
                           ? 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/30 text-red-900 dark:text-red-200'
-                          : 'border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white'
+                          : 'border-calm-200 dark:border-slate-600 bg-calm-50 dark:bg-slate-700 text-slate-900 dark:text-white'
                       }`}
                     >
                       {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />}
