@@ -163,3 +163,26 @@ Leaf role types are also exported from `types/index.ts` as `LEAF_ROLES`. Navigat
 - **Dev/Prod environments:** Neon database branching is set up. Production uses the main Neon branch; Development uses the `dev` branch (endpoint: `ep-lucky-cherry-a8toqlw5`). Vercel has separate env vars for Production and Development environments. Local dev pulls Development env vars via `npx vercel env pull .env.local`. Git workflow: work on `dev` branch -> merge to `main` -> deploy with `npx vercel --prod --yes`.
 - **Vercel Blob:** Document uploads and AI-generated thumbnails use `@vercel/blob`. Requires `BLOB_READ_WRITE_TOKEN` env var.
 - **CHARITY_EMPLOYEE role:** Delegated charity-level access. Permissions are configured per-user via the `charityPermissions` array. The super admin sidebar dynamically filters nav items based on these permissions.
+- **LessonAttachment schema migration pending:** The `LessonAttachment` model was added to `prisma/schema.prisma` but has not been pushed to either database yet. Before the image upload and PDF attachment features will work, run `npx prisma db push` against both dev and production (see schema changes note above).
+
+## Pending Schema Migration
+
+The following schema change needs to be applied to both dev and production databases:
+
+```bash
+# Dev (from project root, uses .env.local)
+npx prisma db push
+
+# Production
+npx vercel env pull .env.production --environment production --yes
+npx dotenv-cli -e .env.production -- npx prisma db push
+```
+
+This adds the `LessonAttachment` table (used by the training lesson image/PDF features).
+
+## Recent Changes (April 2026)
+
+- **Rate limiting on auth routes:** In-memory rate limiter on login (10/15min), forgot-password (5/15min), reset-password (5/15min), MFA verify (5/5min), change-password (5/15min). Per-IP via `x-forwarded-for`. See `lib/rate-limit.ts`.
+- **Self-registration disabled:** Registration page and API route removed. Admins create user accounts. Login page shows "Need an account? Contact your organisation administrator."
+- **Printable QR credential card:** When an admin creates a non-SSO user, a modal offers a printable card with QR code (links to `/login?email=...`), website URL, email, and temporary password. Uses `qrcode` package + `window.print()`. Component: `components/ui/credential-card-modal.tsx`.
+- **Training media support:** Lesson editor (super admin) now supports inline image uploads (Quill toolbar image button → Vercel Blob) and PDF attachments (uploaded separately, shown as download cards to learners). New model: `LessonAttachment`. New API routes: `/api/super-admin/training/upload`, `/api/super-admin/training/lessons/[lessonId]/attachments`. Learner lesson page renders a "Resources" section with download links for any attached PDFs.
