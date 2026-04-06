@@ -224,8 +224,9 @@ model Lesson {
   active        Boolean        @default(true)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  module        Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module        Module             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   quizQuestions QuizQuestion[]
+  attachments   LessonAttachment[]
 }
 
 model QuizQuestion {
@@ -239,6 +240,18 @@ model QuizQuestion {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
+model LessonAttachment {
+  id        String   @id @default(cuid())
+  lessonId  String
+  fileName  String
+  fileSize  Int
+  url       String
+  createdAt DateTime @default(now())
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
 }
 
 model TrainingProgram {

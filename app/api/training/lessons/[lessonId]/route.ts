@@ -20,6 +20,10 @@ export async function GET(
     },
     include: {
       quizQuestions: { orderBy: { order: 'asc' } },
+      attachments: {
+        orderBy: { createdAt: 'asc' },
+        select: { id: true, fileName: true, fileSize: true, url: true },
+      },
       module: {
         select: {
           id: true,

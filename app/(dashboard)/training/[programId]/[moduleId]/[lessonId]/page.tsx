@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { sanitizeHtml } from '@/lib/sanitize'
 import Link from 'next/link'
-import { ArrowLeft, ChevronRight, BookOpen, Video, CheckCircle, Loader2 } from 'lucide-react'
+import { ArrowLeft, ChevronRight, BookOpen, Video, CheckCircle, Loader2, FileText, Download } from 'lucide-react'
 import { VideoPlayer } from '@/components/training/video-player'
 import { QuizComponent } from '@/components/training/quiz-component'
 import { clsx } from 'clsx'
@@ -29,6 +29,7 @@ interface LessonData {
     explanation: string
     order: number
   }[]
+  attachments?: { id: string; fileName: string; fileSize: number; url: string }[]
   module: {
     id: string
     title: string
@@ -196,6 +197,37 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.content) }}
         />
       </div>
+
+      {/* Attachments / Resources */}
+      {lesson.attachments && lesson.attachments.length > 0 && (
+        <div className="card space-y-3">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <FileText className="h-4 w-4 text-slate-500" />
+            Resources
+          </h3>
+          <div className="space-y-2">
+            {lesson.attachments.map((att) => (
+              <a
+                key={att.id}
+                href={att.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+                className="flex items-center gap-3 p-3 rounded-xl border border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                <FileText className="h-5 w-5 text-red-500 flex-shrink-0" />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{att.fileName}</span>
+                <span className="text-xs text-slate-400 flex-shrink-0">
+                  {att.fileSize < 1024 * 1024
+                    ? `${Math.round(att.fileSize / 1024)} KB`
+                    : `${(att.fileSize / (1024 * 1024)).toFixed(1)} MB`}
+                </span>
+                <Download className="h-4 w-4 text-slate-400 ml-auto flex-shrink-0" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Reflection prompt */}
       <div className="bg-primary-50 border border-primary-100 rounded-2xl p-5">

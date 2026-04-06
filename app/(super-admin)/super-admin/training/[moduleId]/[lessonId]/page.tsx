@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -17,6 +17,9 @@ import {
   Wand2,
   CheckCircle,
   X,
+  Upload,
+  FileText,
+  Paperclip,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -53,6 +56,7 @@ interface LessonData {
   active: boolean
   module: { id: string; title: string }
   quizQuestions: QuizQuestion[]
+  attachments: { id: string; fileName: string; fileSize: number; url: string; createdAt: string }[]
 }
 
 interface GeneratedQuestion {
@@ -95,15 +99,63 @@ export default function LessonEditorPage() {
   const [questions, setQuestions] = useState<ParsedQuestion[]>([])
   const [expandedQ, setExpandedQ] = useState<string | null>(null)
 
+  // Attachment state
+  const [attachments, setAttachments] = useState<LessonData['attachments']>([])
+  const [uploadingAttachment, setUploadingAttachment] = useState(false)
+
+  // Quill ref for custom image handler
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const quillRef = useRef<any>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+
+  const imageHandler = useCallback(() => {
+    const input = document.createElement('input')
+    input.setAttribute('type', 'file')
+    input.setAttribute('accept', 'image/*')
+    input.click()
+    input.onchange = async () => {
+      const file = input.files?.[0]
+      if (!file) return
+      setUploadingImage(true)
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('folder', 'training-images')
+        const res = await fetch('/api/super-admin/training/upload', { method: 'POST', body: formData })
+        if (!res.ok) {
+          const d = await res.json()
+          setToast({ message: d.error || 'Image upload failed', type: 'error' })
+          return
+        }
+        const { url } = await res.json()
+        const editor = quillRef.current?.getEditor()
+        if (editor) {
+          const range = editor.getSelection(true)
+          editor.insertEmbed(range.index, 'image', url)
+          editor.setSelection(range.index + 1)
+        }
+      } catch {
+        setToast({ message: 'Image upload failed', type: 'error' })
+      } finally {
+        setUploadingImage(false)
+      }
+    }
+  }, [])
+
   const quillModules = useMemo(() => ({
-    toolbar: [
-      ['bold', 'italic', 'underline'],
-      [{ header: [2, 3, false] }],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      ['link'],
-      ['clean'],
-    ],
-  }), [])
+    toolbar: {
+      container: [
+        ['bold', 'italic', 'underline'],
+        [{ header: [2, 3, false] }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link', 'image'],
+        ['clean'],
+      ],
+      handlers: {
+        image: imageHandler,
+      },
+    },
+  }), [imageHandler])
 
   const fetchLesson = useCallback(async () => {
     setLoading(true)
@@ -117,6 +169,7 @@ export default function LessonEditorPage() {
         setEditContent(data.content || '')
         setEditVideoUrl(data.videoUrl || '')
         setQuestions(data.quizQuestions.map(parseQuestion))
+        setAttachments(data.attachments ?? [])
       }
     } finally {
       setLoading(false)
@@ -252,12 +305,108 @@ export default function LessonEditorPage() {
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Content</label>
           <div className="rounded-xl border border-calm-200 dark:border-slate-600 overflow-hidden [&_.ql-toolbar]:border-calm-200 [&_.ql-toolbar]:dark:border-slate-600 [&_.ql-toolbar]:bg-calm-50 [&_.ql-toolbar]:dark:bg-slate-700 [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[200px] [&_.ql-editor]:text-sm [&_.ql-editor]:text-slate-900 [&_.ql-editor]:dark:text-white [&_.ql-editor]:bg-white [&_.ql-editor]:dark:bg-slate-700">
             <ReactQuill
+              ref={quillRef}
               theme="snow"
               value={editContent}
               onChange={setEditContent}
               modules={quillModules}
             />
           </div>
+        </div>
+
+        {uploadingImage && (
+          <div className="flex items-center gap-2 text-sm text-purple-600">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Uploading image...
+          </div>
+        )}
+
+        {/* ─── Attachments (PDF) ─── */}
+        <div className="border-t border-calm-200 dark:border-slate-600 pt-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+              <Paperclip className="h-4 w-4" />
+              PDF Attachments
+            </h3>
+            <label className={clsx(
+              'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-calm-200 dark:border-slate-600 text-xs font-medium cursor-pointer hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors',
+              uploadingAttachment && 'opacity-50 pointer-events-none'
+            )}>
+              {uploadingAttachment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              Upload PDF
+              <input
+                type="file"
+                accept=".pdf,application/pdf"
+                className="hidden"
+                disabled={uploadingAttachment}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  setUploadingAttachment(true)
+                  try {
+                    const formData = new FormData()
+                    formData.append('file', file)
+                    const res = await fetch(`/api/super-admin/training/lessons/${lessonId}/attachments`, {
+                      method: 'POST',
+                      body: formData,
+                    })
+                    if (res.ok) {
+                      const att = await res.json()
+                      setAttachments((prev) => [...prev, att])
+                      setToast({ message: 'PDF attached', type: 'success' })
+                    } else {
+                      const d = await res.json()
+                      setToast({ message: d.error || 'Upload failed', type: 'error' })
+                    }
+                  } catch {
+                    setToast({ message: 'Upload failed', type: 'error' })
+                  } finally {
+                    setUploadingAttachment(false)
+                    e.target.value = ''
+                  }
+                }}
+              />
+            </label>
+          </div>
+
+          {attachments.length === 0 ? (
+            <p className="text-xs text-slate-400">No PDFs attached. Learners will see download links for any files you add here.</p>
+          ) : (
+            <div className="space-y-2">
+              {attachments.map((att) => (
+                <div key={att.id} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 bg-calm-50 dark:bg-slate-700">
+                  <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
+                  <a href={att.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate hover:underline">
+                    {att.fileName}
+                  </a>
+                  <span className="text-xs text-slate-400 flex-shrink-0">
+                    {att.fileSize < 1024 * 1024
+                      ? `${Math.round(att.fileSize / 1024)} KB`
+                      : `${(att.fileSize / (1024 * 1024)).toFixed(1)} MB`}
+                  </span>
+                  <button
+                    type="button"
+                    className="ml-auto p-1 text-slate-400 hover:text-red-500 transition-colors"
+                    title="Remove attachment"
+                    onClick={async () => {
+                      if (!confirm(`Remove "${att.fileName}"?`)) return
+                      try {
+                        const res = await fetch(`/api/super-admin/training/lessons/${lessonId}/attachments/${att.id}`, { method: 'DELETE' })
+                        if (res.ok) {
+                          setAttachments((prev) => prev.filter((a) => a.id !== att.id))
+                          setToast({ message: 'Attachment removed', type: 'success' })
+                        }
+                      } catch {
+                        setToast({ message: 'Failed to remove', type: 'error' })
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <button

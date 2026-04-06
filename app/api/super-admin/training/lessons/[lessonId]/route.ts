@@ -27,6 +27,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     include: {
       module: true,
       quizQuestions: { orderBy: { order: 'asc' } },
+      attachments: { orderBy: { createdAt: 'asc' } },
     },
   })
 
