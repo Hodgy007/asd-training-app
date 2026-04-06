@@ -455,14 +455,22 @@ export default function LessonEditorPage() {
           }}
         />
 
-        <button
-          onClick={saveLesson}
-          disabled={saving}
-          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
-        >
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save Lesson
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={saveLesson}
+            disabled={saving}
+            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Save Lesson
+          </button>
+          <Link
+            href="/super-admin/training"
+            className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium"
+          >
+            Back to Training Content
+          </Link>
+        </div>
       </div>
 
       {/* ─── Section 2: Quiz Management ─── */}

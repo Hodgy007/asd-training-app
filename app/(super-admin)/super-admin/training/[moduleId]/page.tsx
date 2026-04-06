@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -36,6 +36,7 @@ interface Module {
 
 export default function ModuleEditorPage() {
   const params = useParams()
+  const router = useRouter()
   const moduleId = params.moduleId as string
 
   const [mod, setMod] = useState<Module | null>(null)
@@ -85,7 +86,7 @@ export default function ModuleEditorPage() {
       })
       if (res.ok) {
         setToast({ message: 'Module saved', type: 'success' })
-        await fetchModule()
+        setTimeout(() => router.push('/super-admin/training'), 500)
       }
     } finally {
       setSaving(false)
