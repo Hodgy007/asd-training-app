@@ -84,5 +84,5 @@ export function generateBlockPlaceholder(blockId: string, _title: string): strin
   // Use a text-based marker that survives Quill's HTML processing.
   // Quill strips data attributes and may rewrite divs as paragraphs,
   // but preserves visible text content inside styled elements.
-  return `<p style="background:#f0fdf4;border:2px dashed #86efac;border-radius:8px;padding:12px 16px;margin:8px 0;font-size:14px;color:#166534;text-align:center;">[INTERACTIVE:${blockId}]</p>`
+  return `<p style="background:#f0fdf4;border:2px dashed #86efac;border-radius:8px;padding:12px 16px;margin:8px 0;font-size:14px;color:#166534;text-align:center;">[INTERACTIVE:${blockId}]</p><p><br></p>`
 }
