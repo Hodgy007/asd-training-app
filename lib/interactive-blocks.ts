@@ -23,17 +23,17 @@ export function splitContentAtBlocks(
   }
 
   const blockIds = new Set(blocks.map(b => b.id))
-  // Match placeholder markers using two strategies:
-  // 1. data-interactive-block attribute (if Quill preserved it)
-  // 2. Fallback: marker comment pattern <!--IBLOCK:blockId--> that survives Quill
-  // 3. Fallback: visible text marker pattern [INTERACTIVE:blockId] in any element
-  const pattern = /(?:<[^>]*data-interactive-block="([^"]+)"[^>]*>[\s\S]*?<\/[^>]+>)|(?:<!--IBLOCK:([^-]+)-->)|(?:<[^>]*>\s*\[INTERACTIVE:([^\]]+)\]\s*<\/[^>]+>)/gi
+  // Match placeholder markers. Quill may wrap the marker text in various tags
+  // (p, span with styles, etc.), so we match the raw [INTERACTIVE:blockId] text
+  // along with the enclosing paragraph/element.
+  // Pattern: match a <p> (or similar block) that contains [INTERACTIVE:blockId]
+  const pattern = /<p[^>]*>[^]*?\[INTERACTIVE:([^\]]+)\][^]*?<\/p>/gi
   const segments: ContentSegment[] = []
   let lastIndex = 0
   let match: RegExpExecArray | null
 
   while ((match = pattern.exec(html)) !== null) {
-    const blockId = match[1] || match[2] || match[3]
+    const blockId = match[1]
     if (!blockId || !blockIds.has(blockId)) continue
 
     // Add the HTML before this marker
