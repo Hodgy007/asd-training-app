@@ -6,6 +6,8 @@ import { InteractiveBlock, InteractiveBlockType, ScenarioData, KnowledgeCheckDat
 import { BlockTypePicker } from './block-type-picker'
 import { ScenarioBuilder } from './scenario-builder'
 import { KnowledgeCheckBuilder } from './knowledge-check-builder'
+import { DragDropBuilder } from './drag-drop-builder'
+import { HotspotBuilder } from './hotspot-builder'
 
 interface InteractiveBlocksPanelProps {
   blocks: InteractiveBlock[]
@@ -117,10 +119,10 @@ export function InteractiveBlocksPanel({ blocks, onChange, onInsertPlaceholder }
                 <ScenarioBuilder block={block} onChange={updateBlock} />
               )}
               {block.type === 'drag-drop' && (
-                <p className="text-sm text-slate-400">Drag-and-drop builder coming in Phase 2.</p>
+                <DragDropBuilder block={block} onChange={updateBlock} />
               )}
               {block.type === 'hotspot' && (
-                <p className="text-sm text-slate-400">Hotspot builder coming in Phase 3.</p>
+                <HotspotBuilder block={block} onChange={updateBlock} />
               )}
               {block.type === 'knowledge-check' && (
                 <KnowledgeCheckBuilder block={block} onChange={updateBlock} />

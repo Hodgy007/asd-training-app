@@ -1,9 +1,11 @@
 'use client'
 
 import { useCallback } from 'react'
-import { InteractiveBlock, ScenarioData, KnowledgeCheckData, InteractionData } from '@/types/interactive'
+import { InteractiveBlock, ScenarioData, KnowledgeCheckData, DragDropData, HotspotData, InteractionData } from '@/types/interactive'
 import { ScenarioPlayer } from './scenario-player'
 import { KnowledgeCheck } from './knowledge-check'
+import { DragDropActivity } from './drag-drop-activity'
+import { HotspotActivity } from './hotspot-activity'
 
 interface InteractiveBlockRendererProps {
   block: InteractiveBlock
@@ -38,19 +40,25 @@ export function InteractiveBlockRenderer({
       )
 
     case 'drag-drop':
-      // Phase 2 — placeholder
       return (
-        <div className="my-6 p-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 text-center text-slate-400 dark:text-slate-500 text-sm">
-          Drag-and-drop activity: {block.title} (coming soon)
-        </div>
+        <DragDropActivity
+          title={block.title}
+          instructions={block.instructions}
+          data={block.data as DragDropData}
+          completed={completed}
+          onComplete={handleComplete}
+        />
       )
 
     case 'hotspot':
-      // Phase 3 — placeholder
       return (
-        <div className="my-6 p-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 text-center text-slate-400 dark:text-slate-500 text-sm">
-          Hotspot activity: {block.title} (coming soon)
-        </div>
+        <HotspotActivity
+          title={block.title}
+          instructions={block.instructions}
+          data={block.data as HotspotData}
+          completed={completed}
+          onComplete={handleComplete}
+        />
       )
 
     case 'knowledge-check':

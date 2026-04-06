@@ -10,8 +10,8 @@ interface BlockTypePickerProps {
 
 const BLOCK_TYPES: { type: InteractiveBlockType; label: string; description: string; icon: React.ElementType; available: boolean }[] = [
   { type: 'scenario', label: 'Branching Scenario', description: 'Learners make choices and see consequences in a decision tree.', icon: GitBranch, available: true },
-  { type: 'drag-drop', label: 'Drag & Drop', description: 'Match items, sort into categories, or put steps in order.', icon: GripVertical, available: false },
-  { type: 'hotspot', label: 'Hotspot / Click-to-Reveal', description: 'Click areas on an image or cards to reveal information.', icon: MousePointer, available: false },
+  { type: 'drag-drop', label: 'Drag & Drop', description: 'Match items, sort into categories, or put steps in order.', icon: GripVertical, available: true },
+  { type: 'hotspot', label: 'Hotspot / Click-to-Reveal', description: 'Click areas on an image or cards to reveal information.', icon: MousePointer, available: true },
   { type: 'knowledge-check', label: 'Knowledge Check', description: 'Quick 1-3 question check embedded mid-lesson with instant feedback.', icon: HelpCircle, available: true },
 ]
 
