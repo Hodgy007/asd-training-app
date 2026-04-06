@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import 'react-quill-new/dist/quill.snow.css'
 import {
   ArrowLeft,
@@ -22,6 +21,8 @@ import {
   Paperclip,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+
+import dynamic from 'next/dynamic'
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
 
@@ -103,9 +104,8 @@ export default function LessonEditorPage() {
   const [attachments, setAttachments] = useState<LessonData['attachments']>([])
   const [uploadingAttachment, setUploadingAttachment] = useState(false)
 
-  // Quill ref for custom image handler
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const quillRef = useRef<any>(null)
+  // Quill editor container ref for custom image handler
+  const editorContainerRef = useRef<HTMLDivElement>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
 
   const imageHandler = useCallback(() => {
@@ -128,11 +128,21 @@ export default function LessonEditorPage() {
           return
         }
         const { url } = await res.json()
-        const editor = quillRef.current?.getEditor()
-        if (editor) {
-          const range = editor.getSelection(true)
-          editor.insertEmbed(range.index, 'image', url)
-          editor.setSelection(range.index + 1)
+        // Access the Quill instance from the editor container DOM
+        const qlEditor = editorContainerRef.current?.querySelector('.ql-editor')
+        if (qlEditor) {
+          // react-quill-new stores the Quill instance on the container element
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const qlContainer = editorContainerRef.current?.querySelector('.ql-container') as any
+          const quill = qlContainer?.__quill
+          if (quill) {
+            const range = quill.getSelection(true)
+            quill.insertEmbed(range.index, 'image', url)
+            quill.setSelection(range.index + 1)
+          } else {
+            // Fallback: append image to content via state
+            setEditContent(prev => prev + `<img src="${url}" />`)
+          }
         }
       } catch {
         setToast({ message: 'Image upload failed', type: 'error' })
@@ -303,9 +313,8 @@ export default function LessonEditorPage() {
 
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Content</label>
-          <div className="rounded-xl border border-calm-200 dark:border-slate-600 overflow-hidden [&_.ql-toolbar]:border-calm-200 [&_.ql-toolbar]:dark:border-slate-600 [&_.ql-toolbar]:bg-calm-50 [&_.ql-toolbar]:dark:bg-slate-700 [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[200px] [&_.ql-editor]:text-sm [&_.ql-editor]:text-slate-900 [&_.ql-editor]:dark:text-white [&_.ql-editor]:bg-white [&_.ql-editor]:dark:bg-slate-700">
+          <div ref={editorContainerRef} className="rounded-xl border border-calm-200 dark:border-slate-600 overflow-hidden [&_.ql-toolbar]:border-calm-200 [&_.ql-toolbar]:dark:border-slate-600 [&_.ql-toolbar]:bg-calm-50 [&_.ql-toolbar]:dark:bg-slate-700 [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[200px] [&_.ql-editor]:text-sm [&_.ql-editor]:text-slate-900 [&_.ql-editor]:dark:text-white [&_.ql-editor]:bg-white [&_.ql-editor]:dark:bg-slate-700">
             <ReactQuill
-              ref={quillRef}
               theme="snow"
               value={editContent}
               onChange={setEditContent}

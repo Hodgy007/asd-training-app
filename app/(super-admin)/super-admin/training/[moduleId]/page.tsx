@@ -242,6 +242,7 @@ export default function ModuleEditorPage() {
         {showLessonForm && (
           <AddLessonForm
             moduleId={moduleId}
+            nextOrder={mod.lessons.length + 1}
             onCreated={() => {
               fetchModule()
               setShowLessonForm(false)
@@ -345,12 +346,13 @@ export default function ModuleEditorPage() {
 /* ──────────────────────────── Add Lesson Form ──────────────────────────── */
 
 interface AddLessonFormProps {
+  nextOrder: number
   moduleId: string
   onCreated: () => void
   onCancel: () => void
 }
 
-function AddLessonForm({ moduleId, onCreated, onCancel }: AddLessonFormProps) {
+function AddLessonForm({ moduleId, nextOrder, onCreated, onCancel }: AddLessonFormProps) {
   const [id, setId] = useState('')
   const [title, setTitle] = useState('')
   const [type, setType] = useState('TEXT')
@@ -372,6 +374,7 @@ function AddLessonForm({ moduleId, onCreated, onCancel }: AddLessonFormProps) {
           title: title.trim(),
           type,
           content: content.trim(),
+          order: nextOrder,
         }),
       })
       if (res.ok) {
