@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // ─── Block type union ─────────────────────────────────────────────────────────
 
-export type InteractiveBlockType = 'scenario' | 'drag-drop' | 'hotspot'
+export type InteractiveBlockType = 'scenario' | 'drag-drop' | 'hotspot' | 'knowledge-check'
 
 export interface InteractiveBlock {
   id: string
@@ -10,7 +10,7 @@ export interface InteractiveBlock {
   title: string
   instructions: string
   order: number
-  data: ScenarioData | DragDropData | HotspotData
+  data: ScenarioData | DragDropData | HotspotData | KnowledgeCheckData
 }
 
 // ─── Scenario (branching decision tree) ───────────────────────────────────────
@@ -86,6 +86,20 @@ export interface HotspotData {
   imageUrl?: string
   hotspots?: Hotspot[]
   cards?: RevealCard[]
+}
+
+// ─── Knowledge check ─────────────────────────────────────────────────────────
+
+export interface KnowledgeCheckQuestion {
+  id: string
+  question: string
+  options: string[]
+  correctAnswer: string
+  feedback: string
+}
+
+export interface KnowledgeCheckData {
+  questions: KnowledgeCheckQuestion[]
 }
 
 // ─── Interaction progress tracking ────────────────────────────────────────────
@@ -164,13 +178,25 @@ const hotspotDataSchema = z.object({
   cards: z.array(revealCardSchema).optional(),
 })
 
+const knowledgeCheckQuestionSchema = z.object({
+  id: z.string().min(1),
+  question: z.string().min(1),
+  options: z.array(z.string().min(1)).min(2).max(4),
+  correctAnswer: z.string().min(1),
+  feedback: z.string().min(1),
+})
+
+const knowledgeCheckDataSchema = z.object({
+  questions: z.array(knowledgeCheckQuestionSchema).min(1).max(3),
+})
+
 export const interactiveBlockSchema = z.object({
   id: z.string().min(1),
-  type: z.enum(['scenario', 'drag-drop', 'hotspot']),
+  type: z.enum(['scenario', 'drag-drop', 'hotspot', 'knowledge-check']),
   title: z.string().min(1),
   instructions: z.string(),
   order: z.number().int().min(0),
-  data: z.union([scenarioDataSchema, dragDropDataSchema, hotspotDataSchema]),
+  data: z.union([scenarioDataSchema, dragDropDataSchema, hotspotDataSchema, knowledgeCheckDataSchema]),
 })
 
 export const interactiveBlocksSchema = z.array(interactiveBlockSchema)

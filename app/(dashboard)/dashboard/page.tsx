@@ -13,6 +13,7 @@ import {
   CheckCircle,
 } from 'lucide-react'
 import { formatObservationDate } from '@/lib/observations'
+import { LearningJourney } from '@/components/training/learning-journey'
 import { differenceInYears } from 'date-fns'
 import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
@@ -173,41 +174,37 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="space-y-2">
-            {activeModules.map((module) => {
-              const moduleLessons = module.lessons.length
-              const completedModuleLessons = progressRecords.filter(
-                (p) => p.moduleId === module.id
-              ).length
-              const moduleComplete = completedModuleLessons === moduleLessons
-              return (
-                <div
-                  key={module.id}
-                  className="flex items-center gap-3 p-3 bg-calm-50 rounded-xl"
-                >
-                  <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${moduleComplete ? 'bg-sage-500' : 'bg-calm-200'}`}
-                  >
-                    {moduleComplete ? (
-                      <CheckCircle className="h-4 w-4 text-white" />
-                    ) : (
-                      <span className="text-xs font-bold text-slate-500">{module.order}</span>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">{module.title}</p>
-                    <p className="text-xs text-slate-400">
-                      {completedModuleLessons}/{moduleLessons} lessons
-                    </p>
-                  </div>
-                  <Link
-                    href={`/training/${module.program.id}/${module.id}`}
-                    className="text-xs text-primary-600 hover:text-primary-700 font-medium flex-shrink-0"
-                  >
-                    {completedModuleLessons > 0 ? 'Continue' : 'Start'}
-                  </Link>
-                </div>
-              )
-            })}
+            {activeModules.length > 0 && (() => {
+              const journeyModules = activeModules.map((module, idx) => {
+                const moduleLessons = module.lessons.length
+                const completedModuleLessons = progressRecords.filter(
+                  (p) => p.moduleId === module.id
+                ).length
+                const moduleComplete = completedModuleLessons === moduleLessons && moduleLessons > 0
+                const prevComplete = idx === 0 || (() => {
+                  const prev = activeModules[idx - 1]
+                  const prevCompleted = progressRecords.filter(p => p.moduleId === prev.id).length
+                  return prevCompleted === prev.lessons.length && prev.lessons.length > 0
+                })()
+                const status: 'complete' | 'in-progress' | 'locked' = moduleComplete
+                  ? 'complete'
+                  : prevComplete
+                  ? 'in-progress'
+                  : 'locked'
+                return {
+                  id: module.id,
+                  title: module.title,
+                  order: module.order,
+                  programId: module.program.id,
+                  programName: module.program.name,
+                  totalLessons: moduleLessons,
+                  completedLessons: completedModuleLessons,
+                  status,
+                }
+              })
+              const firstProgramId = journeyModules[0]?.programId ?? ''
+              return <LearningJourney modules={journeyModules} programId={firstProgramId} />
+            })()}
           </div>
         </div>
 

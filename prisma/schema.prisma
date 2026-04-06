@@ -41,6 +41,7 @@ model User {
   integrationKeys    IntegrationApiKey[]    @relation("IntegrationKeys")
   cvs                    CV[]
   careerAdvisorSessions  CareerAdvisorSession[]
+  lessonNotes            LessonNote[]
 
   @@index([organisationId])
 }
@@ -222,6 +223,7 @@ model Lesson {
   content           String         @db.Text
   interactiveBlocks Json?
   videoUrl          String?
+  transcript        String?        @db.Text
   order         Int
   active        Boolean        @default(true)
   createdAt     DateTime       @default(now())
@@ -229,6 +231,7 @@ model Lesson {
   module        Module             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   quizQuestions QuizQuestion[]
   attachments   LessonAttachment[]
+  notes         LessonNote[]
 }
 
 model QuizQuestion {
@@ -253,6 +256,21 @@ model LessonAttachment {
   createdAt DateTime @default(now())
   lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
+  @@index([lessonId])
+}
+
+model LessonNote {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
   @@index([lessonId])
 }
 

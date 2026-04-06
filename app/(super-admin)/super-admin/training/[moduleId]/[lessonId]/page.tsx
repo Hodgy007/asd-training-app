@@ -62,6 +62,7 @@ interface LessonData {
   quizQuestions: QuizQuestion[]
   attachments: { id: string; fileName: string; fileSize: number; url: string; createdAt: string }[]
   interactiveBlocks?: unknown
+  transcript?: string | null
 }
 
 interface GeneratedQuestion {
@@ -99,6 +100,7 @@ export default function LessonEditorPage() {
   const [editType, setEditType] = useState('TEXT')
   const [editContent, setEditContent] = useState('')
   const [editVideoUrl, setEditVideoUrl] = useState('')
+  const [editTranscript, setEditTranscript] = useState('')
 
   // Quiz state
   const [questions, setQuestions] = useState<ParsedQuestion[]>([])
@@ -185,6 +187,7 @@ export default function LessonEditorPage() {
         setEditType(data.type)
         setEditContent(data.content || '')
         setEditVideoUrl(data.videoUrl || '')
+        setEditTranscript(data.transcript || '')
         setQuestions(data.quizQuestions.map(parseQuestion))
         setAttachments(data.attachments ?? [])
         setInteractiveBlocks(validateInteractiveBlocks(data.interactiveBlocks) ?? [])
@@ -214,7 +217,10 @@ export default function LessonEditorPage() {
         content: editContent,
         interactiveBlocks: interactiveBlocks.length > 0 ? interactiveBlocks : null,
       }
-      if (editType === 'VIDEO') body.videoUrl = editVideoUrl.trim()
+      if (editType === 'VIDEO') {
+        body.videoUrl = editVideoUrl.trim()
+        body.transcript = editTranscript.trim() || null
+      }
       const res = await fetch(`/api/super-admin/training/lessons/${lessonId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -316,6 +322,18 @@ export default function LessonEditorPage() {
               onChange={(e) => setEditVideoUrl(e.target.value)}
               placeholder="https://youtube.com/embed/..."
               className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400"
+            />
+          </div>
+        )}
+
+        {editType === 'VIDEO' && (
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Transcript (optional)</label>
+            <textarea
+              value={editTranscript}
+              onChange={(e) => setEditTranscript(e.target.value)}
+              placeholder="Paste video transcript here for accessibility..."
+              className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 min-h-[80px]"
             />
           </div>
         )}

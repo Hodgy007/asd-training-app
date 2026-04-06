@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight, Zap } from 'lucide-react'
-import { InteractiveBlock, InteractiveBlockType, ScenarioData } from '@/types/interactive'
+import { InteractiveBlock, InteractiveBlockType, ScenarioData, KnowledgeCheckData } from '@/types/interactive'
 import { BlockTypePicker } from './block-type-picker'
 import { ScenarioBuilder } from './scenario-builder'
+import { KnowledgeCheckBuilder } from './knowledge-check-builder'
 
 interface InteractiveBlocksPanelProps {
   blocks: InteractiveBlock[]
@@ -35,6 +36,10 @@ function createDefaultBlock(type: InteractiveBlockType): InteractiveBlock {
       return { ...base, data: { variant: 'categorize', items: [] } }
     case 'hotspot':
       return { ...base, data: { variant: 'card-reveal', cards: [] } }
+    case 'knowledge-check': {
+      const kcData: KnowledgeCheckData = { questions: [{ id: 'q-1', question: '', options: ['', ''], correctAnswer: '', feedback: '' }] }
+      return { ...base, data: kcData }
+    }
   }
 }
 
@@ -116,6 +121,9 @@ export function InteractiveBlocksPanel({ blocks, onChange, onInsertPlaceholder }
               )}
               {block.type === 'hotspot' && (
                 <p className="text-sm text-slate-400">Hotspot builder coming in Phase 3.</p>
+              )}
+              {block.type === 'knowledge-check' && (
+                <KnowledgeCheckBuilder block={block} onChange={updateBlock} />
               )}
             </div>
           )}

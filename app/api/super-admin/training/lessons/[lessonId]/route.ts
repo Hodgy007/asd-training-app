@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json()
-  const { title, type, content, videoUrl, order, active, interactiveBlocks } = body
+  const { title, type, content, videoUrl, transcript, order, active, interactiveBlocks } = body
 
   if (type !== undefined && !Object.values(LessonType).includes(type)) {
     return NextResponse.json({ error: `Invalid type. Must be one of: ${Object.values(LessonType).join(', ')}` }, { status: 400 })
@@ -61,6 +61,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(videoUrl !== undefined && { videoUrl }),
       ...(order !== undefined && { order }),
       ...(active !== undefined && { active }),
+      ...(transcript !== undefined && { transcript }),
       ...(interactiveBlocks !== undefined && { interactiveBlocks }),
     },
   })

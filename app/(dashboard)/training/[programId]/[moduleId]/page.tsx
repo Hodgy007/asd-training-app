@@ -11,6 +11,8 @@ import {
   Video,
   FileText,
   ChevronRight,
+  Award,
+  Download,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -98,9 +100,20 @@ export default async function ProgramModulePage({
           </Link>
         )}
         {isComplete && (
-          <div className="flex items-center gap-2 text-sage-600 font-medium">
-            <CheckCircle className="h-5 w-5" />
-            Module complete!
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sage-600 font-medium">
+              <CheckCircle className="h-5 w-5" />
+              Module complete!
+            </div>
+            <a
+              href={`/api/training/certificate/${params.moduleId}`}
+              download
+              className="flex items-center gap-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
+            >
+              <Award className="h-4 w-4" />
+              <Download className="h-3.5 w-3.5" />
+              Certificate
+            </a>
           </div>
         )}
       </div>

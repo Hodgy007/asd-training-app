@@ -1,8 +1,9 @@
 'use client'
 
 import { useCallback } from 'react'
-import { InteractiveBlock, ScenarioData, InteractionData } from '@/types/interactive'
+import { InteractiveBlock, ScenarioData, KnowledgeCheckData, InteractionData } from '@/types/interactive'
 import { ScenarioPlayer } from './scenario-player'
+import { KnowledgeCheck } from './knowledge-check'
 
 interface InteractiveBlockRendererProps {
   block: InteractiveBlock
@@ -50,6 +51,17 @@ export function InteractiveBlockRenderer({
         <div className="my-6 p-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 text-center text-slate-400 dark:text-slate-500 text-sm">
           Hotspot activity: {block.title} (coming soon)
         </div>
+      )
+
+    case 'knowledge-check':
+      return (
+        <KnowledgeCheck
+          title={block.title}
+          instructions={block.instructions}
+          data={block.data as KnowledgeCheckData}
+          completed={completed}
+          onComplete={handleComplete}
+        />
       )
 
     default:
