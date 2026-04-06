@@ -30,10 +30,11 @@ export function QuizComponent({ questions, onComplete }: QuizComponentProps) {
   function handleAnswer(option: string) {
     if (showResult) return
     setSelectedAnswer(option)
-    setShowResult(true)
     if (option === question.correctAnswer) {
       setScore((s) => s + 1)
     }
+    // Brief delay so the user sees the selection before the result
+    setTimeout(() => setShowResult(true), 300)
   }
 
   function handleNext() {

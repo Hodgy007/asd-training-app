@@ -57,18 +57,20 @@ function CategorizeVariant({
 
   const unplacedItems = data.items.filter(item => !placements[item.id])
 
+  const dragElRef = useRef<HTMLElement | null>(null)
+
   function handlePointerDown(e: React.PointerEvent, itemId: string) {
     if (checked) return
     const el = e.currentTarget as HTMLElement
     el.setPointerCapture(e.pointerId)
-    const rect = el.getBoundingClientRect()
+    dragElRef.current = el
     dragRef.current = {
       active: true,
       itemId,
       startX: e.clientX,
       startY: e.clientY,
-      offsetX: e.clientX - rect.left,
-      offsetY: e.clientY - rect.top,
+      offsetX: e.clientX - el.getBoundingClientRect().left,
+      offsetY: e.clientY - el.getBoundingClientRect().top,
     }
     setDragTransform({ itemId, x: 0, y: 0 })
   }
@@ -79,8 +81,10 @@ function CategorizeVariant({
     const dy = e.clientY - dragRef.current.startY
     setDragTransform({ itemId: dragRef.current.itemId, x: dx, y: dy })
 
-    // Detect which category zone we're over
+    // Temporarily hide the dragged element so elementFromPoint can see what's beneath
+    if (dragElRef.current) dragElRef.current.style.pointerEvents = 'none'
     const el = document.elementFromPoint(e.clientX, e.clientY)
+    if (dragElRef.current) dragElRef.current.style.pointerEvents = ''
     const zone = el?.closest('[data-category-id]')
     setHighlightedCategory(zone ? zone.getAttribute('data-category-id') : null)
   }
@@ -92,7 +96,12 @@ function CategorizeVariant({
     setDragTransform(null)
     setHighlightedCategory(null)
 
+    // Temporarily hide the dragged element so elementFromPoint finds the drop zone
+    if (dragElRef.current) dragElRef.current.style.pointerEvents = 'none'
     const el = document.elementFromPoint(e.clientX, e.clientY)
+    if (dragElRef.current) dragElRef.current.style.pointerEvents = ''
+    dragElRef.current = null
+
     const zone = el?.closest('[data-category-id]')
     if (zone) {
       const categoryId = zone.getAttribute('data-category-id')!
