@@ -1,5 +1,8 @@
 'use client'
 
+import { useRef } from 'react'
+import { Maximize } from 'lucide-react'
+
 interface VideoPlayerProps {
   title: string
   videoUrl?: string
@@ -20,6 +23,27 @@ function getEmbedUrl(url: string): string | null {
 }
 
 export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  function goFullscreen() {
+    const v = videoRef.current
+    if (!v) return
+
+    // Try every known fullscreen method
+    if (typeof (v as any).webkitEnterFullscreen === 'function') {
+      // iOS Safari — must be called on the video element
+      (v as any).webkitEnterFullscreen()
+    } else if (v.requestFullscreen) {
+      v.requestFullscreen()
+    } else if (typeof (v as any).webkitRequestFullscreen === 'function') {
+      (v as any).webkitRequestFullscreen()
+    } else if (typeof (v as any).mozRequestFullScreen === 'function') {
+      (v as any).mozRequestFullScreen()
+    } else if (typeof (v as any).msRequestFullscreen === 'function') {
+      (v as any).msRequestFullscreen()
+    }
+  }
+
   if (!videoUrl) {
     return (
       <div className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video flex items-center justify-center">
@@ -49,17 +73,26 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
     )
   }
 
-  // Direct video file (Vercel Blob, etc.): native controls with fullscreen support
-  // No border-radius on the video element itself — it clips the native
-  // fullscreen button that sits in the bottom-right corner on mobile.
+  // Direct video file with native controls + explicit fullscreen button
   return (
-    <video
-      src={videoUrl}
-      title={title}
-      className="w-full bg-black sm:rounded-2xl"
-      controls
-      playsInline
-      preload="auto"
-    />
+    <div className="space-y-2">
+      <video
+        ref={videoRef}
+        src={videoUrl}
+        title={title}
+        className="w-full bg-black sm:rounded-2xl"
+        controls
+        playsInline
+        preload="auto"
+      />
+      <button
+        type="button"
+        onClick={goFullscreen}
+        className="flex items-center gap-2 px-4 py-2.5 w-full sm:w-auto rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium transition-colors"
+      >
+        <Maximize className="h-4 w-4" />
+        Watch fullscreen
+      </button>
+    </div>
   )
 }
