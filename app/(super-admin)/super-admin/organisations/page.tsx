@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { clsx } from 'clsx'
 import {
   Building2,
@@ -11,6 +12,8 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
+  Clock,
+  AlertCircle,
 } from 'lucide-react'
 import { LEAF_ROLES } from '@/types'
 import { ORG_TYPES, ORG_TYPE_LABELS } from '@/lib/rbac'
@@ -31,6 +34,21 @@ interface OrgRow {
   _count: { users: number }
 }
 
+interface PendingOrg {
+  id: string
+  name: string
+  slug: string
+  organisationType: string
+  contactName: string | null
+  contactEmail: string | null
+  contactPhone: string | null
+  addressLine1: string | null
+  city: string | null
+  county: string | null
+  postcode: string | null
+  createdAt: string
+}
+
 const ROLE_LABELS: Record<string, string> = {
   CAREGIVER: 'Practitioner',
   CAREER_DEV_OFFICER: 'Careers Professional',
@@ -47,9 +65,23 @@ function slugify(name: string): string {
 }
 
 export default function OrganisationsPage() {
+  return (
+    <Suspense>
+      <OrganisationsContent />
+    </Suspense>
+  )
+}
+
+function OrganisationsContent() {
+  const searchParams = useSearchParams()
+  const initialTab = searchParams.get('tab') === 'pending' ? 'pending' : 'organisations'
+  const [activeTab, setActiveTab] = useState<'organisations' | 'pending'>(initialTab)
   const [orgs, setOrgs] = useState<OrgRow[]>([])
   const [programs, setPrograms] = useState<ProgramOption[]>([])
+  const [pendingOrgs, setPendingOrgs] = useState<PendingOrg[]>([])
+  const [pendingCount, setPendingCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [pendingLoading, setPendingLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -94,7 +126,21 @@ export default function OrganisationsPage() {
     }
   }, [])
 
-  useEffect(() => { fetchOrgs(); fetchPrograms() }, [fetchOrgs, fetchPrograms])
+  const fetchPendingOrgs = useCallback(async () => {
+    setPendingLoading(true)
+    try {
+      const res = await fetch('/api/super-admin/organisations/pending')
+      if (res.ok) {
+        const data = await res.json()
+        setPendingOrgs(data.orgs)
+        setPendingCount(data.count)
+      }
+    } finally {
+      setPendingLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchOrgs(); fetchPrograms(); fetchPendingOrgs() }, [fetchOrgs, fetchPrograms, fetchPendingOrgs])
 
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })
@@ -115,6 +161,28 @@ export default function OrganisationsPage() {
       } else {
         const d = await res.json()
         showToast(d.error || 'Update failed.', 'error')
+      }
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  async function handlePendingAction(orgId: string, action: 'approve' | 'reject') {
+    setActionLoading(orgId)
+    try {
+      const res = await fetch('/api/super-admin/organisations/pending', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orgId, action }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        showToast(data.message, 'success')
+        fetchPendingOrgs()
+        if (action === 'approve') fetchOrgs()
+      } else {
+        const d = await res.json()
+        showToast(d.error || `${action} failed.`, 'error')
       }
     } finally {
       setActionLoading(null)
@@ -209,23 +277,137 @@ export default function OrganisationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary-600" />
             Organisations
           </h1>
-          <p className="text-slate-500 mt-1">Manage all organisations on the platform.</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage all organisations on the platform.</p>
         </div>
+        {activeTab === 'organisations' && (
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="btn-primary flex items-center gap-2"
+          >
+            {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {showForm ? 'Cancel' : 'Create Organisation'}
+          </button>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex rounded-xl bg-calm-100 dark:bg-slate-700 p-1">
         <button
-          onClick={() => setShowForm((v) => !v)}
-          className="btn-primary flex items-center gap-2"
+          type="button"
+          onClick={() => setActiveTab('organisations')}
+          className={clsx(
+            'flex-1 py-2 text-sm font-bold rounded-lg transition-colors',
+            activeTab === 'organisations'
+              ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+          )}
         >
-          {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {showForm ? 'Cancel' : 'Create Organisation'}
+          Organisations
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('pending')}
+          className={clsx(
+            'flex-1 py-2 text-sm font-bold rounded-lg transition-colors flex items-center justify-center gap-2',
+            activeTab === 'pending'
+              ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+          )}
+        >
+          Pending Approval
+          {pendingCount > 0 && (
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold rounded-full bg-amber-500 text-white">
+              {pendingCount}
+            </span>
+          )}
         </button>
       </div>
 
+      {activeTab === 'pending' && (
+        <div className="card overflow-hidden p-0">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-calm-200 dark:border-slate-700">
+            <p className="text-sm text-slate-500 dark:text-slate-400">{pendingCount} pending registration{pendingCount !== 1 ? 's' : ''}</p>
+            <button
+              onClick={fetchPendingOrgs}
+              className="p-2 rounded-xl border border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors text-slate-500"
+              title="Refresh"
+            >
+              <RefreshCw className={clsx('h-4 w-4', pendingLoading && 'animate-spin')} />
+            </button>
+          </div>
+
+          {pendingLoading ? (
+            <div className="px-4 py-12 text-center text-slate-400 dark:text-slate-500">
+              <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
+              Loading...
+            </div>
+          ) : pendingOrgs.length === 0 ? (
+            <div className="px-4 py-12 text-center text-slate-400 dark:text-slate-500">
+              <CheckCircle className="h-8 w-8 mx-auto mb-2 opacity-30" />
+              No pending registrations.
+            </div>
+          ) : (
+            <div className="divide-y divide-calm-100 dark:divide-slate-700">
+              {pendingOrgs.map((org) => {
+                const isLoading = actionLoading === org.id
+                return (
+                  <div key={org.id} className="p-4 hover:bg-calm-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-slate-900 dark:text-white">{org.name}</h3>
+                          <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Pending
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-400 mt-2">
+                          <p><span className="font-medium text-slate-700 dark:text-slate-300">Type:</span> {ORG_TYPE_LABELS[org.organisationType] || org.organisationType}</p>
+                          <p><span className="font-medium text-slate-700 dark:text-slate-300">Contact:</span> {org.contactName || '—'}</p>
+                          <p><span className="font-medium text-slate-700 dark:text-slate-300">Email:</span> {org.contactEmail || '—'}</p>
+                          <p><span className="font-medium text-slate-700 dark:text-slate-300">Phone:</span> {org.contactPhone || '—'}</p>
+                          {(org.addressLine1 || org.city || org.postcode) && (
+                            <p className="sm:col-span-2">
+                              <span className="font-medium text-slate-700 dark:text-slate-300">Address:</span>{' '}
+                              {[org.addressLine1, org.city, org.county, org.postcode].filter(Boolean).join(', ')}
+                            </p>
+                          )}
+                          <p><span className="font-medium text-slate-700 dark:text-slate-300">Submitted:</span> {new Date(org.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handlePendingAction(org.id, 'approve')}
+                          disabled={isLoading}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-sage-600 hover:bg-sage-700 text-white transition-colors disabled:opacity-50"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handlePendingAction(org.id, 'reject')}
+                          disabled={isLoading}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Create form */}
-      {showForm && (
+      {activeTab === 'organisations' && showForm && (
         <div className="card space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">New Organisation</h2>
           <form onSubmit={handleCreate} className="space-y-4">
@@ -385,7 +567,7 @@ export default function OrganisationsPage() {
       )}
 
       {/* Table */}
-      <div className="card overflow-hidden p-0">
+      {activeTab === 'organisations' && <div className="card overflow-hidden p-0">
         <div className="flex items-center justify-between px-4 py-3 border-b border-calm-200">
           <p className="text-sm text-slate-500">{orgs.length} organisation{orgs.length !== 1 ? 's' : ''}</p>
           <button
@@ -478,7 +660,7 @@ export default function OrganisationsPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
     </div>
   )
 }

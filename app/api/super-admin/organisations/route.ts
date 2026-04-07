@@ -34,6 +34,7 @@ export async function GET() {
   }
 
   const orgs = await prisma.organisation.findMany({
+    where: { pendingApproval: false },
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { users: true } } },
   })

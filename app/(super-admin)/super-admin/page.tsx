@@ -3,20 +3,21 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Building2, Users, BookOpen, Download, ArrowRight } from 'lucide-react'
+import { Building2, Users, BookOpen, Download, ArrowRight, AlertCircle } from 'lucide-react'
 import { isCharityLevel, hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 
 export default async function SuperAdminPage() {
   const session = await getServerSession(authOptions)
   if (!session || !isCharityLevel(session)) redirect('/login')
 
-  const [orgCount, totalUsers, totalLessons, orgs, totalDownloads, downloadsPerOrg] = await Promise.all([
-    prisma.organisation.count(),
+  const [orgCount, totalUsers, totalLessons, orgs, totalDownloads, downloadsPerOrg, pendingOrgCount] = await Promise.all([
+    prisma.organisation.count({ where: { pendingApproval: false } }),
     prisma.user.count({
       where: { role: { notIn: ['SUPER_ADMIN'] } },
     }),
     prisma.trainingProgress.count({ where: { completed: true } }),
     prisma.organisation.findMany({
+      where: { pendingApproval: false },
       include: {
         _count: { select: { users: true } },
       },
@@ -28,6 +29,7 @@ export default async function SuperAdminPage() {
       where: { action: 'download', organisationId: { not: null } },
       _count: { _all: true },
     }),
+    prisma.organisation.count({ where: { pendingApproval: true } }),
   ])
 
   // Fetch per-org lesson completions in one query
@@ -108,6 +110,22 @@ export default async function SuperAdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Pending org registrations banner */}
+      {pendingOrgCount > 0 && hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS) && (
+        <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
+          <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+          <p className="text-sm text-amber-800 dark:text-amber-200 flex-1">
+            <strong>{pendingOrgCount}</strong> organisation{pendingOrgCount !== 1 ? 's' : ''} awaiting approval.
+          </p>
+          <Link
+            href="/super-admin/organisations?tab=pending"
+            className="text-sm font-medium text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 whitespace-nowrap"
+          >
+            Review now &rarr;
+          </Link>
+        </div>
+      )}
 
       {/* Org summary table */}
       <div className="card overflow-hidden p-0">

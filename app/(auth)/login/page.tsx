@@ -353,9 +353,14 @@ function LoginForm() {
             </>
           )}
 
-          <div className="mt-6 pt-5 border-t border-calm-200 text-center">
-            <p className="text-sm text-slate-500">
+          <div className="mt-6 pt-5 border-t border-calm-200 dark:border-slate-700 text-center space-y-2">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Need an account? Contact your organisation administrator.
+            </p>
+            <p className="text-sm">
+              <Link href="/register-organisation" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium">
+                Register your organisation
+              </Link>
             </p>
           </div>
 
