@@ -50,11 +50,13 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
   }
 
   // Direct video file (Vercel Blob, etc.): native controls with fullscreen support
+  // No border-radius on the video element itself — it clips the native
+  // fullscreen button that sits in the bottom-right corner on mobile.
   return (
     <video
       src={videoUrl}
       title={title}
-      className="w-full rounded-2xl bg-black"
+      className="w-full bg-black sm:rounded-2xl"
       controls
       playsInline
       preload="auto"
