@@ -29,7 +29,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), fullscreen=(self)',
+            value: 'camera=(), microphone=(), geolocation=(), fullscreen=*',
           },
           {
             key: 'Content-Security-Policy',
@@ -42,7 +42,7 @@ const nextConfig = {
               "connect-src 'self' https://generativelanguage.googleapis.com",
               "media-src 'self' https://*.public.blob.vercel-storage.com",
               "frame-src 'self' https://www.youtube.com https://player.vimeo.com",
-              "frame-ancestors 'none'",
+              "frame-ancestors 'self'",
             ].join('; '),
           },
         ],
