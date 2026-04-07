@@ -22,11 +22,23 @@ function getEmbedUrl(url: string): string | null {
   return null
 }
 
+function requestFullscreen(el: HTMLElement) {
+  if (el.requestFullscreen) {
+    el.requestFullscreen()
+  } else if ('webkitRequestFullscreen' in el) {
+    (el as any).webkitRequestFullscreen()
+  } else if ('msRequestFullscreen' in el) {
+    (el as any).msRequestFullscreen()
+  }
+}
+
 export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [playing, setPlaying] = useState(false)
   const [muted, setMuted] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [showControls, setShowControls] = useState(false)
 
   function togglePlay() {
     const v = videoRef.current
@@ -57,7 +69,16 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
   }
 
   function handleFullscreen() {
-    videoRef.current?.requestFullscreen()
+    const v = videoRef.current
+    // iOS Safari: use webkitEnterFullscreen on the video element directly
+    if (v && 'webkitEnterFullscreen' in v) {
+      (v as any).webkitEnterFullscreen()
+      return
+    }
+    // Standard: fullscreen the container div
+    if (containerRef.current) {
+      requestFullscreen(containerRef.current)
+    }
   }
 
   if (!videoUrl) {
@@ -76,12 +97,15 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
   // YouTube/Vimeo: use iframe embed
   if (embedUrl) {
     return (
-      <div className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video">
+      <div
+        ref={containerRef}
+        className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video [&:fullscreen]:rounded-none"
+      >
         <iframe
           src={embedUrl}
           title={title}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          className="w-full h-full absolute inset-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
           allowFullScreen
         />
       </div>
@@ -90,7 +114,12 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
 
   // Direct video file: use native player
   return (
-    <div className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video group">
+    <div
+      ref={containerRef}
+      className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video group [&:fullscreen]:rounded-none"
+      onTouchStart={() => setShowControls(true)}
+      onTouchEnd={() => setTimeout(() => setShowControls(false), 3000)}
+    >
       <video
         ref={videoRef}
         src={videoUrl}
@@ -113,8 +142,8 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
         </div>
       )}
 
-      {/* Controls bar */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Controls bar - visible on hover (desktop) and touch (mobile) */}
+      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transition-opacity ${showControls ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
         {/* Progress bar */}
         <div
           className="w-full h-1.5 bg-white/30 rounded-full mb-3 cursor-pointer"
@@ -146,7 +175,7 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
                 ? <VolumeX className="h-5 w-5" />
                 : <Volume2 className="h-5 w-5" />}
             </button>
-            <span className="text-white/70 text-xs">{title}</span>
+            <span className="text-white/70 text-xs hidden sm:inline">{title}</span>
           </div>
           <button
             onClick={handleFullscreen}
