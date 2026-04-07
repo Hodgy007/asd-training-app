@@ -51,16 +51,13 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
 
   // Direct video file (Vercel Blob, etc.): native controls with fullscreen support
   return (
-    <div className="relative bg-slate-900 rounded-2xl aspect-video">
-      <video
-        src={videoUrl}
-        title={title}
-        className="absolute inset-0 w-full h-full rounded-2xl object-contain bg-black"
-        controls
-        playsInline
-        controlsList="nodownload"
-        preload="metadata"
-      />
-    </div>
+    <video
+      src={videoUrl}
+      title={title}
+      className="w-full rounded-2xl bg-black"
+      controls
+      playsInline
+      preload="auto"
+    />
   )
 }
