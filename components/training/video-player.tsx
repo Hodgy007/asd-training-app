@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react'
 
 interface VideoPlayerProps {
@@ -22,16 +22,6 @@ function getEmbedUrl(url: string): string | null {
   return null
 }
 
-function requestFullscreen(el: HTMLElement) {
-  if (el.requestFullscreen) {
-    el.requestFullscreen()
-  } else if ('webkitRequestFullscreen' in el) {
-    (el as any).webkitRequestFullscreen()
-  } else if ('msRequestFullscreen' in el) {
-    (el as any).msRequestFullscreen()
-  }
-}
-
 export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -39,6 +29,13 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
   const [muted, setMuted] = useState(false)
   const [progress, setProgress] = useState(0)
   const [showControls, setShowControls] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const controlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    // Detect touch device
+    setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0)
+  }, [])
 
   function togglePlay() {
     const v = videoRef.current
@@ -70,15 +67,28 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
 
   function handleFullscreen() {
     const v = videoRef.current
-    // iOS Safari: use webkitEnterFullscreen on the video element directly
-    if (v && 'webkitEnterFullscreen' in v) {
+    const container = containerRef.current
+
+    // iOS Safari: webkitEnterFullscreen on the video element itself
+    if (v && typeof (v as any).webkitEnterFullscreen === 'function') {
       (v as any).webkitEnterFullscreen()
       return
     }
-    // Standard: fullscreen the container div
-    if (containerRef.current) {
-      requestFullscreen(containerRef.current)
+
+    // Standard Fullscreen API on the container
+    if (container) {
+      if (container.requestFullscreen) {
+        container.requestFullscreen()
+      } else if (typeof (container as any).webkitRequestFullscreen === 'function') {
+        (container as any).webkitRequestFullscreen()
+      }
     }
+  }
+
+  function handleTap() {
+    if (controlsTimer.current) clearTimeout(controlsTimer.current)
+    setShowControls(true)
+    controlsTimer.current = setTimeout(() => setShowControls(false), 3000)
   }
 
   if (!videoUrl) {
@@ -95,30 +105,46 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
   const embedUrl = getEmbedUrl(videoUrl)
 
   // YouTube/Vimeo: use iframe embed
+  // On mobile, the platform's own fullscreen button inside the iframe works natively.
+  // We avoid overflow-hidden on the wrapper so the iframe can go fullscreen.
   if (embedUrl) {
     return (
-      <div
-        ref={containerRef}
-        className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video [&:fullscreen]:rounded-none"
-      >
+      <div className="relative bg-slate-900 rounded-2xl aspect-video">
         <iframe
           src={embedUrl}
           title={title}
-          className="w-full h-full absolute inset-0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          className="absolute inset-0 w-full h-full rounded-2xl"
+          style={{ border: 0 }}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; web-share"
           allowFullScreen
+          /* Webkit-specific attribute for older iOS */
+          {...({ webkitallowfullscreen: '', mozallowfullscreen: '' } as any)}
         />
       </div>
     )
   }
 
-  // Direct video file: use native player
+  // Direct video file: on mobile use native controls (reliable fullscreen);
+  // on desktop use custom controls.
+  if (isMobile) {
+    return (
+      <div className="relative bg-slate-900 rounded-2xl aspect-video">
+        <video
+          src={videoUrl}
+          className="absolute inset-0 w-full h-full rounded-2xl object-contain"
+          controls
+          playsInline
+          controlsList="nodownload"
+        />
+      </div>
+    )
+  }
+
   return (
     <div
       ref={containerRef}
-      className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video group [&:fullscreen]:rounded-none"
-      onTouchStart={() => setShowControls(true)}
-      onTouchEnd={() => setTimeout(() => setShowControls(false), 3000)}
+      className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video group"
+      onTouchStart={handleTap}
     >
       <video
         ref={videoRef}
@@ -142,7 +168,7 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
         </div>
       )}
 
-      {/* Controls bar - visible on hover (desktop) and touch (mobile) */}
+      {/* Controls bar */}
       <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transition-opacity ${showControls ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
         {/* Progress bar */}
         <div
@@ -175,7 +201,7 @@ export function VideoPlayer({ title, videoUrl }: VideoPlayerProps) {
                 ? <VolumeX className="h-5 w-5" />
                 : <Volume2 className="h-5 w-5" />}
             </button>
-            <span className="text-white/70 text-xs hidden sm:inline">{title}</span>
+            <span className="text-white/70 text-xs">{title}</span>
           </div>
           <button
             onClick={handleFullscreen}
