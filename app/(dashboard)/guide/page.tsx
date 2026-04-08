@@ -9,7 +9,7 @@ import {
   Settings,
   HelpCircle,
   ClipboardList,
-  Lock,
+
   BarChart3,
   FileText,
   Compass,
@@ -149,22 +149,6 @@ export default function GuidePage() {
             <li>Change your password (if you logged in with email/password, not SSO)</li>
             <li>View your account details</li>
             <li>Your role and organisation are displayed here</li>
-          </ol>
-        </>
-      ),
-    },
-    {
-      title: 'Security & MFA',
-      icon: Lock,
-      content: (
-        <>
-          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-            Keep your account secure with strong passwords and multi-factor authentication.
-          </p>
-          <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-            <li>If you use email/password login, you can change your password in Settings</li>
-            <li>If your admin set a forced password change, you&apos;ll be prompted to change it on next login</li>
-            <li>SSO users (Google or Microsoft sign-in) manage their password through their identity provider</li>
           </ol>
         </>
       ),
