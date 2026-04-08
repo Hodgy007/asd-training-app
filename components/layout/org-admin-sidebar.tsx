@@ -15,6 +15,7 @@ import {
   X,
   ShieldCheck,
   FolderOpen,
+  Building2,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -25,8 +26,13 @@ interface NavItem {
   exact?: boolean
 }
 
-const NAV_ITEMS: NavItem[] = [
+const BASE_NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Users', icon: Users, exact: true },
+]
+
+const PARENT_ORG_NAV: NavItem = { href: '/admin/schools', label: 'Schools', icon: Building2 }
+
+const COMMON_NAV_ITEMS: NavItem[] = [
   { href: '/admin/sessions', label: 'Workshops', icon: Calendar },
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/admin/library', label: 'Document Library', icon: FolderOpen },
@@ -44,6 +50,13 @@ interface OrgAdminSidebarProps {
 export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
+
+  const isParentOrg = session?.user?.isParentOrg ?? false
+  const navItems: NavItem[] = [
+    ...BASE_NAV_ITEMS,
+    ...(isParentOrg ? [PARENT_ORG_NAV] : []),
+    ...COMMON_NAV_ITEMS,
+  ]
 
   return (
     <div className="flex flex-col h-full bg-orange-100 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
@@ -81,7 +94,7 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1" aria-label="Org admin navigation">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon
           const isActive = item.exact
             ? pathname === item.href

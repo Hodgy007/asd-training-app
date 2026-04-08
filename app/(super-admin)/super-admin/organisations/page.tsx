@@ -30,8 +30,9 @@ interface OrgRow {
   active: boolean
   allowedRoles: string[]
   allowedProgramIds: string[]
+  isParentOrg: boolean
   createdAt: string
-  _count: { users: number }
+  _count: { users: number; childOrgs: number }
 }
 
 interface PendingOrg {
@@ -103,6 +104,7 @@ function OrganisationsContent() {
   const [formCounty, setFormCounty] = useState('')
   const [formPostcode, setFormPostcode] = useState('')
   const [formCountry, setFormCountry] = useState('United Kingdom')
+  const [formIsParentOrg, setFormIsParentOrg] = useState(false)
 
   const fetchOrgs = useCallback(async () => {
     setLoading(true)
@@ -229,6 +231,7 @@ function OrganisationsContent() {
           county: formCounty || undefined,
           postcode: formPostcode || undefined,
           country: formCountry || undefined,
+          isParentOrg: formIsParentOrg,
         }),
       })
       if (res.ok) {
@@ -249,6 +252,7 @@ function OrganisationsContent() {
         setFormCounty('')
         setFormPostcode('')
         setFormCountry('United Kingdom')
+        setFormIsParentOrg(false)
         fetchOrgs()
       } else {
         const d = await res.json()
@@ -550,6 +554,20 @@ function OrganisationsContent() {
               </label>
             </div>
 
+            {/* Parent org toggle */}
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formIsParentOrg}
+                  onChange={(e) => setFormIsParentOrg(e.target.checked)}
+                  className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-sm font-medium text-slate-700">Parent Organisation</span>
+              </label>
+              <p className="text-xs text-slate-400 mt-1 ml-7">Enable if this organisation will have child organisations underneath it.</p>
+            </div>
+
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
@@ -617,9 +635,21 @@ function OrganisationsContent() {
                         >
                           {org.name}
                         </Link>
+                        {org.isParentOrg && (
+                          <span className="ml-2 inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+                            Parent
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 font-mono text-xs text-slate-500">{org.slug}</td>
-                      <td className="px-4 py-3 text-slate-700">{org._count.users}</td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {org._count.users}
+                        {org._count.childOrgs > 0 && (
+                          <span className="ml-1.5 text-xs text-purple-600 dark:text-purple-400" title={`${org._count.childOrgs} child organisation${org._count.childOrgs !== 1 ? 's' : ''}`}>
+                            +{org._count.childOrgs} sub
+                          </span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         <button
                           disabled={isLoading}

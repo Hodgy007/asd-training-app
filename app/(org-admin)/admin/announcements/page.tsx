@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 import { clsx } from 'clsx'
 import {
   Megaphone,
@@ -23,6 +24,7 @@ interface Announcement {
 }
 
 export default function OrgAnnouncementsPage() {
+  const { data: session } = useSession()
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -36,15 +38,27 @@ export default function OrgAnnouncementsPage() {
   const [formActive, setFormActive] = useState(true)
   const [formSubmitting, setFormSubmitting] = useState(false)
 
+  // Parent org selector
+  const [schools, setSchools] = useState<{id: string; name: string}[]>([])
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('')
+  const isParentOrg = session?.user?.isParentOrg ?? false
+
+  useEffect(() => {
+    if (isParentOrg) {
+      fetch('/api/admin/schools').then(r => r.json()).then(data => setSchools(data.children ?? []))
+    }
+  }, [isParentOrg])
+
   const fetchAnnouncements = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/announcements')
+      const params = selectedOrgId ? `?orgId=${selectedOrgId}` : ''
+      const res = await fetch(`/api/admin/announcements${params}`)
       if (res.ok) setAnnouncements(await res.json())
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [selectedOrgId])
 
   useEffect(() => { fetchAnnouncements() }, [fetchAnnouncements])
 
@@ -153,6 +167,18 @@ export default function OrgAnnouncementsPage() {
           {showForm ? 'Cancel' : 'Create Announcement'}
         </button>
       </div>
+
+      {/* Org selector for parent orgs */}
+      {isParentOrg && (
+        <select
+          value={selectedOrgId}
+          onChange={(e) => setSelectedOrgId(e.target.value)}
+          className="px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm"
+        >
+          <option value="">All Organisations</option>
+          {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+      )}
 
       {/* Create form */}
       {showForm && (

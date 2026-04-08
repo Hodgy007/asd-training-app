@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 import { getUserPrograms } from './modules'
 import type { ProgramInfo } from './modules'
+import { getEffectiveOrgSettings } from './org-hierarchy'
 
 async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> {
   return getUserPrograms(userId)
@@ -13,14 +14,20 @@ async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> 
 
 async function getOrgFeatureFlags(organisationId: string | null | undefined): Promise<{ cvBuilderEnabled: boolean; careersAdvisorEnabled: boolean }> {
   if (!organisationId) return { cvBuilderEnabled: true, careersAdvisorEnabled: true }
+  const settings = await getEffectiveOrgSettings(organisationId)
+  return {
+    cvBuilderEnabled: settings.cvBuilderEnabled,
+    careersAdvisorEnabled: settings.careersAdvisorEnabled,
+  }
+}
+
+async function getOrgIsParent(organisationId: string | null | undefined): Promise<boolean> {
+  if (!organisationId) return false
   const org = await prisma.organisation.findUnique({
     where: { id: organisationId },
-    select: { cvBuilderEnabled: true, careersAdvisorEnabled: true },
+    select: { isParentOrg: true },
   })
-  return {
-    cvBuilderEnabled: org?.cvBuilderEnabled ?? true,
-    careersAdvisorEnabled: org?.careersAdvisorEnabled ?? true,
-  }
+  return org?.isParentOrg ?? false
 }
 
 export const authOptions: NextAuthOptions = {
@@ -214,6 +221,7 @@ export const authOptions: NextAuthOptions = {
         const flags = await getOrgFeatureFlags(token.organisationId as string | null)
         token.cvBuilderEnabled = flags.cvBuilderEnabled
         token.careersAdvisorEnabled = flags.careersAdvisorEnabled
+        token.isParentOrg = await getOrgIsParent(token.organisationId as string | null)
       }
 
       // SSO login — look up DB user by email since there's no adapter
@@ -235,6 +243,7 @@ export const authOptions: NextAuthOptions = {
           const ssoFlags = await getOrgFeatureFlags(dbUser.organisationId)
           token.cvBuilderEnabled = ssoFlags.cvBuilderEnabled
           token.careersAdvisorEnabled = ssoFlags.careersAdvisorEnabled
+          token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
         }
       }
 
@@ -253,6 +262,7 @@ export const authOptions: NextAuthOptions = {
           const updateFlags = await getOrgFeatureFlags(dbUser.organisationId)
           token.cvBuilderEnabled = updateFlags.cvBuilderEnabled
           token.careersAdvisorEnabled = updateFlags.careersAdvisorEnabled
+          token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
         }
         token.mfaPending = false
         token.effectivePrograms = await getUserEffectivePrograms(token.id as string)
@@ -273,6 +283,7 @@ export const authOptions: NextAuthOptions = {
         session.user.charityPermissions = (token.charityPermissions as string[]) ?? []
         session.user.cvBuilderEnabled = (token.cvBuilderEnabled as boolean) ?? true
         session.user.careersAdvisorEnabled = (token.careersAdvisorEnabled as boolean) ?? true
+        session.user.isParentOrg = (token.isParentOrg as boolean) ?? false
       }
       return session
     },

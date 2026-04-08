@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
     const orgForFeatures = user.organisationId
       ? await prisma.organisation.findUnique({
           where: { id: user.organisationId },
-          select: { cvBuilderEnabled: true, careersAdvisorEnabled: true },
+          select: { cvBuilderEnabled: true, careersAdvisorEnabled: true, isParentOrg: true },
         })
       : null
     const cvBuilderEnabled = orgForFeatures?.cvBuilderEnabled ?? true
@@ -141,6 +141,7 @@ export async function POST(req: NextRequest) {
         charityPermissions: user.charityPermissions ?? [],
         cvBuilderEnabled,
         careersAdvisorEnabled,
+        isParentOrg: orgForFeatures?.isParentOrg ?? false,
       },
       secret: process.env.NEXTAUTH_SECRET!,
     })

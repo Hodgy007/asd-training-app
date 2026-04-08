@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 import { BarChart3, RefreshCw, ChevronDown, ChevronUp, Users, FolderOpen, FileText, Download, ChevronRight, FileCheck } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -150,6 +151,7 @@ function ModuleRow({
 }
 
 export default function OrgReportsPage() {
+  const { data: session } = useSession()
   const [data, setData] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -160,11 +162,23 @@ export default function OrgReportsPage() {
   const [libLoading, setLibLoading] = useState(true)
   const [expandedLib, setExpandedLib] = useState<string | null>(null)
 
+  // Parent org selector
+  const [schools, setSchools] = useState<{id: string; name: string}[]>([])
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('')
+  const isParentOrg = session?.user?.isParentOrg ?? false
+
+  useEffect(() => {
+    if (isParentOrg) {
+      fetch('/api/admin/schools').then(r => r.json()).then(data => setSchools(data.children ?? []))
+    }
+  }, [isParentOrg])
+
   const fetchReport = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/admin/reports')
+      const orgParam = selectedOrgId ? `?orgId=${selectedOrgId}` : '?orgId=all'
+      const res = await fetch(`/api/admin/reports${orgParam}`)
       if (!res.ok) {
         const d = await res.json().catch(() => ({}))
         setError(d.error ?? 'Failed to load report.')
@@ -176,12 +190,13 @@ export default function OrgReportsPage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [selectedOrgId])
 
   const fetchLibraryReport = useCallback(async () => {
     setLibLoading(true)
     try {
-      const res = await fetch('/api/admin/library/reports')
+      const orgParam = selectedOrgId ? `?orgId=${selectedOrgId}` : '?orgId=all'
+      const res = await fetch(`/api/admin/library/reports${orgParam}`)
       if (res.ok) {
         const d = await res.json()
         setLibTotals(d.totals)
@@ -190,7 +205,7 @@ export default function OrgReportsPage() {
     } finally {
       setLibLoading(false)
     }
-  }, [])
+  }, [selectedOrgId])
 
   useEffect(() => {
     fetchReport()
@@ -216,6 +231,18 @@ export default function OrgReportsPage() {
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
+
+      {/* Org selector for parent orgs */}
+      {isParentOrg && (
+        <select
+          value={selectedOrgId}
+          onChange={(e) => setSelectedOrgId(e.target.value)}
+          className="px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm"
+        >
+          <option value="">All Organisations</option>
+          {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+      )}
 
       {/* Summary cards */}
       {data && !loading && (

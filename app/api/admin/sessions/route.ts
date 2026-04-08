@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { getOrgSessions, resolveAttendees } from '@/lib/sessions'
+import { canManageChildOrg } from '@/lib/org-hierarchy'
 import type { SessionStatus } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
@@ -12,12 +13,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const orgId = session.user.organisationId
-  if (!orgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
+  const sessionOrgId = session.user.organisationId
+  if (!sessionOrgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
 
   const { searchParams } = new URL(req.url)
-  const statusParam = searchParams.get('status')
 
+  const targetOrgId = searchParams.get('orgId')
+  let orgId = sessionOrgId
+  if (targetOrgId && session.user.isParentOrg) {
+    const canManage = await canManageChildOrg(session, targetOrgId)
+    if (!canManage) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    orgId = targetOrgId
+  }
+
+  const statusParam = searchParams.get('status')
   const STATUS_VALUES: SessionStatus[] = ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
   const status =
     statusParam && STATUS_VALUES.includes(statusParam as SessionStatus)
@@ -34,12 +43,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const orgId = session.user.organisationId
-  if (!orgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
+  const sessionOrgId = session.user.organisationId
+  if (!sessionOrgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
 
   const body = await req.json()
-  const { title, description, scheduledAt, duration, platform, meetingUrl, hostId, attendees } =
+  const { title, description, scheduledAt, duration, platform, meetingUrl, hostId, attendees, targetOrgId } =
     body
+
+  // Allow parent orgs to create sessions for child orgs
+  let orgId = sessionOrgId
+  if (targetOrgId && session.user.isParentOrg) {
+    const canManage = await canManageChildOrg(session, targetOrgId)
+    if (!canManage) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    orgId = targetOrgId
+  }
 
   // Validate required fields
   if (!title || !scheduledAt || !duration || !hostId) {

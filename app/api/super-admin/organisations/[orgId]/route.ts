@@ -29,6 +29,7 @@ const updateSchema = z.object({
   cvBuilderEnabled: z.boolean().optional(),
   careersAdvisorEnabled: z.boolean().optional(),
   organisationType: z.enum(['SCHOOL', 'COLLEGE', 'ACADEMY', 'UNIVERSITY', 'EMPLOYER', 'EDUCATION', 'BUSINESS']).optional(),
+  isParentOrg: z.boolean().optional(),
 })
 
 export async function GET(
@@ -53,6 +54,8 @@ export async function GET(
         orderBy: { createdAt: 'desc' },
       },
       _count: { select: { users: true } },
+      childOrgs: { select: { id: true, name: true, active: true } },
+      parentOrg: { select: { id: true, name: true } },
     },
   })
 

@@ -36,6 +36,17 @@ interface OrgUser {
   _count: { trainingProgress: number }
 }
 
+interface ChildOrgSummary {
+  id: string
+  name: string
+  active: boolean
+}
+
+interface ParentOrgSummary {
+  id: string
+  name: string
+}
+
 interface OrgDetail {
   id: string
   name: string
@@ -43,6 +54,9 @@ interface OrgDetail {
   active: boolean
   allowedRoles: string[]
   allowedProgramIds: string[]
+  isParentOrg: boolean
+  parentOrgId: string | null
+  inheritSettings: boolean
   contactName: string | null
   contactEmail: string | null
   contactPhone: string | null
@@ -59,6 +73,8 @@ interface OrgDetail {
   cvBuilderEnabled: boolean
   careersAdvisorEnabled: boolean
   organisationType: string
+  childOrgs: ChildOrgSummary[]
+  parentOrg: ParentOrgSummary | null
 }
 
 interface ProgramSummary {
@@ -139,6 +155,7 @@ export default function OrgDetailPage() {
   const [editCvBuilder, setEditCvBuilder] = useState(true)
   const [editCareersAdvisor, setEditCareersAdvisor] = useState(true)
   const [editOrgType, setEditOrgType] = useState<string>('SCHOOL')
+  const [editIsParentOrg, setEditIsParentOrg] = useState(false)
   const [saving, setSaving] = useState(false)
 
   // Add org admin form
@@ -185,6 +202,7 @@ export default function OrgDetailPage() {
         setEditCvBuilder(data.cvBuilderEnabled ?? true)
         setEditCareersAdvisor(data.careersAdvisorEnabled ?? true)
         setEditOrgType(data.organisationType ?? 'SCHOOL')
+        setEditIsParentOrg(data.isParentOrg ?? false)
       }
     } finally {
       setLoading(false)
@@ -269,6 +287,7 @@ export default function OrgDetailPage() {
           cvBuilderEnabled: editCvBuilder,
           careersAdvisorEnabled: editCareersAdvisor,
           organisationType: editOrgType,
+          isParentOrg: editIsParentOrg,
         }),
       })
       if (res.ok) {
@@ -690,6 +709,20 @@ export default function OrgDetailPage() {
             </label>
           </div>
 
+          {/* Parent org toggle */}
+          <div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={editIsParentOrg}
+                onChange={(e) => setEditIsParentOrg(e.target.checked)}
+                className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span className="text-sm font-medium text-slate-700">Parent Organisation</span>
+            </label>
+            <p className="text-xs text-slate-400 mt-1 ml-7">Enable if this organisation will have child organisations underneath it.</p>
+          </div>
+
           <div className="flex justify-end pt-1">
             <button type="submit" disabled={saving} className="btn-primary">
               {saving ? 'Saving...' : 'Save Changes'}
@@ -697,6 +730,60 @@ export default function OrgDetailPage() {
           </div>
         </form>
       </div>
+
+      {/* Hierarchy section */}
+      {(org.parentOrg || (org.isParentOrg && org.childOrgs.length > 0)) && (
+        <div className="card space-y-3">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-purple-600" />
+            Hierarchy
+          </h2>
+
+          {org.parentOrg && (
+            <div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Parent Organisation</p>
+              <Link
+                href={`/super-admin/organisations/${org.parentOrg.id}`}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700"
+              >
+                <Building2 className="h-4 w-4" />
+                {org.parentOrg.name}
+              </Link>
+            </div>
+          )}
+
+          {org.isParentOrg && org.childOrgs.length > 0 && (
+            <div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
+                Child Organisations ({org.childOrgs.length})
+              </p>
+              <div className="space-y-1.5">
+                {org.childOrgs.map((child) => (
+                  <div key={child.id} className="flex items-center gap-2">
+                    <Link
+                      href={`/super-admin/organisations/${child.id}`}
+                      className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                    >
+                      {child.name}
+                    </Link>
+                    <span
+                      className={clsx(
+                        'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full',
+                        child.active
+                          ? 'bg-sage-100 text-sage-700 dark:bg-sage-900/40 dark:text-sage-300'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                      )}
+                    >
+                      {child.active ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                      {child.active ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Users table */}
       <div className="card overflow-hidden p-0">

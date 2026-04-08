@@ -28,6 +28,9 @@ export interface Organisation {
   allowedProgramIds: string[]
   allowedRoles: string[]
   logoUrl?: string | null
+  parentOrgId?: string | null
+  isParentOrg: boolean
+  inheritSettings: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -205,6 +208,7 @@ declare module 'next-auth' {
       charityPermissions: string[]
       cvBuilderEnabled: boolean
       careersAdvisorEnabled: boolean
+      isParentOrg: boolean
     }
   }
 }
@@ -222,6 +226,7 @@ declare module 'next-auth/jwt' {
     charityPermissions: string[]
     cvBuilderEnabled: boolean
     careersAdvisorEnabled: boolean
+    isParentOrg: boolean
   }
 }
 

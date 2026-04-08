@@ -90,6 +90,17 @@ export default function SessionListPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<FilterTab>('ALL')
 
+  // Parent org selector
+  const [schools, setSchools] = useState<{id: string; name: string}[]>([])
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('')
+  const isParentOrg = session?.user?.isParentOrg ?? false
+
+  useEffect(() => {
+    if (isParentOrg) {
+      fetch('/api/admin/schools').then(r => r.json()).then(data => setSchools(data.children ?? []))
+    }
+  }, [isParentOrg])
+
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
     if (status === 'authenticated' && session?.user?.role !== 'ORG_ADMIN') router.push('/dashboard')
@@ -102,6 +113,7 @@ export default function SessionListPage() {
       if (filter === 'UPCOMING') params.set('status', 'SCHEDULED')
       else if (filter === 'COMPLETED') params.set('status', 'COMPLETED')
       else if (filter === 'CANCELLED') params.set('status', 'CANCELLED')
+      if (selectedOrgId) params.set('orgId', selectedOrgId)
 
       const res = await fetch(`/api/admin/sessions?${params}`)
       if (res.ok) {
@@ -111,7 +123,7 @@ export default function SessionListPage() {
     } finally {
       setLoading(false)
     }
-  }, [filter])
+  }, [filter, selectedOrgId])
 
   useEffect(() => {
     if (status === 'authenticated') fetchSessions()
@@ -149,6 +161,18 @@ export default function SessionListPage() {
           </Link>
         </div>
       </div>
+
+      {/* Org selector for parent orgs */}
+      {isParentOrg && (
+        <select
+          value={selectedOrgId}
+          onChange={(e) => setSelectedOrgId(e.target.value)}
+          className="px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm"
+        >
+          <option value="">All Organisations</option>
+          {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+      )}
 
       {/* Filter Tabs */}
       <div className="flex gap-1 bg-calm-100 dark:bg-slate-700 rounded-xl p-1">

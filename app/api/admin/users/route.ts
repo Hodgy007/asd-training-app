@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { validatePassword } from '@/lib/password-validation'
+import { canManageChildOrg } from '@/lib/org-hierarchy'
 import { Role } from '@prisma/client'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
@@ -22,10 +23,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const orgId = session.user.organisationId
-  if (!orgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
+  const sessionOrgId = session.user.organisationId
+  if (!sessionOrgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
 
   const { searchParams } = new URL(req.url)
+
+  // Parent org drill-down: if ?orgId is provided and session org is a parent, verify relationship
+  const targetOrgId = searchParams.get('orgId')
+  let orgId = sessionOrgId
+  if (targetOrgId && session.user.isParentOrg) {
+    const canManage = await canManageChildOrg(session, targetOrgId)
+    if (!canManage) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    orgId = targetOrgId
+  }
+
   const search = searchParams.get('search') ?? ''
   const role = searchParams.get('role') ?? ''
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))

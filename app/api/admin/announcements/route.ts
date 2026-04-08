@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { canManageChildOrg } from '@/lib/org-hierarchy'
 import { z } from 'zod'
 
 const createSchema = z.object({
@@ -12,14 +13,26 @@ const createSchema = z.object({
   expiresAt: z.string().datetime().nullable().optional(),
 })
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !isOrgAdmin(session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
+  const sessionOrgId = session.user.organisationId
+  if (!sessionOrgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
+
+  const { searchParams } = new URL(req.url)
+  const targetOrgId = searchParams.get('orgId')
+  let orgId = sessionOrgId
+  if (targetOrgId && session.user.isParentOrg) {
+    const canManage = await canManageChildOrg(session, targetOrgId)
+    if (!canManage) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    orgId = targetOrgId
+  }
+
   const announcements = await prisma.announcement.findMany({
-    where: { organisationId: session.user.organisationId },
+    where: { organisationId: orgId },
     orderBy: { createdAt: 'desc' },
     include: { createdBy: { select: { name: true } } },
   })

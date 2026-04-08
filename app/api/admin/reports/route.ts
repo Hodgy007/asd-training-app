@@ -1,17 +1,39 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { canManageChildOrg, getAllOrgIds } from '@/lib/org-hierarchy'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !isOrgAdmin(session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const orgId = session.user.organisationId
-  if (!orgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
+  const sessionOrgId = session.user.organisationId
+  if (!sessionOrgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
+
+  const { searchParams } = new URL(req.url)
+  const targetOrgId = searchParams.get('orgId')
+
+  // Determine which org(s) to report on
+  let orgId = sessionOrgId
+  let orgIds: string[] = [sessionOrgId]
+  if (targetOrgId && session.user.isParentOrg) {
+    if (targetOrgId === 'all') {
+      orgIds = await getAllOrgIds(sessionOrgId)
+      orgId = sessionOrgId
+    } else {
+      const canManage = await canManageChildOrg(session, targetOrgId)
+      if (!canManage) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      orgId = targetOrgId
+      orgIds = [targetOrgId]
+    }
+  } else if (!targetOrgId && session.user.isParentOrg) {
+    // Default for parent orgs: aggregate across all children
+    orgIds = await getAllOrgIds(sessionOrgId)
+  }
 
   // Get org's allowed programs and their modules
   const org = await prisma.organisation.findUnique({
@@ -32,7 +54,7 @@ export async function GET() {
 
   const users = await prisma.user.findMany({
     where: {
-      organisationId: orgId,
+      organisationId: { in: orgIds },
       role: { notIn: ['SUPER_ADMIN', 'ORG_ADMIN'] },
     },
     select: {
@@ -94,8 +116,8 @@ export async function GET() {
 
   // ── Workshop, download, and survey response counts (org-scoped) ──
   const [workshopCount, downloadCount, surveyResponseCount] = await Promise.all([
-    prisma.classSession.count({ where: { organisationId: orgId } }),
-    prisma.libraryDocumentEvent.count({ where: { organisationId: orgId, action: 'download' } }),
+    prisma.classSession.count({ where: { organisationId: { in: orgIds } } }),
+    prisma.libraryDocumentEvent.count({ where: { organisationId: { in: orgIds }, action: 'download' } }),
     prisma.surveyResponse.count({ where: { userId: { in: orgUserIds } } }),
   ])
 

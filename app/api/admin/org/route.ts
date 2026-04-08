@@ -12,8 +12,18 @@ export async function GET() {
 
   const org = await prisma.organisation.findUnique({
     where: { id: session.user.organisationId! },
-    select: { id: true, name: true, allowedRoles: true, allowedProgramIds: true },
+    select: {
+      id: true,
+      name: true,
+      allowedRoles: true,
+      allowedProgramIds: true,
+      isParentOrg: true,
+      _count: { select: { childOrgs: true } },
+    },
   })
 
-  return NextResponse.json(org)
+  return NextResponse.json({
+    ...org,
+    childOrgCount: org?._count?.childOrgs ?? 0,
+  })
 }

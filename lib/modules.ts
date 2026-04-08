@@ -1,4 +1,5 @@
 import prisma from './prisma'
+import { getEffectiveOrgSettings } from './org-hierarchy'
 
 export interface ProgramInfo {
   id: string
@@ -6,13 +7,10 @@ export interface ProgramInfo {
 }
 
 export async function getOrgPrograms(orgId: string): Promise<ProgramInfo[]> {
-  const org = await prisma.organisation.findUnique({
-    where: { id: orgId },
-    select: { allowedProgramIds: true },
-  })
-  if (!org || org.allowedProgramIds.length === 0) return []
+  const settings = await getEffectiveOrgSettings(orgId)
+  if (settings.allowedProgramIds.length === 0) return []
   return prisma.trainingProgram.findMany({
-    where: { id: { in: org.allowedProgramIds }, active: true },
+    where: { id: { in: settings.allowedProgramIds }, active: true },
     select: { id: true, name: true },
     orderBy: { order: 'asc' },
   })

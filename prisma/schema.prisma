@@ -101,15 +101,22 @@ model Organisation {
   postcode          String?
   country           String   @default("United Kingdom")
   pendingApproval   Boolean  @default(false)
+  parentOrgId       String?
+  isParentOrg       Boolean  @default(false)
+  inheritSettings   Boolean  @default(true)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  parentOrg     Organisation?  @relation("OrgHierarchy", fields: [parentOrgId], references: [id])
+  childOrgs     Organisation[] @relation("OrgHierarchy")
   users         User[]
   announcements Announcement[]
   sessions      ClassSession[]
   meetingConfig OrgMeetingConfig?
   ssoConfig     OrgSsoConfig?
   surveyTargets SurveyTarget[]
+
+  @@index([parentOrgId])
 }
 
 model Announcement {

@@ -25,6 +25,7 @@ const createSchema = z.object({
   postcode: z.string().max(20).optional(),
   country: z.string().max(100).optional(),
   organisationType: z.enum(['SCHOOL', 'COLLEGE', 'ACADEMY', 'UNIVERSITY', 'EMPLOYER', 'EDUCATION', 'BUSINESS']).optional(),
+  isParentOrg: z.boolean().default(false),
 })
 
 export async function GET() {
@@ -36,7 +37,7 @@ export async function GET() {
   const orgs = await prisma.organisation.findMany({
     where: { pendingApproval: false },
     orderBy: { createdAt: 'desc' },
-    include: { _count: { select: { users: true } } },
+    include: { _count: { select: { users: true, childOrgs: true } } },
   })
 
   return NextResponse.json(orgs)
