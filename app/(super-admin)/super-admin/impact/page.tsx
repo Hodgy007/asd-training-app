@@ -2,6 +2,7 @@
 
 import { TrendingUp } from 'lucide-react'
 import { ImpactReachModel } from '@/components/super-admin/impact-reach-model'
+import { PlatformCostInsights } from '@/components/super-admin/platform-cost-insights'
 
 export default function ImpactPage() {
   return (
@@ -17,6 +18,8 @@ export default function ImpactPage() {
       </div>
 
       <ImpactReachModel />
+
+      <PlatformCostInsights />
     </div>
   )
 }
