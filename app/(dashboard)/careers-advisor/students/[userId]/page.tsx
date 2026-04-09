@@ -50,7 +50,7 @@ export default function StudentAdvisorPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <div>
         <Link
           href="/careers-advisor/students"

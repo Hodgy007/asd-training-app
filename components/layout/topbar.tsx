@@ -23,34 +23,34 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
     : 'U'
 
   return (
-    <header className="h-16 bg-orange-100 dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
+    <header className="h-16 bg-primary-500 dark:bg-primary-600 border-b border-primary-600 dark:border-primary-700 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuClick}
-          className="md:hidden p-2 rounded-xl text-slate-500 hover:bg-calm-100 dark:hover:bg-slate-700 transition-colors"
+          className="md:hidden p-2 rounded-xl text-white hover:bg-primary-400 transition-colors"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </button>
-        {title && <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100 hidden md:block">{title}</h1>}
+        {title && <h1 className="text-lg font-semibold text-white hidden md:block">{title}</h1>}
       </div>
 
       <div className="flex items-center gap-3">
         <ThemeToggle />
 
         <button
-          className="p-2 rounded-xl text-slate-400 hover:bg-calm-100 dark:hover:bg-slate-700 transition-colors relative"
+          className="p-2 rounded-xl text-white hover:bg-primary-400 transition-colors relative"
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-            <span className="text-xs font-bold text-white">{initials}</span>
+          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+            <span className="text-xs font-bold text-primary-500">{initials}</span>
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-tight">
+            <p className="text-sm font-medium text-white leading-tight">
               {session?.user?.name || 'Practitioner'}
             </p>
             <p className="text-xs text-slate-400 dark:text-slate-500">

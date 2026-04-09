@@ -175,7 +175,7 @@ export default function CharityUsersPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -401,7 +401,7 @@ export default function CharityUsersPage() {
                   <th className="px-4 py-3 w-12"></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className={users.length > 0 ? 'animate-stagger' : ''}>
                 {users.map((user) => (
                   <tr
                     key={user.id}

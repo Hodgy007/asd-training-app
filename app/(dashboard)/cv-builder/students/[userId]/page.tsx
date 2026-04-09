@@ -122,7 +122,7 @@ export default function StudentCVsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
       <div>
         <Link
           href="/cv-builder/students"

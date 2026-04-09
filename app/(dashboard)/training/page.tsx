@@ -62,7 +62,7 @@ export default async function TrainingPage() {
   )
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Training Programs</h1>
         <p className="text-slate-500 mt-1">
@@ -70,7 +70,7 @@ export default async function TrainingPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-stagger">
         {programsWithProgress.map((program) => {
           const pct = program.totalLessons > 0
             ? Math.round((program.completedLessons / program.totalLessons) * 100)

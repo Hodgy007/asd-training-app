@@ -68,7 +68,7 @@ export default function RegisterOrganisationPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-orange-50 dark:bg-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-orange-50 dark:bg-slate-900 flex items-center justify-center p-4 animate-page-enter">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center mb-4">
@@ -104,7 +104,7 @@ export default function RegisterOrganisationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-orange-50 dark:bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-orange-50 dark:bg-slate-900 flex items-center justify-center p-4 animate-page-enter">
       <div className="w-full max-w-lg">
         {/* Logo & Branding */}
         <div className="text-center mb-8">

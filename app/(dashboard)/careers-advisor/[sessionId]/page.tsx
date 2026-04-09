@@ -58,7 +58,7 @@ export default function CareersAdvisorSessionPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-page-enter">
       <Link
         href="/careers-advisor"
         className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"

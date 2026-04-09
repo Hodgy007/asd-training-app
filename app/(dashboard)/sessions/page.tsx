@@ -156,7 +156,7 @@ export default function SessionsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 animate-page-enter">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your Workshops</h1>

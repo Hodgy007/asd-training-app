@@ -132,7 +132,7 @@ export default function SessionListPage() {
   if (status !== 'authenticated' || session?.user?.role !== 'ORG_ADMIN') return null
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -205,7 +205,7 @@ export default function SessionListPage() {
           <p className="text-xs mt-1">Create your first virtual classroom session to get started.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 animate-stagger">
           {sessions.map((s) => {
             const PlatformIcon = PLATFORM_ICONS[s.platform]
             return (

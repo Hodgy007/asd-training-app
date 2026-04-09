@@ -6,7 +6,7 @@ import { PlatformCostInsights } from '@/components/super-admin/platform-cost-ins
 
 export default function ImpactPage() {
   return (
-    <div className="max-w-full space-y-6">
+    <div className="max-w-full space-y-6 animate-page-enter">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
           <TrendingUp className="h-6 w-6 text-teal-600 dark:text-teal-400" />

@@ -40,7 +40,7 @@ export default function ChildrenPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Children</h1>
@@ -89,7 +89,7 @@ export default function ChildrenPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-stagger">
           {children.map((child) => (
             <ChildCard
               key={child.id}

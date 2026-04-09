@@ -331,7 +331,7 @@ export default function SessionDetailPage() {
   const canEdit = data.status === 'SCHEDULED' || data.status === 'IN_PROGRESS'
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div className={clsx(
@@ -597,7 +597,7 @@ export default function SessionDetailPage() {
                   <th className="text-center px-3 py-2 font-semibold text-slate-600 dark:text-slate-400">Attended</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className={data.attendees.length > 0 ? 'animate-stagger' : ''}>
                 {data.attendees.map((a) => (
                   <tr key={a.id} className="border-b border-calm-100 dark:border-slate-700/50">
                     <td className="px-3 py-2.5 font-medium text-slate-900 dark:text-slate-100">

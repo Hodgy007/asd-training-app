@@ -166,7 +166,7 @@ export default function ModuleEditorPage() {
       : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div

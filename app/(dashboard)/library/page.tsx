@@ -142,7 +142,7 @@ function LibraryPage() {
     })
 
     return (
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
         <div>
           <button
             onClick={() => { setSelectedCollection(null); setSearch('') }}
@@ -239,7 +239,7 @@ function LibraryPage() {
 
   // Collections view
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
           <FolderOpen className="h-6 w-6 text-primary-600 dark:text-primary-400" />
@@ -276,7 +276,7 @@ function LibraryPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-stagger">
           {filteredCollections.map((col) => (
             <button
               key={col.id}

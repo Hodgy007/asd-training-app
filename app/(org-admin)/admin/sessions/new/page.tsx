@@ -185,7 +185,7 @@ export default function CreateSessionPage() {
   if (status !== 'authenticated' || session?.user?.role !== 'ORG_ADMIN') return null
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div

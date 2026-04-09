@@ -82,9 +82,9 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
     : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
 
   return (
-    <div className="flex flex-col h-full bg-orange-100 dark:bg-slate-800 border-r border-calm-200 dark:border-slate-700">
+    <div className="flex flex-col h-full bg-primary-500 dark:bg-primary-600 border-r border-primary-600 dark:border-primary-700">
       {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-5 border-b border-calm-200 dark:border-slate-700 bg-orange-100 dark:bg-slate-800 flex-shrink-0">
+      <div className="flex items-center justify-between h-16 px-5 border-b border-primary-600 dark:border-primary-700 bg-primary-500 dark:bg-primary-600 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -93,8 +93,8 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
             </svg>
           </div>
           <div>
-            <p className="font-bold text-slate-900 dark:text-slate-100 text-sm leading-tight">Ambitious about</p>
-            <p className="font-bold text-primary-500 text-sm leading-tight">Autism</p>
+            <p className="font-bold text-white text-sm leading-tight">Ambitious about</p>
+            <p className="font-bold text-white text-sm leading-tight">Autism</p>
           </div>
         </div>
         {mobile && (
@@ -134,14 +134,14 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
               className={clsx(
                 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all',
                 isActive
-                  ? 'bg-purple-50 text-purple-600 shadow-sm dark:bg-purple-900/30 dark:text-purple-400'
-                  : 'text-slate-600 hover:bg-calm-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-slate-100'
+                  ? 'bg-white/20 text-white shadow-sm'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white'
               )}
             >
               <Icon
                 className={clsx(
                   'h-5 w-5 flex-shrink-0',
-                  isActive ? 'text-purple-500 dark:text-purple-400' : 'text-slate-400 dark:text-slate-500'
+                  isActive ? 'text-white' : 'text-white/60'
                 )}
               />
               {item.label}
@@ -151,12 +151,12 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
       </nav>
 
       {/* Bottom section */}
-      <div className="p-4 border-t border-calm-200 dark:border-slate-700 space-y-2">
+      <div className="p-4 border-t border-white/20 space-y-2">
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all w-full"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-white/80 hover:bg-red-500/20 hover:text-red-200 transition-all w-full"
         >
-          <LogOut className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+          <LogOut className="h-5 w-5 text-white/60" />
           Sign out
         </button>
       </div>

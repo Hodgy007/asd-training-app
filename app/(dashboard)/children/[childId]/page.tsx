@@ -170,7 +170,7 @@ export default function ChildPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
@@ -238,7 +238,7 @@ export default function ChildPage() {
       {/* Tab content */}
       {tab === 'overview' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-stagger">
             <div className="card text-center">
               <p className="text-3xl font-bold text-primary-600">{observations.length}</p>
               <p className="text-sm text-slate-500 mt-1">Total observations</p>

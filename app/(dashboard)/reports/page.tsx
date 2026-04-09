@@ -83,7 +83,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-start justify-between no-print">
         <div>
@@ -242,7 +242,7 @@ export default function ReportsPage() {
                                     <th className="pb-2 font-medium">Notes</th>
                                   </tr>
                                 </thead>
-                                <tbody className="divide-y divide-calm-100">
+                                <tbody className={`divide-y divide-calm-100${obs.length > 0 ? ' animate-stagger' : ''}`}>
                                   {obs.map((o) => (
                                     <tr key={o.id}>
                                       <td className="py-2 pr-4 text-slate-500 whitespace-nowrap">

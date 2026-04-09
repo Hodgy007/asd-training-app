@@ -257,7 +257,7 @@ export default function LessonEditorPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div

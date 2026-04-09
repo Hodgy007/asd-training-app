@@ -201,7 +201,7 @@ export default function SurveyResultsPage() {
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
       {/* Back link + title */}
       <div>
         <Link

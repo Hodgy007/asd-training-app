@@ -178,7 +178,7 @@ export default function NewSessionPage() {
   if (status !== 'authenticated' || !CAN_CREATE.includes(session?.user?.role ?? '')) return null
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div

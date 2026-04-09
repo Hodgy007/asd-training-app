@@ -210,7 +210,7 @@ export default function SsoSettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div className={clsx(

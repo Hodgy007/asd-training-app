@@ -379,7 +379,7 @@ export default function CharitySettingsPage() {
     'px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 disabled:opacity-60 transition-colors flex items-center gap-2'
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto space-y-8 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div
@@ -900,7 +900,7 @@ export default function CharitySettingsPage() {
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 w-16 text-xs"></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className={!loadingKeys && apiKeys.length > 0 ? 'animate-stagger' : ''}>
                 {loadingKeys ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">

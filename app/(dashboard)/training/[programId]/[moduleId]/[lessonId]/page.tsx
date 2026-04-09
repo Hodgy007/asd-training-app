@@ -202,7 +202,7 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm flex-wrap">
         <Link href={`/training/${params.programId}`} className="text-slate-400 hover:text-slate-600 transition-colors">

@@ -303,7 +303,7 @@ export default function SurveysPage() {
   /* ──────────────────────────── Render ──────────────────────────── */
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div
@@ -373,7 +373,7 @@ export default function SurveysPage() {
         </div>
       ) : (
         /* Survey list */
-        <div className="space-y-4">
+        <div className="space-y-4 animate-stagger">
           {surveys.map((survey) => (
             <div
               key={survey.id}

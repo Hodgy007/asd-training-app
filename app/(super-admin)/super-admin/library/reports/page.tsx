@@ -85,7 +85,7 @@ export default function LibraryReportsPage() {
     : collections
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -123,7 +123,7 @@ export default function LibraryReportsPage() {
         <>
           {/* Summary cards */}
           {totals && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-stagger">
               <div className="card text-center">
                 <FolderOpen className="h-6 w-6 text-primary-500 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totals.totalCollections}</p>
@@ -179,7 +179,7 @@ export default function LibraryReportsPage() {
                     <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden lg:table-cell">Created</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className={filteredCollections.length > 0 ? 'animate-stagger' : ''}>
                   {filteredCollections.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="px-4 py-12 text-center text-slate-400 dark:text-slate-500">

@@ -383,7 +383,7 @@ export default function OrgDetailPage() {
   // ── Main render ────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
 
       {/* Toast */}
       {toast && (
@@ -879,7 +879,7 @@ export default function OrgDetailPage() {
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">Created</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={org.users.length > 0 ? 'animate-stagger' : ''}>
               {org.users.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-10 text-center text-slate-400">

@@ -240,7 +240,7 @@ export default function TrainingContentPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div
@@ -312,7 +312,7 @@ export default function TrainingContentPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-stagger">
           {programs.map((program, idx) => (
             <div
               key={program.id}

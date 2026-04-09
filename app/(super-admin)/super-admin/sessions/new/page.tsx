@@ -130,7 +130,7 @@ export default function CreateCharitySessionPage() {
   if (status === 'authenticated' && !canManageSessions(session)) return null
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div

@@ -64,7 +64,7 @@ export default async function SuperAdminPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Charity Admin Overview</h1>
@@ -72,7 +72,7 @@ export default async function SuperAdminPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
         <div className="card flex items-center gap-4">
           <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
             <Building2 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
@@ -150,7 +150,7 @@ export default async function SuperAdminPage() {
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={orgs.length > 0 ? 'animate-stagger' : ''}>
               {orgs.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">

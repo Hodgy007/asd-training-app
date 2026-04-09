@@ -89,7 +89,7 @@ export default async function DashboardPage() {
   const firstProgramId = allowedProgramIds[0]
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
       {/* Welcome */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Welcome back, {firstName}</h1>
@@ -108,7 +108,7 @@ export default async function DashboardPage() {
       <PendingSurveys />
 
       {/* Stats row */}
-      <div className={`grid grid-cols-1 ${isCaregiver ? 'sm:grid-cols-3' : 'sm:grid-cols-1 max-w-sm'} gap-4`}>
+      <div className={`grid grid-cols-1 ${isCaregiver ? 'sm:grid-cols-3' : 'sm:grid-cols-1 max-w-sm'} gap-4 animate-stagger`}>
         <div className="card flex items-center gap-4">
           <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
             <BookOpen className="h-6 w-6 text-primary-600" />
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
             </div>
             <div className="w-full h-3 bg-calm-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary-500 rounded-full transition-all"
+                className="h-full bg-primary-500 rounded-full animate-progress"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
@@ -212,7 +212,7 @@ export default async function DashboardPage() {
         <div className="space-y-4">
           <div className="card">
             <h2 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
-            <div className="space-y-2">
+            <div className="space-y-2 animate-stagger">
               {isCaregiver && (
                 <Link
                   href="/children"

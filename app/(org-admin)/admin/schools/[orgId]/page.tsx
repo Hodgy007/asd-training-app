@@ -341,7 +341,7 @@ export default function SchoolDetailPage() {
   const allowedRolesForUsers = school?.allowedRoles ?? []
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div
@@ -776,7 +776,7 @@ export default function SchoolDetailPage() {
                     <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden md:table-cell">Created</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className={!usersLoading && usersData && usersData.users.length > 0 ? 'animate-stagger' : ''}>
                   {usersLoading ? (
                     <tr>
                       <td colSpan={5} className="px-4 py-12 text-center text-slate-400 dark:text-slate-500">

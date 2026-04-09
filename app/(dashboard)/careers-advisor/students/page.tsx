@@ -26,7 +26,7 @@ export default function CareersAdvisorStudentsPage() {
   }, [])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <div>
         <Link
           href="/careers-advisor"
@@ -66,7 +66,7 @@ export default function CareersAdvisorStudentsPage() {
                 <th className="px-6 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-calm-100 dark:divide-slate-700">
+            <tbody className={`divide-y divide-calm-100 dark:divide-slate-700${students.length > 0 ? ' animate-stagger' : ''}`}>
               {students.map((student) => (
                 <tr key={student.id} className="hover:bg-calm-50 dark:hover:bg-slate-700/50 transition-colors">
                   <td className="px-6 py-4">

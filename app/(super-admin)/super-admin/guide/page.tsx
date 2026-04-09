@@ -61,7 +61,7 @@ function Tip({ children }: { children: React.ReactNode }) {
 
 export default function SuperAdminGuidePage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">

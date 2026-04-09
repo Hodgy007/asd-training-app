@@ -51,7 +51,7 @@ export default async function ProgramPage({ params }: { params: { programId: str
   ).length
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">{program.name}</h1>
         {program.description && (
@@ -85,7 +85,7 @@ export default async function ProgramPage({ params }: { params: { programId: str
       </div>
 
       {/* Module grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-stagger">
         {dbModules.map((module, index) => {
           const moduleProgress = progressRecords.filter(
             (p) => p.moduleId === module.id && p.completed

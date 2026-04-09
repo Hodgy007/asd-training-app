@@ -225,7 +225,7 @@ export default function SessionDetailPage() {
     (session.status === 'SCHEDULED' || session.status === 'IN_PROGRESS')
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
         <Link

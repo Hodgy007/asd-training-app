@@ -7,7 +7,7 @@ import {
 export default function OrgAdminGuidePage() {
   return (
     <div className="min-h-screen bg-calm-50 dark:bg-slate-900 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8 animate-page-enter">
         {/* Page Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 mb-2">

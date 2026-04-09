@@ -213,7 +213,7 @@ export default function OrgReportsPage() {
   }, [fetchReport, fetchLibraryReport])
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -246,7 +246,7 @@ export default function OrgReportsPage() {
 
       {/* Summary cards */}
       {data && !loading && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 animate-stagger">
           <div className="card text-center">
             <p className="text-3xl font-bold text-emerald-600">{data.totalUsers}</p>
             <p className="text-sm text-slate-500 mt-1">Total members</p>
@@ -284,7 +284,7 @@ export default function OrgReportsPage() {
                 <th className="px-4 py-3 font-semibold text-slate-600 text-center">Detail</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={!loading && data && data.modules.length > 0 ? 'animate-stagger' : ''}>
               {loading ? (
                 <tr>
                   <td colSpan={3} className="px-4 py-12 text-center text-slate-400">
@@ -332,7 +332,7 @@ export default function OrgReportsPage() {
                   <th className="text-left px-4 py-3 font-semibold text-slate-600">Completed</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="animate-stagger">
                 {data.users.map((u) => (
                   <tr key={u.id} className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
                     <td className="px-4 py-3 font-medium text-slate-800">{u.name ?? '\u2014'}</td>
@@ -378,7 +378,7 @@ export default function OrgReportsPage() {
         <>
           {/* Library summary cards */}
           {libTotals && (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 animate-stagger">
               <div className="card text-center">
                 <FolderOpen className="h-5 w-5 text-emerald-500 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{libTotals.totalCollections}</p>
@@ -413,7 +413,7 @@ export default function OrgReportsPage() {
                     <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Downloads</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className={libCollections.length > 0 ? 'animate-stagger' : ''}>
                   {libCollections.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">
@@ -454,7 +454,7 @@ export default function OrgReportsPage() {
         </div>
       ) : data?.cvStats ? (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-stagger">
             <div className="card text-center">
               <FileCheck className="h-5 w-5 text-emerald-500 mx-auto mb-1" />
               <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.cvStats.total}</p>
@@ -525,7 +525,7 @@ export default function OrgReportsPage() {
           Loading advisor reports...
         </div>
       ) : data?.advisorStats ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-stagger">
           <div className="card text-center">
             <BarChart3 className="h-5 w-5 text-indigo-500 mx-auto mb-1" />
             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.advisorStats.total}</p>

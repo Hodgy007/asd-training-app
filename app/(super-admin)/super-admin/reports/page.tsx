@@ -265,7 +265,7 @@ export default function SuperAdminReportsPage() {
   const allModuleIds = moduleMeta.map((m) => m.id)
 
   return (
-    <div className="max-w-full space-y-6">
+    <div className="max-w-full space-y-6 animate-page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -348,7 +348,7 @@ export default function SuperAdminReportsPage() {
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className={!loading && !error && data.length > 0 ? 'animate-stagger' : ''}>
               {loading ? (
                 <tr>
                   <td
@@ -477,7 +477,7 @@ export default function SuperAdminReportsPage() {
                     <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Downloads</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className={libCollections.length > 0 ? 'animate-stagger' : ''}>
                   {libCollections.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">
@@ -582,7 +582,7 @@ export default function SuperAdminReportsPage() {
                     <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Rate</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className={surveyReports.length > 0 ? 'animate-stagger' : ''}>
                   {surveyReports.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">

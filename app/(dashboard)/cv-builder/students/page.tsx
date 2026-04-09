@@ -63,7 +63,7 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
       <div>
         <Link
           href="/cv-builder"
@@ -120,7 +120,7 @@ export default function StudentsPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-calm-100 dark:divide-slate-700/50">
+            <tbody className={`divide-y divide-calm-100 dark:divide-slate-700/50${students.length > 0 ? ' animate-stagger' : ''}`}>
               {students.map((student) => (
                 <tr
                   key={student.id}

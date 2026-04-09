@@ -43,19 +43,23 @@
   }
 
   .card-hover {
-    @apply bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-calm-200 dark:border-slate-700 p-6 transition-all hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600;
+    @apply bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-calm-200 dark:border-slate-700 p-6 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600;
+    transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out), border-color 200ms var(--ease-out);
   }
 
   .btn-primary {
-    @apply bg-primary-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-primary-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed;
+    transition: background-color 150ms var(--ease-out), transform 100ms var(--ease-out), box-shadow 150ms var(--ease-out);
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl font-bold border border-calm-300 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800;
+    @apply bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl font-bold border border-calm-300 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800;
+    transition: background-color 150ms var(--ease-out), transform 100ms var(--ease-out), border-color 150ms var(--ease-out);
   }
 
   .btn-sage {
-    @apply bg-sage-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-sage-600 transition-colors focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-sage-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-sage-600 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed;
+    transition: background-color 150ms var(--ease-out), transform 100ms var(--ease-out), box-shadow 150ms var(--ease-out);
   }
 
   .input {
@@ -183,10 +187,10 @@
 .dark .border-primary-100 { border-color: rgb(124 45 18 / 0.4); }
 
 /* Primary (brand orange) light tints → dark warm tints */
-.dark .bg-primary-50  { background-color: rgb(67 20 7 / 0.35); }
-.dark .bg-primary-100 { background-color: rgb(100 30 10 / 0.5); }
-.dark .text-primary-700 { color: rgb(251 146 60); }   /* → orange-400 */
-.dark .text-primary-800 { color: rgb(253 186 116); }  /* → orange-300 */
+.dark .bg-primary-50  { background-color: rgb(5 52 112 / 0.3); }
+.dark .bg-primary-100 { background-color: rgb(5 52 112 / 0.5); }
+.dark .text-primary-700 { color: rgb(125 187 235); }   /* → blue-300 */
+.dark .text-primary-800 { color: rgb(68 199 238); }  /* → blue-light */
 
 /* Sage (green) light tints → dark green tints */
 .dark .bg-sage-50  { background-color: rgb(5 46 22 / 0.3); }
@@ -293,12 +297,102 @@
   @apply outline-none ring-2 ring-primary-500 ring-offset-2;
 }
 
-/* Smooth animations */
+/* ── Emil Kowalski-inspired polish ── */
+
+/* Custom easing curves — stronger than CSS defaults */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-snappy: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Smooth transitions — specify exact properties, never 'all' */
 * {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke,
-    opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    opacity, box-shadow, transform, filter;
+  transition-timing-function: var(--ease-out);
   transition-duration: 150ms;
+}
+
+/* Button press feedback — makes every button feel responsive */
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled),
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled),
+.btn-sage:active:not(:disabled) {
+  transform: scale(0.97);
+  transition-duration: 100ms;
+}
+
+/* Clickable card press feedback */
+a.card-hover:active,
+.card-hover:active {
+  transform: scale(0.985);
+  transition-duration: 100ms;
+}
+
+/* Gate hover effects behind pointer capability */
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    transform: translateY(-1px);
+  }
+
+  /* Quick action links — lift on hover */
+  a[class*="rounded-xl"]:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Stagger animation for cards and list items */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stagger > * {
+  opacity: 0;
+  animation: fadeInUp 350ms var(--ease-out) forwards;
+}
+.animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.animate-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.animate-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.animate-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.animate-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.animate-stagger > *:nth-child(6) { animation-delay: 250ms; }
+.animate-stagger > *:nth-child(7) { animation-delay: 300ms; }
+.animate-stagger > *:nth-child(8) { animation-delay: 350ms; }
+/* Rows 9+ appear together at the end of the stagger */
+.animate-stagger > *:nth-child(n+9) { animation-delay: 400ms; }
+
+/* Page entrance animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: fadeIn 300ms var(--ease-out) forwards;
+}
+
+/* Progress bar animation */
+@keyframes growWidth {
+  from { width: 0; }
+}
+
+.animate-progress {
+  animation: growWidth 800ms var(--ease-in-out) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

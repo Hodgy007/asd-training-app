@@ -238,7 +238,7 @@ export default function SchoolsPage() {
   if (status !== 'authenticated' || session?.user?.role !== 'ORG_ADMIN') return null
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div
@@ -469,7 +469,7 @@ export default function SchoolsPage() {
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden md:table-cell">Created</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={!loading && schools.length > 0 ? 'animate-stagger' : ''}>
               {loading ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-slate-400 dark:text-slate-500">

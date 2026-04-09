@@ -122,7 +122,7 @@ export default function AnnouncementsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
       {/* Toast */}
       {toast && (
         <div
@@ -247,7 +247,7 @@ export default function AnnouncementsPage() {
                 <th className="px-4 py-3 font-semibold text-slate-600">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={!loading && announcements.length > 0 ? 'animate-stagger' : ''}>
               {loading ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-slate-400">

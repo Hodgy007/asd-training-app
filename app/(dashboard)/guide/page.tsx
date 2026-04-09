@@ -294,7 +294,7 @@ export default function GuidePage() {
     : commonSections
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <HelpCircle className="h-7 w-7 text-primary-500" />

@@ -1,6 +1,6 @@
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-white py-12 px-4">
+    <div className="min-h-screen bg-white py-12 px-4 animate-page-enter">
       <div className="max-w-3xl mx-auto prose prose-slate">
         <h1>Terms of Service</h1>
         <p><strong>Last updated: 1 April 2026</strong></p>

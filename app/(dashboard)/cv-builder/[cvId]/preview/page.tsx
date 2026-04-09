@@ -69,7 +69,7 @@ export default function CvPreviewPage() {
   const isClassic = cvData.template === 'CLASSIC'
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
       {/* Controls */}
       <div className="flex items-center justify-between">
         <button

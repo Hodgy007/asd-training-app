@@ -9,18 +9,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Ambitious about Autism brand colours
+        // Ambitious about Autism brand colours — updated to blue
         primary: {
-          50: '#fff4e6',
-          100: '#ffe4bf',
-          200: '#ffd099',
-          300: '#ffb84d',
-          400: '#ffa726',
-          500: '#f5821f',
-          600: '#e06800',
-          700: '#c05500',
-          800: '#9a4300',
-          900: '#6b2e00',
+          50: '#f0f7fd',
+          100: '#dceef9',
+          200: '#b8ddf4',
+          300: '#7dbbeb',
+          400: '#5ca9e3',
+          500: '#056bb0',
+          600: '#045a96',
+          700: '#034678',
+          800: '#02345a',
+          900: '#01223c',
         },
         aaa: {
           orange: '#f5821f',

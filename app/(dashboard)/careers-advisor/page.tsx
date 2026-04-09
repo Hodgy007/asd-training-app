@@ -57,7 +57,7 @@ export default function CareersAdvisorPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-page-enter">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Careers Advisor</h1>
@@ -81,7 +81,7 @@ export default function CareersAdvisorPage() {
           <Loader2 className="w-6 h-6 animate-spin text-primary-500" />
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-stagger">
           {/* Create new card */}
           <button
             onClick={handleCreate}

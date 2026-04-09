@@ -93,7 +93,7 @@ export default function CvWizardPage() {
   if (!cvData) return null
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto animate-page-enter">
       <CvWizard cvId={cvId} initialData={cvData} />
     </div>
   )
