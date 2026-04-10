@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { SessionProvider } from '@/components/providers/session-provider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
+import { ColorThemeProvider } from '@/components/providers/color-theme-provider'
 import { CaregiverDisclaimer } from '@/components/ui/caregiver-disclaimer'
 import { CookieConsent } from '@/components/ui/cookie-consent'
 
@@ -17,8 +18,17 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Apply saved colour theme before first paint to prevent flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('aaa-color-theme');if(t==='blue')document.documentElement.setAttribute('data-color-theme','blue');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body>
         <ThemeProvider>
+          <ColorThemeProvider>
           <SessionProvider>
             <div className="min-h-screen flex flex-col">
               <CaregiverDisclaimer />
@@ -26,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </SessionProvider>
           <CookieConsent />
+          </ColorThemeProvider>
         </ThemeProvider>
       </body>
     </html>

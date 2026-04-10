@@ -182,15 +182,26 @@
 .dark .border-calm-100   { border-color: rgb(51 65 85); }
 .dark .border-red-200    { border-color: rgb(185 28 28 / 0.5); }
 .dark .border-green-200  { border-color: rgb(21 128 61 / 0.5); }
+/* Classic (orange) dark borders */
+.dark .border-primary-100 { border-color: rgb(124 45 18 / 0.4); }
 .dark .border-primary-200 { border-color: rgb(154 52 18 / 0.5); }
 .dark .border-primary-300 { border-color: rgb(154 52 18 / 0.6); }
-.dark .border-primary-100 { border-color: rgb(124 45 18 / 0.4); }
+/* Blue dark borders */
+html[data-color-theme="blue"].dark .border-primary-100 { border-color: rgb(4 90 150 / 0.4); }
+html[data-color-theme="blue"].dark .border-primary-200 { border-color: rgb(4 90 150 / 0.5); }
+html[data-color-theme="blue"].dark .border-primary-300 { border-color: rgb(4 90 150 / 0.6); }
 
-/* Primary (brand orange) light tints → dark warm tints */
-.dark .bg-primary-50  { background-color: rgb(5 52 112 / 0.3); }
-.dark .bg-primary-100 { background-color: rgb(5 52 112 / 0.5); }
-.dark .text-primary-700 { color: rgb(125 187 235); }   /* → blue-300 */
-.dark .text-primary-800 { color: rgb(68 199 238); }  /* → blue-light */
+/* Primary light tints in dark mode — Classic (orange) theme */
+.dark .bg-primary-50  { background-color: rgb(154 67 18 / 0.25); }
+.dark .bg-primary-100 { background-color: rgb(154 67 18 / 0.45); }
+.dark .text-primary-700 { color: rgb(253 186 116); }   /* → orange-300 */
+.dark .text-primary-800 { color: rgb(254 215 170); }   /* → orange-200 */
+
+/* Primary light tints in dark mode — Blue theme */
+html[data-color-theme="blue"].dark .bg-primary-50  { background-color: rgb(5 52 112 / 0.3); }
+html[data-color-theme="blue"].dark .bg-primary-100 { background-color: rgb(5 52 112 / 0.5); }
+html[data-color-theme="blue"].dark .text-primary-700 { color: rgb(125 187 235); }   /* → blue-300 */
+html[data-color-theme="blue"].dark .text-primary-800 { color: rgb(68 199 238); }    /* → blue-light */
 
 /* Sage (green) light tints → dark green tints */
 .dark .bg-sage-50  { background-color: rgb(5 46 22 / 0.3); }
@@ -304,6 +315,32 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-snappy: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ── Colour theme: Classic (orange) — default ── */
+  --p-50:  #fff4e6;
+  --p-100: #ffe4bf;
+  --p-200: #ffd099;
+  --p-300: #ffb84d;
+  --p-400: #ffa726;
+  --p-500: #f5821f;
+  --p-600: #e06800;
+  --p-700: #c05500;
+  --p-800: #9a4300;
+  --p-900: #6b2e00;
+}
+
+/* ── Colour theme: Blue ── */
+html[data-color-theme="blue"] {
+  --p-50:  #f0f7fd;
+  --p-100: #dceef9;
+  --p-200: #b8ddf4;
+  --p-300: #7dbbeb;
+  --p-400: #5ca9e3;
+  --p-500: #056bb0;
+  --p-600: #045a96;
+  --p-700: #034678;
+  --p-800: #02345a;
+  --p-900: #01223c;
 }
 
 /* Smooth transitions — specify exact properties, never 'all' */
