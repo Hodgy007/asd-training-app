@@ -1,6 +1,9 @@
+'use client'
+
 import Link from 'next/link'
 import { Lock, CheckCircle, ChevronRight, BookOpen, Video, FileText } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useColorTheme } from '@/components/providers/color-theme-provider'
 
 interface ModuleForCard {
   id: string
@@ -18,6 +21,8 @@ interface ModuleCardProps {
 }
 
 export function ModuleCard({ module, completedLessons, locked, programId }: ModuleCardProps) {
+  const { colorTheme } = useColorTheme()
+  const isBlue = colorTheme === 'blue'
   const totalLessons = module.lessons.length
   const isComplete = completedLessons === totalLessons
   const progressPct = Math.round((completedLessons / totalLessons) * 100)
@@ -53,9 +58,9 @@ export function ModuleCard({ module, completedLessons, locked, programId }: Modu
               ? 'bg-sage-500 text-white'
               : locked
                 ? 'bg-calm-200 text-slate-400'
-                : 'text-black font-bold'
+                : isBlue ? 'text-white' : 'text-black'
           )}
-          style={!isComplete && !locked ? { backgroundColor: '#f5821f' } : undefined}
+          style={!isComplete && !locked ? { backgroundColor: 'var(--p-500)' } : undefined}
         >
           {isComplete ? <CheckCircle className="h-5 w-5" /> : module.order}
         </div>
@@ -98,7 +103,7 @@ export function ModuleCard({ module, completedLessons, locked, programId }: Modu
         <div className="w-full h-1.5 bg-calm-200 rounded-full overflow-hidden">
           <div
             className={clsx('h-full rounded-full transition-all', isComplete ? 'bg-sage-500' : '')}
-            style={{ width: `${progressPct}%`, backgroundColor: isComplete ? undefined : '#f5821f' }}
+            style={{ width: `${progressPct}%`, backgroundColor: isComplete ? undefined : 'var(--p-500)' }}
           />
         </div>
       </div>
