@@ -18,6 +18,7 @@ import {
   Building2,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useColorTheme } from '@/components/providers/color-theme-provider'
 
 interface NavItem {
   href: string
@@ -50,6 +51,8 @@ interface OrgAdminSidebarProps {
 export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
+  const { colorTheme } = useColorTheme()
+  const isClassic = colorTheme === 'classic'
 
   const isParentOrg = session?.user?.isParentOrg ?? false
   const navItems: NavItem[] = [
@@ -58,10 +61,32 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
     ...COMMON_NAV_ITEMS,
   ]
 
+  const chrome = isClassic ? {
+    sidebar: 'bg-orange-100 dark:bg-slate-800 border-orange-200 dark:border-slate-700',
+    logoBorder: 'border-orange-200 dark:border-slate-700 bg-orange-100 dark:bg-slate-800',
+    logoText: 'text-slate-900 dark:text-slate-100',
+    navActive: 'bg-orange-200 text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100',
+    navInactive: 'text-slate-700 hover:bg-orange-200 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700',
+    iconActive: 'text-slate-900 dark:text-slate-100',
+    iconInactive: 'text-slate-500 dark:text-slate-400',
+    divider: 'border-orange-200 dark:border-slate-700',
+    signOut: 'text-slate-700 dark:text-slate-300 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20 dark:hover:text-red-300',
+  } : {
+    sidebar: 'bg-primary-500 dark:bg-primary-600 border-primary-600 dark:border-primary-700',
+    logoBorder: 'border-primary-600 dark:border-primary-700 bg-primary-500 dark:bg-primary-600',
+    logoText: 'text-white',
+    navActive: 'bg-white/20 text-white shadow-sm',
+    navInactive: 'text-white/80 hover:bg-white/10 hover:text-white',
+    iconActive: 'text-white',
+    iconInactive: 'text-white/60',
+    divider: 'border-white/20',
+    signOut: 'text-white/80 hover:bg-red-500/20 hover:text-red-200',
+  }
+
   return (
-    <div className="flex flex-col h-full bg-primary-500 dark:bg-primary-600 border-r border-primary-600 dark:border-primary-700">
+    <div className={clsx('flex flex-col h-full border-r', chrome.sidebar)}>
       {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-5 border-b border-primary-600 dark:border-primary-700 bg-primary-500 dark:bg-primary-600 flex-shrink-0">
+      <div className={clsx('flex items-center justify-between h-16 px-5 border-b flex-shrink-0', chrome.logoBorder)}>
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -70,8 +95,8 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
             </svg>
           </div>
           <div>
-            <p className="font-bold text-white text-sm leading-tight">Ambitious about</p>
-            <p className="font-bold text-white text-sm leading-tight">Autism</p>
+            <p className={clsx('font-bold text-sm leading-tight', chrome.logoText)}>Ambitious about</p>
+            <p className={clsx('font-bold text-sm leading-tight', chrome.logoText)}>Autism</p>
           </div>
         </div>
         {mobile && (
@@ -107,16 +132,11 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
               onClick={onClose}
               className={clsx(
                 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all',
-                isActive
-                  ? 'bg-white/20 text-white shadow-sm'
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
+                isActive ? chrome.navActive : chrome.navInactive,
               )}
             >
               <Icon
-                className={clsx(
-                  'h-5 w-5 flex-shrink-0',
-                  isActive ? 'text-white' : 'text-white/60'
-                )}
+                className={clsx('h-5 w-5 flex-shrink-0', isActive ? chrome.iconActive : chrome.iconInactive)}
               />
               {item.label}
             </Link>
@@ -125,12 +145,12 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
       </nav>
 
       {/* Bottom section */}
-      <div className="p-4 border-t border-white/20 space-y-2">
+      <div className={clsx('p-4 border-t space-y-2', chrome.divider)}>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-white/80 hover:bg-red-500/20 hover:text-red-200 transition-all w-full"
+          className={clsx('flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all w-full', chrome.signOut)}
         >
-          <LogOut className="h-5 w-5 text-white/60" />
+          <LogOut className={clsx('h-5 w-5', chrome.iconInactive)} />
           Sign out
         </button>
       </div>
