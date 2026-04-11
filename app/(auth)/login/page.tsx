@@ -139,13 +139,13 @@ function LoginForm() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-slate-900">
-            Ambitious about <span className="text-primary-500">Autism</span>
+            Ambitious about <span className="text-warm-500">Autism</span>
           </h1>
           <p className="text-slate-500 mt-1">Training &amp; Observation Platform</p>
         </div>
 
         {/* Login Card */}
-        <div className="card border-t-4 border-t-primary-500">
+        <div className="card border-t-4 border-t-warm-500">
           <h2 className="text-xl font-bold text-slate-900 mb-6">Sign in to your account</h2>
 
           {registeredPending && (
@@ -197,7 +197,7 @@ function LoginForm() {
                   type="button"
                   onClick={handleEnterpriseSso}
                   disabled={loading}
-                  className="btn-primary w-full py-2.5 text-base"
+                  className="btn-warm w-full py-2.5 text-base"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -264,7 +264,7 @@ function LoginForm() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label htmlFor="password" className="label">Password</label>
-                      <Link href="/forgot-password" className="text-xs text-primary-600 hover:text-primary-700">
+                      <Link href="/forgot-password" className="text-xs text-warm-600 hover:text-warm-700">
                         Forgot password?
                       </Link>
                     </div>
@@ -293,7 +293,7 @@ function LoginForm() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="btn-primary w-full py-2.5 text-base"
+                    className="btn-warm w-full py-2.5 text-base"
                   >
                     {loading ? (
                       <span className="flex items-center justify-center gap-2">
@@ -358,7 +358,7 @@ function LoginForm() {
               Need an account? Contact your organisation administrator.
             </p>
             <p className="text-sm">
-              <Link href="/register-organisation" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium">
+              <Link href="/register-organisation" className="text-warm-600 hover:text-warm-700 dark:text-warm-400 font-medium">
                 Register your organisation
               </Link>
             </p>
