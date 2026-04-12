@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { ModuleCard } from '@/components/training/module-card'
 import { isCharityLevel } from '@/lib/rbac'
+import { Award, Download } from 'lucide-react'
 
 export default async function ProgramPage({ params }: { params: { programId: string } }) {
   const session = await getServerSession(authOptions)
@@ -49,13 +50,27 @@ export default async function ProgramPage({ params }: { params: { programId: str
   const completedLessons = progressRecords.filter((p) =>
     dbModules.some((m) => m.id === p.moduleId)
   ).length
+  const programComplete = totalLessons > 0 && completedLessons === totalLessons
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{program.name}</h1>
-        {program.description && (
-          <p className="text-slate-500 mt-1">{program.description}</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{program.name}</h1>
+          {program.description && (
+            <p className="text-slate-500 dark:text-slate-400 mt-1">{program.description}</p>
+          )}
+        </div>
+        {programComplete && (
+          <a
+            href={`/api/training/certificate/program/${params.programId}`}
+            download
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold shadow-sm transition-colors"
+          >
+            <Award className="h-4 w-4" />
+            Download Certificate
+            <Download className="h-3.5 w-3.5" />
+          </a>
         )}
       </div>
 
