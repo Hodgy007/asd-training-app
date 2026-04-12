@@ -17,7 +17,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 })
   }
 
-  const validation = validateUpload(file)
+  const skipSizeCheck = formData.get('skipSizeCheck') === 'true'
+  const validation = validateUpload(file, { skipSizeCheck })
   if (!validation.valid) {
     const status = file.size > MAX_FILE_SIZE ? 413 : 400
     return NextResponse.json({ error: validation.error }, { status })

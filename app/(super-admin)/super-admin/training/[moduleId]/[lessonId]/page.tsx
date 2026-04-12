@@ -19,7 +19,9 @@ import {
   Upload,
   FileText,
   Paperclip,
+  Video,
 } from 'lucide-react'
+import { VideoPlayer } from '@/components/training/video-player'
 import { clsx } from 'clsx'
 import { InteractiveBlock } from '@/types/interactive'
 import { InteractiveBlocksPanel } from '@/components/admin/interactive-builder/interactive-blocks-panel'
@@ -82,6 +84,9 @@ function parseQuestion(q: QuizQuestion): ParsedQuestion {
   return { id: q.id, question: q.question, options, correctAnswer: q.correctAnswer, explanation: q.explanation, order: q.order }
 }
 
+/** 500 MB — video uploads bypass the global 50 MB cap (enforced client-side here) */
+const VIDEO_MAX_BYTES = 500 * 1024 * 1024
+
 /* ──────────────────────────── Main Page ──────────────────────────── */
 
 export default function LessonEditorPage() {
@@ -105,6 +110,10 @@ export default function LessonEditorPage() {
   // Quiz state
   const [questions, setQuestions] = useState<ParsedQuestion[]>([])
   const [expandedQ, setExpandedQ] = useState<string | null>(null)
+
+  // Video upload state
+  const [videoUploading, setVideoUploading] = useState(false)
+  const [videoUploadError, setVideoUploadError] = useState('')
 
   // Attachment state
   const [attachments, setAttachments] = useState<LessonData['attachments']>([])
@@ -158,6 +167,37 @@ export default function LessonEditorPage() {
       } finally {
         setUploadingImage(false)
       }
+    }
+  }, [])
+
+  const handleVideoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > VIDEO_MAX_BYTES) {
+      setVideoUploadError('File too large — maximum 500 MB.')
+      e.target.value = ''
+      return
+    }
+    setVideoUploading(true)
+    setVideoUploadError('')
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'training-videos')
+      formData.append('skipSizeCheck', 'true')
+      const res = await fetch('/api/super-admin/training/upload', { method: 'POST', body: formData })
+      if (!res.ok) {
+        const d = await res.json()
+        throw new Error(d.error || 'Upload failed')
+      }
+      const { url } = await res.json()
+      setEditVideoUrl(url)
+      setEditType('VIDEO')
+    } catch (err) {
+      setVideoUploadError(err instanceof Error ? err.message : 'Upload failed. MP4 or WebM only, max 500 MB.')
+    } finally {
+      setVideoUploading(false)
+      e.target.value = ''
     }
   }, [])
 
@@ -314,15 +354,49 @@ export default function LessonEditorPage() {
         </div>
 
         {editType === 'VIDEO' && (
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Video URL</label>
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Video</label>
+
+            {/* Paste a URL */}
             <input
               type="url"
               value={editVideoUrl}
-              onChange={(e) => setEditVideoUrl(e.target.value)}
-              placeholder="https://youtube.com/embed/..."
+              onChange={(e) => { setEditVideoUrl(e.target.value); setVideoUploadError('') }}
+              placeholder="Paste a YouTube, Vimeo, or direct video URL…"
               className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400"
             />
+
+            {/* Upload to Vercel Blob */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <label className={clsx(
+                'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-calm-200 dark:border-slate-600 text-xs font-medium cursor-pointer hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors',
+                videoUploading && 'opacity-50 pointer-events-none'
+              )}>
+                {videoUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Video className="h-3.5 w-3.5" />}
+                {videoUploading ? 'Uploading…' : 'Upload video file (MP4 / WebM, max 500 MB)'}
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm,.mp4,.webm"
+                  className="hidden"
+                  disabled={videoUploading}
+                  onChange={handleVideoUpload}
+                />
+              </label>
+              {editVideoUrl && editVideoUrl.includes('blob.vercel-storage.com') && (
+                <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                  <CheckCircle className="h-3.5 w-3.5" /> Hosted — works through school firewalls
+                </span>
+              )}
+            </div>
+
+            {videoUploadError && <p className="text-xs text-red-500">{videoUploadError}</p>}
+
+            {/* Live preview */}
+            {editVideoUrl && (
+              <div className="rounded-xl overflow-hidden border border-calm-200 dark:border-slate-600">
+                <VideoPlayer title={editTitle || 'Preview'} videoUrl={editVideoUrl} />
+              </div>
+            )}
           </div>
         )}
 

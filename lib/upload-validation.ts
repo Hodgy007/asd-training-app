@@ -73,13 +73,18 @@ export interface UploadValidationResult {
   error?: string
 }
 
+export interface UploadValidationOptions {
+  /** Skip the global 50 MB size check. Use when the caller enforces its own size limit (e.g. video uploads at 500 MB). */
+  skipSizeCheck?: boolean
+}
+
 /**
  * Validates a file upload for size, extension, and MIME type.
  * Should be called BEFORE uploading to Vercel Blob.
  */
-export function validateUpload(file: File): UploadValidationResult {
-  // 1. Check file size
-  if (file.size > MAX_FILE_SIZE) {
+export function validateUpload(file: File, options: UploadValidationOptions = {}): UploadValidationResult {
+  // 1. Check file size (skipped for video uploads — caller enforces 500 MB client-side)
+  if (!options.skipSizeCheck && file.size > MAX_FILE_SIZE) {
     const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
     return {
       valid: false,
