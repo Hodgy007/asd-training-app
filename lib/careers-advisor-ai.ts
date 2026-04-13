@@ -91,15 +91,24 @@ Requirements:
 - Reference workplace adjustments as normal good practice, not as accommodations for a condition.
 - Return ONLY the JSON object. No markdown, no code fences, no explanation.`
 
+  // Retry up to 3 times with exponential backoff to handle 503 overload spikes
   let response
-  try {
-    response = await ai.models.generateContent({
-      model: MODEL,
-      contents: prompt,
-    })
-  } catch (apiErr) {
-    const errMsg = apiErr instanceof Error ? apiErr.message : String(apiErr)
-    console.error('Gemini API call failed:', errMsg)
+  let lastErr: unknown
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      response = await ai.models.generateContent({ model: MODEL, contents: prompt })
+      break
+    } catch (apiErr) {
+      lastErr = apiErr
+      const errMsg = apiErr instanceof Error ? apiErr.message : String(apiErr)
+      const is503 = errMsg.includes('503') || errMsg.includes('UNAVAILABLE') || errMsg.includes('high demand')
+      console.error(`Gemini attempt ${attempt} failed:`, errMsg)
+      if (!is503 || attempt === 3) break
+      await new Promise((r) => setTimeout(r, attempt * 2000))
+    }
+  }
+  if (!response) {
+    const errMsg = lastErr instanceof Error ? lastErr.message : String(lastErr)
     throw new Error(`AI service error: ${errMsg}`)
   }
 
