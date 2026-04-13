@@ -14,6 +14,7 @@ import {
   Save,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { GATSBY_BENCHMARK_CODES, GATSBY_BENCHMARKS } from '@/lib/gatsby-benchmarks'
 
 interface Lesson {
   id: string
@@ -31,6 +32,7 @@ interface Module {
   type: string
   order: number
   active: boolean
+  gatsbyBenchmarks: string[]
   lessons: Lesson[]
 }
 
@@ -49,6 +51,7 @@ export default function ModuleEditorPage() {
   // Editable fields
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const [editBenchmarks, setEditBenchmarks] = useState<string[]>([])
 
   const fetchModule = useCallback(async () => {
     setLoading(true)
@@ -59,6 +62,7 @@ export default function ModuleEditorPage() {
         setMod(data)
         setEditTitle(data.title)
         setEditDescription(data.description)
+        setEditBenchmarks(data.gatsbyBenchmarks ?? [])
       }
     } finally {
       setLoading(false)
@@ -82,7 +86,11 @@ export default function ModuleEditorPage() {
       const res = await fetch(`/api/super-admin/training/modules/${moduleId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: editTitle.trim(), description: editDescription.trim() }),
+        body: JSON.stringify({
+          title: editTitle.trim(),
+          description: editDescription.trim(),
+          gatsbyBenchmarks: editBenchmarks,
+        }),
       })
       if (res.ok) {
         router.push('/super-admin/training')
@@ -217,6 +225,41 @@ export default function ModuleEditorPage() {
               rows={3}
               className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Gatsby Benchmarks
+            </label>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+              Tick the benchmarks this module addresses. Used for CEC Compass+ alignment reporting.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+              {GATSBY_BENCHMARK_CODES.map((code) => {
+                const checked = editBenchmarks.includes(code)
+                return (
+                  <label
+                    key={code}
+                    className="flex items-start gap-2 cursor-pointer p-2 rounded-lg hover:bg-calm-50 dark:hover:bg-slate-700"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) =>
+                        setEditBenchmarks((prev) =>
+                          e.target.checked
+                            ? [...prev, code]
+                            : prev.filter((c) => c !== code)
+                        )
+                      }
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">
+                      <span className="font-semibold">{code}</span> — {GATSBY_BENCHMARKS[code].full}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
           </div>
           <button
             onClick={saveModule}

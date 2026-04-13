@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { BarChart3, RefreshCw, ChevronDown, ChevronUp, Users, FolderOpen, FileText, Download, ChevronRight, FileCheck } from 'lucide-react'
+import { BarChart3, RefreshCw, ChevronDown, ChevronUp, Users, FolderOpen, FileText, Download, ChevronRight, FileCheck, FileDown } from 'lucide-react'
 import { clsx } from 'clsx'
+import { GATSBY_BENCHMARK_CODES, GATSBY_BENCHMARKS } from '@/lib/gatsby-benchmarks'
 
 interface ModuleStat {
   moduleId: string
   moduleName: string
   programName: string
+  gatsbyBenchmarks?: string[]
   completions: number
   totalUsers: number
   pct: number
@@ -63,6 +65,22 @@ interface LibTotals {
   totalCollections: number
   totalDocuments: number
   totalDownloads: number
+}
+
+function downloadCsv(filename: string, csvContent: string) {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(link.href)
+}
+
+function escapeCsv(value: string): string {
+  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+    return `"${value.replace(/"/g, '""')}"`
+  }
+  return value
 }
 
 function PctBar({ stat }: { stat: ModuleStat }) {
@@ -270,9 +288,53 @@ export default function OrgReportsPage() {
 
       {/* Module table */}
       <div className="card overflow-hidden p-0">
-        <div className="px-4 py-3 border-b border-calm-200 bg-calm-50">
-          <p className="text-sm font-semibold text-slate-600">Module Completion</p>
-          <p className="text-xs text-slate-400 mt-0.5">Click &quot;Show who&quot; to see which members completed each module.</p>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-calm-200 bg-calm-50">
+          <div>
+            <p className="text-sm font-semibold text-slate-600">Module Completion</p>
+            <p className="text-xs text-slate-400 mt-0.5">Click &quot;Show who&quot; to see which members completed each module.</p>
+          </div>
+          <button
+            onClick={() => {
+              if (!data) return
+              const headers = [
+                'benchmark_code',
+                'benchmark_name',
+                'module_id',
+                'module_title',
+                'program_name',
+                'users_completed',
+                'total_users',
+                'completion_rate',
+              ]
+              const rows = [headers.join(',')]
+              for (const code of GATSBY_BENCHMARK_CODES) {
+                const matching = data.modules.filter((m) => m.gatsbyBenchmarks?.includes(code))
+                if (matching.length === 0) {
+                  rows.push([code, escapeCsv(GATSBY_BENCHMARKS[code].full), '', '', '', '', '', ''].join(','))
+                  continue
+                }
+                for (const m of matching) {
+                  rows.push([
+                    code,
+                    escapeCsv(GATSBY_BENCHMARKS[code].full),
+                    escapeCsv(m.moduleId),
+                    escapeCsv(m.moduleName),
+                    escapeCsv(m.programName),
+                    String(m.completions),
+                    String(m.totalUsers),
+                    `${m.pct}%`,
+                  ].join(','))
+                }
+              }
+              downloadCsv('gatsby-benchmark-coverage.csv', rows.join('\n'))
+            }}
+            disabled={!data || data.modules.length === 0}
+            className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 hover:text-emerald-800 disabled:text-slate-300 disabled:cursor-not-allowed transition-colors"
+            title="Download a CSV mapping each Gatsby Benchmark to the modules in your organisation that cover it, including engagement metrics."
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            Download Benchmark CSV
+          </button>
         </div>
 
         <div className="overflow-x-auto">

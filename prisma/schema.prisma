@@ -211,16 +211,17 @@ enum LessonType {
 }
 
 model Module {
-  id          String          @id
-  title       String
-  description String
-  order       Int
-  active      Boolean         @default(true)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  programId   String
-  program     TrainingProgram @relation(fields: [programId], references: [id])
-  lessons     Lesson[]
+  id               String          @id
+  title            String
+  description      String
+  order            Int
+  active           Boolean         @default(true)
+  gatsbyBenchmarks String[]        @default([])
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  programId        String
+  program          TrainingProgram @relation(fields: [programId], references: [id])
+  lessons          Lesson[]
 }
 
 model Lesson {

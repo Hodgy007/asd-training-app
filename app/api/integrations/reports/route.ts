@@ -6,7 +6,13 @@ async function fetchTraining() {
   const allModules = await prisma.module.findMany({
     where: { active: true },
     orderBy: [{ programId: 'asc' }, { order: 'asc' }],
-    select: { id: true, title: true, programId: true, program: { select: { name: true } } },
+    select: {
+      id: true,
+      title: true,
+      programId: true,
+      gatsbyBenchmarks: true,
+      program: { select: { name: true } },
+    },
   })
 
   const orgs = await prisma.organisation.findMany({
@@ -38,6 +44,7 @@ async function fetchTraining() {
         moduleId,
         moduleName: mod?.title ?? moduleId,
         programName: mod?.program?.name ?? 'Unknown',
+        gatsbyBenchmarks: mod?.gatsbyBenchmarks ?? [],
         completions,
         totalUsers,
         completionRate: totalUsers > 0 ? Math.round((completions / totalUsers) * 100) : 0,
