@@ -1,14 +1,7 @@
-import { GoogleGenAI } from '@google/genai'
+import { generateText } from 'ai'
 import type { ParsedFile } from './content-generator-types'
 
-const MODEL = 'gemini-2.5-flash'
-
-function getAI(): GoogleGenAI {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY is not configured')
-  }
-  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-}
+const MODEL = 'google/gemini-2.5-flash'
 
 function extractJson(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -28,24 +21,10 @@ export interface GeneratedSurvey {
   }>
 }
 
-async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3, baseDelay = 1000): Promise<T> {
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn()
-    } catch (error) {
-      if (attempt === maxRetries) throw error
-      await new Promise((r) => setTimeout(r, baseDelay * Math.pow(2, attempt)))
-    }
-  }
-  throw new Error('Unreachable')
-}
-
 export async function generateSurveyFromTopic(
   topic: string,
   audience?: string
 ): Promise<GeneratedSurvey> {
-  const ai = getAI()
-
   const prompt = `You are an expert survey designer for training and education programmes.
 Create a professional survey based on this topic: "${topic}"
 ${audience ? `Target audience: ${audience}` : ''}
@@ -91,19 +70,13 @@ Return ONLY valid JSON in this exact format:
 Do NOT include options for YES_NO or RATING_SCALE types.
 Do NOT include markdown formatting or explanation — ONLY the JSON object.`
 
-  return withRetry(async () => {
-    const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-    const text = response.text ?? ''
-    const json = extractJson(text)
-    return JSON.parse(json) as GeneratedSurvey
-  })
+  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+  return JSON.parse(extractJson(text)) as GeneratedSurvey
 }
 
 export async function generateSurveyFromFiles(
   files: ParsedFile[]
 ): Promise<GeneratedSurvey> {
-  const ai = getAI()
-
   const fileContent = files
     .map((f) => {
       const sections = f.sections
@@ -148,12 +121,8 @@ Return ONLY valid JSON in this exact format:
 Do NOT include options for YES_NO or RATING_SCALE types.
 Do NOT include markdown formatting or explanation — ONLY the JSON object.`
 
-  return withRetry(async () => {
-    const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-    const text = response.text ?? ''
-    const json = extractJson(text)
-    return JSON.parse(json) as GeneratedSurvey
-  })
+  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+  return JSON.parse(extractJson(text)) as GeneratedSurvey
 }
 
 // ── Results Insights ──
@@ -173,8 +142,6 @@ interface ResultsData {
 }
 
 export async function generateSurveySummary(data: ResultsData): Promise<string> {
-  const ai = getAI()
-
   const questionSummaries = data.questions.map((q) => {
     if (q.type === 'RATING_SCALE') {
       const values = q.responses.map((r) => parseInt(r.value)).filter((v) => !isNaN(v))
@@ -218,13 +185,11 @@ Identify key trends, notable patterns, and any areas of concern.
 Use HTML formatting (<p>, <strong>, <ul>, <li>) for structure.
 Be factual and specific — reference actual numbers and percentages.`
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  return response.text ?? ''
+  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+  return text
 }
 
 export async function generateSurveyComparative(data: ResultsData): Promise<string> {
-  const ai = getAI()
-
   const roles = [...new Set(data.questions.flatMap((q) => q.responses.map((r) => r.role)))]
   const orgs = [...new Set(data.questions.flatMap((q) => q.responses.map((r) => r.orgName).filter(Boolean)))]
 
@@ -280,13 +245,11 @@ Focus on questions where groups diverged significantly.
 Use HTML formatting (<p>, <strong>, <ul>, <li>, <table>, <tr>, <td>) for structure.
 Be specific — cite numbers and percentages. Note any patterns that suggest different needs or experiences across groups.`
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  return response.text ?? ''
+  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+  return text
 }
 
 export async function generateSurveyRecommendations(data: ResultsData): Promise<string> {
-  const ai = getAI()
-
   const questionSummaries = data.questions.map((q) => {
     if (q.type === 'RATING_SCALE') {
       const values = q.responses.map((r) => parseInt(r.value)).filter((v) => !isNaN(v))
@@ -321,8 +284,8 @@ Each recommendation should:
 Use HTML formatting (<p>, <strong>, <ol>, <li>) for structure.
 Focus on improvements that would have the most impact on training quality and learner satisfaction.`
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  return response.text ?? ''
+  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+  return text
 }
 
 export function buildResultsData(survey: {

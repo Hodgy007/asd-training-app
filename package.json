@@ -17,7 +17,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
-    "@google/genai": "^1.46.0",
+    "@ai-sdk/openai": "^3.0.52",
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-avatar": "^1.1.0",
@@ -32,6 +32,7 @@
     "@vercel/blob": "^2.3.2",
     "@xmldom/xmldom": "^0.8.12",
     "adm-zip": "^0.5.16",
+    "ai": "^6.0.158",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",

@@ -1,10 +1,10 @@
-import { GoogleGenAI } from '@google/genai'
+import { generateText } from 'ai'
 import { differenceInYears, differenceInMonths } from 'date-fns'
 
 const DISCLAIMER =
   'These observations are for discussion with your GP, health visitor, or SENCO. This is not a diagnosis.'
 
-const MODEL = 'gemini-2.5-flash'
+const MODEL = 'google/gemini-2.5-flash'
 
 function getAgeString(dateOfBirth: Date): string {
   const years = differenceInYears(new Date(), dateOfBirth)
@@ -52,11 +52,6 @@ export async function generateObservationSummary(
   childName: string,
   dateOfBirth: Date
 ): Promise<string> {
-  if (!process.env.GEMINI_API_KEY) {
-    return 'AI insights are not available. Please configure the GEMINI_API_KEY environment variable.'
-  }
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   const age = getAgeString(dateOfBirth)
   const observationText = formatObservationsForPrompt(observations)
 
@@ -75,8 +70,13 @@ Please provide a brief summary (2-3 sentences) of the observed patterns in pract
 Focus only on what has been observed — do not speculate or diagnose.
 End with: "${DISCLAIMER}"`
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  return response.text ?? ''
+  try {
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+    return text
+  } catch (error) {
+    console.error('generateObservationSummary error:', error)
+    return 'AI insights are not available at this time. Please try again later.'
+  }
 }
 
 export async function detectPatterns(
@@ -89,11 +89,6 @@ export async function detectPatterns(
     notes?: string | null
   }>
 ): Promise<string> {
-  if (!process.env.GEMINI_API_KEY) {
-    return 'AI pattern detection is not available. Please configure the GEMINI_API_KEY environment variable.'
-  }
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   const observationText = formatObservationsForPrompt(observations)
 
   const prompt = `You are an assistant supporting carers and professionals who work with children.
@@ -108,17 +103,16 @@ List 2-4 specific behaviour patterns you notice, using carer-friendly language.
 Format as a brief bulleted list.
 Do not speculate beyond what the data shows.`
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  return response.text ?? ''
+  try {
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+    return text
+  } catch (error) {
+    console.error('detectPatterns error:', error)
+    return 'AI pattern detection is not available at this time. Please try again later.'
+  }
 }
 
 export async function generateActionGuidance(patterns: string): Promise<string> {
-  if (!process.env.GEMINI_API_KEY) {
-    return 'AI guidance is not available. Please configure the GEMINI_API_KEY environment variable.'
-  }
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-
   const prompt = `You are an assistant supporting carers and professionals who work with children.
 Your role is to suggest practical next steps based on observed patterns.
 You NEVER provide a diagnosis. You NEVER suggest a child has autism.
@@ -133,8 +127,13 @@ Use warm, encouraging, non-alarming language.
 Format as a bulleted list.
 End with: "${DISCLAIMER}"`
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  return response.text ?? ''
+  try {
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+    return text
+  } catch (error) {
+    console.error('generateActionGuidance error:', error)
+    return 'AI guidance is not available at this time. Please try again later.'
+  }
 }
 
 export async function generateInsightReport(
@@ -152,13 +151,6 @@ export async function generateInsightReport(
     notes?: string | null
   }>
 ): Promise<{ summary: string; patterns: string; recommendations: string }> {
-  if (!process.env.GEMINI_API_KEY) {
-    const fallback =
-      'AI insights are not available. Please configure the GEMINI_API_KEY environment variable.'
-    return { summary: fallback, patterns: fallback, recommendations: fallback }
-  }
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   const age = getAgeString(child.dateOfBirth)
   const observationText = formatObservationsForPrompt(observations)
 
@@ -189,18 +181,23 @@ RECOMMENDATIONS:
 
 Always end the RECOMMENDATIONS section with: "${DISCLAIMER}"`
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  const text = response.text ?? ''
+  try {
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
 
-  const summaryMatch = text.match(/SUMMARY:\s*([\s\S]*?)(?=PATTERNS:|$)/i)
-  const patternsMatch = text.match(/PATTERNS:\s*([\s\S]*?)(?=RECOMMENDATIONS:|$)/i)
-  const recommendationsMatch = text.match(/RECOMMENDATIONS:\s*([\s\S]*?)$/i)
+    const summaryMatch = text.match(/SUMMARY:\s*([\s\S]*?)(?=PATTERNS:|$)/i)
+    const patternsMatch = text.match(/PATTERNS:\s*([\s\S]*?)(?=RECOMMENDATIONS:|$)/i)
+    const recommendationsMatch = text.match(/RECOMMENDATIONS:\s*([\s\S]*?)$/i)
 
-  return {
-    summary: summaryMatch ? summaryMatch[1].trim() : text,
-    patterns: patternsMatch ? patternsMatch[1].trim() : 'Patterns could not be extracted.',
-    recommendations: recommendationsMatch
-      ? recommendationsMatch[1].trim()
-      : `Please discuss these observations with your GP or health visitor.\n\n${DISCLAIMER}`,
+    return {
+      summary: summaryMatch ? summaryMatch[1].trim() : text,
+      patterns: patternsMatch ? patternsMatch[1].trim() : 'Patterns could not be extracted.',
+      recommendations: recommendationsMatch
+        ? recommendationsMatch[1].trim()
+        : `Please discuss these observations with your GP or health visitor.\n\n${DISCLAIMER}`,
+    }
+  } catch (error) {
+    console.error('generateInsightReport error:', error)
+    const fallback = 'AI insights are not available at this time. Please try again later.'
+    return { summary: fallback, patterns: fallback, recommendations: fallback }
   }
 }

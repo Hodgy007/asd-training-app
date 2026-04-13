@@ -1,11 +1,6 @@
-import { GoogleGenAI } from '@google/genai'
+import { generateText } from 'ai'
 
-const MODEL = 'gemini-2.5-flash'
-
-function getAI(): GoogleGenAI | null {
-  if (!process.env.GEMINI_API_KEY) return null
-  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-}
+const MODEL = 'google/gemini-2.5-flash'
 
 export async function generatePersonalStatement(context: {
   name: string
@@ -13,11 +8,6 @@ export async function generatePersonalStatement(context: {
   experience: string
   education: string
 }): Promise<string> {
-  const ai = getAI()
-  if (!ai) {
-    return 'AI personal statement generation is not available. Please configure the GEMINI_API_KEY environment variable.'
-  }
-
   const roleContext = context.targetRole
     ? `They are targeting a role as: ${context.targetRole}.`
     : ''
@@ -37,8 +27,8 @@ Requirements:
 - Do not include any headings, labels, or formatting — return ONLY the personal statement text.`
 
   try {
-    const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-    return response.text?.trim() ?? ''
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+    return text.trim()
   } catch (error) {
     console.error('generatePersonalStatement error:', error)
     return 'Unable to generate personal statement at this time. Please try again later.'
@@ -50,11 +40,6 @@ export async function rephraseBulletPoint(
   jobTitle: string,
   employer: string
 ): Promise<string> {
-  const ai = getAI()
-  if (!ai) {
-    return 'AI rephrasing is not available. Please configure the GEMINI_API_KEY environment variable.'
-  }
-
   const prompt = `Rephrase this CV bullet point for a ${jobTitle} role at ${employer}:
 
 "${originalText}"
@@ -70,8 +55,8 @@ Requirements:
 - Return ONLY the rephrased bullet point, nothing else.`
 
   try {
-    const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-    return response.text?.trim() ?? ''
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+    return text.trim()
   } catch (error) {
     console.error('rephraseBulletPoint error:', error)
     return 'Unable to rephrase bullet point at this time. Please try again later.'
@@ -82,11 +67,6 @@ export async function suggestSkills(context: {
   experience: string
   education: string
 }): Promise<Array<{ name: string; category: string }>> {
-  const ai = getAI()
-  if (!ai) {
-    return []
-  }
-
   const prompt = `Suggest 8-12 skills for a UK CV based on the following background.
 
 Experience: ${context.experience || 'Not yet provided'}
@@ -102,13 +82,12 @@ Requirements:
 - Example: [{"name":"Microsoft Office","category":"Technical"},{"name":"Active Listening","category":"Communication"}]`
 
   try {
-    const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-    const text = response.text?.trim() ?? '[]'
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
 
-    // Strip markdown code fences if present
-    const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+    const jsonMatch = text.match(/\[[\s\S]*\]/)
+    if (!jsonMatch) return []
 
-    const parsed = JSON.parse(cleaned)
+    const parsed = JSON.parse(jsonMatch[0])
     if (!Array.isArray(parsed)) return []
 
     return parsed
@@ -131,11 +110,6 @@ export async function improveDescription(
   jobTitle: string,
   employer: string
 ): Promise<string> {
-  const ai = getAI()
-  if (!ai) {
-    return 'AI description improvement is not available. Please configure the GEMINI_API_KEY environment variable.'
-  }
-
   const prompt = `Convert this rough description of duties into 3-5 professional bullet points for a UK CV.
 This is for a ${jobTitle} role at ${employer}.
 
@@ -152,8 +126,8 @@ Requirements:
 - Return ONLY the bullet points, no headings or extra text.`
 
   try {
-    const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-    return response.text?.trim() ?? ''
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+    return text.trim()
   } catch (error) {
     console.error('improveDescription error:', error)
     return 'Unable to improve description at this time. Please try again later.'

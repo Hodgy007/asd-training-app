@@ -1,7 +1,7 @@
 // lib/content-generator.ts
-// Gemini orchestration layer for AI content generation
+// AI Gateway orchestration layer for AI content generation
 
-import { GoogleGenAI } from '@google/genai'
+import { generateText } from 'ai'
 import type {
   ParsedFile,
   GenerationMode,
@@ -11,16 +11,9 @@ import type {
   SourceRef,
 } from './content-generator-types'
 
-const MODEL = 'gemini-2.5-flash'
+const MODEL = 'google/gemini-2.5-flash'
 
 // ─── Private Helpers ─────────────────────────────────────────────────────────
-
-function getAI(): GoogleGenAI {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY is not configured')
-  }
-  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-}
 
 function extractJson(text: string): string {
   // Strip ```json ... ``` or ``` ... ``` code fences if present
@@ -89,6 +82,7 @@ function extractSourceSections(files: ParsedFile[], sourceRefs: SourceRef[]): st
 
 /**
  * Generic retry helper with exponential backoff.
+ * Note: generateText already has built-in maxRetries — use this for non-AI retry needs.
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,
@@ -123,7 +117,6 @@ export async function generateOutline(
   mode: GenerationMode,
   programName: string
 ): Promise<GeneratedOutline> {
-  const ai = getAI()
   const formattedContent = formatParsedContentForPrompt(files)
 
   const structurePrompt = `You are a training content organiser. Your task is to organise the provided source material into a structured training program.
@@ -196,12 +189,9 @@ Use numeric values for fileIndex and sectionIndices. Each lesson must reference 
 
   const prompt = mode === 'structure' ? structurePrompt : generatePrompt
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  const rawText = response.text ?? ''
-  const jsonString = extractJson(rawText)
-
-  const outline = JSON.parse(jsonString) as GeneratedOutline
-  return outline
+  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+  const jsonString = extractJson(text)
+  return JSON.parse(jsonString) as GeneratedOutline
 }
 
 // ─── Lesson Content Generation ────────────────────────────────────────────────
@@ -220,7 +210,6 @@ export async function generateLessonContent(
   mode: GenerationMode,
   lens?: GenerationLens
 ): Promise<string> {
-  const ai = getAI()
   const sourceSections = extractSourceSections(files, sourceRefs)
 
   let prompt: string
@@ -275,15 +264,14 @@ ${sourceSections}
 Return ONLY valid HTML for the lesson body (no <html>, <head>, or <body> tags). Use appropriate headings (<h2>, <h3>), paragraphs (<p>), lists (<ul>/<li>), and blockquotes (<blockquote>) for reflection prompts.`
   }
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  return response.text ?? ''
+  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+  return text
 }
 
 // ─── Quiz Generation ──────────────────────────────────────────────────────────
 
 /**
  * Generates multiple-choice quiz questions from lesson HTML content.
- * Reuses the prompt pattern from the existing generate-quiz route.
  */
 export async function generateQuizForLesson(
   lessonContent: string,
@@ -291,8 +279,6 @@ export async function generateQuizForLesson(
   lens?: GenerationLens,
   questionCount = 5
 ): Promise<GeneratedQuizQuestion[]> {
-  const ai = getAI()
-
   // Clamp questionCount to 1–10
   const count = Math.min(10, Math.max(1, questionCount))
 
@@ -326,10 +312,7 @@ Return ONLY a valid JSON array with this structure:
 Lesson content:
 ${plainText}`
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  const rawText = response.text ?? ''
-  const jsonString = extractJson(rawText)
-
-  const questions = JSON.parse(jsonString) as GeneratedQuizQuestion[]
-  return questions
+  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+  const jsonString = extractJson(text)
+  return JSON.parse(jsonString) as GeneratedQuizQuestion[]
 }

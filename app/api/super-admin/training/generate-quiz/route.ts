@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
-import { GoogleGenAI } from '@google/genai'
+import { generateText } from 'ai'
 
-const MODEL = 'gemini-2.5-flash'
+const MODEL = 'google/gemini-2.5-flash'
 
 function stripHtml(html: string): string {
   return html
@@ -19,21 +19,10 @@ function stripHtml(html: string): string {
     .trim()
 }
 
-function extractJson(text: string): string {
-  // Strip ```json ... ``` or ``` ... ``` code fences if present
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/)
-  if (fenced) return fenced[1].trim()
-  return text.trim()
-}
-
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  if (!process.env.GEMINI_API_KEY) {
-    return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 500 })
   }
 
   const body = await req.json()
@@ -62,21 +51,26 @@ Return ONLY a valid JSON array with this structure:
 Lesson content:
 ${plainText}`
 
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-  const rawText = response.text ?? ''
-
-  const jsonString = extractJson(rawText)
-
-  let questions: unknown
   try {
-    questions = JSON.parse(jsonString)
-  } catch {
-    return NextResponse.json(
-      { error: 'Failed to parse AI response as JSON', raw: rawText },
-      { status: 502 }
-    )
-  }
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
 
-  return NextResponse.json({ questions })
+    const jsonMatch = text.match(/\[[\s\S]*\]/)
+    const jsonString = jsonMatch ? jsonMatch[0] : text
+
+    let questions: unknown
+    try {
+      questions = JSON.parse(jsonString)
+    } catch {
+      return NextResponse.json(
+        { error: 'Failed to parse AI response as JSON', raw: text },
+        { status: 502 }
+      )
+    }
+
+    return NextResponse.json({ questions })
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('generate-quiz error:', msg)
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
 }

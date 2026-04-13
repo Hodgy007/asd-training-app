@@ -55,11 +55,6 @@ export async function POST(
     )
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    console.error('GEMINI_API_KEY is not set in environment')
-    return NextResponse.json({ error: 'AI service is not configured. Please contact support.' }, { status: 500 })
-  }
-
   try {
     const report = await generateCareersReport(answers)
 

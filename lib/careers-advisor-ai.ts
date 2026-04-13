@@ -1,12 +1,7 @@
-import { GoogleGenAI } from '@google/genai'
+import { generateText } from 'ai'
 import type { AdvisorAnswers, AdvisorReport } from '@/types'
 
-const MODEL = 'gemini-2.5-flash'
-
-function getAI(): GoogleGenAI | null {
-  if (!process.env.GEMINI_API_KEY) return null
-  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-}
+const MODEL = 'google/gemini-2.5-flash'
 
 function formatAnswers(answers: AdvisorAnswers): string {
   const lines: string[] = []
@@ -49,11 +44,6 @@ function formatAnswers(answers: AdvisorAnswers): string {
 }
 
 export async function generateCareersReport(answers: AdvisorAnswers): Promise<AdvisorReport> {
-  const ai = getAI()
-  if (!ai) {
-    throw new Error('AI report generation is not available. Please configure the GEMINI_API_KEY environment variable.')
-  }
-
   const formattedAnswers = formatAnswers(answers)
 
   const prompt = `You are a careers advisor helping a young person explore career options. You are positive, practical, and strength-focused. You use UK English and reference UK-specific resources.
@@ -91,37 +81,13 @@ Requirements:
 - Reference workplace adjustments as normal good practice, not as accommodations for a condition.
 - Return ONLY the JSON object. No markdown, no code fences, no explanation.`
 
-  // Retry up to 3 times with exponential backoff to handle 503 overload spikes
-  let response
-  let lastErr: unknown
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      response = await ai.models.generateContent({ model: MODEL, contents: prompt })
-      break
-    } catch (apiErr) {
-      lastErr = apiErr
-      const errMsg = apiErr instanceof Error ? apiErr.message : String(apiErr)
-      const is503 = errMsg.includes('503') || errMsg.includes('UNAVAILABLE') || errMsg.includes('high demand')
-      console.error(`Gemini attempt ${attempt} failed:`, errMsg)
-      if (!is503 || attempt === 3) break
-      await new Promise((r) => setTimeout(r, attempt * 2000))
-    }
-  }
-  if (!response) {
-    const errMsg = lastErr instanceof Error ? lastErr.message : String(lastErr)
-    throw new Error(`AI service error: ${errMsg}`)
-  }
-
-  const text = response.text?.trim() ?? ''
-  console.log('Gemini raw response length:', text.length, 'preview:', text.substring(0, 100))
+  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
 
   if (!text) {
-    console.error('Gemini returned empty response')
     throw new Error('Failed to generate a valid careers report. Please try again.')
   }
 
   // Extract the JSON object from wherever it appears in the response
-  // This handles code fences, preamble text, and thinking tokens from Gemini
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (!jsonMatch) {
     console.error('No JSON object found in AI response:', text.substring(0, 500))
@@ -131,7 +97,6 @@ Requirements:
   try {
     const report = JSON.parse(jsonMatch[0]) as AdvisorReport
 
-    // Validate structure
     if (!report.strengths || !Array.isArray(report.careers) || !Array.isArray(report.nextSteps) || !report.workplaceSupport) {
       console.error('Invalid report structure, keys present:', Object.keys(report))
       throw new Error('Invalid report structure')
