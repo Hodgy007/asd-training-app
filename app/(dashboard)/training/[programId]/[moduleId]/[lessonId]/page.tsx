@@ -245,7 +245,7 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
 
       {/* Video (if applicable) */}
       {lesson.type === 'VIDEO' && (
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-xs mx-auto">
           <VideoPlayer title={lesson.title} videoUrl={lesson.videoUrl ?? undefined} />
         </div>
       )}

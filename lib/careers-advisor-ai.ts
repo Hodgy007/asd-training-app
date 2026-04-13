@@ -94,11 +94,16 @@ Requirements:
   const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
   const text = response.text?.trim() ?? ''
 
-  // Strip any markdown code fences
-  const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+  // Extract the JSON object from wherever it appears in the response
+  // This handles code fences, preamble text, and thinking tokens from Gemini
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) {
+    console.error('No JSON object found in AI response:', text.substring(0, 500))
+    throw new Error('Failed to generate a valid careers report. Please try again.')
+  }
 
   try {
-    const report = JSON.parse(cleaned) as AdvisorReport
+    const report = JSON.parse(jsonMatch[0]) as AdvisorReport
 
     // Validate structure
     if (!report.strengths || !Array.isArray(report.careers) || !Array.isArray(report.nextSteps) || !report.workplaceSupport) {
@@ -107,7 +112,7 @@ Requirements:
 
     return report
   } catch {
-    console.error('Failed to parse AI response:', cleaned.substring(0, 500))
+    console.error('Failed to parse AI response:', jsonMatch[0].substring(0, 500))
     throw new Error('Failed to generate a valid careers report. Please try again.')
   }
 }
