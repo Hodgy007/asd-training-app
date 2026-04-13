@@ -91,8 +91,25 @@ Requirements:
 - Reference workplace adjustments as normal good practice, not as accommodations for a condition.
 - Return ONLY the JSON object. No markdown, no code fences, no explanation.`
 
-  const response = await ai.models.generateContent({ model: MODEL, contents: prompt })
+  let response
+  try {
+    response = await ai.models.generateContent({
+      model: MODEL,
+      contents: prompt,
+      config: { responseMimeType: 'application/json' },
+    })
+  } catch (apiErr) {
+    console.error('Gemini API call failed:', apiErr)
+    throw new Error('AI service unavailable. Please try again in a moment.')
+  }
+
   const text = response.text?.trim() ?? ''
+  console.log('Gemini raw response length:', text.length, 'preview:', text.substring(0, 100))
+
+  if (!text) {
+    console.error('Gemini returned empty response')
+    throw new Error('Failed to generate a valid careers report. Please try again.')
+  }
 
   // Extract the JSON object from wherever it appears in the response
   // This handles code fences, preamble text, and thinking tokens from Gemini
@@ -107,12 +124,13 @@ Requirements:
 
     // Validate structure
     if (!report.strengths || !Array.isArray(report.careers) || !Array.isArray(report.nextSteps) || !report.workplaceSupport) {
+      console.error('Invalid report structure, keys present:', Object.keys(report))
       throw new Error('Invalid report structure')
     }
 
     return report
-  } catch {
-    console.error('Failed to parse AI response:', jsonMatch[0].substring(0, 500))
+  } catch (parseErr) {
+    console.error('Failed to parse AI response:', parseErr, jsonMatch[0].substring(0, 500))
     throw new Error('Failed to generate a valid careers report. Please try again.')
   }
 }

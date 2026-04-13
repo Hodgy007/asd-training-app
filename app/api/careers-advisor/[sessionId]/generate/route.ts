@@ -68,9 +68,10 @@ export async function POST(
 
     return NextResponse.json({ report: updated.report })
   } catch (error) {
-    console.error('Failed to generate careers report:', error)
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('Failed to generate careers report:', msg)
     return NextResponse.json(
-      { error: 'Failed to generate report. Please try again.' },
+      { error: msg || 'Failed to generate report. Please try again.' },
       { status: 500 }
     )
   }
