@@ -96,11 +96,11 @@ Requirements:
     response = await ai.models.generateContent({
       model: MODEL,
       contents: prompt,
-      config: { responseMimeType: 'application/json' },
     })
   } catch (apiErr) {
-    console.error('Gemini API call failed:', apiErr)
-    throw new Error('AI service unavailable. Please try again in a moment.')
+    const errMsg = apiErr instanceof Error ? apiErr.message : String(apiErr)
+    console.error('Gemini API call failed:', errMsg)
+    throw new Error(`AI service error: ${errMsg}`)
   }
 
   const text = response.text?.trim() ?? ''
