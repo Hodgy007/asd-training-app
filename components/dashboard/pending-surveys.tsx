@@ -139,9 +139,9 @@ export function PendingSurveys() {
       )}
 
       {activeSurvey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/50">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col">
+            <div className="bg-white dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 px-4 sm:px-6 py-4 flex items-center justify-between rounded-t-2xl flex-shrink-0">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{activeSurvey.title}</h3>
               <button
                 onClick={() => setActiveSurvey(null)}
@@ -152,7 +152,7 @@ export function PendingSurveys() {
             </div>
 
             {submitted ? (
-              <div className="p-6 text-center space-y-3">
+              <div className="p-6 text-center space-y-3 overflow-y-auto flex-1 min-h-0">
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto">
                   <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
@@ -166,7 +166,7 @@ export function PendingSurveys() {
                 </button>
               </div>
             ) : (
-              <div className="p-6 space-y-6">
+              <div className="p-4 sm:p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
                 {error && (
                   <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
                     <AlertCircle className="h-4 w-4 flex-shrink-0" />

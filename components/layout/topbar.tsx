@@ -36,7 +36,7 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
   const nameColor = isClassic ? 'text-slate-900 dark:text-slate-100' : 'text-white'
 
   return (
-    <header className={clsx('h-16 border-b flex items-center justify-between px-4 md:px-6 flex-shrink-0', headerBg)}>
+    <header className={clsx('h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0', headerBg)}>
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuClick}

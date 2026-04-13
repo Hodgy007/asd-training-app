@@ -66,7 +66,7 @@ export async function POST(
       },
     })
 
-    return NextResponse.json(updated)
+    return NextResponse.json({ report: updated.report })
   } catch (error) {
     console.error('Failed to generate careers report:', error)
     return NextResponse.json(

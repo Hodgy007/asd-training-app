@@ -107,7 +107,7 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
   }
 
   return (
-    <div className={clsx('flex flex-col h-full border-r', chrome.sidebar)}>
+    <div className={clsx('flex flex-col h-full', chrome.sidebar)}>
       {/* Logo */}
       <div className={clsx('flex items-center justify-between h-16 px-5 border-b flex-shrink-0', chrome.logoBorder)}>
         <div className="flex items-center gap-3">

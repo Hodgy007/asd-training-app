@@ -27,6 +27,9 @@ export function ReportStep({ sessionId, report, onReportGenerated }: Props) {
         throw new Error(data.error || 'Failed to generate report')
       }
       const data = await res.json()
+      if (!data.report || !data.report.strengths || !Array.isArray(data.report.careers)) {
+        throw new Error('The report was incomplete. Please try again.')
+      }
       onReportGenerated(data.report as AdvisorReport)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
