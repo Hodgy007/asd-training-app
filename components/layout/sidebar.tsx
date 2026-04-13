@@ -137,7 +137,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
   return (
     <div className={clsx('flex flex-col h-full', chrome.sidebar)}>
       {/* Logo */}
-      <div className={clsx('flex items-center justify-between h-16 px-5 border-b flex-shrink-0', chrome.logoBorder)}>
+      <div className={clsx('flex items-center justify-between h-16 px-5 flex-shrink-0', chrome.logoBorder)}>
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -162,7 +162,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
 
       {/* Role badge */}
       {role && ROLE_LABELS[role] && (
-        <div className="px-5 py-2 border-b border-calm-100 dark:border-slate-700">
+        <div className="px-5 py-2">
           <span className={clsx(
             'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
             ROLE_BADGE_STYLES[role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-200',

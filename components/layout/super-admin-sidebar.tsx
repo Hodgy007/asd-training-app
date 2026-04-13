@@ -109,7 +109,7 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
   return (
     <div className={clsx('flex flex-col h-full', chrome.sidebar)}>
       {/* Logo */}
-      <div className={clsx('flex items-center justify-between h-16 px-5 border-b flex-shrink-0', chrome.logoBorder)}>
+      <div className={clsx('flex items-center justify-between h-16 px-5 flex-shrink-0', chrome.logoBorder)}>
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
