@@ -14,7 +14,13 @@ export async function GET() {
   const allModules = await prisma.module.findMany({
     where: { active: true },
     orderBy: [{ programId: 'asc' }, { order: 'asc' }],
-    select: { id: true, title: true, programId: true, program: { select: { name: true } } },
+    select: {
+      id: true,
+      title: true,
+      programId: true,
+      gatsbyBenchmarks: true,
+      program: { select: { name: true } },
+    },
   })
 
   const allModuleIds = allModules.map((m) => m.id)
@@ -69,6 +75,7 @@ export async function GET() {
     title: m.title,
     programId: m.programId,
     programName: m.program.name,
+    gatsbyBenchmarks: m.gatsbyBenchmarks,
   }))
 
   // ── CV Builder stats ──

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { getModuleById } from '@/lib/training-db'
+import { sanitiseBenchmarks } from '@/lib/gatsby-benchmarks'
 import prisma from '@/lib/prisma'
 
 interface Params {
@@ -35,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json()
-  const { title, description, programId, order, active } = body
+  const { title, description, programId, order, active, gatsbyBenchmarks } = body
 
   // Validate programId if provided
   if (programId !== undefined) {
@@ -53,6 +54,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(programId !== undefined && { programId }),
       ...(order !== undefined && { order }),
       ...(active !== undefined && { active }),
+      ...(gatsbyBenchmarks !== undefined && {
+        gatsbyBenchmarks: sanitiseBenchmarks(gatsbyBenchmarks),
+      }),
     },
   })
 

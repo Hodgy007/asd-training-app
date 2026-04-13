@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { getAllModules } from '@/lib/training-db'
+import { sanitiseBenchmarks } from '@/lib/gatsby-benchmarks'
 import prisma from '@/lib/prisma'
 
 export async function GET() {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { id, title, description, programId, order } = body
+  const { id, title, description, programId, order, gatsbyBenchmarks } = body
 
   if (!id || !title || !description || !programId || order == null) {
     return NextResponse.json({ error: 'Missing required fields: id, title, description, programId, order' }, { status: 400 })
@@ -40,7 +41,14 @@ export async function POST(req: NextRequest) {
   }
 
   const module = await prisma.module.create({
-    data: { id, title, description, programId, order },
+    data: {
+      id,
+      title,
+      description,
+      programId,
+      order,
+      gatsbyBenchmarks: sanitiseBenchmarks(gatsbyBenchmarks),
+    },
   })
 
   return NextResponse.json(module, { status: 201 })

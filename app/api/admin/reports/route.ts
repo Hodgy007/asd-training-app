@@ -47,7 +47,13 @@ export async function GET(req: NextRequest) {
   const modules = await prisma.module.findMany({
     where: { programId: { in: allowedProgramIds }, active: true },
     orderBy: [{ programId: 'asc' }, { order: 'asc' }],
-    select: { id: true, title: true, programId: true, program: { select: { name: true } } },
+    select: {
+      id: true,
+      title: true,
+      programId: true,
+      gatsbyBenchmarks: true,
+      program: { select: { name: true } },
+    },
   })
 
   const moduleIds = modules.map((m) => m.id)
@@ -75,6 +81,7 @@ export async function GET(req: NextRequest) {
       moduleId,
       moduleName: mod?.title ?? moduleId,
       programName: mod?.program?.name ?? 'Unknown',
+      gatsbyBenchmarks: mod?.gatsbyBenchmarks ?? [],
       completions,
       totalUsers: users.length,
       pct: users.length > 0 ? Math.round((completions / users.length) * 100) : 0,
