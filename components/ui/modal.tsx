@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -35,7 +36,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  if (!isOpen) return null
+  if (!isOpen || typeof document === 'undefined') return null
 
   const sizeClasses = {
     sm: 'max-w-sm',
@@ -44,7 +45,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
     xl: 'max-w-xl',
   }
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -79,6 +80,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
         )}
         <div className="p-6">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
