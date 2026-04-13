@@ -110,7 +110,7 @@ export function PendingSurveys() {
       {surveys.length > 0 && !activeSurvey && (
         <div className="card space-y-4">
           <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-amber-500" />
+            <ClipboardList className="h-5 w-5 text-primary-500" />
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
               Pending Surveys
               <span className="ml-2 text-sm font-normal text-slate-500">({surveys.length})</span>
@@ -121,7 +121,7 @@ export function PendingSurveys() {
               <button
                 key={s.id}
                 onClick={() => openSurvey(s.id)}
-                className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-xl transition-colors w-full text-left"
+                className="flex items-center gap-3 p-3 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-xl transition-colors w-full text-left"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
@@ -132,7 +132,7 @@ export function PendingSurveys() {
                     {s.closesAt && ` · Closes ${format(new Date(s.closesAt), 'MMM d')}`}
                   </p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                <ChevronRight className="h-4 w-4 text-primary-400 flex-shrink-0" />
               </button>
             ))}
           </div>
