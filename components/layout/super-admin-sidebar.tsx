@@ -19,6 +19,7 @@ import {
   Calendar,
   Settings,
   FolderOpen,
+  UsersRound,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/super-admin/users', label: 'Users', icon: Users, charityAdminOnly: true },
   { href: '/super-admin/organisations', label: 'Organisations', icon: Building2, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
+  { href: '/super-admin/cohorts', label: 'Cohorts', icon: UsersRound, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
   { href: '/super-admin/library', label: 'Document Library', icon: FolderOpen, permission: CHARITY_PERMISSIONS.MANAGE_LIBRARY },
   { href: '/super-admin/training', label: 'Training Content', icon: BookOpen, permission: CHARITY_PERMISSIONS.MANAGE_TRAINING },
   { href: '/super-admin/surveys', label: 'Surveys', icon: ClipboardList, permission: CHARITY_PERMISSIONS.MANAGE_SURVEYS },
@@ -46,7 +48,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin/sessions', label: 'Workshops', icon: Calendar, permission: CHARITY_PERMISSIONS.MANAGE_SESSIONS },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
   { href: '/super-admin/impact', label: 'Impact & Reach', icon: TrendingUp, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
-  { href: '/super-admin/settings', label: 'Settings', icon: Settings, charityAdminOnly: true },
   { href: '/super-admin/guide', label: 'How to Guide', icon: HelpCircle },
 ]
 
@@ -172,6 +173,17 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
 
       {/* Bottom section */}
       <div className={clsx('p-4 border-t space-y-2', chrome.divider)}>
+        <Link
+          href="/super-admin/settings"
+          onClick={onClose}
+          className={clsx(
+            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all w-full',
+            pathname === '/super-admin/settings' ? chrome.navActive : chrome.navInactive,
+          )}
+        >
+          <Settings className={clsx('h-5 w-5 flex-shrink-0', pathname === '/super-admin/settings' ? chrome.iconActive : chrome.iconInactive)} />
+          Settings
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
           className={clsx('flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all w-full', chrome.signOut)}
