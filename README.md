@@ -18,6 +18,7 @@ A multi-tenant SaaS platform for ASD early identification training, child observ
   - [CV Builder](#cv-builder)
   - [AI Careers Advisor](#ai-careers-advisor)
   - [Virtual Workshops](#virtual-workshops)
+  - [Cohorts (Charity-Run Workshops)](#cohorts-charity-run-workshops)
   - [Document Library](#document-library)
   - [Surveys](#surveys)
   - [Announcements](#announcements)
@@ -202,6 +203,32 @@ Virtual classroom sessions with video conferencing integration and attendance tr
 
 **Meeting API integration:** Per-org API credentials for Zoom and Teams are stored in `OrgMeetingConfig`. Charity-level credentials are in `CharityMeetingConfig`. The integration handles OAuth token management, meeting creation, and link generation.
 
+### Cohorts (Charity-Run Workshops)
+
+A lightweight way for the charity to run in-person workshops for people who are **not part of any registered organisation** — community members, walk-ins, parents at one-off events, or any group of attendees that the charity wants to onboard directly without creating a full organisation.
+
+**How it works:**
+- Charity Admins create cohorts at `/super-admin/cohorts`. Each cohort has a name, description, and a set of assigned training programmes.
+- Cohort members can be added one-by-one or via **bulk CSV import** (`name,email` columns). Bulk import auto-generates secure temporary passwords and skips emails that already exist.
+- Every new member account is created with `mustChangePassword: true` so members are forced to set their own password on first login.
+- Adding a single member opens a **printable QR credential card** (reused from the standard user-creation flow) containing a QR code, the platform URL, the email, and the temporary password. Bulk import returns a downloadable credentials CSV for printing in batch.
+- The cohort detail page has four tabs — **Members**, **Training**, **Documents**, and **Workshops** — for managing accounts, assigned programmes, library visibility, and in-person workshops in one place.
+
+**Why this works with existing infrastructure:** A cohort is modelled as a special `OrgType` (`COHORT`) on the existing `Organisation` model. This means cohorts plug into every existing org-targeting system without modification:
+
+| Feature | How cohorts plug in |
+|---|---|
+| Training programs | `allowedProgramIds` on the cohort org — identical to normal orgs |
+| Document library | `targetOrgIds` includes the cohort ID — cohorts appear in the existing org picker |
+| Workshops | The session attendee picker targets by `organisationIds[]` — cohorts appear in the picker |
+| User accounts | Same user creation flow; users belong to the cohort org via `organisationId` |
+
+**In-person workshops:** The `MeetingPlatform` enum includes an `IN_PERSON` option for charity-run physical events. The "meeting URL" field can be repurposed as a venue address or directions link.
+
+**Filtering:** Cohorts are excluded from the Organisations list and organisation reports via a `where: { orgType: 'ORGANISATION' }` filter, so they do not pollute the registered-organisation views.
+
+**Lifecycle:** Cohorts can be deactivated when finished — this sets the cohort and all member accounts to inactive but preserves the data for reporting.
+
 ### Document Library
 
 A managed file repository for sharing documents with targeted audiences.
@@ -314,7 +341,7 @@ Secure programmatic access to platform data for external systems.
 
 ## Multi-Tenant Architecture
 
-The platform supports multiple organisations, each operating as an isolated tenant.
+The platform supports multiple organisations, each operating as an isolated tenant with optional hierarchical relationships.
 
 **Organisation settings** (managed by Charity Admins at `/super-admin/organisations`):
 - **Allowed training programs** — which programs the org's users can access
@@ -324,10 +351,28 @@ The platform supports multiple organisations, each operating as an isolated tena
 - **Address** — full UK address fields (line 1, line 2, city, county, postcode, country)
 - **Meeting config** — Zoom/Teams API credentials for auto-generating meeting links
 - **SSO config** — SAML settings with email domain, auto-provisioning, and default role
+- **Parent organisation flag** — marks an org as a parent that can manage child organisations
+
+**Hierarchical Organisation Structure (Parent/Child Orgs):**
+
+MATs (Multi-Academy Trusts), CEC Careers Hubs, and Local Authorities can manage multiple schools or sub-organisations under a single parent org.
+
+- **Schema:** Self-referencing relation on `Organisation` — `parentOrgId`, `isParentOrg`, `inheritSettings`, `childOrgs[]`
+- **Settings inheritance:** Child orgs with `inheritSettings: true` automatically inherit their parent's `allowedProgramIds`, `allowedRoles`, `cvBuilderEnabled`, and `careersAdvisorEnabled`. Single-level inheritance only (no recursive chain). When `inheritSettings` is disabled, the child org uses its own independent settings.
+- **Parent org admin features:** When an Org Admin's organisation is marked as a parent (`isParentOrg: true`), their sidebar shows a "Schools" link. From `/admin/schools` they can:
+  - Create and manage child organisations (name, slug, type, contact details, active status)
+  - Toggle settings inheritance per child
+  - Manage users within each child school
+  - Drill down into reports, sessions, and announcements for specific child orgs via an org selector dropdown
+- **Admin API drill-down:** All org admin API routes (`/api/admin/users`, `/api/admin/reports`, `/api/admin/sessions`, `/api/admin/announcements`) accept an optional `?orgId=` parameter. When a parent org admin provides a child org ID, the API verifies the parent-child relationship before returning scoped data. Reports default to aggregating across all child orgs when no filter is specified.
+- **Super admin support:** The super admin organisations page shows "Parent" badges on parent orgs, child org counts, and a hierarchy section on each org's detail page listing its children or parent.
+- **Helper functions** in `lib/org-hierarchy.ts`: `getEffectiveOrgSettings()`, `canManageChildOrg()`, `getChildOrgIds()`, `getAllOrgIds()`
+- **Session token:** `isParentOrg` is surfaced through the JWT to `session.user.isParentOrg` for all login flows (credentials, SSO, SAML)
+- **Non-parent orgs are unaffected** — flat organisations without a parent see no hierarchy features
 
 **Data isolation:**
 - Users belong to one organisation via `organisationId`
-- Org Admins can only see and manage users within their organisation
+- Org Admins can only see and manage users within their organisation (or child organisations if they are a parent org admin)
 - Training programs, library collections, surveys, and announcements can be targeted to specific organisations
 - Reports are scoped to the admin's organisation (Org Admin) or platform-wide (Charity Admin)
 - CDO (Careers Professional) student views are restricted to same-organisation users
@@ -392,6 +437,8 @@ app/
   (org-admin)/                      # Organisation admin pages
     admin/
       users/                        #   Org user management
+      schools/                      #   Child org management (parent orgs only)
+      schools/[orgId]/              #   Child org detail and user management
       announcements/                #   Org announcements
       library/                      #   Org document library
       sessions/                     #   Org workshops
@@ -437,6 +484,7 @@ lib/
   careers-advisor-ai.ts             # Careers report AI (Gemini)
   careers-advisor-pdf.tsx           # Careers report PDF template
   cv-templates/                     # CV PDF templates (accessible, modern, classic)
+  org-hierarchy.ts                  # Parent/child org helpers (inheritance, authorization)
   modules.ts                        # Training program resolution
   training-db.ts                    # Training data access layer
   meetings.ts                       # Zoom/Teams API integration

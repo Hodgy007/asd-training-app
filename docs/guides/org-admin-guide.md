@@ -15,7 +15,8 @@ This guide is for Organisation Admins. It covers everything you need to manage y
 5. [Announcements](#5-announcements)
 6. [Reports](#6-reports)
 7. [Virtual Classroom Sessions](#7-virtual-classroom-sessions)
-8. [Security and MFA](#8-security-and-mfa)
+8. [Managing Schools (Parent Organisations)](#8-managing-schools-parent-organisations)
+9. [Security and MFA](#9-security-and-mfa)
 
 ---
 
@@ -28,8 +29,11 @@ As an Organisation Admin you are responsible for managing training within your o
 - Activate or deactivate accounts
 - Post announcements to your organisation's members
 - Monitor how your organisation is progressing through its assigned training modules
+- **If your organisation is a parent org:** Create and manage child schools, and drill down into their data
 
-You have access to your own organisation only. You cannot view or manage users from other organisations.
+You have access to your own organisation only (and its child schools, if applicable). You cannot view or manage users from unrelated organisations.
+
+> **A note on cohorts:** The charity may also run in-person workshops for members of the public who are not part of any registered organisation (for example, parents at a community drop-in event). These attendees are managed by the charity's own admin team using a feature called **Cohorts** at the charity-admin level — you will not see cohorts in your admin panel, and they are completely separate from your organisation's users. If a member of the public asks you about a workshop they attended, direct them to contact the charity directly.
 
 ---
 
@@ -74,13 +78,19 @@ If a super admin created your account and set a temporary password, you will be 
 
 After signing in and completing 2FA, you land on the **Users** page — the main hub of your admin panel.
 
-The left-hand sidebar has three sections:
+The left-hand sidebar shows:
 
 | Section | What it does |
 |---|---|
 | **Users** | View, create, and manage all users in your organisation |
+| **Schools** | Create and manage child organisations *(only shown for parent orgs)* |
+| **Workshops** | Create and manage virtual classroom sessions |
 | **Announcements** | Post messages that appear on your members' dashboards |
+| **Document Library** | View document collections shared with your organisation |
 | **Reports** | See training progress across your organisation |
+| **Meeting Settings** | Configure Zoom/Teams API credentials for auto-generated meeting links |
+| **Enterprise SSO** | Configure SAML SSO for your organisation |
+| **How to Guide** | Access the org admin how-to guide |
 
 At the top of the Users page you will see:
 
@@ -294,7 +304,44 @@ Once credentials are saved and the connection is tested, the **Generate link** b
 
 ---
 
-## 8. Security and MFA
+## 8. Managing Schools (Parent Organisations)
+
+**This section only applies if your organisation has been set up as a parent organisation by the platform super admin.** If you do not see a **Schools** link in your sidebar, this section does not apply to you.
+
+Parent organisations — such as Multi-Academy Trusts, CEC Careers Hubs, and Local Authorities — can create and manage child schools from within their admin panel.
+
+### Accessing the Schools page
+
+Click **Schools** in the left-hand sidebar (between Users and Workshops). This takes you to `/admin/schools`.
+
+### Creating a school
+
+1. Click **Create School** in the top-right corner.
+2. Fill in the school's **Name** and **Slug** (the slug auto-generates from the name — you can edit it).
+3. Optionally select an **Organisation Type** (School, College, Academy, etc.).
+4. Fill in contact details (name, email, phone) and address if required.
+5. The **Inherit Settings** toggle is on by default. When enabled, the school will use your organisation's training programs, allowed roles, and feature flags. Turn it off if you need the school to have its own independent settings.
+6. Click **Create School**.
+
+### Managing a school
+
+Click any school's name in the table to open its detail page. From there you can:
+
+- **Edit details** — change the school's name, slug, contact information, address, and active status.
+- **Toggle Inherit Settings** — switch between inheriting your parent org's settings and using the school's own independent settings.
+- **Manage users** — view, search, create, and manage user accounts within that school. This works identically to the main Users page but is scoped to the selected school.
+- **Activate or deactivate** — toggle the school's active status. When a school is inactive, its users cannot sign in.
+
+### Filtering by school
+
+On the **Reports**, **Sessions**, and **Announcements** pages, you will see an **organisation selector dropdown** at the top. Use this to filter data by a specific school or view aggregated data across all your schools.
+
+- **All Organisations** (default) — shows data from your organisation and all child schools combined.
+- **Individual school** — shows data for that school only.
+
+---
+
+## 9. Security and MFA
 
 ### Two-factor authentication
 

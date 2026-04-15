@@ -10,12 +10,13 @@
 2. [First Login and MFA Setup](#2-first-login-and-mfa-setup)
 3. [Dashboard Overview](#3-dashboard-overview)
 4. [Managing Organisations](#4-managing-organisations)
-5. [Managing Training Content](#5-managing-training-content)
-6. [AI Quiz Generation](#6-ai-quiz-generation)
-7. [Announcements](#7-announcements)
-8. [Reports](#8-reports)
-9. [Single Sign-On (SSO) Setup](#9-single-sign-on-sso-setup)
-10. [Security and MFA](#10-security-and-mfa)
+5. [Managing Cohorts (Charity-Run Workshops)](#5-managing-cohorts-charity-run-workshops)
+6. [Managing Training Content](#6-managing-training-content)
+7. [AI Quiz Generation](#7-ai-quiz-generation)
+8. [Announcements](#8-announcements)
+9. [Reports](#9-reports)
+10. [Single Sign-On (SSO) Setup](#10-single-sign-on-sso-setup)
+11. [Security and MFA](#11-security-and-mfa)
 
 ---
 
@@ -31,7 +32,7 @@ Your responsibilities include:
 - Publishing platform-wide announcements to all users
 - Viewing training progress reports across all organisations
 
-Super Admins access a separate area of the platform at `/super-admin`. You will not see the regular learner dashboard — your navigation shows five sections: **Overview**, **Organisations**, **Training Content**, **Announcements**, and **Reports**.
+Super Admins access a separate area of the platform at `/super-admin`. You will not see the regular learner dashboard — your navigation includes **Overview**, **Organisations**, **Cohorts**, **Training Content**, **Document Library**, **Surveys**, **Announcements**, **Workshops**, **Reports**, and **Integrations**.
 
 ---
 
@@ -119,7 +120,47 @@ This page lists every organisation on the platform in a table. You can see each 
    - **Student**, **Intern**, **Employee** — access both ASD and careers training
 4. Under **Module Access**, use the **ASD Awareness Training** and **Careers CPD Training** toggles to control which training plans this organisation's users may access.
 5. The **Active** checkbox is ticked by default. Leave it ticked to make the organisation live immediately.
-6. Click **Create Organisation**.
+6. The **Parent Organisation** checkbox is unticked by default. Tick it if this organisation will manage child organisations underneath it (e.g. a Multi-Academy Trust, CEC Careers Hub, or Local Authority that oversees multiple schools). See [Hierarchical Organisations](#hierarchical-organisations-parentchild) below for details.
+7. Click **Create Organisation**.
+
+### Hierarchical Organisations (Parent/Child)
+
+Some organisations — such as Multi-Academy Trusts (MATs), CEC Careers Hubs, and Local Authorities — need to manage multiple schools or sub-organisations underneath them. The platform supports this with a parent/child hierarchy.
+
+**Enabling a parent organisation:**
+
+1. When creating a new organisation, tick the **Parent Organisation** checkbox in the create form.
+2. For an existing organisation, go to its detail page and tick the **Parent Organisation** toggle in the edit section, then click **Save Changes**.
+
+Once an organisation is marked as a parent, its Org Admin will see a **Schools** link in their admin sidebar. From there they can create and manage child schools.
+
+**How settings inheritance works:**
+
+Child organisations can inherit their parent's settings (allowed training programs, allowed roles, CV Builder and Careers Advisor feature flags). This is controlled by the **Inherit Settings** toggle on each child school:
+
+- **Inherit Settings ON (default):** The child uses whatever training programs, roles, and feature flags the parent has. If you update the parent's settings, all inheriting children automatically pick up the changes.
+- **Inherit Settings OFF:** The child has its own independent settings. The Org Admin can configure programs, roles, and feature flags separately for that school.
+
+**What the parent org admin can do:**
+
+- Create child schools with name, slug, type, contact details, and address
+- Activate or deactivate child schools
+- Create and manage users in each child school
+- View reports, sessions, and announcements filtered by a specific child school (using the org selector dropdown on those pages)
+- Reports default to aggregating across all children when no filter is selected
+
+**What you see as a Super Admin:**
+
+- Parent organisations display a purple **Parent** badge next to their name in the organisations table
+- The organisation detail page shows a **Hierarchy** section listing any child organisations (with name, status, and links to each child)
+- If an organisation has a parent, a link to the parent org is shown in the Hierarchy section
+- The child org count is shown in the organisations table
+
+**Important notes:**
+
+- Only one level of hierarchy is supported (parent → children). Children cannot themselves be parents.
+- Non-parent organisations see no hierarchy features at all — their admin panel works exactly as before.
+- Deleting a parent organisation does not automatically delete its children. Reassign or delete child schools first.
 
 ### Activating and deactivating an organisation
 
@@ -161,7 +202,127 @@ At the bottom of an organisation's detail page there is a **Danger Zone** sectio
 
 ---
 
-## 5. Managing Training Content
+## 5. Managing Cohorts (Charity-Run Workshops)
+
+Navigate to **Cohorts** in the left-hand sidebar.
+
+Cohorts are a lightweight way to group people who are **not part of any registered organisation** — for example, walk-in attendees at a community event, parents at a one-off awareness workshop, or members of the public attending an in-person training session run directly by the charity.
+
+A cohort behaves like a small, charity-managed organisation. You can:
+
+- Give cohort members platform accounts (with printable login cards)
+- Assign them training programmes
+- Share document collections with them
+- Invite them to in-person workshops
+
+Cohort members are completely separate from your registered organisations — they will not appear in the Organisations list, and their data does not mix with any organisation's reports.
+
+### Creating a cohort
+
+1. Click **Cohorts** in the sidebar.
+2. Click **New Cohort** in the top-right corner.
+3. Fill in:
+   - **Name** — a clear, descriptive label (e.g. "Spring Community Workshop 2026", "Harpenden Library Drop-in — March")
+   - **Description** (optional) — any context that will help you identify this cohort later
+   - **Training Programs** — tick the programmes you want to make available to this cohort's members. Members will see one sidebar link per assigned programme when they sign in.
+4. Click **Create Cohort**. You are taken straight to the cohort detail page.
+
+### Adding members
+
+Open any cohort from the Cohorts list to see its detail page. The detail page has four tabs: **Members**, **Training**, **Documents**, and **Workshops**.
+
+#### Adding a single member
+
+1. On the **Members** tab, click **Add Member**.
+2. Enter the person's **Name** and **Email**.
+3. Set a **Temporary Password** (minimum 8 characters) or click the dice icon to generate one automatically.
+4. Click **Create**.
+
+A **credential card modal** appears immediately with a printable card containing:
+
+- A QR code that opens the platform login page with the email pre-filled
+- The platform URL
+- The user's email
+- The temporary password
+
+Click **Print** to print the card. Hand the printed card to the attendee at the event — they can scan the QR code with their phone camera to start signing in. They will be required to set a new password the first time they log in.
+
+#### Bulk import from CSV
+
+For larger cohorts, you can create many accounts at once from a CSV file.
+
+1. On the **Members** tab, click **Bulk Import**.
+2. Prepare a CSV file with two columns: `name` and `email`. The first row should be the column headers. For example:
+
+   ```csv
+   name,email
+   Alex Smith,alex@example.com
+   Jamie Brown,jamie@example.com
+   Sam Taylor,sam@example.com
+   ```
+
+3. Paste the CSV content into the textarea (or upload the file).
+4. Click **Import**.
+
+The system will:
+
+- Auto-generate a strong temporary password for each new account
+- Skip any emails that already exist on the platform (these are listed back to you)
+- Create the rest of the accounts with `mustChangePassword: true`
+
+After the import completes, you can click **Download Credentials CSV** to export a file containing the name, email, and temporary password for every newly-created account. Use this to print credential cards in bulk, or to email each attendee their login details.
+
+#### Removing a member
+
+Click the bin icon next to any member to delete their account. Deletion is permanent.
+
+### Assigning training programmes
+
+On the **Training** tab you can see which programmes the cohort currently has access to. Click **Edit Programs** to tick or untick programmes. Changes take effect immediately — the next time members sign in, the sidebar will reflect the updated list.
+
+### Sharing documents with a cohort
+
+Cohorts work seamlessly with the **Document Library**. To share a collection with a cohort:
+
+1. Navigate to **Document Library** in the sidebar.
+2. Open the collection you want to share.
+3. In the **Targeting** section, add the cohort to the list of organisations.
+4. Save.
+
+The cohort will appear in the existing organisation picker — you do not need to do anything special. Cohort members will then see the collection in their sidebar and at `/library`.
+
+The **Documents** tab on the cohort detail page shows a read-only list of all collections currently visible to that cohort, so you can see at a glance what content has been shared.
+
+### Creating a workshop for a cohort
+
+In-person workshops use the **Workshops** feature with the **In Person** platform option.
+
+1. Navigate to **Workshops** in the sidebar.
+2. Click **Create Workshop**.
+3. Fill in title, description, date/time, and duration as normal.
+4. Set the **Platform** to **In Person**. (You can leave the meeting URL field blank — for in-person workshops you can use it to store a venue address or directions link.)
+5. In the attendees section, choose **Specific organisations** and select the cohort. Cohorts appear in the same picker as your registered organisations.
+6. Save.
+
+The cohort's members will see the workshop on their dashboard and at `/sessions`. After the workshop, you can mark attendance and add notes the same way you would for any other workshop.
+
+The **Workshops** tab on the cohort detail page shows all workshops where the cohort's members have been invited.
+
+### Deactivating a cohort
+
+When a cohort is finished (e.g. the workshop programme has ended), open it from the Cohorts list and click **Deactivate**. Deactivating sets the cohort and all of its member accounts to inactive — members will no longer be able to sign in, but their data is preserved in case you need it for reporting.
+
+You can reactivate a deactivated cohort at any time.
+
+### What cohorts do **not** do
+
+- Cohorts do not have an Org Admin. They are managed entirely by you (the Charity Admin) from `/super-admin/cohorts`.
+- Cohorts are not visible on the Organisations page and do not show up in organisation reports.
+- Cohort members cannot belong to a registered organisation as well — each user belongs to exactly one cohort or one organisation.
+
+---
+
+## 6. Managing Training Content
 
 Navigate to **Training Content** in the left-hand sidebar.
 
@@ -252,7 +413,7 @@ To deactivate or delete a lesson, click **Edit** on the lesson to open the lesso
 
 ---
 
-## 6. AI Quiz Generation
+## 7. AI Quiz Generation
 
 Each lesson can have a quiz attached to it. Quizzes are shown to learners after they complete a lesson. Questions are multiple-choice with one correct answer and an explanation.
 
@@ -297,7 +458,7 @@ Expand the question, then click **Delete**. You will be asked to confirm before 
 
 ---
 
-## 7. Announcements
+## 8. Announcements
 
 Navigate to **Announcements** in the left-hand sidebar.
 
@@ -326,7 +487,7 @@ Click the circular arrow icon in the top-right of the announcements table to rel
 
 ---
 
-## 8. Reports
+## 9. Reports
 
 Navigate to **Reports** in the left-hand sidebar.
 
@@ -357,7 +518,7 @@ Organisations that wish to auto-generate Zoom or Microsoft Teams meeting links f
 
 ---
 
-## 9. Single Sign-On (SSO) Setup
+## 10. Single Sign-On (SSO) Setup
 
 SSO allows users across all organisations to sign in with their existing Google or Microsoft account instead of a platform-specific password. SSO is a one-time setup performed by the super admin or app owner — once configured, all organisations benefit automatically.
 
@@ -386,7 +547,7 @@ Once these environment variables are deployed, the login page will show Google a
 
 ---
 
-## 10. Security and MFA
+## 11. Security and MFA
 
 ### MFA is mandatory for admin accounts
 
