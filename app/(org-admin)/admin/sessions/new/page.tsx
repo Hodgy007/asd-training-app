@@ -45,7 +45,7 @@ export default function CreateSessionPage() {
   const [description, setDescription] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
   const [duration, setDuration] = useState(60)
-  const [platform, setPlatform] = useState<'ZOOM' | 'TEAMS' | 'CUSTOM'>('ZOOM')
+  const [platform, setPlatform] = useState<'ZOOM' | 'TEAMS' | 'CUSTOM' | 'IN_PERSON'>('ZOOM')
   const [meetingUrl, setMeetingUrl] = useState('')
   const [hostId, setHostId] = useState('')
 
@@ -280,12 +280,13 @@ export default function CreateSessionPage() {
               <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Platform</label>
               <select
                 value={platform}
-                onChange={(e) => setPlatform(e.target.value as 'ZOOM' | 'TEAMS' | 'CUSTOM')}
+                onChange={(e) => setPlatform(e.target.value as 'ZOOM' | 'TEAMS' | 'CUSTOM' | 'IN_PERSON')}
                 className="w-full appearance-none px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               >
                 <option value="ZOOM">Zoom</option>
                 <option value="TEAMS">Microsoft Teams</option>
                 <option value="CUSTOM">Custom Link</option>
+                <option value="IN_PERSON">In Person</option>
               </select>
             </div>
             <div>
