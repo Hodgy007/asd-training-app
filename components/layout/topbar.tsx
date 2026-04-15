@@ -16,6 +16,7 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
   const { data: session } = useSession()
   const { colorTheme } = useColorTheme()
   const isClassic = colorTheme === 'classic'
+  const isDark = colorTheme === 'dark'
 
   const initials = session?.user?.name
     ? session.user.name
@@ -28,12 +29,16 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
 
   const headerBg = isClassic
     ? 'bg-orange-100 dark:bg-slate-800 border-orange-200 dark:border-slate-700'
+    : isDark
+    ? 'bg-slate-800 border-slate-700'
     : 'bg-primary-500 dark:bg-primary-600 border-primary-600 dark:border-primary-700'
   const iconColor = isClassic
     ? 'text-slate-700 dark:text-slate-300 hover:bg-orange-200 dark:hover:bg-slate-700'
+    : isDark
+    ? 'text-slate-300 hover:bg-slate-700'
     : 'text-white hover:bg-primary-400'
-  const titleColor = isClassic ? 'text-slate-900 dark:text-slate-100' : 'text-white'
-  const nameColor = isClassic ? 'text-slate-900 dark:text-slate-100' : 'text-white'
+  const titleColor = isClassic ? 'text-slate-900 dark:text-slate-100' : isDark ? 'text-slate-100' : 'text-white'
+  const nameColor = isClassic ? 'text-slate-900 dark:text-slate-100' : isDark ? 'text-slate-100' : 'text-white'
 
   return (
     <header className={clsx('h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0', headerBg)}>
