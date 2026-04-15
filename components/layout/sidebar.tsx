@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
@@ -56,9 +56,10 @@ function getNavItems(
     }
   }
 
-  // Show each document collection directly in the nav
-  for (const col of collections) {
-    items.push({ href: `/library?c=${col.id}`, label: col.title, icon: FolderOpen })
+  // Single Document Library entry — the library page itself handles
+  // collection grid / per-collection drill-in (and auto-selects when there's only one).
+  if (collections.length > 0) {
+    items.push({ href: '/library', label: 'Document Library', icon: FolderOpen })
   }
 
   items.push({ href: '/guide', label: 'How to Guide', icon: HelpCircle })
@@ -93,7 +94,6 @@ interface SidebarProps {
 
 export function Sidebar({ onClose, mobile }: SidebarProps) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const { data: session } = useSession()
   const { colorTheme } = useColorTheme()
   const isClassic = colorTheme === 'classic'
@@ -187,11 +187,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
       <nav className="flex-1 p-4 space-y-1" aria-label="Main navigation">
         {navItems.map((item) => {
           const Icon = item.icon
-          // For library collection links like /library?c=xxx, match on both path and query param
-          const [itemPath, itemQuery] = item.href.split('?')
-          const isActive = itemQuery
-            ? pathname === itemPath && searchParams.get('c') === new URLSearchParams(itemQuery).get('c')
-            : pathname === item.href || pathname.startsWith(item.href + '/')
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
 
           return (
             <Link
