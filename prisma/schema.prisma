@@ -101,6 +101,7 @@ model Organisation {
   postcode          String?
   country           String   @default("United Kingdom")
   pendingApproval   Boolean  @default(false)
+  orgType           OrgType  @default(ORGANISATION)
   parentOrgId       String?
   isParentOrg       Boolean  @default(false)
   inheritSettings   Boolean  @default(true)
@@ -477,6 +478,11 @@ enum MeetingPlatform {
   TEAMS
   CUSTOM
   IN_PERSON
+}
+
+enum OrgType {
+  ORGANISATION
+  COHORT
 }
 
 enum SessionStatus {
