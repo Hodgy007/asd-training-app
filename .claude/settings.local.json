@@ -9,7 +9,10 @@
       "Bash(C:/Users/Simon/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/skills/brainstorming/scripts/start-server.sh --project-dir \"C:/Users/Simon/OneDrive/Documents/asd-training-app\")",
       "Bash(cd:*)",
       "Bash(npx vercel:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npx prisma:*)",
+      "Bash(node -e \"require\\('ai'\\)\")",
+      "Bash(wc -l docs/guides/*.md README.md)"
     ]
   }
 }
