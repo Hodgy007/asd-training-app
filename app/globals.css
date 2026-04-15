@@ -334,6 +334,11 @@ html[data-color-theme="blue"].dark .text-primary-800 { color: rgb(68 199 238); }
   --p-900: #6b2e00;
 }
 
+/* ── Accessibility fonts ── */
+html[data-font="atkinson"]     { font-family: 'Atkinson Hyperlegible', Arial, sans-serif; }
+html[data-font="lexend"]       { font-family: 'Lexend', Arial, sans-serif; }
+html[data-font="opendyslexic"] { font-family: 'OpenDyslexic', Arial, sans-serif; }
+
 /* ── Colour theme: Blue ── */
 html[data-color-theme="blue"] {
   --p-50:  #f0f7fd;

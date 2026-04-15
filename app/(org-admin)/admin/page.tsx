@@ -20,6 +20,7 @@ import {
   Layers,
   Clock,
   UserCheck,
+  RotateCcw,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
@@ -233,6 +234,23 @@ export default function OrgAdminUsersPage() {
       } else {
         const d = await res.json()
         showToast(d.error || 'Delete failed.', 'error')
+      }
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  async function resetProgress(userId: string, name: string | null) {
+    if (!confirm(`Reset all training progress for ${name ?? 'this user'}? This cannot be undone.`)) return
+    setActionLoading(userId)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/progress`, { method: 'DELETE' })
+      if (res.ok) {
+        showToast('Training progress reset.', 'success')
+        fetchUsers()
+      } else {
+        const d = await res.json()
+        showToast(d.error || 'Reset failed.', 'error')
       }
     } finally {
       setActionLoading(null)
@@ -760,6 +778,14 @@ export default function OrgAdminUsersPage() {
                       <td className="px-4 py-3">
                         {!isSelf && (
                           <div className="flex items-center justify-center gap-1">
+                            <button
+                              disabled={isLoading}
+                              onClick={() => resetProgress(user.id, user.name)}
+                              className="p-1.5 rounded-lg text-slate-300 hover:text-amber-500 hover:bg-amber-50 transition-colors"
+                              title="Reset training progress"
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </button>
                             <button
                               disabled={isLoading}
                               onClick={() => deleteUser(user.id, user.name)}

@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   FolderOpen,
   Building2,
+  Settings,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
@@ -146,6 +147,17 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
 
       {/* Bottom section */}
       <div className={clsx('p-4 border-t space-y-2', chrome.divider)}>
+        <Link
+          href="/admin/settings"
+          onClick={onClose}
+          className={clsx(
+            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all w-full',
+            pathname === '/admin/settings' ? chrome.navActive : chrome.navInactive,
+          )}
+        >
+          <Settings className={clsx('h-5 w-5 flex-shrink-0', pathname === '/admin/settings' ? chrome.iconActive : chrome.iconInactive)} />
+          Settings
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
           className={clsx('flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all w-full', chrome.signOut)}
