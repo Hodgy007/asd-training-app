@@ -49,6 +49,7 @@ const ROLE_OPTIONS = [
 export default function LibraryPage() {
   const [collections, setCollections] = useState<LibraryCollection[]>([])
   const [orgs, setOrgs] = useState<Organisation[]>([])
+  const [cohorts, setCohorts] = useState<Organisation[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -115,10 +116,18 @@ export default function LibraryPage() {
     } catch { /* ignore */ }
   }, [])
 
+  const fetchCohorts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/super-admin/cohorts')
+      if (res.ok) setCohorts(await res.json())
+    } catch { /* ignore */ }
+  }, [])
+
   useEffect(() => {
     fetchCollections()
     fetchOrgs()
-  }, [fetchCollections, fetchOrgs])
+    fetchCohorts()
+  }, [fetchCollections, fetchOrgs, fetchCohorts])
 
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })
@@ -230,7 +239,13 @@ export default function LibraryPage() {
     if (col.targetOrgIds.length === 0 && col.targetRoles.length === 0) return 'All users'
     const parts: string[] = []
     if (col.targetOrgIds.length > 0) {
-      const orgNames = col.targetOrgIds.map((id) => orgs.find((o) => o.id === id)?.name || id)
+      const orgNames = col.targetOrgIds.map((id) => {
+        const org = orgs.find((o) => o.id === id)
+        if (org) return org.name
+        const cohort = cohorts.find((c) => c.id === id)
+        if (cohort) return `${cohort.name} (cohort)`
+        return id
+      })
       parts.push(orgNames.join(', '))
     }
     if (col.targetRoles.length > 0) {

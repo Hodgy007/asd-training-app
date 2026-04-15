@@ -19,6 +19,7 @@ import {
   Upload,
   Download,
   UserPlus,
+  ClipboardList,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
@@ -39,13 +40,22 @@ interface CohortMember {
   createdAt: string
 }
 
-interface LibraryCollection {
+interface CohortDocument {
   id: string
   title: string
   description: string
-  targetOrgIds: string[]
-  active: boolean
-  _count?: { documents: number }
+  documentCount: number
+  assigned: boolean
+}
+
+interface CohortSurvey {
+  id: string
+  title: string
+  description: string | null
+  status: 'DRAFT' | 'PUBLISHED'
+  closesAt: string | null
+  questionCount: number
+  assigned: boolean
 }
 
 interface CohortSession {
@@ -83,7 +93,7 @@ const PLATFORM_LABELS: Record<string, string> = {
   IN_PERSON: 'In Person',
 }
 
-type Tab = 'members' | 'training' | 'documents' | 'workshops'
+type Tab = 'members' | 'training' | 'documents' | 'surveys' | 'workshops'
 
 export default function CohortDetailPage() {
   const { data: session, status } = useSession()
@@ -94,10 +104,21 @@ export default function CohortDetailPage() {
   const [cohort, setCohort] = useState<Cohort | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('members')
   const [programs, setPrograms] = useState<TrainingProgram[]>([])
-  const [collections, setCollections] = useState<LibraryCollection[]>([])
+  const [documents, setDocuments] = useState<CohortDocument[]>([])
+  const [surveys, setSurveys] = useState<CohortSurvey[]>([])
   const [cohortSessions, setCohortSessions] = useState<CohortSession[]>([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  // Edit state for documents
+  const [editingDocuments, setEditingDocuments] = useState(false)
+  const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([])
+  const [savingDocuments, setSavingDocuments] = useState(false)
+
+  // Edit state for surveys
+  const [editingSurveys, setEditingSurveys] = useState(false)
+  const [selectedSurveyIds, setSelectedSurveyIds] = useState<string[]>([])
+  const [savingSurveys, setSavingSurveys] = useState(false)
 
   // Add member form
   const [showAddMember, setShowAddMember] = useState(false)
@@ -131,10 +152,11 @@ export default function CohortDetailPage() {
   async function fetchAll() {
     setLoading(true)
     try {
-      const [cohortRes, programsRes, libraryRes, sessionsRes] = await Promise.all([
+      const [cohortRes, programsRes, documentsRes, surveysRes, sessionsRes] = await Promise.all([
         fetch(`/api/super-admin/cohorts/${cohortId}`),
         fetch('/api/super-admin/training/programs'),
-        fetch('/api/super-admin/library'),
+        fetch(`/api/super-admin/cohorts/${cohortId}/documents`),
+        fetch(`/api/super-admin/cohorts/${cohortId}/surveys`),
         fetch('/api/super-admin/sessions'),
       ])
 
@@ -152,9 +174,16 @@ export default function CohortDetailPage() {
         setPrograms(p.filter((prog: TrainingProgram) => prog.status === 'APPROVED' || prog.status === 'UNDER_REVIEW'))
       }
 
-      if (libraryRes.ok) {
-        const l = await libraryRes.json()
-        setCollections(l)
+      if (documentsRes.ok) {
+        const d: CohortDocument[] = await documentsRes.json()
+        setDocuments(d)
+        setSelectedDocumentIds(d.filter((x) => x.assigned).map((x) => x.id))
+      }
+
+      if (surveysRes.ok) {
+        const sv: CohortSurvey[] = await surveysRes.json()
+        setSurveys(sv)
+        setSelectedSurveyIds(sv.filter((x) => x.assigned).map((x) => x.id))
       }
 
       if (sessionsRes.ok) {
@@ -239,6 +268,46 @@ export default function CohortDetailPage() {
     }
   }
 
+  async function handleSaveDocuments() {
+    setSavingDocuments(true)
+    try {
+      const res = await fetch(`/api/super-admin/cohorts/${cohortId}/documents`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collectionIds: selectedDocumentIds }),
+      })
+      if (res.ok) {
+        showToast('Document collections updated.', 'success')
+        setEditingDocuments(false)
+        fetchAll()
+      } else {
+        showToast('Failed to update documents.', 'error')
+      }
+    } finally {
+      setSavingDocuments(false)
+    }
+  }
+
+  async function handleSaveSurveys() {
+    setSavingSurveys(true)
+    try {
+      const res = await fetch(`/api/super-admin/cohorts/${cohortId}/surveys`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ surveyIds: selectedSurveyIds }),
+      })
+      if (res.ok) {
+        showToast('Surveys updated.', 'success')
+        setEditingSurveys(false)
+        fetchAll()
+      } else {
+        showToast('Failed to update surveys.', 'error')
+      }
+    } finally {
+      setSavingSurveys(false)
+    }
+  }
+
   async function handleBulkCsv(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -303,15 +372,14 @@ export default function CohortDetailPage() {
     )
   }
 
-  // Collections visible to this cohort
-  const cohortCollections = collections.filter(
-    (c) => c.active && (c.targetOrgIds.length === 0 || c.targetOrgIds.includes(cohortId))
-  )
+  const assignedDocumentCount = documents.filter((d) => d.assigned).length
+  const assignedSurveyCount = surveys.filter((s) => s.assigned).length
 
   const tabs: { key: Tab; label: string; icon: React.ElementType; count?: number }[] = [
     { key: 'members', label: 'Members', icon: Users, count: cohort._count.users },
     { key: 'training', label: 'Training', icon: BookOpen, count: cohort.allowedProgramIds.length },
-    { key: 'documents', label: 'Documents', icon: FolderOpen, count: cohortCollections.length },
+    { key: 'documents', label: 'Documents', icon: FolderOpen, count: assignedDocumentCount },
+    { key: 'surveys', label: 'Surveys', icon: ClipboardList, count: assignedSurveyCount },
     { key: 'workshops', label: 'Workshops', icon: Calendar, count: cohortSessions.length },
   ]
 
@@ -688,38 +756,191 @@ export default function CohortDetailPage() {
       {/* Tab: Documents */}
       {activeTab === 'documents' && (
         <div className="space-y-4">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Document collections currently visible to this cohort. Manage targeting in{' '}
-            <Link href="/super-admin/library" className="text-emerald-600 hover:underline">Document Library</Link>.
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Select which document collections are visible to this cohort.
+            </p>
+            {!editingDocuments ? (
+              <button onClick={() => setEditingDocuments(true)} className="btn-secondary text-sm">
+                Edit Documents
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingDocuments(false)
+                    setSelectedDocumentIds(documents.filter((d) => d.assigned).map((d) => d.id))
+                  }}
+                  className="px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm text-slate-700 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveDocuments}
+                  disabled={savingDocuments}
+                  className="btn-primary text-sm disabled:opacity-50"
+                >
+                  {savingDocuments ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            )}
+          </div>
 
-          {cohortCollections.length === 0 ? (
+          {documents.length === 0 ? (
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-sm">
               <FolderOpen className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">No document collections are shared with this cohort yet.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">No document collections exist yet.</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                Go to Document Library and add this cohort to a collection's target organisations.
+                Create collections in <Link href="/super-admin/library" className="text-emerald-600 hover:underline">Document Library</Link>.
               </p>
             </div>
           ) : (
             <div className="space-y-2">
-              {cohortCollections.map((col) => (
-                <div
-                  key={col.id}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm"
-                >
-                  <FolderOpen className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">{col.title}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{col.description}</p>
+              {documents.map((doc) => {
+                const isAssigned = selectedDocumentIds.includes(doc.id)
+                return (
+                  <div
+                    key={doc.id}
+                    className={clsx(
+                      'flex items-center justify-between gap-4 p-4 rounded-xl border transition',
+                      editingDocuments ? 'cursor-pointer' : '',
+                      isAssigned
+                        ? 'border-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700'
+                        : 'border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800'
+                    )}
+                    onClick={editingDocuments ? () => {
+                      setSelectedDocumentIds((prev) =>
+                        prev.includes(doc.id) ? prev.filter((id) => id !== doc.id) : [...prev, doc.id]
+                      )
+                    } : undefined}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <FolderOpen className={clsx('h-5 w-5 flex-shrink-0', isAssigned ? 'text-emerald-600' : 'text-slate-400')} />
+                      <div className="min-w-0">
+                        <p className={clsx('font-medium text-sm truncate', isAssigned ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400')}>
+                          {doc.title}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {doc.description} · {doc.documentCount} {doc.documentCount === 1 ? 'document' : 'documents'}
+                        </p>
+                      </div>
+                    </div>
+                    {editingDocuments ? (
+                      <input
+                        type="checkbox"
+                        className="rounded accent-emerald-600 flex-shrink-0"
+                        checked={isAssigned}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    ) : isAssigned ? (
+                      <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                    ) : null}
                   </div>
-                  {col.targetOrgIds.length === 0 && (
-                    <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-medium flex-shrink-0">
-                      All orgs
-                    </span>
-                  )}
-                </div>
-              ))}
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab: Surveys */}
+      {activeTab === 'surveys' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Select which surveys are sent to this cohort.
+            </p>
+            {!editingSurveys ? (
+              <button onClick={() => setEditingSurveys(true)} className="btn-secondary text-sm">
+                Edit Surveys
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingSurveys(false)
+                    setSelectedSurveyIds(surveys.filter((s) => s.assigned).map((s) => s.id))
+                  }}
+                  className="px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm text-slate-700 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveSurveys}
+                  disabled={savingSurveys}
+                  className="btn-primary text-sm disabled:opacity-50"
+                >
+                  {savingSurveys ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {surveys.length === 0 ? (
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-sm">
+              <ClipboardList className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">No surveys available.</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                Create surveys in <Link href="/super-admin/surveys" className="text-emerald-600 hover:underline">Surveys</Link>.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {surveys.map((sv) => {
+                const isAssigned = selectedSurveyIds.includes(sv.id)
+                return (
+                  <div
+                    key={sv.id}
+                    className={clsx(
+                      'flex items-center justify-between gap-4 p-4 rounded-xl border transition',
+                      editingSurveys ? 'cursor-pointer' : '',
+                      isAssigned
+                        ? 'border-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-700'
+                        : 'border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800'
+                    )}
+                    onClick={editingSurveys ? () => {
+                      setSelectedSurveyIds((prev) =>
+                        prev.includes(sv.id) ? prev.filter((id) => id !== sv.id) : [...prev, sv.id]
+                      )
+                    } : undefined}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <ClipboardList className={clsx('h-5 w-5 flex-shrink-0', isAssigned ? 'text-emerald-600' : 'text-slate-400')} />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className={clsx('font-medium text-sm truncate', isAssigned ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400')}>
+                            {sv.title}
+                          </p>
+                          <span className={clsx(
+                            'text-[10px] px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0',
+                            sv.status === 'PUBLISHED'
+                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                          )}>
+                            {sv.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {sv.questionCount} {sv.questionCount === 1 ? 'question' : 'questions'}
+                          {sv.description ? ` · ${sv.description}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                    {editingSurveys ? (
+                      <input
+                        type="checkbox"
+                        className="rounded accent-emerald-600 flex-shrink-0"
+                        checked={isAssigned}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    ) : isAssigned ? (
+                      <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                    ) : null}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
