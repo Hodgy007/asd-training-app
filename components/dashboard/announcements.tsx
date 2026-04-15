@@ -53,7 +53,7 @@ export function DashboardAnnouncements() {
             className={clsx(
               'rounded-xl p-4 border-l-4 relative',
               isGlobal
-                ? 'bg-blue-50 border-l-blue-500 dark:bg-blue-900/20 dark:border-l-blue-400'
+                ? 'bg-primary-50 border-l-primary-500 dark:bg-primary-900/20 dark:border-l-primary-400'
                 : 'bg-amber-50 border-l-amber-500 dark:bg-amber-900/20 dark:border-l-amber-400'
             )}
           >
@@ -66,7 +66,7 @@ export function DashboardAnnouncements() {
             <div className="flex items-start gap-3 pr-8">
               <Megaphone className={clsx(
                 'h-5 w-5 mt-0.5 flex-shrink-0',
-                isGlobal ? 'text-blue-500' : 'text-amber-500'
+                isGlobal ? 'text-primary-500' : 'text-amber-500'
               )} />
               <div>
                 <h3 className="font-semibold text-slate-900 text-sm">{a.title}</h3>

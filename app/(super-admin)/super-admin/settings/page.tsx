@@ -41,6 +41,13 @@ const THEMES: { id: ColorTheme; label: string; description: string; swatchBg: st
     swatchBg: '#f0f7fd',
     swatchAccent: '#056bb0',
   },
+  {
+    id: 'dark',
+    label: 'Dark',
+    description: 'Dark slate — matches dark mode appearance',
+    swatchBg: '#1e293b',
+    swatchAccent: '#94a3b8',
+  },
 ]
 
 type MeetingPlatform = 'ZOOM' | 'TEAMS'

@@ -61,6 +61,7 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
   const { data: session } = useSession()
   const { colorTheme } = useColorTheme()
   const isClassic = colorTheme === 'classic'
+  const isDark = colorTheme === 'dark'
 
   const role = session?.user?.role
   const isCharityAdmin = role === 'SUPER_ADMIN'
@@ -95,6 +96,16 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
     iconInactive: 'text-slate-500 dark:text-slate-400',
     divider: 'border-orange-200 dark:border-slate-700',
     signOut: 'text-slate-700 dark:text-slate-300 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20 dark:hover:text-red-300',
+  } : isDark ? {
+    sidebar: 'bg-slate-800 border-slate-700',
+    logoBorder: 'border-slate-700 bg-slate-800',
+    logoText: 'text-slate-100',
+    navActive: 'bg-slate-700 text-slate-100 shadow-sm',
+    navInactive: 'text-slate-300 hover:bg-slate-700 hover:text-slate-100',
+    iconActive: 'text-slate-100',
+    iconInactive: 'text-slate-400',
+    divider: 'border-slate-700',
+    signOut: 'text-slate-300 hover:bg-red-900/20 hover:text-red-300',
   } : {
     sidebar: 'bg-primary-500 dark:bg-primary-600 border-primary-600 dark:border-primary-700',
     logoBorder: 'border-primary-600 dark:border-primary-700 bg-primary-500 dark:bg-primary-600',
