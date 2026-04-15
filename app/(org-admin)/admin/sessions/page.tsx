@@ -13,11 +13,12 @@ import {
   Video,
   Monitor,
   Link as LinkIcon,
+  MapPin,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
 type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
-type Platform = 'ZOOM' | 'TEAMS' | 'CUSTOM'
+type Platform = 'ZOOM' | 'TEAMS' | 'CUSTOM' | 'IN_PERSON'
 
 interface ClassSession {
   id: string
@@ -50,18 +51,21 @@ const PLATFORM_STYLES: Record<Platform, string> = {
   ZOOM: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   TEAMS: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
   CUSTOM: 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-300',
+  IN_PERSON: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
 }
 
 const PLATFORM_LABELS: Record<Platform, string> = {
   ZOOM: 'Zoom',
   TEAMS: 'Teams',
   CUSTOM: 'Custom',
+  IN_PERSON: 'In Person',
 }
 
 const PLATFORM_ICONS: Record<Platform, React.ElementType> = {
   ZOOM: Video,
   TEAMS: Monitor,
   CUSTOM: LinkIcon,
+  IN_PERSON: MapPin,
 }
 
 type FilterTab = 'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED'

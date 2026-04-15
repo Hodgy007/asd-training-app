@@ -476,6 +476,7 @@ enum MeetingPlatform {
   ZOOM
   TEAMS
   CUSTOM
+  IN_PERSON
 }
 
 enum SessionStatus {

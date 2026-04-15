@@ -26,7 +26,7 @@ import {
 import { clsx } from 'clsx'
 
 type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
-type Platform = 'ZOOM' | 'TEAMS' | 'CUSTOM'
+type Platform = 'ZOOM' | 'TEAMS' | 'CUSTOM' | 'IN_PERSON'
 
 interface Attendee {
   id: string
@@ -419,6 +419,7 @@ export default function SessionDetailPage() {
               <option value="ZOOM">Zoom</option>
               <option value="TEAMS">Microsoft Teams</option>
               <option value="CUSTOM">Custom Link</option>
+              <option value="IN_PERSON">In Person</option>
             </select>
           </div>
           <div>
