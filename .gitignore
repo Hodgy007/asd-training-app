@@ -16,3 +16,7 @@ docs/superpowers/
 # Playwright
 test-results/
 playwright-report/
+
+# graphify (knowledge-graph tool artifacts)
+.graphify_python
+graphify-out/
