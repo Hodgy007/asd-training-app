@@ -144,17 +144,6 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
         )}
       </div>
 
-      {/* Role badge */}
-      <div className="px-5 py-2 border-b border-calm-100 dark:border-slate-700">
-        <span className={clsx(
-          'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
-          badgeStyle,
-        )}>
-          <Crown className="h-3 w-3" />
-          {badgeLabel}
-        </span>
-      </div>
-
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1" aria-label="Super admin navigation">
         {visibleItems.map((item) => {

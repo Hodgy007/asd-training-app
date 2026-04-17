@@ -171,18 +171,6 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
         )}
       </div>
 
-      {/* Role badge */}
-      {role && ROLE_LABELS[role] && (
-        <div className="px-5 py-2">
-          <span className={clsx(
-            'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
-            ROLE_BADGE_STYLES[role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-200',
-          )}>
-            {ROLE_LABELS[role]}
-          </span>
-        </div>
-      )}
-
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1" aria-label="Main navigation">
         {navItems.map((item) => {
