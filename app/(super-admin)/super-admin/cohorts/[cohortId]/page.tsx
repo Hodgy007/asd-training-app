@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
+import { SendInviteButton } from '@/components/ui/send-invite-button'
 
 interface TrainingProgram {
   id: string
@@ -655,13 +656,16 @@ export default function CohortDetailPage() {
                         )}
                       </td>
                       <td className="px-5 py-3 text-right">
-                        <button
-                          onClick={() => handleRemoveMember(member.id, member.name ?? member.email)}
-                          className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition"
-                          title="Remove from cohort"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="inline-flex items-center gap-1">
+                          <SendInviteButton userId={member.id} userEmail={member.email} compact />
+                          <button
+                            onClick={() => handleRemoveMember(member.id, member.name ?? member.email)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                            title="Remove from cohort"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

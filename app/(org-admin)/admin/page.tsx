@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
+import { SendInviteButton } from '@/components/ui/send-invite-button'
 
 const ROLE_LABELS: Record<string, string> = {
   CAREGIVER: 'Practitioner',
@@ -780,6 +781,7 @@ export default function OrgAdminUsersPage() {
                       <td className="px-4 py-3">
                         {!isSelf && (
                           <div className="flex items-center justify-center gap-1">
+                            <SendInviteButton userId={user.id} userEmail={user.email} compact />
                             <button
                               disabled={isLoading}
                               onClick={() => resetProgress(user.id, user.name)}
