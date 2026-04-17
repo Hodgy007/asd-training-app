@@ -20,3 +20,6 @@ playwright-report/
 # graphify (knowledge-graph tool artifacts)
 .graphify_python
 graphify-out/
+
+# Local Claude Code skills
+.claude/skills/
