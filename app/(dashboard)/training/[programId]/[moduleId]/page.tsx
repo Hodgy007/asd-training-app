@@ -36,6 +36,14 @@ export default async function ProgramModulePage({
     },
   })
 
+  console.log(
+    '[module-page] params=%s moduleFound=%s userId=%s role=%s',
+    JSON.stringify(params),
+    !!module,
+    session.user.id,
+    session.user.role,
+  )
+
   if (!module) notFound()
 
   const progressRecords = await prisma.trainingProgress.findMany({
