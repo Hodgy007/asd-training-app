@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
@@ -16,6 +16,24 @@ function ResetPasswordForm() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [purpose, setPurpose] = useState<'RESET' | 'ACTIVATION' | null>(null)
+  const [userName, setUserName] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!token) return
+    fetch(`/api/auth/reset-password/introspect?token=${encodeURIComponent(token)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return
+        if (data.purpose === 'RESET' || data.purpose === 'ACTIVATION') {
+          setPurpose(data.purpose)
+          setUserName(data.userName ?? null)
+        }
+      })
+      .catch(() => {})
+  }, [token])
+
+  const isActivation = purpose === 'ACTIVATION'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -68,8 +86,14 @@ function ResetPasswordForm() {
 
   return (
     <>
-      <h2 className="text-xl font-bold text-slate-900 mb-2">Set a new password</h2>
-      <p className="text-sm text-slate-500 mb-6">Choose a password with at least 8 characters.</p>
+      <h2 className="text-xl font-bold text-slate-900 mb-2">
+        {isActivation ? 'Welcome to Ambitious about Autism' : 'Set a new password'}
+      </h2>
+      <p className="text-sm text-slate-500 mb-6">
+        {isActivation
+          ? `${userName ? userName + ', s' : 'S'}et a password to get started. You'll use it to sign in from now on.`
+          : 'Choose a password with at least 8 characters.'}
+      </p>
 
       {error && (
         <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-5">
@@ -119,6 +143,8 @@ function ResetPasswordForm() {
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               Updating…
             </span>
+          ) : isActivation ? (
+            'Set password and continue'
           ) : (
             'Set new password'
           )}
