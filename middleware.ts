@@ -4,6 +4,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/register-organisation', '/privacy', '/terms', '/api/auth', '/api/organisations/register']
 
+// Temporary MFA kill-switch. Set `DISABLE_MFA=true` in env to skip all MFA
+// enforcement (verify + setup). Existing TOTP secrets remain intact; users
+// simply aren't forced through the flow. Remove the env var (or set to anything
+// other than "true") to re-enable MFA.
+const MFA_DISABLED = process.env.DISABLE_MFA === 'true'
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
@@ -51,7 +57,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Force MFA verification for users with MFA enabled who haven't verified yet
-  if (mfaPending) {
+  if (!MFA_DISABLED && mfaPending) {
     if (pathname === '/mfa-verify' || pathname.startsWith('/api/auth')) {
       return NextResponse.next()
     }
@@ -68,7 +74,7 @@ export async function middleware(req: NextRequest) {
 
   // Force MFA setup for admin roles
   const isAdmin = role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE' || role === 'ORG_ADMIN'
-  if (isAdmin && !totpEnabled && !mfaPending) {
+  if (!MFA_DISABLED && isAdmin && !totpEnabled && !mfaPending) {
     const allowedPaths = ['/mfa-setup', '/api/auth/mfa', '/api/auth']
     if (allowedPaths.some((p) => pathname.startsWith(p))) {
       return NextResponse.next()
@@ -80,7 +86,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // If on /mfa-setup but not required, redirect to home
-  if (pathname === '/mfa-setup' && (!isAdmin || totpEnabled)) {
+  if (pathname === '/mfa-setup' && (MFA_DISABLED || !isAdmin || totpEnabled)) {
     return NextResponse.redirect(new URL(homeForRole(role), req.url))
   }
 
