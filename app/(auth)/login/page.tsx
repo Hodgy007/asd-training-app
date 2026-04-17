@@ -131,7 +131,7 @@ function LoginForm() {
     <div className="min-h-screen bg-orange-50 dark:bg-slate-900 flex items-center justify-center p-4 animate-page-enter">
       <div className="w-full max-w-md">
         {/* Logo & Branding */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 mt-12">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-28 w-auto mx-auto mb-4" />
           <p className="text-slate-500 mt-1">Training &amp; Observation Platform</p>
