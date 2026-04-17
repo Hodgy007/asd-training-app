@@ -28,21 +28,25 @@ interface NavItem {
   exact?: boolean
 }
 
+// Users stays first, How to Guide stays last. Everything in between is sorted
+// alphabetically by label. Schools is conditionally inserted into its
+// alphabetical position when the current org is a parent org.
 const BASE_NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Users', icon: Users, exact: true },
 ]
 
 const PARENT_ORG_NAV: NavItem = { href: '/admin/schools', label: 'Schools', icon: Building2 }
 
-const COMMON_NAV_ITEMS: NavItem[] = [
-  { href: '/admin/sessions', label: 'Workshops', icon: Calendar },
+const MIDDLE_NAV_ITEMS: NavItem[] = [
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/admin/library', label: 'Document Library', icon: FolderOpen },
-  { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
   { href: '/admin/settings/sso', label: 'Enterprise SSO', icon: Shield },
-  { href: '/admin/guide', label: 'How to Guide', icon: HelpCircle },
+  { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
+  { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/admin/sessions', label: 'Workshops', icon: Calendar },
 ]
+
+const GUIDE_NAV: NavItem = { href: '/admin/guide', label: 'How to Guide', icon: HelpCircle }
 
 interface OrgAdminSidebarProps {
   onClose?: () => void
@@ -57,11 +61,10 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
   const isDark = colorTheme === 'dark'
 
   const isParentOrg = session?.user?.isParentOrg ?? false
-  const navItems: NavItem[] = [
-    ...BASE_NAV_ITEMS,
-    ...(isParentOrg ? [PARENT_ORG_NAV] : []),
-    ...COMMON_NAV_ITEMS,
-  ]
+  const middleWithSchools = isParentOrg
+    ? [...MIDDLE_NAV_ITEMS, PARENT_ORG_NAV].sort((a, b) => a.label.localeCompare(b.label))
+    : MIDDLE_NAV_ITEMS
+  const navItems: NavItem[] = [...BASE_NAV_ITEMS, ...middleWithSchools, GUIDE_NAV]
 
   const chrome = isClassic ? {
     sidebar: 'bg-white dark:bg-slate-900',
