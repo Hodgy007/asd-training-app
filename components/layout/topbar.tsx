@@ -27,18 +27,23 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
         .slice(0, 2)
     : 'U'
 
-  const headerBg = isClassic
-    ? 'bg-orange-100 dark:bg-slate-800 border-orange-200 dark:border-slate-700'
-    : isDark
-    ? 'bg-slate-800 border-slate-700'
-    : 'bg-primary-500 dark:bg-primary-600 border-primary-600 dark:border-primary-700'
-  const iconColor = isClassic
-    ? 'text-slate-700 dark:text-slate-300 hover:bg-orange-200 dark:hover:bg-slate-700'
-    : isDark
-    ? 'text-slate-300 hover:bg-slate-700'
-    : 'text-white hover:bg-primary-400'
-  const titleColor = isClassic ? 'text-slate-900 dark:text-slate-100' : isDark ? 'text-slate-100' : 'text-white'
-  const nameColor = isClassic ? 'text-slate-900 dark:text-slate-100' : isDark ? 'text-slate-100' : 'text-white'
+  // LinkedIn-inspired white topbar. Dark colour theme keeps a dark surface
+  // but uses the same neutral shape language. `isClassic` kept for future
+  // divergence but currently shares styling with the default (blue) theme.
+  void isClassic
+  const headerBg = isDark
+    ? 'bg-slate-900 border-b border-slate-800'
+    : 'bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800'
+  const iconColor = isDark
+    ? 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
+    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800'
+  const titleColor = isDark
+    ? 'text-slate-100'
+    : 'text-slate-900 dark:text-slate-100'
+  const nameColor = titleColor
+  const roleColor = isDark
+    ? 'text-slate-400'
+    : 'text-slate-500 dark:text-slate-400'
 
   return (
     <header className={clsx('h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0', headerBg)}>
@@ -64,14 +69,14 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-            <span className="text-xs font-bold text-primary-500">{initials}</span>
+          <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
+            <span className="text-xs font-bold text-white">{initials}</span>
           </div>
           <div className="hidden md:block">
             <p className={clsx('text-sm font-medium leading-tight', nameColor)}>
               {session?.user?.name || 'Practitioner'}
             </p>
-            <p className="text-xs text-slate-400 dark:text-slate-500">
+            <p className={clsx('text-xs', roleColor)}>
               {session?.user?.role ? getRoleLabel(session.user.role) : 'Practitioner'}
             </p>
           </div>
