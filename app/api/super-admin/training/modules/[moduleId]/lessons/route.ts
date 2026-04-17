@@ -27,6 +27,14 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'Missing required fields: id, title, type, content, order' }, { status: 400 })
   }
 
+  // IDs end up in URLs; only allow URL-safe characters to avoid encoding bugs.
+  if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+    return NextResponse.json(
+      { error: 'Invalid id: only letters, numbers, underscores, and hyphens are allowed (no spaces or special characters).' },
+      { status: 400 },
+    )
+  }
+
   if (!Object.values(LessonType).includes(type)) {
     return NextResponse.json({ error: `Invalid type. Must be one of: ${Object.values(LessonType).join(', ')}` }, { status: 400 })
   }

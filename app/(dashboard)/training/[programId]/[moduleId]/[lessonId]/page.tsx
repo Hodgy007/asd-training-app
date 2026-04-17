@@ -46,7 +46,16 @@ interface LessonData {
   }
 }
 
-export default function ProgramLessonPage({ params }: LessonPageProps) {
+export default function ProgramLessonPage({ params: rawParams }: LessonPageProps) {
+  // Next.js App Router sometimes leaves URL-encoded dynamic segments undecoded
+  // (e.g. "Module%201%20ID" instead of "Module 1 ID"). Decode defensively so
+  // ids with spaces or other encoded chars still match the DB.
+  const params = {
+    programId: decodeURIComponent(rawParams.programId),
+    moduleId: decodeURIComponent(rawParams.moduleId),
+    lessonId: decodeURIComponent(rawParams.lessonId),
+  }
+
   const { data: session, status } = useSession()
   const router = useRouter()
   const [quizStarted, setQuizStarted] = useState(false)

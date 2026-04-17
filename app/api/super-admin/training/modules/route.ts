@@ -29,6 +29,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields: id, title, description, programId, order' }, { status: 400 })
   }
 
+  // IDs end up in URLs; only allow URL-safe characters to avoid encoding bugs.
+  if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+    return NextResponse.json(
+      { error: 'Invalid id: only letters, numbers, underscores, and hyphens are allowed (no spaces or special characters).' },
+      { status: 400 },
+    )
+  }
+
   // Verify the program exists
   const program = await prisma.trainingProgram.findUnique({ where: { id: programId } })
   if (!program) {
