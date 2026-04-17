@@ -106,7 +106,7 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
         <img
           src="/logo-aaa.svg"
           alt="Ambitious about Autism"
-          className={clsx('h-10 w-auto', isDark && 'invert brightness-125')}
+          className={clsx('h-12 w-auto', isDark && 'invert brightness-125')}
         />
         {mobile && (
           <button

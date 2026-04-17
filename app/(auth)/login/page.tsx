@@ -133,7 +133,7 @@ function LoginForm() {
         {/* Logo & Branding */}
         <div className="text-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-14 w-auto mx-auto mb-4" />
+          <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-20 w-auto mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-slate-900">
             Ambitious about <span className="text-warm-500">Autism</span>
           </h1>

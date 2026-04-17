@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-14 w-auto mx-auto mb-4" />
+          <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-20 w-auto mx-auto mb-4" />
           
         </div>
 
