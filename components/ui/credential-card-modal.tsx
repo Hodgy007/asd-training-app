@@ -68,14 +68,9 @@ export function CredentialCardModal({
       {/* Printable credential card */}
       <div id="credential-card-print-area" className="credential-card-print-area">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center mb-3">
-            <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="32,4 60,56 4,56" fill="#f5821f" />
-              <polygon points="32,18 50,50 14,50" fill="#fcaf17" opacity="0.75" />
-            </svg>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-12 w-auto mx-auto mb-3" />
           <h2 className="text-xl font-bold text-slate-900">Your Login Credentials</h2>
-          <p className="text-sm text-slate-500 mt-1">Ambitious about Autism</p>
         </div>
 
         {/* QR Code */}

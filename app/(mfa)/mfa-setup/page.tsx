@@ -100,12 +100,8 @@ export default function MfaSetupPage() {
       <div className="w-full max-w-md">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-4">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="32,4 60,56 4,56" fill="#f5821f" />
-              <polygon points="32,18 50,50 14,50" fill="#fcaf17" opacity="0.75" />
-            </svg>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-14 w-auto mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Ambitious about <span className="text-primary-500">Autism</span>
           </h1>

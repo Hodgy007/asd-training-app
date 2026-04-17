@@ -126,18 +126,12 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
     <div className={clsx('flex flex-col h-full', chrome.sidebar)}>
       {/* Logo */}
       <div className={clsx('flex items-center justify-between h-16 px-5 flex-shrink-0', chrome.logoBorder)}>
-        <div className="flex items-center gap-3">
-          <div className="flex-shrink-0">
-            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="18,2 34,32 2,32" fill="#f5821f" />
-              <polygon points="18,10 28,28 8,28" fill="#fcaf17" opacity="0.7" />
-            </svg>
-          </div>
-          <div>
-            <p className={clsx('font-bold text-sm leading-tight', chrome.logoText)}>Ambitious about</p>
-            <p className={clsx('font-bold text-sm leading-tight', chrome.logoText)}>Autism</p>
-          </div>
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo-aaa.svg"
+          alt="Ambitious about Autism"
+          className={clsx('h-10 w-auto', isDark && 'invert brightness-125')}
+        />
         {mobile && (
           <button
             onClick={onClose}
