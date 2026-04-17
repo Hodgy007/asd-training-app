@@ -47,6 +47,7 @@ model User {
   lessonNotes            LessonNote[]
   invitedByUser      User?                  @relation("UserInviter", fields: [invitedBy], references: [id])
   invitedUsers       User[]                 @relation("UserInviter")
+  editedAiPrompts    AiPrompt[]             @relation("AiPromptEditor")
 
   @@index([organisationId])
 }
@@ -753,4 +754,50 @@ model CareerAdvisorSession {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model AiPrompt {
+  id               String   @id @default(cuid())
+  key              String   @unique
+  name             String
+  purpose          String
+  category         String
+
+  tone             String
+  requirements     String[]
+  exampleOutput    String?
+
+  inputVariables   String[]
+  responseFormat   String
+
+  model            String
+  enabled          Boolean  @default(true)
+
+  previousFields   Json?
+  defaultFields    Json
+
+  updatedBy        String?
+  updatedByUser    User?    @relation("AiPromptEditor", fields: [updatedBy], references: [id])
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
+
+  contextFiles     AiPromptContextFile[]
+
+  @@index([category])
+}
+
+model AiPromptContextFile {
+  id          String   @id @default(cuid())
+  promptId    String
+  prompt      AiPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+
+  fileName    String
+  fileSize    Int
+  mimeType    String
+  blobUrl     String
+  parsedText  String
+  uploadedBy  String?
+  uploadedAt  DateTime @default(now())
+
+  @@index([promptId])
 }
