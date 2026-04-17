@@ -114,7 +114,7 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
   const navItems = getNavItems(role, programs, collections, cvBuilderEnabled, careersAdvisorEnabled)
 
   const chrome = isClassic ? {
-    sidebar: 'bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800',
+    sidebar: 'bg-white dark:bg-slate-900',
     logoBorder: 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900',
     logoText: 'text-slate-900 dark:text-slate-100',
     navActive: 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100',
