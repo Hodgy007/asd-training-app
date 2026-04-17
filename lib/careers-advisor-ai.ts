@@ -1,7 +1,5 @@
-import { generateText } from 'ai'
+import { runPrompt } from '@/lib/ai-runner'
 import type { AdvisorAnswers, AdvisorReport } from '@/types'
-
-const MODEL = 'google/gemini-2.5-flash'
 
 function formatAnswers(answers: AdvisorAnswers): string {
   const lines: string[] = []
@@ -45,43 +43,7 @@ function formatAnswers(answers: AdvisorAnswers): string {
 
 export async function generateCareersReport(answers: AdvisorAnswers): Promise<AdvisorReport> {
   const formattedAnswers = formatAnswers(answers)
-
-  const prompt = `You are a careers advisor helping a young person explore career options. You are positive, practical, and strength-focused. You use UK English and reference UK-specific resources.
-
-Here are the young person's questionnaire answers:
-
-${formattedAnswers}
-
-Based on these answers, generate a personalised careers report. You MUST respond with valid JSON matching this exact structure:
-
-{
-  "strengths": "A short paragraph (3-5 sentences) summarising the young person's key strengths based on their answers. Written in second person ('You have...'). Be specific to their answers, not generic.",
-  "careers": [
-    {
-      "name": "Career Name",
-      "explanation": "2-3 sentences explaining why this career suits them, grounded in their specific answers."
-    }
-  ],
-  "nextSteps": [
-    "A concrete, actionable next step"
-  ],
-  "workplaceSupport": "A paragraph about workplace support suggestions based on their environment, sensory, and communication preferences. Reference UK-specific support like Access to Work, reasonable adjustments, flexible working arrangements."
-}
-
-Requirements:
-- Suggest 3 to 5 career areas in the "careers" array.
-- Include 3 to 5 items in the "nextSteps" array.
-- Each career suggestion must be realistic and achievable, not aspirational fantasy.
-- Ground every suggestion in the young person's specific answers — do not give generic advice.
-- Next steps should be concrete actions (e.g. "Search for apprenticeships on gov.uk", "Ask your careers professional about work experience in X").
-- Reference UK-specific resources: gov.uk, apprenticeships, Access to Work scheme, National Careers Service.
-- NEVER mention autism, disability, diagnosis, or any health condition.
-- Use strength-focused, positive language throughout.
-- Use UK English spelling (e.g. organised, recognised, specialised).
-- Reference workplace adjustments as normal good practice, not as accommodations for a condition.
-- Return ONLY the JSON object. No markdown, no code fences, no explanation.`
-
-  const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+  const text = await runPrompt('careers.report', { formattedAnswers })
 
   if (!text) {
     throw new Error('Failed to generate a valid careers report. Please try again.')

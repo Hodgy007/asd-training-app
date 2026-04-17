@@ -5,6 +5,7 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { generateText, experimental_generateImage as generateImage } from 'ai'
 import { put } from '@vercel/blob'
 import { z } from 'zod'
+import { runPrompt } from '@/lib/ai-runner'
 
 const requestSchema = z.object({
   fileName: z.string().min(1),
@@ -12,7 +13,6 @@ const requestSchema = z.object({
   generateImage: z.boolean().default(false),
 })
 
-const TEXT_MODEL = 'google/gemini-2.5-flash'
 const IMAGE_MODEL = 'google/gemini-3.1-flash-image-preview'
 const IMAGEN_FALLBACK = 'google/imagen-4.0-generate-001'
 
@@ -30,19 +30,13 @@ export async function POST(req: NextRequest) {
 
   const { fileName, collectionTitle, generateImage: doGenerateImage } = parsed.data
 
-  // Generate title and description from filename
-  const textPrompt = `You are helping create metadata for a document in a training library${collectionTitle ? ` under the collection "${collectionTitle}"` : ''}. The document's filename is: "${fileName}"
-
-Generate a clear, friendly title and a short description (2-3 sentences) suitable for young people and training practitioners. The title should be human-readable (not the raw filename). The description should summarise what the document likely contains based on its name.
-
-Return ONLY valid JSON in this exact format, no markdown:
-{"title": "...", "description": "..."}`
+  const collectionContext = collectionTitle ? `under the collection "${collectionTitle}"` : ''
 
   let title = fileName.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
   let description = ''
 
   try {
-    const { text } = await generateText({ model: TEXT_MODEL, prompt: textPrompt, maxRetries: 3 })
+    const text = await runPrompt('library.metadata', { collectionContext, fileName })
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
       const meta = JSON.parse(jsonMatch[0])

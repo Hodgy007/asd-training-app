@@ -1,10 +1,8 @@
-import { generateText } from 'ai'
+import { runPrompt } from '@/lib/ai-runner'
 import { differenceInYears, differenceInMonths } from 'date-fns'
 
 const DISCLAIMER =
   'These observations are for discussion with your GP, health visitor, or SENCO. This is not a diagnosis.'
-
-const MODEL = 'google/gemini-2.5-flash'
 
 function getAgeString(dateOfBirth: Date): string {
   const years = differenceInYears(new Date(), dateOfBirth)
@@ -50,33 +48,11 @@ export async function generateObservationSummary(
     notes?: string | null
   }>,
   childName: string,
-  dateOfBirth: Date
+  dateOfBirth: Date,
 ): Promise<string> {
   const age = getAgeString(dateOfBirth)
   const observationText = formatObservationsForPrompt(observations)
-
-  const prompt = `You are an assistant supporting carers and professionals who work with children.
-Your role is to summarise observational data to help identify patterns.
-You NEVER provide a diagnosis. You NEVER suggest a child has autism.
-You help identify patterns for discussion with healthcare professionals.
-Use warm, accessible, non-clinical language suitable for a practitioner.
-
-Child: ${childName}, Age: ${age}
-Observation period: Last 4 weeks
-Observations:
-${observationText}
-
-Please provide a brief summary (2-3 sentences) of the observed patterns in practitioner-friendly language.
-Focus only on what has been observed — do not speculate or diagnose.
-End with: "${DISCLAIMER}"`
-
-  try {
-    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
-    return text
-  } catch (error) {
-    console.error('generateObservationSummary error:', error)
-    return 'AI insights are not available at this time. Please try again later.'
-  }
+  return runPrompt('observations.summary', { childName, age, observationText })
 }
 
 export async function detectPatterns(
@@ -87,61 +63,18 @@ export async function detectPatterns(
     frequency: string
     context: string
     notes?: string | null
-  }>
+  }>,
 ): Promise<string> {
   const observationText = formatObservationsForPrompt(observations)
-
-  const prompt = `You are an assistant supporting carers and professionals who work with children.
-Your role is to identify patterns in observational data.
-You NEVER provide a diagnosis. You NEVER suggest a child has autism.
-
-Observations:
-${observationText}
-
-Identify which domains (Social Communication, Behaviour and Play, Sensory Responses) show the most frequent patterns.
-List 2-4 specific behaviour patterns you notice, using carer-friendly language.
-Format as a brief bulleted list.
-Do not speculate beyond what the data shows.`
-
-  try {
-    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
-    return text
-  } catch (error) {
-    console.error('detectPatterns error:', error)
-    return 'AI pattern detection is not available at this time. Please try again later.'
-  }
+  return runPrompt('observations.patterns', { observationText })
 }
 
 export async function generateActionGuidance(patterns: string): Promise<string> {
-  const prompt = `You are an assistant supporting carers and professionals who work with children.
-Your role is to suggest practical next steps based on observed patterns.
-You NEVER provide a diagnosis. You NEVER suggest a child has autism.
-You suggest supportive actions and professional consultations only.
-
-Observed patterns:
-${patterns}
-
-Provide 3-4 practical, actionable next steps for the practitioner.
-Include suggestions about who to speak to (GP, health visitor, SENCO, speech therapist etc.).
-Use warm, encouraging, non-alarming language.
-Format as a bulleted list.
-End with: "${DISCLAIMER}"`
-
-  try {
-    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
-    return text
-  } catch (error) {
-    console.error('generateActionGuidance error:', error)
-    return 'AI guidance is not available at this time. Please try again later.'
-  }
+  return runPrompt('observations.actions', { patterns })
 }
 
 export async function generateInsightReport(
-  child: {
-    name: string
-    dateOfBirth: Date
-    notes?: string | null
-  },
+  child: { name: string; dateOfBirth: Date; notes?: string | null },
   observations: Array<{
     date: Date
     behaviourType: string
@@ -149,55 +82,28 @@ export async function generateInsightReport(
     frequency: string
     context: string
     notes?: string | null
-  }>
+  }>,
 ): Promise<{ summary: string; patterns: string; recommendations: string }> {
   const age = getAgeString(child.dateOfBirth)
   const observationText = formatObservationsForPrompt(observations)
 
-  const prompt = `You are an assistant supporting carers and professionals who work with children.
-Your role is to summarise observational data to help identify patterns.
-You NEVER provide a diagnosis. You NEVER suggest a child has autism.
-You help identify patterns for discussion with healthcare professionals.
-Use warm, accessible, non-clinical language suitable for a practitioner.
+  const text = await runPrompt('observations.report', {
+    childName: child.name,
+    age,
+    practitionerNotes: child.notes ? `Practitioner notes: ${child.notes}` : '',
+    observationCount: String(observations.length),
+    observationText,
+  })
 
-Child: ${child.name}, Age: ${age}
-${child.notes ? `Practitioner notes: ${child.notes}` : ''}
-Observation period: Last 4 weeks
-Total observations: ${observations.length}
+  const summaryMatch = text.match(/SUMMARY:\s*([\s\S]*?)(?=PATTERNS:|$)/i)
+  const patternsMatch = text.match(/PATTERNS:\s*([\s\S]*?)(?=RECOMMENDATIONS:|$)/i)
+  const recommendationsMatch = text.match(/RECOMMENDATIONS:\s*([\s\S]*?)$/i)
 
-Observations:
-${observationText}
-
-Please provide your response in exactly this format with these three sections:
-
-SUMMARY:
-[2-3 sentences summarising the overall observation picture in carer-friendly language. Focus on patterns, not diagnoses.]
-
-PATTERNS:
-[Bullet points identifying the main behavioural patterns observed across domains. Be specific and factual.]
-
-RECOMMENDATIONS:
-[3-4 practical next steps for the practitioner, including who to speak to. Be encouraging and supportive.]
-
-Always end the RECOMMENDATIONS section with: "${DISCLAIMER}"`
-
-  try {
-    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
-
-    const summaryMatch = text.match(/SUMMARY:\s*([\s\S]*?)(?=PATTERNS:|$)/i)
-    const patternsMatch = text.match(/PATTERNS:\s*([\s\S]*?)(?=RECOMMENDATIONS:|$)/i)
-    const recommendationsMatch = text.match(/RECOMMENDATIONS:\s*([\s\S]*?)$/i)
-
-    return {
-      summary: summaryMatch ? summaryMatch[1].trim() : text,
-      patterns: patternsMatch ? patternsMatch[1].trim() : 'Patterns could not be extracted.',
-      recommendations: recommendationsMatch
-        ? recommendationsMatch[1].trim()
-        : `Please discuss these observations with your GP or health visitor.\n\n${DISCLAIMER}`,
-    }
-  } catch (error) {
-    console.error('generateInsightReport error:', error)
-    const fallback = 'AI insights are not available at this time. Please try again later.'
-    return { summary: fallback, patterns: fallback, recommendations: fallback }
+  return {
+    summary: summaryMatch ? summaryMatch[1].trim() : text,
+    patterns: patternsMatch ? patternsMatch[1].trim() : 'Patterns could not be extracted.',
+    recommendations: recommendationsMatch
+      ? recommendationsMatch[1].trim()
+      : `Please discuss these observations with your GP or health visitor.\n\n${DISCLAIMER}`,
   }
 }

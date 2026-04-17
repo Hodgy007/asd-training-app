@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
-import { generateText } from 'ai'
-
-const MODEL = 'google/gemini-2.5-flash'
+import { runPrompt } from '@/lib/ai-runner'
 
 function stripHtml(html: string): string {
   return html
@@ -37,22 +35,11 @@ export async function POST(req: NextRequest) {
 
   const plainText = stripHtml(lessonContent)
 
-  const prompt = `You are a training quiz generator. Based on the following lesson content, generate ${count} multiple-choice quiz questions.
-
-Each question must:
-- Test understanding of a key concept from the lesson
-- Have exactly 4 options labelled A, B, C, D
-- Have exactly one correct answer
-- Include a brief explanation of why the correct answer is right
-
-Return ONLY a valid JSON array with this structure:
-[{"question": "...", "options": ["A) ...", "B) ...", "C) ...", "D) ..."], "correctAnswer": "A) ...", "explanation": "..."}]
-
-Lesson content:
-${plainText}`
-
   try {
-    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+    const text = await runPrompt('training.quizGenerate', {
+      count: String(count),
+      plainText,
+    })
 
     const jsonMatch = text.match(/\[[\s\S]*\]/)
     const jsonString = jsonMatch ? jsonMatch[0] : text
