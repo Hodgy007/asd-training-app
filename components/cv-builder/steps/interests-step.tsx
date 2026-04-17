@@ -35,12 +35,8 @@ export function InterestsStep({ cvId, data, onUpdate }: StepProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: 'improve',
-          context: {
-            description: interests || 'Help me write an interests section for my CV.',
-            jobTitle: 'Interests section',
-            employer: 'CV',
-          },
+          type: 'interests',
+          context: { text: interests },
         }),
       })
       if (!res.ok) throw new Error('AI request failed')

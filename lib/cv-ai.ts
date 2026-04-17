@@ -105,6 +105,35 @@ Requirements:
   }
 }
 
+export async function expandInterests(rawText: string): Promise<string> {
+  const input = rawText.trim() || 'No interests provided yet.'
+
+  const prompt = `Rewrite this short list of interests and hobbies into a brief, natural-sounding paragraph for the "Interests and Hobbies" section of a UK CV.
+
+The person wrote:
+"${input}"
+
+Requirements:
+- Write in the first person, 1-3 short sentences.
+- Describe the actual activities they listed. Keep every activity they named (e.g. if they say "golf", the result must clearly be about playing golf — not about abstract qualities like discipline or strategy).
+- Do NOT turn the activities into action-verb bullet points.
+- Do NOT invent transferable-skill spin (no "which demonstrates teamwork", "improves concentration", "builds resilience", etc.).
+- You may add a light, plain detail where natural (e.g. "I play golf at weekends" or "I enjoy watching football") but do not fabricate achievements, clubs, or competitions.
+- If the input is vague, keep the output vague rather than inventing specifics.
+- Use simple, clear language.
+- Use UK English spelling throughout.
+- Never mention disabilities, diagnoses, or health conditions.
+- Return ONLY the paragraph text. No headings, no labels, no bullet points.`
+
+  try {
+    const { text } = await generateText({ model: MODEL, prompt, maxRetries: 3 })
+    return text.trim()
+  } catch (error) {
+    console.error('expandInterests error:', error)
+    return 'Unable to improve interests section at this time. Please try again later.'
+  }
+}
+
 export async function improveDescription(
   description: string,
   jobTitle: string,

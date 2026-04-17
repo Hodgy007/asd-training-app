@@ -7,6 +7,7 @@ import {
   rephraseBulletPoint,
   suggestSkills,
   improveDescription,
+  expandInterests,
 } from '@/lib/cv-ai'
 
 const ALLOWED_ROLES = ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest, { params }: { params: { cvId: strin
     const body = await req.json()
     const { type, context } = body
 
-    if (!type || !['statement', 'rephrase', 'skills', 'improve'].includes(type)) {
+    if (!type || !['statement', 'rephrase', 'skills', 'improve', 'interests'].includes(type)) {
       return NextResponse.json({ error: 'Invalid AI action type' }, { status: 400 })
     }
 
@@ -139,6 +140,11 @@ export async function POST(req: NextRequest, { params }: { params: { cvId: strin
           )
         }
         result = await improveDescription(context.description, context.jobTitle, context.employer)
+        break
+      }
+
+      case 'interests': {
+        result = await expandInterests(context?.text ?? '')
         break
       }
 
