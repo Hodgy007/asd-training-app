@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import { SessionProvider } from '@/components/providers/session-provider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
@@ -6,6 +7,12 @@ import { ColorThemeProvider } from '@/components/providers/color-theme-provider'
 import { FontProvider } from '@/components/providers/font-provider'
 import { CaregiverDisclaimer } from '@/components/ui/caregiver-disclaimer'
 import { CookieConsent } from '@/components/ui/cookie-consent'
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+})
 
 export const metadata: Metadata = {
   title: 'Ambitious about Autism — Training & Observation Platform',
@@ -18,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         {/* Apply saved colour theme before first paint to prevent flash */}
         <script

@@ -59,7 +59,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Arial', 'Helvetica', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
       borderRadius: {
         xl: '0.75rem',

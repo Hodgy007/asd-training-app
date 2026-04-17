@@ -8,7 +8,7 @@
   }
 
   html {
-    font-family: Arial, Helvetica, system-ui, sans-serif;
+    font-family: var(--font-sans), 'Inter', 'Helvetica Neue', Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
