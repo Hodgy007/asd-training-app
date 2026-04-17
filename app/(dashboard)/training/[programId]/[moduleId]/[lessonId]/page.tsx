@@ -12,6 +12,7 @@ import { InteractiveBlockRenderer } from '@/components/training/interactive/inte
 import { splitContentAtBlocks, validateInteractiveBlocks } from '@/lib/interactive-blocks'
 import { InteractiveBlock, InteractionData } from '@/types/interactive'
 import { TextToSpeech } from '@/components/training/text-to-speech'
+import { LessonOutlineRail } from '@/components/training/lesson-outline-rail'
 import { clsx } from 'clsx'
 
 interface LessonPageProps {
@@ -60,6 +61,7 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
   const [noteSaving, setNoteSaving] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
   const [showTranscript, setShowTranscript] = useState(false)
+  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -107,6 +109,22 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
       .then(d => setNoteContent(d.content ?? ''))
       .catch(() => {})
   }, [params.lessonId, status])
+
+  // Fetch training progress and derive completed lessons in this module
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    fetch('/api/training/progress')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((records: Array<{ moduleId: string; lessonId: string | null; completed: boolean }>) => {
+        const completed = new Set(
+          (Array.isArray(records) ? records : [])
+            .filter((p) => p.moduleId === params.moduleId && p.completed && p.lessonId)
+            .map((p) => p.lessonId as string),
+        )
+        setCompletedLessonIds(completed)
+      })
+      .catch(() => {})
+  }, [params.moduleId, status])
 
   // Auto-save notes with 500ms debounce
   const noteInitialised = useRef(false)
@@ -194,6 +212,7 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
         }),
       })
       setCompleted(true)
+      setCompletedLessonIds((prev) => new Set(prev).add(params.lessonId))
     } catch (err) {
       console.error('Failed to save progress', err)
     } finally {
@@ -202,9 +221,9 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm flex-wrap">
+    <div className="max-w-6xl mx-auto animate-page-enter">
+      {/* Breadcrumb spans full width */}
+      <div className="flex items-center gap-2 text-sm flex-wrap mb-6">
         <Link href={`/training/${params.programId}`} className="text-slate-400 hover:text-slate-600 transition-colors">
           {programName || 'Training'}
         </Link>
@@ -219,6 +238,8 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
         <span className="text-slate-700 font-medium truncate">{lesson.title}</span>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
+        <div className="min-w-0 space-y-6">
       {/* Header */}
       <div className="card">
         <div className="flex items-start gap-3">
@@ -414,6 +435,17 @@ export default function ProgramLessonPage({ params }: LessonPageProps) {
             <QuizComponent questions={quizQuestions} onComplete={handleQuizComplete} />
           </div>
         )}
+      </div>
+        </div>
+
+        {/* Right rail — lesson outline. Stacks below on < lg. */}
+        <LessonOutlineRail
+          programId={params.programId}
+          moduleId={params.moduleId}
+          lessons={lesson.module.lessons}
+          currentLessonId={lesson.id}
+          completedLessonIds={completedLessonIds}
+        />
       </div>
     </div>
   )
