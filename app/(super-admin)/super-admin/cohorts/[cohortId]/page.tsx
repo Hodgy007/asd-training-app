@@ -129,7 +129,7 @@ export default function CohortDetailPage() {
   const [addingMember, setAddingMember] = useState(false)
 
   // Credential card modal
-  const [credCard, setCredCard] = useState<{ name: string; email: string; password: string } | null>(null)
+  const [credCard, setCredCard] = useState<{ id: string; name: string; email: string; password: string } | null>(null)
 
   // Bulk import
   const [bulkResults, setBulkResults] = useState<{ name: string; email: string; password: string; role: string }[] | null>(null)
@@ -217,7 +217,8 @@ export default function CohortDetailPage() {
       })
 
       if (res.ok) {
-        setCredCard({ name: memberName.trim(), email: memberEmail.trim(), password: memberPassword })
+        const created = await res.json()
+        setCredCard({ id: created.id, name: memberName.trim(), email: memberEmail.trim(), password: memberPassword })
         setMemberName('')
         setMemberEmail('')
         setMemberPassword('')
@@ -403,6 +404,7 @@ export default function CohortDetailPage() {
         <CredentialCardModal
           isOpen
           onClose={() => setCredCard(null)}
+          userId={credCard.id}
           userName={credCard.name}
           email={credCard.email}
           temporaryPassword={credCard.password}

@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { Modal } from './modal'
-import { QrCode, Printer } from 'lucide-react'
+import { QrCode, Printer, Mail, Check, Loader2 } from 'lucide-react'
 
 interface CredentialCardModalProps {
   isOpen: boolean
   onClose: () => void
+  userId: string
   userName: string
   email: string
   temporaryPassword: string
@@ -15,11 +16,15 @@ interface CredentialCardModalProps {
 export function CredentialCardModal({
   isOpen,
   onClose,
+  userId,
   userName,
   email,
   temporaryPassword,
 }: CredentialCardModalProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+  const [inviteState, setInviteState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [inviteError, setInviteError] = useState<string | null>(null)
+
   const loginUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/login?email=${encodeURIComponent(email)}`
     : ''
@@ -41,6 +46,22 @@ export function CredentialCardModal({
     generateQR()
     return () => { cancelled = true }
   }, [isOpen, loginUrl])
+
+  async function handleSendInvite() {
+    setInviteState('sending')
+    setInviteError(null)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/invite`, { method: 'POST' })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error ?? 'Failed to send invite')
+      }
+      setInviteState('sent')
+    } catch (e) {
+      setInviteError(e instanceof Error ? e.message : 'Failed to send invite')
+      setInviteState('error')
+    }
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
@@ -105,8 +126,42 @@ export function CredentialCardModal({
         </div>
       </div>
 
+      {/* Error banner — above action buttons */}
+      {inviteState === 'error' && inviteError && (
+        <div className="no-print mt-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+          {inviteError}
+        </div>
+      )}
+
       {/* Action buttons — hidden during print */}
-      <div className="no-print flex gap-3 mt-6 pt-4 border-t border-calm-200">
+      <div className="no-print flex flex-wrap gap-3 mt-6 pt-4 border-t border-calm-200">
+        <button
+          onClick={handleSendInvite}
+          disabled={inviteState === 'sending' || inviteState === 'sent'}
+          className="btn-secondary flex-1 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {inviteState === 'sending' ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : inviteState === 'sent' ? (
+            <>
+              <Check className="h-4 w-4" />
+              Sent
+            </>
+          ) : inviteState === 'error' ? (
+            <>
+              <Mail className="h-4 w-4" />
+              Retry email
+            </>
+          ) : (
+            <>
+              <Mail className="h-4 w-4" />
+              Email invite
+            </>
+          )}
+        </button>
         <button
           onClick={() => window.print()}
           className="btn-primary flex-1 flex items-center justify-center gap-2"

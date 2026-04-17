@@ -164,7 +164,7 @@ export default function OrgDetailPage() {
   const [adminEmail, setAdminEmail] = useState('')
   const [adminPassword, setAdminPassword] = useState('')
   const [credentialCard, setCredentialCard] = useState<{
-    name: string; email: string; password: string
+    id: string; name: string; email: string; password: string
   } | null>(null)
   const [adminSubmitting, setAdminSubmitting] = useState(false)
 
@@ -314,7 +314,9 @@ export default function OrgDetailPage() {
         body: JSON.stringify({ name: adminName, email: adminEmail, password: adminPassword }),
       })
       if (res.ok) {
+        const created = await res.json()
         setCredentialCard({
+          id: created.id,
           name: adminName,
           email: adminEmail,
           password: adminPassword,
@@ -1021,6 +1023,7 @@ export default function OrgDetailPage() {
         <CredentialCardModal
           isOpen={!!credentialCard}
           onClose={() => setCredentialCard(null)}
+          userId={credentialCard.id}
           userName={credentialCard.name}
           email={credentialCard.email}
           temporaryPassword={credentialCard.password}

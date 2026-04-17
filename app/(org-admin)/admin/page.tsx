@@ -110,7 +110,7 @@ export default function OrgAdminUsersPage() {
   })
   const [createLoading, setCreateLoading] = useState(false)
   const [credentialCard, setCredentialCard] = useState<{
-    name: string; email: string; password: string
+    id: string; name: string; email: string; password: string
   } | null>(null)
 
   const [activeTab, setActiveTab] = useState<'users' | 'pending'>('users')
@@ -271,8 +271,10 @@ export default function OrgAdminUsersPage() {
         body: JSON.stringify(payload),
       })
       if (res.ok) {
+        const created = await res.json()
         if (!createForm.ssoOnly) {
           setCredentialCard({
+            id: created.id,
             name: createForm.name,
             email: createForm.email,
             password: createForm.password,
@@ -835,6 +837,7 @@ export default function OrgAdminUsersPage() {
         <CredentialCardModal
           isOpen={!!credentialCard}
           onClose={() => setCredentialCard(null)}
+          userId={credentialCard.id}
           userName={credentialCard.name}
           email={credentialCard.email}
           temporaryPassword={credentialCard.password}

@@ -131,7 +131,7 @@ export default function SchoolDetailPage() {
   const [createUserPassword, setCreateUserPassword] = useState('')
   const [createUserLoading, setCreateUserLoading] = useState(false)
   const [credentialCard, setCredentialCard] = useState<{
-    name: string; email: string; password: string
+    id: string; name: string; email: string; password: string
   } | null>(null)
 
   useEffect(() => {
@@ -313,8 +313,10 @@ export default function SchoolDetailPage() {
         body: JSON.stringify(payload),
       })
       if (res.ok) {
+        const created = await res.json()
         if (createUserPassword) {
           setCredentialCard({
+            id: created.id,
             name: createUserName,
             email: createUserEmail,
             password: createUserPassword,
@@ -870,6 +872,7 @@ export default function SchoolDetailPage() {
         <CredentialCardModal
           isOpen={!!credentialCard}
           onClose={() => setCredentialCard(null)}
+          userId={credentialCard.id}
           userName={credentialCard.name}
           email={credentialCard.email}
           temporaryPassword={credentialCard.password}
