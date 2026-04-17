@@ -1,53 +1,57 @@
-import { clsx } from 'clsx'
 import { HTMLAttributes, forwardRef } from 'react'
+import { clsx } from 'clsx'
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  hover?: boolean
-  variant?: 'default' | 'flat' | 'outlined'
+type DivProps = HTMLAttributes<HTMLDivElement>
+
+export const Card = forwardRef<HTMLDivElement, DivProps>(function Card(
+  { className, ...props },
+  ref,
+) {
+  return (
+    <div
+      ref={ref}
+      className={clsx(
+        'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5',
+        className,
+      )}
+      {...props}
+    />
+  )
+})
+
+export function CardHeader({ className, ...props }: DivProps) {
+  return <div className={clsx('mb-3', className)} {...props} />
 }
 
-export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ hover, variant = 'default', className, children, ...props }, ref) => {
-    const base = 'rounded-2xl p-6'
-    const variants = {
-      default: 'bg-white shadow-sm border border-calm-200',
-      flat: 'bg-calm-50 border border-calm-200',
-      outlined: 'bg-transparent border-2 border-calm-200',
-    }
-    const hoverStyles = hover
-      ? 'transition-all hover:shadow-md hover:border-primary-200 cursor-pointer'
-      : ''
-
-    return (
-      <div ref={ref} className={clsx(base, variants[variant], hoverStyles, className)} {...props}>
-        {children}
-      </div>
-    )
-  }
-)
-
-Card.displayName = 'Card'
-
-export function CardHeader({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <div className={clsx('mb-4', className)} {...props}>
-      {children}
-    </div>
+    <h3
+      className={clsx(
+        'text-base font-semibold text-slate-900 dark:text-slate-100',
+        className,
+      )}
+      {...props}
+    />
   )
 }
 
-export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+export function CardBody({ className, ...props }: DivProps) {
   return (
-    <h3 className={clsx('text-lg font-semibold text-slate-900', className)} {...props}>
-      {children}
-    </h3>
+    <div
+      className={clsx('text-sm text-slate-700 dark:text-slate-300', className)}
+      {...props}
+    />
   )
 }
 
-export function CardContent({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function CardFooter({ className, ...props }: DivProps) {
   return (
-    <div className={clsx('', className)} {...props}>
-      {children}
-    </div>
+    <div
+      className={clsx(
+        'mt-4 pt-3 border-t border-slate-200 dark:border-slate-800',
+        className,
+      )}
+      {...props}
+    />
   )
 }
