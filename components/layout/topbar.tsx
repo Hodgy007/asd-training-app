@@ -1,10 +1,11 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { Menu, Bell } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { getRoleLabel } from '@/lib/rbac'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
+import { NotificationsBell } from './notifications-bell'
 import { clsx } from 'clsx'
 
 interface TopbarProps {
@@ -54,12 +55,7 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
       <div className="flex items-center gap-3">
         <ThemeToggle />
 
-        <button
-          className={clsx('p-2 rounded-xl transition-colors relative', iconColor)}
-          aria-label="Notifications"
-        >
-          <Bell className="h-5 w-5" />
-        </button>
+        <NotificationsBell iconClassName={iconColor} />
 
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
