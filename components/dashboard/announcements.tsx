@@ -51,27 +51,58 @@ export function DashboardAnnouncements() {
           <div
             key={a.id}
             className={clsx(
-              'rounded-xl p-4 border-l-4 relative',
+              'rounded-xl p-5 border-l-[6px] relative shadow-sm',
               isGlobal
-                ? 'bg-primary-50 border-l-primary-500 dark:bg-primary-900/20 dark:border-l-primary-400'
-                : 'bg-amber-50 border-l-amber-500 dark:bg-amber-900/20 dark:border-l-amber-400'
+                ? 'bg-primary-100 border-l-primary-600 dark:bg-primary-900/30 dark:border-l-primary-400'
+                : 'bg-amber-100 border-l-amber-600 dark:bg-amber-900/30 dark:border-l-amber-400'
             )}
           >
             <button
               onClick={() => dismiss(a.id)}
-              className="absolute top-3 right-3 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/50"
+              className="absolute top-3 right-3 p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-white/60 dark:hover:bg-slate-800/60"
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="flex items-start gap-3 pr-8">
-              <Megaphone className={clsx(
-                'h-5 w-5 mt-0.5 flex-shrink-0',
-                isGlobal ? 'text-primary-500' : 'text-amber-500'
-              )} />
-              <div>
-                <h3 className="font-semibold text-slate-900 text-sm">{a.title}</h3>
-                <p className="text-sm text-slate-600 mt-1 whitespace-pre-line">{a.body}</p>
-                <p className="text-xs text-slate-400 mt-2">
+            <div className="flex items-start gap-4 pr-8">
+              <div
+                className={clsx(
+                  'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center',
+                  isGlobal
+                    ? 'bg-primary-600 dark:bg-primary-500'
+                    : 'bg-amber-600 dark:bg-amber-500'
+                )}
+              >
+                <Megaphone className="h-7 w-7 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3
+                  className={clsx(
+                    'font-bold text-base leading-snug',
+                    isGlobal
+                      ? 'text-primary-900 dark:text-primary-100'
+                      : 'text-amber-900 dark:text-amber-100'
+                  )}
+                >
+                  {a.title}
+                </h3>
+                <p
+                  className={clsx(
+                    'text-sm mt-1.5 whitespace-pre-line leading-relaxed',
+                    isGlobal
+                      ? 'text-primary-800 dark:text-primary-200'
+                      : 'text-amber-800 dark:text-amber-200'
+                  )}
+                >
+                  {a.body}
+                </p>
+                <p
+                  className={clsx(
+                    'text-xs font-medium mt-2',
+                    isGlobal
+                      ? 'text-primary-700 dark:text-primary-300'
+                      : 'text-amber-700 dark:text-amber-300'
+                  )}
+                >
                   {new Date(a.createdAt).toLocaleDateString('en-GB', {
                     day: 'numeric', month: 'short', year: 'numeric',
                   })}
