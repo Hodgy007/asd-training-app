@@ -24,9 +24,14 @@ export default async function ProgramModulePage({
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 
-  // Fetch active module with lessons
+  // Next.js 14 App Router does not always auto-decode dynamic segments
+  // containing URL-encoded characters (e.g. %20 spaces). Decode defensively so
+  // ids created with spaces in them still resolve.
+  const decodedModuleId = decodeURIComponent(params.moduleId)
+  const decodedProgramId = decodeURIComponent(params.programId)
+
   const module = await prisma.module.findFirst({
-    where: { id: params.moduleId, active: true, programId: params.programId },
+    where: { id: decodedModuleId, active: true, programId: decodedProgramId },
     include: {
       lessons: {
         where: { active: true },
@@ -36,18 +41,10 @@ export default async function ProgramModulePage({
     },
   })
 
-  console.log(
-    '[module-page] params=%s moduleFound=%s userId=%s role=%s',
-    JSON.stringify(params),
-    !!module,
-    session.user.id,
-    session.user.role,
-  )
-
   if (!module) notFound()
 
   const progressRecords = await prisma.trainingProgress.findMany({
-    where: { userId: session.user.id, moduleId: params.moduleId },
+    where: { userId: session.user.id, moduleId: decodedModuleId },
   })
 
   const completedLessonIds = progressRecords.filter((p) => p.completed).map((p) => p.lessonId)
