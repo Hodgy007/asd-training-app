@@ -96,15 +96,12 @@ export default function MfaSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 flex items-center justify-center p-4 animate-page-enter">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 flex items-center justify-center p-4 animate-page-enter">
       <div className="w-full max-w-md">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-28 w-auto mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Ambitious about <span className="text-primary-500">Autism</span>
-          </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Practitioner Training &amp; Observation Tool</p>
         </div>
 

@@ -73,10 +73,7 @@ export default function RegisterOrganisationPage() {
           <div className="text-center mb-8">
             {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-28 w-auto mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              Ambitious about <span className="text-primary-500">Autism</span>
-            </h1>
-          </div>
+            </div>
 
           <div className="card border-t-4 border-t-sage-500 text-center space-y-4">
             <div className="inline-flex items-center justify-center w-14 h-14 bg-sage-100 dark:bg-sage-900/30 rounded-full mx-auto">
@@ -106,9 +103,6 @@ export default function RegisterOrganisationPage() {
         <div className="text-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-14 w-auto mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Ambitious about <span className="text-primary-500">Autism</span>
-          </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Training &amp; Observation Platform</p>
         </div>
 
