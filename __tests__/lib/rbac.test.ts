@@ -310,8 +310,8 @@ describe('getRoleLabel', () => {
 })
 
 describe('CHARITY_PERMISSIONS constant', () => {
-  it('contains all seven expected permissions', () => {
-    expect(Object.keys(CHARITY_PERMISSIONS)).toHaveLength(7)
+  it('contains all eight expected permissions', () => {
+    expect(Object.keys(CHARITY_PERMISSIONS)).toHaveLength(8)
     expect(CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS).toBe('manage_organisations')
     expect(CHARITY_PERMISSIONS.MANAGE_TRAINING).toBe('manage_training')
     expect(CHARITY_PERMISSIONS.MANAGE_SURVEYS).toBe('manage_surveys')
@@ -319,6 +319,7 @@ describe('CHARITY_PERMISSIONS constant', () => {
     expect(CHARITY_PERMISSIONS.VIEW_REPORTS).toBe('view_reports')
     expect(CHARITY_PERMISSIONS.MANAGE_SESSIONS).toBe('manage_sessions')
     expect(CHARITY_PERMISSIONS.MANAGE_LIBRARY).toBe('manage_library')
+    expect(CHARITY_PERMISSIONS.MANAGE_AI_PROMPTS).toBe('manage_ai_prompts')
   })
 })
 
