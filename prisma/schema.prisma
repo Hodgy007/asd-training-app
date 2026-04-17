@@ -21,6 +21,7 @@ model User {
   totpSecret         String?
   totpEnabled        Boolean  @default(false)
   charityPermissions String[] @default([])
+  notificationsLastOpenedAt DateTime?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
