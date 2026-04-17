@@ -23,3 +23,7 @@ graphify-out/
 
 # Local Claude Code skills
 .claude/skills/
+
+# Remotion render outputs
+remotion-demo/out/
+remotion-demo/.remotion/
