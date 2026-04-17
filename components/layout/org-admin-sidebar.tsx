@@ -122,7 +122,7 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
       </div>
 
       {/* Org Admin badge */}
-      <div className="px-5 py-2 border-b border-calm-100 dark:border-slate-700">
+      <div className="px-5 py-2">
         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
           <ShieldCheck className="h-3 w-3" />
           Org Admin
