@@ -236,10 +236,8 @@ export default function CohortDetailPage() {
 
   async function handleRemoveMember(userId: string, userName: string) {
     if (!confirm(`Remove ${userName} from this cohort?`)) return
-    const res = await fetch(`/api/admin/users/${userId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ organisationId: null }),
+    const res = await fetch(`/api/super-admin/cohorts/${cohortId}/members/${userId}`, {
+      method: 'DELETE',
     })
     if (res.ok) {
       showToast(`${userName} removed from cohort.`, 'success')
