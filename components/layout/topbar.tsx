@@ -40,7 +40,7 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
   const roleColor = 'text-slate-500 dark:text-slate-400'
 
   return (
-    <header className={clsx('h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0', headerBg)}>
+    <header className={clsx('h-20 flex items-center justify-between px-4 md:px-6 flex-shrink-0', headerBg)}>
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuClick}

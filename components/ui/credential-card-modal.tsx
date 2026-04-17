@@ -69,7 +69,7 @@ export function CredentialCardModal({
       <div id="credential-card-print-area" className="credential-card-print-area">
         <div className="text-center mb-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-16 w-auto mx-auto mb-3" />
+          <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-24 w-auto mx-auto mb-3" />
           <h2 className="text-xl font-bold text-slate-900">Your Login Credentials</h2>
         </div>
 
