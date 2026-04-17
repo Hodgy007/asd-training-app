@@ -27,23 +27,16 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
         .slice(0, 2)
     : 'U'
 
-  // LinkedIn-inspired white topbar. Dark colour theme keeps a dark surface
-  // but uses the same neutral shape language. `isClassic` kept for future
-  // divergence but currently shares styling with the default (blue) theme.
+  // LinkedIn-inspired white topbar across all colour themes. Only the app-wide
+  // dark mode class (`.dark`) flips the bar to a dark surface.
   void isClassic
-  const headerBg = isDark
-    ? 'bg-slate-900 border-b border-slate-800'
-    : 'bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800'
-  const iconColor = isDark
-    ? 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
-    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800'
-  const titleColor = isDark
-    ? 'text-slate-100'
-    : 'text-slate-900 dark:text-slate-100'
+  void isDark
+  const headerBg = 'bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800'
+  const iconColor =
+    'text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800'
+  const titleColor = 'text-slate-900 dark:text-slate-100'
   const nameColor = titleColor
-  const roleColor = isDark
-    ? 'text-slate-400'
-    : 'text-slate-500 dark:text-slate-400'
+  const roleColor = 'text-slate-500 dark:text-slate-400'
 
   return (
     <header className={clsx('h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0', headerBg)}>
