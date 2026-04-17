@@ -67,6 +67,12 @@ export const mfaVerifyLimiter = createRateLimiter('mfa-verify', 5 * 60 * 1000, 5
 // Change password: 5 attempts per 15 minutes per IP
 export const changePasswordLimiter = createRateLimiter('change-password', 15 * 60 * 1000, 5)
 
+// Invite send: 20 per hour per admin
+export const inviteLimiter = createRateLimiter('invite', 60 * 60 * 1000, 20)
+
+// Reset-password token introspect: 20 per 5 minutes per IP
+export const introspectLimiter = createRateLimiter('introspect', 5 * 60 * 1000, 20)
+
 // Backward-compatible simple API used by existing tests.
 const simpleStore = new Map<string, { count: number; resetAt: number }>()
 

@@ -22,6 +22,8 @@ model User {
   totpEnabled        Boolean  @default(false)
   charityPermissions String[] @default([])
   notificationsLastOpenedAt DateTime?
+  invitedAt          DateTime?
+  invitedBy          String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -43,6 +45,8 @@ model User {
   cvs                    CV[]
   careerAdvisorSessions  CareerAdvisorSession[]
   lessonNotes            LessonNote[]
+  invitedByUser      User?                  @relation("UserInviter", fields: [invitedBy], references: [id])
+  invitedUsers       User[]                 @relation("UserInviter")
 
   @@index([organisationId])
 }
@@ -201,6 +205,7 @@ model PasswordResetToken {
   id        String   @id @default(cuid())
   email     String
   token     String   @unique
+  purpose   String   @default("RESET")
   expires   DateTime
   createdAt DateTime @default(now())
 
