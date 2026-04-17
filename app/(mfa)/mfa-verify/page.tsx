@@ -129,7 +129,7 @@ export default function MfaVerifyPage() {
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-6">
-          Ambitious about Autism &mdash; Registered Charity &middot; Not a diagnostic tool
+          Registered Charity &middot; Not a diagnostic tool
         </p>
       </div>
     </div>

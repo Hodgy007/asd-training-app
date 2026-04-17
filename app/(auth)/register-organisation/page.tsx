@@ -259,7 +259,7 @@ export default function RegisterOrganisationPage() {
         </div>
 
         <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-6">
-          Ambitious about Autism &mdash; Registered Charity &middot; Not a diagnostic tool
+          Registered Charity &middot; Not a diagnostic tool
         </p>
       </div>
     </div>
