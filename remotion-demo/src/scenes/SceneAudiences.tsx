@@ -1,36 +1,50 @@
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { IconGraduation, IconShield, IconUsers } from "../components/Icons";
+import {
+  IconBook,
+  IconBuilding,
+  IconCohort,
+  IconGraduation,
+  IconUsers,
+} from "../components/Icons";
 import { fontStack, theme } from "../theme";
 
 type Persona = {
   Icon: React.FC<{ size?: number; color?: string }>;
   title: string;
   sub: string;
-  bullets: string[];
   color: string;
 };
 
 const PERSONAS: Persona[] = [
   {
     Icon: IconUsers,
-    title: "Practitioners",
-    sub: "Caregivers, nursery workers, health visitors",
-    bullets: ["ASD awareness training", "Child observation logs", "AI-supported insights"],
+    title: "Practitioner",
+    sub: "Caregivers & health visitors",
     color: theme.accent,
   },
   {
     Icon: IconGraduation,
-    title: "Careers users",
-    sub: "Students, interns, employees & careers pros",
-    bullets: ["Careers CPD training", "AI CV Builder", "AI Careers Advisor"],
+    title: "Careers Professional",
+    sub: "Careers advisors & CDOs",
     color: theme.accent2,
   },
   {
-    Icon: IconShield,
-    title: "Administrators",
-    sub: "Charity admins & organisation admins",
-    bullets: ["Users & permissions", "Content & reports", "Multi-tenant control"],
+    Icon: IconBook,
+    title: "Student",
+    sub: "Building career-ready skills",
     color: theme.success,
+  },
+  {
+    Icon: IconBuilding,
+    title: "Intern",
+    sub: "Gaining workplace experience",
+    color: theme.warning,
+  },
+  {
+    Icon: IconCohort,
+    title: "Employee",
+    sub: "Upskilling at work",
+    color: theme.pink,
   },
 ];
 
@@ -54,47 +68,32 @@ const PersonaCard: React.FC<{ persona: Persona; delay: number }> = ({ persona, d
         background: theme.card,
         border: `1px solid ${theme.cardBorder}`,
         borderRadius: 28,
-        padding: "48px 44px",
+        padding: "32px 24px",
         opacity: enter,
         transform: `translateY(${y}px)`,
         display: "flex",
         flexDirection: "column",
-        gap: 22,
+        gap: 12,
         boxShadow: "0 24px 60px rgba(0,0,0,0.35)",
       }}
     >
       <div
         style={{
-          width: 104,
-          height: 104,
-          borderRadius: 26,
+          width: 72,
+          height: 72,
+          borderRadius: 18,
           background: `linear-gradient(135deg, ${persona.color} 0%, ${theme.accent2} 120%)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Icon size={56} color="white" />
+        <Icon size={42} color="white" />
       </div>
-      <div style={{ fontSize: 38, fontWeight: 700, color: theme.text, letterSpacing: -0.5 }}>
+      <div style={{ fontSize: 24, fontWeight: 700, color: theme.text, letterSpacing: -0.5 }}>
         {persona.title}
       </div>
-      <div style={{ fontSize: 20, color: theme.textMuted, marginTop: -10 }}>{persona.sub}</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 6 }}>
-        {persona.bullets.map((b) => (
-          <div key={b} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: 5,
-                background: persona.color,
-              }}
-            />
-            <div style={{ fontSize: 22, color: theme.text }}>{b}</div>
-          </div>
-        ))}
-      </div>
+      <div style={{ fontSize: 15, color: theme.textMuted, marginTop: -6 }}>{persona.sub}</div>
     </div>
   );
 };
@@ -133,10 +132,10 @@ export const SceneAudiences: React.FC = () => {
             marginTop: 8,
           }}
         >
-          Three audiences, one place
+          Different audiences, one unified experience
         </div>
       </div>
-      <div style={{ display: "flex", gap: 28, flex: 1 }}>
+      <div style={{ display: "flex", gap: 20, flex: 1 }}>
         {PERSONAS.map((p, i) => (
           <PersonaCard key={p.title} persona={p} delay={(0.3 + i * 0.25) * fps} />
         ))}

@@ -81,7 +81,7 @@ export const SceneHero: React.FC = () => {
             lineHeight: 1.1,
           }}
         >
-          ASD Early Identification Training Platform
+          Digital Platform
         </div>
         <div
           style={{

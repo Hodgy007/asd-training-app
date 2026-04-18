@@ -79,7 +79,7 @@ export const SceneCTA: React.FC = () => {
             lineHeight: 1.1,
           }}
         >
-          Training, observation & careers — one platform
+          Training, surveys & careers — one platform
         </div>
         <div
           style={{
@@ -88,7 +88,7 @@ export const SceneCTA: React.FC = () => {
             maxWidth: 1100,
           }}
         >
-          From Ambitious about Autism — for charities, schools and employers.
+          From Ambitious about Autism — for Education, Careers Professionals and Employers.
         </div>
         <div
           style={{
