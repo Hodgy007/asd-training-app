@@ -188,23 +188,6 @@ export const SceneCareers: React.FC = () => {
                     transform: `translateY(${suggestionY}px)`,
                   }}
                 >
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 8,
-                      background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accent2} 100%)`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontSize: 16,
-                      fontWeight: 700,
-                      flexShrink: 0,
-                    }}
-                  >
-                    ✦
-                  </div>
                   <div style={{ fontSize: 22, color: theme.text }}>{s}</div>
                 </div>
               );

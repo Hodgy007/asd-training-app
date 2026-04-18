@@ -154,20 +154,6 @@ export const SceneTrainingAI: React.FC = () => {
             color: theme.accent2,
           }}
         >
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: 10,
-              background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accent2} 100%)`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-            }}
-          >
-            ✦
-          </div>
           AI insight
         </div>
         <div style={{ fontSize: 32, fontWeight: 700, color: theme.text, lineHeight: 1.2 }}>
