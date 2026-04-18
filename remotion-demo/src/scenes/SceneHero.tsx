@@ -13,7 +13,7 @@ export const SceneHero: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const enter = interpolate(frame, [0, 0.9 * fps], [0, 1], {
+  const enter = interpolate(frame, [0, 1.4 * fps], [0, 1], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -22,16 +22,16 @@ export const SceneHero: React.FC = () => {
   const logoScale = interpolate(enter, [0, 1], [0.92, 1]);
   const logoY = interpolate(enter, [0, 1], [16, 0]);
 
-  const titleY = interpolate(frame, [0.4 * fps, 1.2 * fps], [20, 0], {
+  const titleY = interpolate(frame, [0.6 * fps, 1.9 * fps], [20, 0], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const titleOpacity = interpolate(frame, [0.4 * fps, 1.2 * fps], [0, 1], {
+  const titleOpacity = interpolate(frame, [0.6 * fps, 1.9 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const subOpacity = interpolate(frame, [0.8 * fps, 1.5 * fps], [0, 1], {
+  const subOpacity = interpolate(frame, [1.2 * fps, 2.3 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });

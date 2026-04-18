@@ -69,15 +69,15 @@ const TrainingCard: React.FC<{ anim: CardAnim }> = ({ anim }) => (
     />
     <Chip label="Module" color={theme.accent} />
     <div style={{ fontSize: 30, fontWeight: 700, color: theme.text, lineHeight: 1.15 }}>
-      Understanding ASD
+      Understanding Autism
     </div>
-    <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 2 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 2 }}>
       <div
         style={{
           flex: 1,
-          height: 6,
+          height: 14,
           borderRadius: 999,
-          background: "rgba(148,163,184,0.15)",
+          background: "rgba(148,163,184,0.18)",
           overflow: "hidden",
         }}
       >
@@ -89,7 +89,9 @@ const TrainingCard: React.FC<{ anim: CardAnim }> = ({ anim }) => (
           }}
         />
       </div>
-      <div style={{ fontSize: 15, color: theme.textMuted, fontWeight: 600 }}>70%</div>
+      <div style={{ fontSize: 24, color: theme.text, fontWeight: 700, letterSpacing: -0.3 }}>
+        70%
+      </div>
     </div>
     <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 6 }}>
       <LessonRow label="Social communication signs" done />
@@ -182,12 +184,11 @@ const ResponseRow: React.FC<{ label: string; selected?: boolean }> = ({ label, s
 const AiInsightCard: React.FC<{ anim: CardAnim }> = ({ anim }) => (
   <CardShell anim={anim}>
     <Chip label="AI insight" color={theme.accent2} />
-    <div style={{ fontSize: 30, fontWeight: 700, color: theme.text, lineHeight: 1.2 }}>
-      Trends across 147 survey responses
+    <div style={{ fontSize: 26, fontWeight: 700, color: theme.text, lineHeight: 1.2 }}>
+      Trends across 147 responses
     </div>
-    <div style={{ fontSize: 18, color: theme.textMuted, lineHeight: 1.5 }}>
-      Gemini-powered summaries surface training completion trends and survey themes — helping
-      admins see what&apos;s landing and where to focus next.
+    <div style={{ fontSize: 17, color: theme.textMuted, lineHeight: 1.5 }}>
+      Gemini surfaces what&apos;s landing and where to focus next.
     </div>
     <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
       {["Modules", "Surveys", "Feedback"].map((t) => (
@@ -213,19 +214,19 @@ export const SceneTrainingAI: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const headerOpacity = interpolate(frame, [0, 0.5 * fps], [0, 1], {
+  const headerOpacity = interpolate(frame, [0, 0.9 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const headerY = interpolate(frame, [0, 0.5 * fps], [16, 0], {
+  const headerY = interpolate(frame, [0, 0.9 * fps], [16, 0], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  const trainingAnim = useCardAnim(0.3, 1.1);
-  const surveyAnim = useCardAnim(0.6, 1.4);
-  const aiAnim = useCardAnim(0.9, 1.7);
+  const trainingAnim = useCardAnim(0.4, 1.5);
+  const surveyAnim = useCardAnim(0.9, 2.0);
+  const aiAnim = useCardAnim(1.4, 2.5);
 
   return (
     <AbsoluteFill style={{ background: theme.bg, fontFamily: fontStack }}>
@@ -255,7 +256,6 @@ export const SceneTrainingAI: React.FC = () => {
           display: "flex",
           gap: 40,
           alignItems: "stretch",
-          flex: 1,
         }}
       >
         <TrainingCard anim={trainingAnim} />

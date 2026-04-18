@@ -13,7 +13,7 @@ export const SceneCTA: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const enter = interpolate(frame, [0, 0.8 * fps], [0, 1], {
+  const enter = interpolate(frame, [0, 1.2 * fps], [0, 1], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -21,7 +21,7 @@ export const SceneCTA: React.FC = () => {
   const cardY = interpolate(enter, [0, 1], [30, 0]);
   const cardScale = interpolate(enter, [0, 1], [0.94, 1]);
 
-  const ctaOpacity = interpolate(frame, [0.7 * fps, 1.5 * fps], [0, 1], {
+  const ctaOpacity = interpolate(frame, [1.0 * fps, 2.2 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -30,7 +30,7 @@ export const SceneCTA: React.FC = () => {
     1 +
     0.03 *
       Math.sin(
-        interpolate(frame, [1 * fps, 3 * fps], [0, Math.PI * 2], {
+        interpolate(frame, [1.5 * fps, 4.5 * fps], [0, Math.PI * 2], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
         }),

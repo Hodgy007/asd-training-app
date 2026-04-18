@@ -24,7 +24,7 @@ const BADGES: Badge[] = [
 const BadgeChip: React.FC<{ badge: Badge; delay: number }> = ({ badge, delay }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const enter = interpolate(frame - delay, [0, 0.8 * fps], [0, 1], {
+  const enter = interpolate(frame - delay, [0, 1.2 * fps], [0, 1], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -72,17 +72,17 @@ export const SceneTrust: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const headerOpacity = interpolate(frame, [0, 0.5 * fps], [0, 1], {
+  const headerOpacity = interpolate(frame, [0, 0.9 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const headerY = interpolate(frame, [0, 0.5 * fps], [16, 0], {
+  const headerY = interpolate(frame, [0, 0.9 * fps], [16, 0], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  const benefitOpacity = interpolate(frame, [1.4 * fps, 2.2 * fps], [0, 1], {
+  const benefitOpacity = interpolate(frame, [2.2 * fps, 3.4 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -112,7 +112,7 @@ export const SceneTrust: React.FC = () => {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
         {BADGES.map((b, i) => (
-          <BadgeChip key={b.title} badge={b} delay={(0.3 + i * 0.15) * fps} />
+          <BadgeChip key={b.title} badge={b} delay={(0.5 + i * 0.28) * fps} />
         ))}
       </div>
       <div
