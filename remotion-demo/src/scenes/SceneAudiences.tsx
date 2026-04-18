@@ -194,7 +194,7 @@ export const SceneAudiences: React.FC = () => {
             marginTop: 8,
           }}
         >
-          Every role, the features they need
+          Multiple roles, one bespoke digital offering
         </div>
       </div>
       <div
