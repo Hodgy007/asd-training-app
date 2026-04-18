@@ -17,49 +17,49 @@ export const DemoComposition: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: theme.bg }}>
       <TransitionSeries>
-        <TransitionSeries.Sequence durationInFrames={90}>
+        <TransitionSeries.Sequence durationInFrames={130}>
           <SceneHero />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           presentation={fade()}
           timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
         />
-        <TransitionSeries.Sequence durationInFrames={150}>
+        <TransitionSeries.Sequence durationInFrames={220}>
           <SceneAudiences />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           presentation={slide({ direction: "from-right" })}
           timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
         />
-        <TransitionSeries.Sequence durationInFrames={165}>
+        <TransitionSeries.Sequence durationInFrames={240}>
           <SceneTrainingAI />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           presentation={fade()}
           timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
         />
-        <TransitionSeries.Sequence durationInFrames={165}>
+        <TransitionSeries.Sequence durationInFrames={240}>
           <SceneCareers />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           presentation={slide({ direction: "from-right" })}
           timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
         />
-        <TransitionSeries.Sequence durationInFrames={165}>
+        <TransitionSeries.Sequence durationInFrames={240}>
           <SceneFeaturesGrid />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           presentation={fade()}
           timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
         />
-        <TransitionSeries.Sequence durationInFrames={135}>
+        <TransitionSeries.Sequence durationInFrames={195}>
           <SceneTrust />
         </TransitionSeries.Sequence>
         <TransitionSeries.Transition
           presentation={fade()}
           timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
         />
-        <TransitionSeries.Sequence durationInFrames={120}>
+        <TransitionSeries.Sequence durationInFrames={175}>
           <SceneCTA />
         </TransitionSeries.Sequence>
       </TransitionSeries>

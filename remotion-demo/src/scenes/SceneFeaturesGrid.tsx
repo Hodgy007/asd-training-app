@@ -60,7 +60,7 @@ const FeatureCard: React.FC<{ feature: Feature; delay: number }> = ({ feature, d
   const { fps } = useVideoConfig();
   const localFrame = frame - delay;
 
-  const enter = interpolate(localFrame, [0, 0.7 * fps], [0, 1], {
+  const enter = interpolate(localFrame, [0, 1.1 * fps], [0, 1], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -108,11 +108,11 @@ export const SceneFeaturesGrid: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const headerOpacity = interpolate(frame, [0, 0.5 * fps], [0, 1], {
+  const headerOpacity = interpolate(frame, [0, 0.9 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const headerY = interpolate(frame, [0, 0.5 * fps], [16, 0], {
+  const headerY = interpolate(frame, [0, 0.9 * fps], [16, 0], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -153,7 +153,7 @@ export const SceneFeaturesGrid: React.FC = () => {
         }}
       >
         {FEATURES.map((f, i) => (
-          <FeatureCard key={f.title} feature={f} delay={(0.35 + i * 0.12) * fps} />
+          <FeatureCard key={f.title} feature={f} delay={(0.5 + i * 0.22) * fps} />
         ))}
       </div>
     </AbsoluteFill>

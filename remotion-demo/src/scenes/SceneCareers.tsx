@@ -22,28 +22,28 @@ export const SceneCareers: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const headerOpacity = interpolate(frame, [0, 0.5 * fps], [0, 1], {
+  const headerOpacity = interpolate(frame, [0, 0.9 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const headerY = interpolate(frame, [0, 0.5 * fps], [16, 0], {
+  const headerY = interpolate(frame, [0, 0.9 * fps], [16, 0], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  const leftEnter = interpolate(frame, [0.25 * fps, 1.0 * fps], [0, 1], {
+  const leftEnter = interpolate(frame, [0.4 * fps, 1.6 * fps], [0, 1], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const rightEnter = interpolate(frame, [0.55 * fps, 1.3 * fps], [0, 1], {
+  const rightEnter = interpolate(frame, [0.9 * fps, 2.1 * fps], [0, 1], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  const stepProgress = interpolate(frame, [1.0 * fps, 4.0 * fps], [0, CV_STEPS.length - 0.001], {
+  const stepProgress = interpolate(frame, [1.6 * fps, 6.5 * fps], [0, CV_STEPS.length - 0.001], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -163,12 +163,12 @@ export const SceneCareers: React.FC = () => {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 10 }}>
             {AI_SUGGESTIONS.map((s, i) => {
-              const suggestionFrame = frame - (1.2 + i * 0.35) * fps;
-              const suggestionOpacity = interpolate(suggestionFrame, [0, 0.6 * fps], [0, 1], {
+              const suggestionFrame = frame - (2.0 + i * 0.55) * fps;
+              const suggestionOpacity = interpolate(suggestionFrame, [0, 1.0 * fps], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
               });
-              const suggestionY = interpolate(suggestionFrame, [0, 0.6 * fps], [16, 0], {
+              const suggestionY = interpolate(suggestionFrame, [0, 1.0 * fps], [16, 0], {
                 easing: Easing.bezier(0.16, 1, 0.3, 1),
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
