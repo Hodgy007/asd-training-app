@@ -1,31 +1,217 @@
-import { evolvePath } from "@remotion/paths";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { IconCheck } from "../components/Icons";
 import { fontStack, theme } from "../theme";
 
-const CHART_LEFT = 140;
-const CHART_RIGHT = 1100;
-const CHART_TOP = 380;
-const CHART_BOTTOM = 820;
+type CardAnim = { opacity: number; y: number };
 
-const DATA = [10, 22, 30, 44, 58, 70, 82, 92, 98];
-
-const pointsToPath = (data: number[]) => {
-  const max = Math.max(...data);
-  const stepX = (CHART_RIGHT - CHART_LEFT) / (data.length - 1);
-  return data
-    .map((v, i) => {
-      const x = CHART_LEFT + i * stepX;
-      const y = CHART_BOTTOM - (v / max) * (CHART_BOTTOM - CHART_TOP);
-      return `${i === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
-    })
-    .join(" ");
+const useCardAnim = (startSec: number, endSec: number): CardAnim => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const opacity = interpolate(frame, [startSec * fps, endSec * fps], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const y = interpolate(frame, [startSec * fps, endSec * fps], [28, 0], {
+    easing: Easing.bezier(0.16, 1, 0.3, 1),
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  return { opacity, y };
 };
+
+const CardShell: React.FC<{ anim: CardAnim; children: React.ReactNode }> = ({ anim, children }) => (
+  <div
+    style={{
+      flex: 1,
+      background: theme.card,
+      border: `1px solid ${theme.cardBorder}`,
+      borderRadius: 24,
+      padding: "32px 32px",
+      boxShadow: "0 30px 80px rgba(0,0,0,0.45)",
+      display: "flex",
+      flexDirection: "column",
+      gap: 18,
+      opacity: anim.opacity,
+      transform: `translateY(${anim.y}px)`,
+      overflow: "hidden",
+      position: "relative",
+    }}
+  >
+    {children}
+  </div>
+);
+
+const Chip: React.FC<{ label: string; color: string }> = ({ label, color }) => (
+  <div
+    style={{
+      fontSize: 14,
+      fontWeight: 700,
+      color,
+      letterSpacing: 1.5,
+      textTransform: "uppercase",
+    }}
+  >
+    {label}
+  </div>
+);
+
+const TrainingCard: React.FC<{ anim: CardAnim }> = ({ anim }) => (
+  <CardShell anim={anim}>
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 6,
+        background: `linear-gradient(90deg, ${theme.accent} 0%, ${theme.accent2} 100%)`,
+      }}
+    />
+    <Chip label="Module" color={theme.accent} />
+    <div style={{ fontSize: 30, fontWeight: 700, color: theme.text, lineHeight: 1.15 }}>
+      Understanding ASD
+    </div>
+    <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 2 }}>
+      <div
+        style={{
+          flex: 1,
+          height: 6,
+          borderRadius: 999,
+          background: "rgba(148,163,184,0.15)",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: "70%",
+            height: "100%",
+            background: `linear-gradient(90deg, ${theme.accent} 0%, ${theme.accent2} 100%)`,
+          }}
+        />
+      </div>
+      <div style={{ fontSize: 15, color: theme.textMuted, fontWeight: 600 }}>70%</div>
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 6 }}>
+      <LessonRow label="Social communication signs" done />
+      <LessonRow label="Sensory patterns" done />
+      <LessonRow label="Play & interaction" />
+    </div>
+  </CardShell>
+);
+
+const LessonRow: React.FC<{ label: string; done?: boolean }> = ({ label, done }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    <div
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 999,
+        background: done ? theme.success : "transparent",
+        border: done ? "none" : `2px solid ${theme.textMuted}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      {done ? <IconCheck size={18} color="white" /> : null}
+    </div>
+    <div
+      style={{
+        fontSize: 18,
+        color: done ? theme.text : theme.textMuted,
+        fontWeight: done ? 500 : 500,
+      }}
+    >
+      {label}
+    </div>
+  </div>
+);
+
+const SurveyCard: React.FC<{ anim: CardAnim }> = ({ anim }) => (
+  <CardShell anim={anim}>
+    <Chip label="Survey" color={theme.accent2} />
+    <div style={{ fontSize: 26, fontWeight: 700, color: theme.text, lineHeight: 1.2 }}>
+      How clear was this module?
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+      <ResponseRow label="Very clear" selected />
+      <ResponseRow label="Mostly clear" />
+      <ResponseRow label="Somewhat clear" />
+      <ResponseRow label="Not clear" />
+    </div>
+    <div style={{ fontSize: 14, color: theme.textMuted, marginTop: 4 }}>
+      58 responses · AI summary ready
+    </div>
+  </CardShell>
+);
+
+const ResponseRow: React.FC<{ label: string; selected?: boolean }> = ({ label, selected }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      padding: "12px 16px",
+      borderRadius: 14,
+      background: selected ? "rgba(99,102,241,0.20)" : "rgba(148,163,184,0.06)",
+      border: selected
+        ? `1.5px solid ${theme.accent}`
+        : `1.5px solid rgba(148,163,184,0.15)`,
+    }}
+  >
+    <div
+      style={{
+        width: 22,
+        height: 22,
+        borderRadius: 999,
+        background: selected ? theme.accent : "transparent",
+        border: selected ? "none" : `2px solid ${theme.textMuted}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      {selected ? <IconCheck size={14} color="white" /> : null}
+    </div>
+    <div style={{ fontSize: 17, color: theme.text, fontWeight: selected ? 600 : 500 }}>{label}</div>
+  </div>
+);
+
+const AiInsightCard: React.FC<{ anim: CardAnim }> = ({ anim }) => (
+  <CardShell anim={anim}>
+    <Chip label="AI insight" color={theme.accent2} />
+    <div style={{ fontSize: 30, fontWeight: 700, color: theme.text, lineHeight: 1.2 }}>
+      Trends across 147 survey responses
+    </div>
+    <div style={{ fontSize: 18, color: theme.textMuted, lineHeight: 1.5 }}>
+      Gemini-powered summaries surface training completion trends and survey themes — helping
+      admins see what&apos;s landing and where to focus next.
+    </div>
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
+      {["Modules", "Surveys", "Feedback"].map((t) => (
+        <div
+          key={t}
+          style={{
+            padding: "6px 14px",
+            borderRadius: 999,
+            background: "rgba(99,102,241,0.18)",
+            color: theme.accent2,
+            fontSize: 15,
+            fontWeight: 600,
+          }}
+        >
+          {t}
+        </div>
+      ))}
+    </div>
+  </CardShell>
+);
 
 export const SceneTrainingAI: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-
-  const path = pointsToPath(DATA);
 
   const headerOpacity = interpolate(frame, [0, 0.5 * fps], [0, 1], {
     extrapolateLeft: "clamp",
@@ -37,27 +223,9 @@ export const SceneTrainingAI: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  const draw = interpolate(frame, [0.3 * fps, 3.0 * fps], [0, 1], {
-    easing: Easing.bezier(0.45, 0, 0.15, 1),
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const { strokeDasharray, strokeDashoffset } = evolvePath(draw, path);
-  const areaPath = `${path} L ${CHART_RIGHT} ${CHART_BOTTOM} L ${CHART_LEFT} ${CHART_BOTTOM} Z`;
-  const areaOpacity = interpolate(draw, [0, 0.8, 1], [0, 0.2, 0.35], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const aiCardOpacity = interpolate(frame, [1.6 * fps, 2.4 * fps], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const aiCardY = interpolate(frame, [1.6 * fps, 2.4 * fps], [28, 0], {
-    easing: Easing.bezier(0.16, 1, 0.3, 1),
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  const trainingAnim = useCardAnim(0.3, 1.1);
+  const surveyAnim = useCardAnim(0.6, 1.4);
+  const aiAnim = useCardAnim(0.9, 1.7);
 
   return (
     <AbsoluteFill style={{ background: theme.bg, fontFamily: fontStack }}>
@@ -68,9 +236,7 @@ export const SceneTrainingAI: React.FC = () => {
           transform: `translateY(${headerY}px)`,
         }}
       >
-        <div style={{ fontSize: 26, color: theme.accent2, fontWeight: 600 }}>
-          Training & observation
-        </div>
+        <div style={{ fontSize: 26, color: theme.accent2, fontWeight: 600 }}>Training & surveys</div>
         <div
           style={{
             fontSize: 54,
@@ -80,106 +246,21 @@ export const SceneTrainingAI: React.FC = () => {
             marginTop: 8,
           }}
         >
-          Structured training, powered by AI
+          Structured training & surveys, assisted by AI
         </div>
       </div>
-      <svg
-        width={1920}
-        height={1080}
-        viewBox="0 0 1920 1080"
-        style={{ position: "absolute", inset: 0 }}
-      >
-        <defs>
-          <linearGradient id="tline-gradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor={theme.accent} />
-            <stop offset="100%" stopColor={theme.accent2} />
-          </linearGradient>
-          <linearGradient id="tarea-gradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={theme.accent} stopOpacity={0.55} />
-            <stop offset="100%" stopColor={theme.accent} stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        {[0, 1, 2, 3].map((i) => {
-          const y = CHART_TOP + ((CHART_BOTTOM - CHART_TOP) / 3) * i;
-          return (
-            <line
-              key={i}
-              x1={CHART_LEFT}
-              x2={CHART_RIGHT}
-              y1={y}
-              y2={y}
-              stroke={theme.text}
-              strokeOpacity={0.1}
-              strokeWidth={1}
-            />
-          );
-        })}
-        <path d={areaPath} fill="url(#tarea-gradient)" opacity={areaOpacity} />
-        <path
-          d={path}
-          fill="none"
-          stroke="url(#tline-gradient)"
-          strokeWidth={6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeDasharray={strokeDasharray}
-          strokeDashoffset={strokeDashoffset}
-        />
-      </svg>
       <div
         style={{
-          position: "absolute",
-          right: 140,
-          top: 360,
-          width: 620,
-          background: theme.card,
-          border: `1px solid ${theme.cardBorder}`,
-          borderRadius: 24,
-          padding: "32px 36px",
-          opacity: aiCardOpacity,
-          transform: `translateY(${aiCardY}px)`,
-          boxShadow: "0 30px 80px rgba(0,0,0,0.45)",
+          padding: "60px 140px 100px",
           display: "flex",
-          flexDirection: "column",
-          gap: 18,
+          gap: 40,
+          alignItems: "stretch",
+          flex: 1,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            fontSize: 22,
-            fontWeight: 600,
-            color: theme.accent2,
-          }}
-        >
-          AI insight
-        </div>
-        <div style={{ fontSize: 32, fontWeight: 700, color: theme.text, lineHeight: 1.2 }}>
-          Patterns across 12 observations
-        </div>
-        <div style={{ fontSize: 20, color: theme.textMuted, lineHeight: 1.5 }}>
-          Gemini-powered summaries highlight behavioural trends and next steps — never diagnosing,
-          always supporting practitioners.
-        </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
-          {["Social", "Sensory", "Play"].map((t) => (
-            <div
-              key={t}
-              style={{
-                padding: "6px 14px",
-                borderRadius: 999,
-                background: "rgba(99,102,241,0.18)",
-                color: theme.accent2,
-                fontSize: 16,
-                fontWeight: 600,
-              }}
-            >
-              {t}
-            </div>
-          ))}
-        </div>
+        <TrainingCard anim={trainingAnim} />
+        <SurveyCard anim={surveyAnim} />
+        <AiInsightCard anim={aiAnim} />
       </div>
     </AbsoluteFill>
   );
