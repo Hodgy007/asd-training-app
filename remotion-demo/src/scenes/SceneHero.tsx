@@ -1,28 +1,37 @@
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  Img,
+  interpolate,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { fontStack, theme } from "../theme";
 
 export const SceneHero: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const enter = interpolate(frame, [0, 0.8 * fps], [0, 1], {
+  const enter = interpolate(frame, [0, 0.9 * fps], [0, 1], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  const logoScale = interpolate(enter, [0, 1], [0.85, 1]);
-  const logoY = interpolate(enter, [0, 1], [20, 0]);
-  const titleY = interpolate(frame, [0.3 * fps, 1.1 * fps], [24, 0], {
+  const logoScale = interpolate(enter, [0, 1], [0.92, 1]);
+  const logoY = interpolate(enter, [0, 1], [16, 0]);
+
+  const titleY = interpolate(frame, [0.4 * fps, 1.2 * fps], [20, 0], {
     easing: Easing.bezier(0.16, 1, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const titleOpacity = interpolate(frame, [0.3 * fps, 1.1 * fps], [0, 1], {
+  const titleOpacity = interpolate(frame, [0.4 * fps, 1.2 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const subOpacity = interpolate(frame, [0.7 * fps, 1.4 * fps], [0, 1], {
+  const subOpacity = interpolate(frame, [0.8 * fps, 1.5 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -30,7 +39,7 @@ export const SceneHero: React.FC = () => {
   return (
     <AbsoluteFill
       style={{
-        background: `radial-gradient(1200px 800px at 50% 40%, ${theme.bgSoft} 0%, ${theme.bg} 70%)`,
+        background: `radial-gradient(1400px 900px at 50% 45%, ${theme.bgSoft} 0%, ${theme.bg} 70%)`,
         fontFamily: fontStack,
         color: theme.text,
         alignItems: "center",
@@ -42,38 +51,29 @@ export const SceneHero: React.FC = () => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 28,
-          transform: `translateY(${logoY}px)`,
+          gap: 40,
         }}
       >
         <div
           style={{
-            width: 160,
-            height: 160,
-            borderRadius: 36,
-            background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accent2} 100%)`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 30px 80px rgba(99, 102, 241, 0.35)",
-            transform: `scale(${logoScale})`,
+            padding: "44px 64px",
+            borderRadius: 28,
+            background: "white",
+            boxShadow: "0 40px 100px rgba(73, 199, 237, 0.25)",
             opacity: enter,
+            transform: `translateY(${logoY}px) scale(${logoScale})`,
           }}
         >
-          <svg width={80} height={80} viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 2 L2 20 H22 Z"
-              fill="white"
-              opacity={0.95}
-            />
-            <circle cx={12} cy={14} r={2.6} fill={theme.accent} />
-          </svg>
+          <Img
+            src={staticFile("logo-aaa.svg")}
+            style={{ width: 620, height: "auto", display: "block" }}
+          />
         </div>
         <div
           style={{
-            fontSize: 64,
+            fontSize: 52,
             fontWeight: 700,
-            letterSpacing: -1.5,
+            letterSpacing: -1.2,
             opacity: titleOpacity,
             transform: `translateY(${titleY}px)`,
             textAlign: "center",
@@ -85,14 +85,14 @@ export const SceneHero: React.FC = () => {
         </div>
         <div
           style={{
-            fontSize: 28,
+            fontSize: 26,
             color: theme.textMuted,
             opacity: subOpacity,
             textAlign: "center",
             maxWidth: 1000,
           }}
         >
-          Training, observation, and careers support — built for your charity.
+          Training, observation and careers support — for the charity and its community.
         </div>
       </div>
     </AbsoluteFill>

@@ -1,8 +1,16 @@
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  IconBook,
+  IconChart,
+  IconCohort,
+  IconPlug,
+  IconSurvey,
+  IconVideo,
+} from "../components/Icons";
 import { fontStack, theme } from "../theme";
 
 type Feature = {
-  icon: string;
+  Icon: React.FC<{ size?: number; color?: string }>;
   title: string;
   sub: string;
   color: string;
@@ -10,37 +18,37 @@ type Feature = {
 
 const FEATURES: Feature[] = [
   {
-    icon: "🎥",
+    Icon: IconVideo,
     title: "Virtual Workshops",
     sub: "Zoom & Teams with attendance tracking",
     color: theme.accent,
   },
   {
-    icon: "📚",
+    Icon: IconBook,
     title: "Document Library",
     sub: "Targeted collections, per-org stats",
     color: theme.accent2,
   },
   {
-    icon: "📊",
+    Icon: IconSurvey,
     title: "Surveys",
     sub: "5 question types, AI insights",
     color: theme.success,
   },
   {
-    icon: "👥",
+    Icon: IconCohort,
     title: "Cohorts",
     sub: "Bulk-onboard walk-ins via QR cards",
     color: theme.warning,
   },
   {
-    icon: "📈",
+    Icon: IconChart,
     title: "Reports & Analytics",
     sub: "Platform-wide and per-org dashboards",
     color: theme.pink,
   },
   {
-    icon: "🔌",
+    Icon: IconPlug,
     title: "Integration API",
     sub: "Pull data into Dynamics 365 & more",
     color: theme.accent2,
@@ -58,6 +66,7 @@ const FeatureCard: React.FC<{ feature: Feature; delay: number }> = ({ feature, d
     extrapolateRight: "clamp",
   });
   const y = interpolate(enter, [0, 1], [24, 0]);
+  const { Icon } = feature;
 
   return (
     <div
@@ -65,28 +74,27 @@ const FeatureCard: React.FC<{ feature: Feature; delay: number }> = ({ feature, d
         background: theme.card,
         border: `1px solid ${theme.cardBorder}`,
         borderRadius: 22,
-        padding: "32px 32px",
+        padding: "34px 34px",
         opacity: enter,
         transform: `translateY(${y}px)`,
         display: "flex",
         flexDirection: "column",
-        gap: 14,
+        gap: 16,
         boxShadow: "0 16px 40px rgba(0,0,0,0.25)",
       }}
     >
       <div
         style={{
-          width: 64,
-          height: 64,
-          borderRadius: 16,
+          width: 84,
+          height: 84,
+          borderRadius: 20,
           background: `linear-gradient(135deg, ${feature.color} 0%, rgba(34,211,238,0.8) 140%)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 34,
         }}
       >
-        {feature.icon}
+        <Icon size={46} color="white" />
       </div>
       <div style={{ fontSize: 28, fontWeight: 700, color: theme.text, letterSpacing: -0.5 }}>
         {feature.title}

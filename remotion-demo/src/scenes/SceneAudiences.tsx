@@ -1,8 +1,9 @@
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { IconGraduation, IconShield, IconUsers } from "../components/Icons";
 import { fontStack, theme } from "../theme";
 
 type Persona = {
-  icon: string;
+  Icon: React.FC<{ size?: number; color?: string }>;
   title: string;
   sub: string;
   bullets: string[];
@@ -11,21 +12,21 @@ type Persona = {
 
 const PERSONAS: Persona[] = [
   {
-    icon: "👥",
+    Icon: IconUsers,
     title: "Practitioners",
     sub: "Caregivers, nursery workers, health visitors",
     bullets: ["ASD awareness training", "Child observation logs", "AI-supported insights"],
     color: theme.accent,
   },
   {
-    icon: "🎓",
+    Icon: IconGraduation,
     title: "Careers users",
     sub: "Students, interns, employees & careers pros",
     bullets: ["Careers CPD training", "AI CV Builder", "AI Careers Advisor"],
     color: theme.accent2,
   },
   {
-    icon: "🛡️",
+    Icon: IconShield,
     title: "Administrators",
     sub: "Charity admins & organisation admins",
     bullets: ["Users & permissions", "Content & reports", "Multi-tenant control"],
@@ -44,6 +45,7 @@ const PersonaCard: React.FC<{ persona: Persona; delay: number }> = ({ persona, d
     extrapolateRight: "clamp",
   });
   const y = interpolate(enter, [0, 1], [36, 0]);
+  const { Icon } = persona;
 
   return (
     <div
@@ -52,34 +54,33 @@ const PersonaCard: React.FC<{ persona: Persona; delay: number }> = ({ persona, d
         background: theme.card,
         border: `1px solid ${theme.cardBorder}`,
         borderRadius: 28,
-        padding: "44px 40px",
+        padding: "48px 44px",
         opacity: enter,
         transform: `translateY(${y}px)`,
         display: "flex",
         flexDirection: "column",
-        gap: 20,
+        gap: 22,
         boxShadow: "0 24px 60px rgba(0,0,0,0.35)",
       }}
     >
       <div
         style={{
-          width: 84,
-          height: 84,
-          borderRadius: 20,
+          width: 104,
+          height: 104,
+          borderRadius: 26,
           background: `linear-gradient(135deg, ${persona.color} 0%, ${theme.accent2} 120%)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 44,
         }}
       >
-        {persona.icon}
+        <Icon size={56} color="white" />
       </div>
       <div style={{ fontSize: 38, fontWeight: 700, color: theme.text, letterSpacing: -0.5 }}>
         {persona.title}
       </div>
-      <div style={{ fontSize: 20, color: theme.textMuted, marginTop: -8 }}>{persona.sub}</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 8 }}>
+      <div style={{ fontSize: 20, color: theme.textMuted, marginTop: -10 }}>{persona.sub}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 6 }}>
         {persona.bullets.map((b) => (
           <div key={b} style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div

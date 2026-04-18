@@ -1,13 +1,24 @@
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  IconAccessibility,
+  IconBuilding,
+  IconCheck,
+  IconKey,
+  IconLock,
+} from "../components/Icons";
 import { fontStack, theme } from "../theme";
 
-type Badge = { icon: string; title: string; sub: string };
+type Badge = {
+  Icon: React.FC<{ size?: number; color?: string }>;
+  title: string;
+  sub: string;
+};
 
 const BADGES: Badge[] = [
-  { icon: "🔒", title: "MFA for admins", sub: "TOTP enforced" },
-  { icon: "🪪", title: "SSO", sub: "Google, Microsoft, SAML" },
-  { icon: "🏛️", title: "Multi-tenant", sub: "MATs, hubs, cohorts" },
-  { icon: "♿", title: "Accessible UX", sub: "Plain language, reduced motion" },
+  { Icon: IconLock, title: "MFA for admins", sub: "TOTP enforced" },
+  { Icon: IconKey, title: "SSO", sub: "Google, Microsoft, SAML" },
+  { Icon: IconBuilding, title: "Multi-tenant", sub: "MATs, hubs, cohorts" },
+  { Icon: IconAccessibility, title: "Accessible UX", sub: "Plain language, reduced motion" },
 ];
 
 const BadgeChip: React.FC<{ badge: Badge; delay: number }> = ({ badge, delay }) => {
@@ -18,40 +29,40 @@ const BadgeChip: React.FC<{ badge: Badge; delay: number }> = ({ badge, delay }) 
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
+  const { Icon } = badge;
 
   return (
     <div
       style={{
         flex: 1,
-        padding: "28px 28px",
+        padding: "32px 32px",
         background: theme.card,
         border: `1px solid ${theme.cardBorder}`,
         borderRadius: 20,
         display: "flex",
         alignItems: "center",
-        gap: 18,
+        gap: 22,
         opacity: enter,
         transform: `translateY(${interpolate(enter, [0, 1], [20, 0])}px)`,
       }}
     >
       <div
         style={{
-          width: 56,
-          height: 56,
-          borderRadius: 14,
+          width: 72,
+          height: 72,
+          borderRadius: 16,
           background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accent2} 120%)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 28,
           flexShrink: 0,
         }}
       >
-        {badge.icon}
+        <Icon size={40} color="white" />
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <div style={{ fontSize: 22, color: theme.text, fontWeight: 700 }}>{badge.title}</div>
-        <div style={{ fontSize: 16, color: theme.textMuted }}>{badge.sub}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ fontSize: 26, color: theme.text, fontWeight: 700 }}>{badge.title}</div>
+        <div style={{ fontSize: 18, color: theme.textMuted }}>{badge.sub}</div>
       </div>
     </div>
   );
@@ -82,7 +93,7 @@ export const SceneTrust: React.FC = () => {
         background: theme.bg,
         fontFamily: fontStack,
         padding: "110px 120px",
-        gap: 48,
+        gap: 40,
       }}
     >
       <div style={{ opacity: headerOpacity, transform: `translateY(${headerY}px)` }}>
@@ -106,7 +117,7 @@ export const SceneTrust: React.FC = () => {
       </div>
       <div
         style={{
-          marginTop: 24,
+          marginTop: 16,
           padding: "28px 36px",
           background: "rgba(52,211,153,0.08)",
           border: "1px solid rgba(52,211,153,0.3)",
@@ -120,18 +131,17 @@ export const SceneTrust: React.FC = () => {
       >
         <div
           style={{
-            width: 52,
-            height: 52,
-            borderRadius: 12,
+            width: 60,
+            height: 60,
+            borderRadius: 14,
             background: theme.success,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 26,
             flexShrink: 0,
           }}
         >
-          ✓
+          <IconCheck size={32} color="white" />
         </div>
         <div style={{ fontSize: 22, color: theme.text, fontWeight: 500 }}>
           AI that never diagnoses. UK English. Strength-first. Rate-limited and audited.

@@ -1,4 +1,12 @@
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  Img,
+  interpolate,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { fontStack, theme } from "../theme";
 
 export const SceneCTA: React.FC = () => {
@@ -13,7 +21,7 @@ export const SceneCTA: React.FC = () => {
   const cardY = interpolate(enter, [0, 1], [30, 0]);
   const cardScale = interpolate(enter, [0, 1], [0.94, 1]);
 
-  const ctaOpacity = interpolate(frame, [0.6 * fps, 1.4 * fps], [0, 1], {
+  const ctaOpacity = interpolate(frame, [0.7 * fps, 1.5 * fps], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -42,7 +50,7 @@ export const SceneCTA: React.FC = () => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 40,
+          gap: 32,
           opacity: enter,
           transform: `translateY(${cardY}px) scale(${cardScale})`,
           textAlign: "center",
@@ -50,33 +58,46 @@ export const SceneCTA: React.FC = () => {
       >
         <div
           style={{
-            fontSize: 80,
+            padding: "28px 48px",
+            borderRadius: 22,
+            background: "white",
+            boxShadow: "0 30px 80px rgba(73,199,237,0.25)",
+          }}
+        >
+          <Img
+            src={staticFile("logo-aaa.svg")}
+            style={{ width: 460, height: "auto", display: "block" }}
+          />
+        </div>
+        <div
+          style={{
+            fontSize: 64,
             fontWeight: 700,
             color: theme.text,
-            letterSpacing: -2,
+            letterSpacing: -1.5,
             maxWidth: 1500,
-            lineHeight: 1.05,
+            lineHeight: 1.1,
           }}
         >
           Training, observation & careers — one platform
         </div>
         <div
           style={{
-            fontSize: 32,
+            fontSize: 28,
             color: theme.textMuted,
             maxWidth: 1100,
           }}
         >
-          Built for charities, training organisations, schools and employers.
+          From Ambitious about Autism — for charities, schools and employers.
         </div>
         <div
           style={{
-            marginTop: 24,
-            padding: "28px 60px",
+            marginTop: 12,
+            padding: "24px 56px",
             borderRadius: 999,
             background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accent2} 100%)`,
             color: "white",
-            fontSize: 36,
+            fontSize: 32,
             fontWeight: 600,
             letterSpacing: -0.5,
             boxShadow: "0 30px 80px rgba(99,102,241,0.45)",
