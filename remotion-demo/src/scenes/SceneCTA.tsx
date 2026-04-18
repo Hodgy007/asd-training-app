@@ -54,11 +54,11 @@ export const SceneCTA: React.FC = () => {
             fontWeight: 700,
             color: theme.text,
             letterSpacing: -2,
-            maxWidth: 1400,
+            maxWidth: 1500,
             lineHeight: 1.05,
           }}
         >
-          Start training your team today
+          Training, observation & careers — one platform
         </div>
         <div
           style={{
@@ -67,7 +67,7 @@ export const SceneCTA: React.FC = () => {
             maxWidth: 1100,
           }}
         >
-          Autism awareness, careers CPD and observation — one platform.
+          Built for charities, training organisations, schools and employers.
         </div>
         <div
           style={{

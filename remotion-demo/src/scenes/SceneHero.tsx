@@ -71,15 +71,17 @@ export const SceneHero: React.FC = () => {
         </div>
         <div
           style={{
-            fontSize: 68,
+            fontSize: 64,
             fontWeight: 700,
             letterSpacing: -1.5,
             opacity: titleOpacity,
             transform: `translateY(${titleY}px)`,
             textAlign: "center",
+            maxWidth: 1400,
+            lineHeight: 1.1,
           }}
         >
-          ASD Training &amp; Observation
+          ASD Early Identification Training Platform
         </div>
         <div
           style={{
@@ -87,10 +89,10 @@ export const SceneHero: React.FC = () => {
             color: theme.textMuted,
             opacity: subOpacity,
             textAlign: "center",
-            maxWidth: 900,
+            maxWidth: 1000,
           }}
         >
-          Everything your team needs — in one calm place.
+          Training, observation, and careers support — built for your charity.
         </div>
       </div>
     </AbsoluteFill>

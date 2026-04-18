@@ -4,6 +4,8 @@ export const theme = {
   accent: "#6366F1",
   accent2: "#22D3EE",
   success: "#34D399",
+  warning: "#FBBF24",
+  pink: "#F472B6",
   text: "#F8FAFC",
   textMuted: "#94A3B8",
   card: "#1A2142",
