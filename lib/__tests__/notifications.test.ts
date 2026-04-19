@@ -83,7 +83,12 @@ describe('getNotifications', () => {
   it('includes upcoming workshops the user is an attendee for', async () => {
     const fiveDaysOut = new Date(Date.now() + 5 * 86_400_000)
     vi.mocked(prisma.classSession.findMany).mockResolvedValue([
-      { id: 'w1', title: 'Team training', scheduledAt: fiveDaysOut } as never,
+      {
+        id: 'w1',
+        title: 'Team training',
+        scheduledAt: fiveDaysOut,
+        createdAt: new Date(),
+      } as never,
     ])
 
     const result = await getNotifications(mockSession())
