@@ -2,6 +2,7 @@ import { AbsoluteFill } from "remotion";
 import { IconBook, IconGraduation, IconShield } from "../../components/Icons";
 import { fontStack, Theme } from "../../theme";
 import { SceneHeader, useCardAnim } from "./shell";
+import { SceneVoiceover } from "./SceneVoiceover";
 
 type Fact = {
   Icon: React.FC<{ size?: number; color?: string }>;
@@ -31,7 +32,11 @@ const FACTS: Fact[] = [
   },
 ];
 
-export const SceneOrgWho: React.FC<{ theme: Theme }> = ({ theme }) => {
+export const SceneOrgWho: React.FC<{ theme: Theme; voiceoverSrc?: string; durationInFrames: number }> = ({
+  theme,
+  voiceoverSrc,
+  durationInFrames,
+}) => {
   const anims = [
     useCardAnim(0.4, 1.6),
     useCardAnim(0.9, 2.1),
@@ -113,6 +118,7 @@ export const SceneOrgWho: React.FC<{ theme: Theme }> = ({ theme }) => {
           );
         })}
       </div>
+      <SceneVoiceover src={voiceoverSrc} durationInFrames={durationInFrames} />
     </AbsoluteFill>
   );
 };

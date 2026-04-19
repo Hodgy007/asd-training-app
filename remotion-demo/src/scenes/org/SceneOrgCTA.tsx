@@ -8,8 +8,13 @@ import {
   useVideoConfig,
 } from "remotion";
 import { fontStack, Theme } from "../../theme";
+import { SceneVoiceover } from "./SceneVoiceover";
 
-export const SceneOrgCTA: React.FC<{ theme: Theme }> = ({ theme }) => {
+export const SceneOrgCTA: React.FC<{ theme: Theme; voiceoverSrc?: string; durationInFrames: number }> = ({
+  theme,
+  voiceoverSrc,
+  durationInFrames,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -116,6 +121,7 @@ export const SceneOrgCTA: React.FC<{ theme: Theme }> = ({ theme }) => {
           ambitiousaboutautism.org.uk
         </div>
       </div>
+      <SceneVoiceover src={voiceoverSrc} durationInFrames={durationInFrames} />
     </AbsoluteFill>
   );
 };
