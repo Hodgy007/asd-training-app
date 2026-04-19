@@ -18,6 +18,7 @@ import {
   Compass,
   Shield,
   BarChart3,
+  Briefcase,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
@@ -57,6 +58,7 @@ function getNavItems(
     if (careersAdvisorEnabled) {
       items.push({ href: '/careers-advisor', label: 'Careers Advisor', icon: Compass })
     }
+    items.push({ href: '/jobs', label: 'Jobs', icon: Briefcase })
     if (role === 'CAREER_DEV_OFFICER') {
       items.push(
         { href: '/students', label: 'My Students', icon: Users },
