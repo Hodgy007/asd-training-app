@@ -33,7 +33,7 @@ UK GDPR Art. 30 ROPA covering all processing activities within the platform. Eac
 | Special category basis (Art. 9) | Explicit consent (9(2)(a)) for consent-basis orgs; DPA 2018 Sch. 1 Pt 2 para 18 (safeguarding) for public-task orgs. |
 | Data subjects | Children (0–18). |
 | Data categories | First name, date of birth, consent attestation (date + user + note). |
-| Recipients | Caregiver-owner only (row-level restriction). Super-admin and org-admin can see via audit log rows but cannot read content without the audit event creating a secondary audit row. |
+| Recipients | Caregiver-owner only (row-level restriction). Org-admin can see audit log rows but cannot read observation content. Ambitious About Autism staff (processor) have no routine access to child records — incident-response access via break-glass only. |
 | International transfers | Hosting in Vercel US (SCC + UK Addendum). |
 | Retention | Lifetime of the org relationship; on child delete, all observations cascade. |
 | Security measures | Row-level ownership; ORG_ADMIN / SUPER_ADMIN cannot read child content — only audit metadata. |
@@ -75,7 +75,7 @@ UK GDPR Art. 30 ROPA covering all processing activities within the platform. Eac
 | Lawful basis (Art. 6) | Legitimate interests (Art. 6(1)(f)) — the controller's (and AaA's) legitimate interest in being able to respond to SARs and demonstrate compliance. |
 | Data subjects | Caregivers, org-admins, super-admins (actor); children (subject of the action). |
 | Data categories | Actor user id, child id, action enum, IP address, timestamp, minimal metadata (e.g. observation id for deletes). |
-| Recipients | Super-admin (`/super-admin/audit`), org-admin (`/admin/audit`, scoped to own org), caregiver (`/activity`, scoped to own actions). |
+| Recipients | Org-admin (`/admin/audit`, scoped to own org), caregiver (`/activity`, scoped to own actions). Ambitious About Autism staff have no routine access. |
 | International transfers | Hosting in Vercel US. |
 | Retention | Retained for the lifetime of the child record, then cascade-deleted. |
 | Security measures | Immutable — no UPDATE or DELETE endpoint exposed. |

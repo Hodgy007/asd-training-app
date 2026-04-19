@@ -40,7 +40,6 @@ Each of the 15 standards is mapped to platform implementation.
 | At-13 banner | `app/(dashboard)/children/[childId]/page.tsx` |
 | Caregiver activity log | `app/(dashboard)/activity/page.tsx`, `app/api/activity/route.ts` |
 | Org-admin audit viewer | `app/(org-admin)/admin/audit/page.tsx`, `app/api/admin/audit/route.ts` |
-| Super-admin audit viewer | `app/(super-admin)/super-admin/audit/page.tsx`, `app/api/super-admin/audit/route.ts` |
 | Per-org lawful basis | `prisma/schema.prisma` (`Organisation.observationLawfulBasis / RetentionDays`), `app/(super-admin)/super-admin/organisations/[orgId]/page.tsx` |
 
 ## Residual gaps

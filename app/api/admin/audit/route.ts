@@ -6,12 +6,10 @@ import { isOrgAdmin } from '@/lib/rbac'
 import { ObservationAccessAction, Prisma } from '@prisma/client'
 
 /**
- * Org-scoped audit log.
- *
- * Identical in shape to /api/super-admin/audit, but restricted to rows whose
- * child belongs to a caregiver in the signed-in admin's organisation. This
- * lets a school/LA admin answer "who has touched Child X's record?" without
- * exposing cross-org data.
+ * Org-scoped audit log. Restricted to rows whose child belongs to a
+ * caregiver in the signed-in admin's organisation, so a school/LA admin
+ * can answer "who has touched Child X's record?" without exposing
+ * cross-org data.
  */
 
 const ALLOWED_ACTIONS: ObservationAccessAction[] = [
