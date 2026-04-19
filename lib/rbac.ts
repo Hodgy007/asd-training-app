@@ -12,6 +12,7 @@ export const CHARITY_PERMISSIONS = {
   MANAGE_SESSIONS: 'manage_sessions',
   MANAGE_LIBRARY: 'manage_library',
   MANAGE_AI_PROMPTS: 'manage_ai_prompts',
+  MANAGE_JOBS: 'manage_jobs',
 } as const
 
 export type CharityPermission = (typeof CHARITY_PERMISSIONS)[keyof typeof CHARITY_PERMISSIONS]
@@ -27,6 +28,7 @@ export const PERMISSION_LABELS: Record<string, string> = {
   manage_sessions: 'Manage Workshops',
   view_reports: 'View Reports',
   manage_ai_prompts: 'Manage AI Prompts',
+  manage_jobs: 'Manage Job Openings',
 }
 
 // ─── Display labels ────────────────────────────────────────────────────────────
@@ -179,4 +181,16 @@ export function hasPermission(session: Session | null, permission: string): bool
     return perms.includes(permission)
   }
   return false
+}
+
+/** Who can create/edit job openings — SUPER_ADMIN or CHARITY_EMPLOYEE with manage_jobs. */
+export function canManageJobs(session: Session | null): boolean {
+  if (!session?.user) return false
+  if (isSuperAdmin(session)) return true
+  return hasPermission(session, CHARITY_PERMISSIONS.MANAGE_JOBS)
+}
+
+/** Who can see the learner Jobs page. */
+export function canAccessJobs(session: Session | null): boolean {
+  return hasRole(session, 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE')
 }
