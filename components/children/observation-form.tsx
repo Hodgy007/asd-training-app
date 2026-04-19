@@ -23,7 +23,6 @@ export function ObservationForm({ childId, childName, onClose }: ObservationForm
     customBehaviour: '',
     frequency: '',
     context: '',
-    notes: '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -69,7 +68,6 @@ export function ObservationForm({ childId, childName, onClose }: ObservationForm
           behaviourType,
           frequency: form.frequency,
           context: form.context,
-          notes: form.notes,
         }),
       })
 
@@ -249,21 +247,6 @@ export function ObservationForm({ childId, childName, onClose }: ObservationForm
                 </option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label htmlFor="notes" className="label">
-              Additional notes{' '}
-              <span className="text-slate-400 text-xs font-normal">(optional)</span>
-            </label>
-            <textarea
-              id="notes"
-              name="notes"
-              value={form.notes}
-              onChange={handleChange}
-              className="input min-h-[80px] resize-none"
-              placeholder="What happened before or after? What was the trigger? How long did it last?"
-            />
           </div>
 
           <div className="bg-amber-50 rounded-xl p-3">

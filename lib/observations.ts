@@ -10,7 +10,6 @@ interface Observation {
   frequency: ObservationFrequency
   behaviourType: string
   context: string
-  notes?: string | null
 }
 
 const FREQUENCY_WEIGHT: Record<ObservationFrequency, number> = {

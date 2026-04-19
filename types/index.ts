@@ -66,7 +66,6 @@ export interface Child {
   id: string
   name: string
   dateOfBirth: Date
-  notes?: string | null
   createdAt: Date
   updatedAt: Date
   userId: string
@@ -85,7 +84,6 @@ export interface Observation {
   domain: Domain
   frequency: Frequency
   context: Context
-  notes?: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -168,7 +166,6 @@ export interface PaginatedResponse<T> {
 export interface CreateChildForm {
   name: string
   dateOfBirth: string
-  notes?: string
 }
 
 export interface CreateObservationForm {
@@ -177,7 +174,6 @@ export interface CreateObservationForm {
   behaviourType: string
   frequency: Frequency
   context: Context
-  notes?: string
 }
 
 export interface RegisterForm {

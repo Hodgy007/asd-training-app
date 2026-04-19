@@ -19,7 +19,6 @@ function formatObservationsForPrompt(
     domain: string
     frequency: string
     context: string
-    notes?: string | null
   }>
 ): string {
   return observations
@@ -31,9 +30,7 @@ function formatObservationsForPrompt(
         .replace(/\b\w/g, (l) => l.toUpperCase())
       const frequency = o.frequency.charAt(0) + o.frequency.slice(1).toLowerCase()
       const context = o.context.charAt(0) + o.context.slice(1).toLowerCase()
-      let entry = `- [${date}] ${o.behaviourType} (${domain} | ${frequency} | ${context})`
-      if (o.notes) entry += `: ${o.notes}`
-      return entry
+      return `- [${date}] ${o.behaviourType} (${domain} | ${frequency} | ${context})`
     })
     .join('\n')
 }
@@ -45,7 +42,6 @@ export async function generateObservationSummary(
     domain: string
     frequency: string
     context: string
-    notes?: string | null
   }>,
   childName: string,
   dateOfBirth: Date,
@@ -62,7 +58,6 @@ export async function detectPatterns(
     domain: string
     frequency: string
     context: string
-    notes?: string | null
   }>,
 ): Promise<string> {
   const observationText = formatObservationsForPrompt(observations)
@@ -74,14 +69,13 @@ export async function generateActionGuidance(patterns: string): Promise<string> 
 }
 
 export async function generateInsightReport(
-  child: { name: string; dateOfBirth: Date; notes?: string | null },
+  child: { name: string; dateOfBirth: Date },
   observations: Array<{
     date: Date
     behaviourType: string
     domain: string
     frequency: string
     context: string
-    notes?: string | null
   }>,
 ): Promise<{ summary: string; patterns: string; recommendations: string }> {
   const age = getAgeString(child.dateOfBirth)
@@ -90,7 +84,6 @@ export async function generateInsightReport(
   const text = await runPrompt('observations.report', {
     childName: child.name,
     age,
-    practitionerNotes: child.notes ? `Practitioner notes: ${child.notes}` : '',
     observationCount: String(observations.length),
     observationText,
   })

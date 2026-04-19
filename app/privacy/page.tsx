@@ -13,8 +13,8 @@ export default function PrivacyPage() {
         <h2>What data we collect</h2>
         <ul>
           <li>Your name and email address (account registration)</li>
-          <li>Child profiles: first name, date of birth, and optional notes</li>
-          <li>Behavioural observations: domain, frequency, context, date, and free-text notes</li>
+          <li>Child profiles: first name and date of birth</li>
+          <li>Behavioural observations: domain, frequency, context, and date</li>
           <li>Training progress records</li>
           <li>AI-generated observation summaries (created using Google Gemini)</li>
         </ul>

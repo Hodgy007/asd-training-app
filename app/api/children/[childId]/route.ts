@@ -30,7 +30,6 @@ const updateSchema = z.object({
     .string()
     .refine((d) => !isNaN(Date.parse(d)))
     .optional(),
-  notes: z.string().max(2000).optional(),
 })
 
 export async function PUT(req: NextRequest, { params }: { params: { childId: string } }) {

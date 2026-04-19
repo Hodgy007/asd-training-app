@@ -12,7 +12,6 @@ import {
   User,
   Calendar,
   FileText,
-  Edit2,
   Trash2,
 } from 'lucide-react'
 import { differenceInYears, differenceInMonths, format } from 'date-fns'
@@ -31,7 +30,6 @@ interface Child {
   id: string
   name: string
   dateOfBirth: string
-  notes?: string | null
   createdAt: string
 }
 
@@ -43,7 +41,6 @@ interface Observation {
   domain: string
   frequency: string
   context: string
-  notes?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -272,15 +269,6 @@ export default function ChildPage() {
                   </p>
                 </div>
               </div>
-              {child.notes && (
-                <div className="flex items-start gap-3">
-                  <Edit2 className="h-4 w-4 text-slate-300 mt-0.5" />
-                  <div>
-                    <p className="text-xs text-slate-400">Notes</p>
-                    <p className="text-sm text-slate-700">{child.notes}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

@@ -256,7 +256,7 @@ export default function GuidePage() {
           </p>
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Adding children and observations</h3>
           <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-            <li>Add children to your profile with their name, date of birth, and notes</li>
+            <li>Add children to your profile with their name and date of birth</li>
             <li>Record observations for each child: select a behaviour, domain (Social Communication, Behaviour &amp; Play, Sensory Responses), frequency, and context</li>
             <li>View all observations for a child on their profile page</li>
             <li>AI-generated insights are available: click &quot;Generate Insights&quot; on a child&apos;s page for AI analysis of patterns and recommendations</li>

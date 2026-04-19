@@ -149,7 +149,6 @@ model Child {
   id           String        @id @default(cuid())
   name         String
   dateOfBirth  DateTime
-  notes        String?
   consentObtainedAt      DateTime?
   consentObtainedBy      String?
   consentDocumentedNote  String?   @db.Text
@@ -170,7 +169,6 @@ model Observation {
   domain        Domain
   frequency     Frequency
   context       Context
-  notes         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   child         Child     @relation(fields: [childId], references: [id], onDelete: Cascade)

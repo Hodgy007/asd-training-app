@@ -7,7 +7,6 @@ import { z } from 'zod'
 const createChildSchema = z.object({
   name: z.string().min(1).max(100),
   dateOfBirth: z.string().refine((d) => !isNaN(Date.parse(d)), { message: 'Invalid date' }),
-  notes: z.string().max(2000).optional(),
 })
 
 export async function GET() {
@@ -51,13 +50,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.issues }, { status: 400 })
     }
 
-    const { name, dateOfBirth, notes } = parsed.data
+    const { name, dateOfBirth } = parsed.data
 
     const child = await prisma.child.create({
       data: {
         name,
         dateOfBirth: new Date(dateOfBirth),
-        notes,
         userId: session.user.id,
       },
     })

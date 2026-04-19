@@ -11,7 +11,6 @@ const observationSchema = z.object({
   domain: z.enum(['SOCIAL_COMMUNICATION', 'BEHAVIOUR_AND_PLAY', 'SENSORY_RESPONSES']),
   frequency: z.enum(['RARE', 'SOMETIMES', 'OFTEN']),
   context: z.enum(['HOME', 'NURSERY', 'OUTDOORS', 'OTHER']),
-  notes: z.string().max(2000).optional(),
 })
 
 export async function GET(_req: NextRequest, { params }: { params: { childId: string } }) {

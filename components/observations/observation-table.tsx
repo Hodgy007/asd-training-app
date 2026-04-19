@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Trash2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { DOMAIN_LABELS, FREQUENCY_LABELS, CONTEXT_LABELS } from '@/lib/constants'
 import { clsx } from 'clsx'
@@ -27,7 +27,6 @@ const FREQ_COLOUR: Record<string, string> = {
 
 export function ObservationTable({ observations, childId, onDeleted }: ObservationTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState<string | null>(null)
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this observation? This cannot be undone.')) return
@@ -51,19 +50,12 @@ export function ObservationTable({ observations, childId, onDeleted }: Observati
   return (
     <div className="space-y-2">
       {observations.map((obs) => {
-        const isExpanded = expanded === obs.id
         return (
           <div
             key={obs.id}
-            className={clsx(
-              'border rounded-xl overflow-hidden transition-all',
-              isExpanded ? 'border-primary-200 shadow-sm' : 'border-calm-200'
-            )}
+            className="border rounded-xl overflow-hidden border-calm-200"
           >
-            <div
-              className="flex items-center gap-3 p-3 cursor-pointer hover:bg-calm-50 transition-colors"
-              onClick={() => setExpanded(isExpanded ? null : obs.id)}
-            >
+            <div className="flex items-center gap-3 p-3">
               <div
                 className={`w-2 h-2 rounded-full flex-shrink-0 ${
                   obs.domain === 'SOCIAL_COMMUNICATION'
@@ -96,10 +88,7 @@ export function ObservationTable({ observations, childId, onDeleted }: Observati
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDelete(obs.id)
-                  }}
+                  onClick={() => handleDelete(obs.id)}
                   disabled={deletingId === obs.id}
                   className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                   title="Delete observation"
@@ -110,20 +99,8 @@ export function ObservationTable({ observations, childId, onDeleted }: Observati
                     <Trash2 className="h-4 w-4" />
                   )}
                 </button>
-                {isExpanded ? (
-                  <ChevronUp className="h-4 w-4 text-slate-300" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-slate-300" />
-                )}
               </div>
             </div>
-            {isExpanded && obs.notes && (
-              <div className="px-4 pb-3 bg-calm-50 border-t border-calm-100">
-                <p className="text-sm text-slate-600 pt-3">
-                  <strong className="text-slate-700">Notes:</strong> {obs.notes}
-                </p>
-              </div>
-            )}
           </div>
         )
       })}

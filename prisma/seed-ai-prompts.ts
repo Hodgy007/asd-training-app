@@ -203,7 +203,7 @@ const SEEDS: PromptSeed[] = [
       'NEVER provide a diagnosis. NEVER suggest a child has autism.',
       'Always end the RECOMMENDATIONS section with: "These observations are for discussion with your GP, health visitor, or SENCO. This is not a diagnosis."',
     ],
-    inputVariables: ['childName', 'age', 'practitionerNotes', 'observationCount', 'observationText'],
+    inputVariables: ['childName', 'age', 'observationCount', 'observationText'],
     responseFormat: `Format exactly:
 SUMMARY:
 [2-3 sentences]

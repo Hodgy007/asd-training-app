@@ -10,11 +10,11 @@ interface AddChildFormProps {
 
 export function AddChildForm({ onClose }: AddChildFormProps) {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '', dateOfBirth: '', notes: '' })
+  const [form, setForm] = useState({ name: '', dateOfBirth: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
@@ -111,20 +111,6 @@ export function AddChildForm({ onClose }: AddChildFormProps) {
               required
               max={today}
               min={minDateStr}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="notes" className="label">
-              Notes <span className="text-slate-400 text-xs font-normal">(optional)</span>
-            </label>
-            <textarea
-              id="notes"
-              name="notes"
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="input min-h-[80px] resize-none"
-              placeholder="Any relevant background information, e.g. premature birth, other diagnoses, family history..."
             />
           </div>
 

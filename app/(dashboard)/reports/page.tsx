@@ -11,7 +11,6 @@ interface Child {
   id: string
   name: string
   dateOfBirth: string
-  notes?: string | null
 }
 
 interface Observation {
@@ -21,7 +20,6 @@ interface Observation {
   domain: string
   frequency: string
   context: string
-  notes?: string | null
 }
 
 interface ChildReport {
@@ -189,11 +187,6 @@ export default function ReportsPage() {
                     <p className="text-xs text-slate-400">Ambitious about Autism</p>
                   </div>
                 </div>
-                {child.notes && (
-                  <p className="text-sm text-slate-600 mt-3 bg-calm-50 rounded-xl p-3">
-                    <strong>Practitioner notes:</strong> {child.notes}
-                  </p>
-                )}
               </div>
 
               {observations.length === 0 ? (
@@ -238,8 +231,7 @@ export default function ReportsPage() {
                                     <th className="pb-2 pr-4 font-medium">Date</th>
                                     <th className="pb-2 pr-4 font-medium">Behaviour</th>
                                     <th className="pb-2 pr-4 font-medium">Frequency</th>
-                                    <th className="pb-2 pr-4 font-medium">Context</th>
-                                    <th className="pb-2 font-medium">Notes</th>
+                                    <th className="pb-2 font-medium">Context</th>
                                   </tr>
                                 </thead>
                                 <tbody className={`divide-y divide-calm-100${obs.length > 0 ? ' animate-stagger' : ''}`}>
@@ -252,11 +244,8 @@ export default function ReportsPage() {
                                       <td className="py-2 pr-4 text-slate-500">
                                         {FREQUENCY_LABELS[o.frequency as keyof typeof FREQUENCY_LABELS]}
                                       </td>
-                                      <td className="py-2 pr-4 text-slate-500">
+                                      <td className="py-2 text-slate-500">
                                         {CONTEXT_LABELS[o.context as keyof typeof CONTEXT_LABELS]}
-                                      </td>
-                                      <td className="py-2 text-slate-400 text-xs max-w-xs truncate">
-                                        {o.notes || '—'}
                                       </td>
                                     </tr>
                                   ))}

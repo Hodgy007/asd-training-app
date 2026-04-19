@@ -775,7 +775,6 @@ async function main() {
       id: 'demo-child-jamie',
       name: 'Jamie Collins',
       dateOfBirth: new Date('2021-09-14'), // ~4.5 years old
-      notes: 'Jamie is a bright and curious child who loves trains and numbers. Has been attending nursery since age 2. Staff have noted some differences in social play and transitions.',
       userId: caregiver.id,
     },
   })
@@ -791,7 +790,6 @@ async function main() {
       domain: 'SOCIAL_COMMUNICATION' as const,
       frequency: 'OFTEN' as const,
       context: 'NURSERY' as const,
-      notes: 'During group story time Jamie rarely looked at the practitioner when spoken to directly. Focused on a toy train throughout.',
     },
     {
       childId: demoChild.id,
@@ -800,7 +798,6 @@ async function main() {
       domain: 'SOCIAL_COMMUNICATION' as const,
       frequency: 'OFTEN' as const,
       context: 'HOME' as const,
-      notes: 'When called from another room Jamie did not respond on first or second call. Responded on the third attempt after direct touch.',
     },
     {
       childId: demoChild.id,
@@ -809,7 +806,6 @@ async function main() {
       domain: 'SOCIAL_COMMUNICATION' as const,
       frequency: 'SOMETIMES' as const,
       context: 'OUTDOORS' as const,
-      notes: 'During a walk, a dog ran past. Jamie did not point to share the experience or look back to check I had seen it. No bid for shared attention.',
     },
     {
       childId: demoChild.id,
@@ -818,7 +814,6 @@ async function main() {
       domain: 'SOCIAL_COMMUNICATION' as const,
       frequency: 'OFTEN' as const,
       context: 'HOME' as const,
-      notes: 'Jamie frequently uses phrases from favourite programmes (e.g. "The doors are closing") in unrelated contexts. Does not appear to use these communicatively.',
     },
     {
       childId: demoChild.id,
@@ -827,7 +822,6 @@ async function main() {
       domain: 'SOCIAL_COMMUNICATION' as const,
       frequency: 'OFTEN' as const,
       context: 'NURSERY' as const,
-      notes: 'When peers tried to engage Jamie in role play, Jamie did not respond to their narrative. Continued own parallel play with trains.',
     },
     // Behaviour and play
     {
@@ -837,7 +831,6 @@ async function main() {
       domain: 'BEHAVIOUR_AND_PLAY' as const,
       frequency: 'OFTEN' as const,
       context: 'HOME' as const,
-      notes: 'Every evening Jamie lines up all toy trains in order of size on the windowsill. Becomes very distressed if the order is changed.',
     },
     {
       childId: demoChild.id,
@@ -846,7 +839,6 @@ async function main() {
       domain: 'BEHAVIOUR_AND_PLAY' as const,
       frequency: 'OFTEN' as const,
       context: 'HOME' as const,
-      notes: 'Bath time was moved 30 minutes earlier due to a family commitment. Jamie became extremely distressed (screaming, floor-dropping) for approximately 20 minutes.',
     },
     {
       childId: demoChild.id,
@@ -855,7 +847,6 @@ async function main() {
       domain: 'BEHAVIOUR_AND_PLAY' as const,
       frequency: 'OFTEN' as const,
       context: 'HOME' as const,
-      notes: 'When a favourite programme starts, Jamie flaps both hands rapidly for several seconds. Also occurs when discussing trains.',
     },
     {
       childId: demoChild.id,
@@ -864,7 +855,6 @@ async function main() {
       domain: 'BEHAVIOUR_AND_PLAY' as const,
       frequency: 'OFTEN' as const,
       context: 'NURSERY' as const,
-      notes: 'In free play Jamie does not engage in pretend scenarios. Prefers to sort and arrange objects. Does not engage with the role play corner.',
     },
     {
       childId: demoChild.id,
@@ -873,7 +863,6 @@ async function main() {
       domain: 'BEHAVIOUR_AND_PLAY' as const,
       frequency: 'OFTEN' as const,
       context: 'HOME' as const,
-      notes: 'Jamie will only eat from a specific blue bowl, sitting in the same chair. Refused to eat for 40 minutes when the bowl was in the dishwasher.',
     },
     // Sensory responses
     {
@@ -883,7 +872,6 @@ async function main() {
       domain: 'SENSORY_RESPONSES' as const,
       frequency: 'OFTEN' as const,
       context: 'OUTDOORS' as const,
-      notes: 'In a public toilet Jamie screamed and covered ears when the hand dryer activated. Remained distressed for 10 minutes after leaving.',
     },
     {
       childId: demoChild.id,
@@ -892,7 +880,6 @@ async function main() {
       domain: 'SENSORY_RESPONSES' as const,
       frequency: 'OFTEN' as const,
       context: 'HOME' as const,
-      notes: 'Diet is very restricted — smooth foods only. Strong gag response to any lumpy or mixed-texture food. Currently eating fewer than 10 foods.',
     },
     {
       childId: demoChild.id,
@@ -901,7 +888,6 @@ async function main() {
       domain: 'SENSORY_RESPONSES' as const,
       frequency: 'SOMETIMES' as const,
       context: 'HOME' as const,
-      notes: 'Jamie requests very tight hugs frequently and insists on wearing clothing a size too small. Appears calmer when wrapped tightly in a blanket.',
     },
     {
       childId: demoChild.id,
@@ -910,7 +896,6 @@ async function main() {
       domain: 'SENSORY_RESPONSES' as const,
       frequency: 'OFTEN' as const,
       context: 'HOME' as const,
-      notes: 'Spends up to 15 minutes each morning distressed by socks seams. Clothing labels have been removed from all garments. Will not wear jeans.',
     },
     {
       childId: demoChild.id,
@@ -919,7 +904,6 @@ async function main() {
       domain: 'SENSORY_RESPONSES' as const,
       frequency: 'SOMETIMES' as const,
       context: 'OUTDOORS' as const,
-      notes: 'Jamie fell from climbing frame and sustained a graze. No crying or apparent distress. Carried on playing. Noticed injury 20 minutes later.',
     },
   ]
 
