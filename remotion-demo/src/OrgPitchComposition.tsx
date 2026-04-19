@@ -26,14 +26,14 @@ export type Voiceover = {
 };
 
 const DURATIONS = {
-  hero: 150,
-  who: 240,
-  opportunity: 255,
-  training: 270,
-  internship: 270,
-  platform: 240,
-  partnership: 240,
-  cta: 240,
+  hero: 210,
+  who: 300,
+  opportunity: 315,
+  training: 330,
+  internship: 330,
+  platform: 300,
+  partnership: 300,
+  cta: 300,
 };
 
 export const OrgPitchComposition: React.FC<{
