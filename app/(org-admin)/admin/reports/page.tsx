@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { BarChart3, RefreshCw, ChevronDown, ChevronUp, Users, FolderOpen, FileText, Download, ChevronRight, FileCheck, FileDown } from 'lucide-react'
+import { BarChart3, RefreshCw, ChevronDown, ChevronUp, Users, FolderOpen, FileText, Download, ChevronRight, FileCheck, FileDown, Briefcase } from 'lucide-react'
 import { clsx } from 'clsx'
 import { GATSBY_BENCHMARK_CODES, GATSBY_BENCHMARKS } from '@/lib/gatsby-benchmarks'
 
@@ -37,12 +37,20 @@ interface AdvisorStats {
   recentLast30Days: number
 }
 
+interface JobStats {
+  byStatus: Record<string, number>
+  publishedLast30: number
+  assignmentsTotal: number
+  assignmentsLast30: number
+}
+
 interface ReportData {
   totalUsers: number
   modules: ModuleStat[]
   users: UserSummary[]
   cvStats?: CvStats
   advisorStats?: AdvisorStats
+  jobStats?: JobStats
 }
 
 // Library report types
@@ -610,6 +618,49 @@ export default function OrgReportsPage() {
         <div className="card text-center py-10 text-slate-400 dark:text-slate-500">
           <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-30" />
           No careers advisor data available.
+        </div>
+      )}
+
+      {/* ── Job Openings Reports ── */}
+      <div className="pt-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <Briefcase className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+          Job Openings
+        </h2>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+          Published jobs and assignments for your organisation.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-10 text-slate-400">
+          <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2" />
+          Loading job reports...
+        </div>
+      ) : data?.jobStats ? (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-stagger">
+          <div className="card text-center">
+            <Briefcase className="h-5 w-5 text-primary-500 mx-auto mb-1" />
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.jobStats.publishedLast30}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Published (last 30 days)</p>
+          </div>
+          <div className="card text-center">
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.jobStats.assignmentsTotal}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Total assignments</p>
+          </div>
+          <div className="card text-center">
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.jobStats.assignmentsLast30}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Assignments (last 30 days)</p>
+          </div>
+          <div className="card text-center">
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.jobStats.byStatus['PUBLISHED'] ?? 0}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Currently published</p>
+          </div>
+        </div>
+      ) : (
+        <div className="card text-center py-10 text-slate-400 dark:text-slate-500">
+          <Briefcase className="h-8 w-8 mx-auto mb-2 opacity-30" />
+          No job openings data available.
         </div>
       )}
     </div>

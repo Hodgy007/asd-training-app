@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { getJobStats } from '@/lib/jobs'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -116,5 +117,8 @@ export async function GET() {
     prisma.surveyResponse.count(),
   ])
 
-  return NextResponse.json({ report, moduleMeta, cvStats, advisorStats, workshopCount, downloadCount, surveyResponseCount })
+  // ── Job Openings stats ──
+  const jobStats = await getJobStats()
+
+  return NextResponse.json({ report, moduleMeta, cvStats, advisorStats, workshopCount, downloadCount, surveyResponseCount, jobStats })
 }

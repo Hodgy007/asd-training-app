@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { canManageChildOrg, getAllOrgIds } from '@/lib/org-hierarchy'
+import { getJobStats } from '@/lib/jobs'
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -128,6 +129,9 @@ export async function GET(req: NextRequest) {
     prisma.surveyResponse.count({ where: { userId: { in: orgUserIds } } }),
   ])
 
+  // ── Job Openings stats (scoped to org) ──
+  const jobStats = await getJobStats(orgId)
+
   return NextResponse.json({
     totalUsers: users.length,
     modules: moduleStats,
@@ -141,5 +145,6 @@ export async function GET(req: NextRequest) {
     workshopCount,
     downloadCount,
     surveyResponseCount,
+    jobStats,
   })
 }

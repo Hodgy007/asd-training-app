@@ -113,3 +113,40 @@ export async function getJobForUser(jobId: string, user: JobVisibilityUser) {
 }
 
 export type JobWithRelations = Awaited<ReturnType<typeof getJobForUser>>
+
+/**
+ * Aggregate stats for reports. If `orgId` is provided, scopes jobs to those
+ * that target the org (or have no targeting) and assignments to users in that org.
+ */
+export async function getJobStats(orgId?: string | null) {
+  const since = new Date(Date.now() - 30 * 24 * 3600 * 1000)
+  const baseWhere: Prisma.JobOpeningWhereInput = orgId
+    ? { OR: [{ targetOrgIds: { isEmpty: true } }, { targetOrgIds: { has: orgId } }] }
+    : {}
+
+  const assignmentWhere: Prisma.JobAssignmentWhereInput = orgId
+    ? { user: { organisationId: orgId } }
+    : {}
+
+  const [byStatus, publishedLast30, assignmentsTotal, assignmentsLast30] = await Promise.all([
+    prisma.jobOpening.groupBy({
+      by: ['status'],
+      where: baseWhere,
+      _count: { _all: true },
+    }),
+    prisma.jobOpening.count({
+      where: { ...baseWhere, status: 'PUBLISHED', createdAt: { gte: since } },
+    }),
+    prisma.jobAssignment.count({ where: assignmentWhere }),
+    prisma.jobAssignment.count({
+      where: { ...assignmentWhere, createdAt: { gte: since } },
+    }),
+  ])
+
+  return {
+    byStatus: Object.fromEntries(byStatus.map((r) => [r.status, r._count._all])),
+    publishedLast30,
+    assignmentsTotal,
+    assignmentsLast30,
+  }
+}
