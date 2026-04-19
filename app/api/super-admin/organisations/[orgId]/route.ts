@@ -30,6 +30,8 @@ const updateSchema = z.object({
   careersAdvisorEnabled: z.boolean().optional(),
   organisationType: z.enum(['SCHOOL', 'COLLEGE', 'ACADEMY', 'UNIVERSITY', 'EMPLOYER', 'EDUCATION', 'BUSINESS']).optional(),
   isParentOrg: z.boolean().optional(),
+  observationLawfulBasis: z.enum(['CONSENT', 'PUBLIC_TASK', 'LEGITIMATE_INTERESTS']).optional(),
+  observationRetentionDays: z.number().int().min(1).max(10000).optional(),
 })
 
 export async function GET(

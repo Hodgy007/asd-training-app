@@ -72,6 +72,8 @@ interface OrgDetail {
   assignedSurveyIds: string[]
   cvBuilderEnabled: boolean
   careersAdvisorEnabled: boolean
+  observationLawfulBasis: 'CONSENT' | 'PUBLIC_TASK' | 'LEGITIMATE_INTERESTS'
+  observationRetentionDays: number
   organisationType: string
   childOrgs: ChildOrgSummary[]
   parentOrg: ParentOrgSummary | null
@@ -156,6 +158,8 @@ export default function OrgDetailPage() {
   const [editCareersAdvisor, setEditCareersAdvisor] = useState(true)
   const [editOrgType, setEditOrgType] = useState<string>('SCHOOL')
   const [editIsParentOrg, setEditIsParentOrg] = useState(false)
+  const [editLawfulBasis, setEditLawfulBasis] = useState<'CONSENT' | 'PUBLIC_TASK' | 'LEGITIMATE_INTERESTS'>('CONSENT')
+  const [editRetentionDays, setEditRetentionDays] = useState(1095)
   const [saving, setSaving] = useState(false)
 
   // Add org admin form
@@ -203,6 +207,8 @@ export default function OrgDetailPage() {
         setEditCareersAdvisor(data.careersAdvisorEnabled ?? true)
         setEditOrgType(data.organisationType ?? 'SCHOOL')
         setEditIsParentOrg(data.isParentOrg ?? false)
+        setEditLawfulBasis(data.observationLawfulBasis ?? 'CONSENT')
+        setEditRetentionDays(data.observationRetentionDays ?? 1095)
       }
     } finally {
       setLoading(false)
@@ -288,6 +294,8 @@ export default function OrgDetailPage() {
           careersAdvisorEnabled: editCareersAdvisor,
           organisationType: editOrgType,
           isParentOrg: editIsParentOrg,
+          observationLawfulBasis: editLawfulBasis,
+          observationRetentionDays: editRetentionDays,
         }),
       })
       if (res.ok) {
@@ -573,6 +581,40 @@ export default function OrgDetailPage() {
               />
               <span className="text-sm text-slate-700 dark:text-slate-300">Careers Advisor</span>
             </label>
+          </div>
+
+          {/* Observations — Data Protection */}
+          <div>
+            <label className="label mb-2 block">Child Observations — Data Protection</label>
+            <p className="text-xs text-slate-400 mb-3">
+              Lawful basis under UK GDPR Art. 6 and the retention period for observation records. Used in the DPIA and by the nightly retention sweep.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Lawful basis</label>
+                <select
+                  value={editLawfulBasis}
+                  onChange={(e) => setEditLawfulBasis(e.target.value as 'CONSENT' | 'PUBLIC_TASK' | 'LEGITIMATE_INTERESTS')}
+                  className="input w-full"
+                >
+                  <option value="CONSENT">Consent (parental)</option>
+                  <option value="PUBLIC_TASK">Public task (statutory duty)</option>
+                  <option value="LEGITIMATE_INTERESTS">Legitimate interests</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Retention period (days)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10000}
+                  value={editRetentionDays}
+                  onChange={(e) => setEditRetentionDays(parseInt(e.target.value || '0', 10) || 0)}
+                  className="input w-full"
+                />
+                <p className="text-xs text-slate-400 mt-1">Default 1095 (3 years). Observations older than this are deleted nightly.</p>
+              </div>
+            </div>
           </div>
 
           {/* Training Programs */}

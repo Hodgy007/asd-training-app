@@ -1,16 +1,8 @@
 import { runPrompt } from '@/lib/ai-runner'
-import { differenceInYears, differenceInMonths } from 'date-fns'
+import { pseudonymiseChildForAi } from '@/lib/pseudonymise'
 
 const DISCLAIMER =
   'These observations are for discussion with your GP, health visitor, or SENCO. This is not a diagnosis.'
-
-function getAgeString(dateOfBirth: Date): string {
-  const years = differenceInYears(new Date(), dateOfBirth)
-  const months = differenceInMonths(new Date(), dateOfBirth) % 12
-  if (years === 0) return `${months} months`
-  if (months === 0) return `${years} years`
-  return `${years} years and ${months} months`
-}
 
 function formatObservationsForPrompt(
   observations: Array<{
@@ -43,12 +35,15 @@ export async function generateObservationSummary(
     frequency: string
     context: string
   }>,
-  childName: string,
-  dateOfBirth: Date,
+  child: { id: string; dateOfBirth: Date },
 ): Promise<string> {
-  const age = getAgeString(dateOfBirth)
+  const pseudo = pseudonymiseChildForAi(child)
   const observationText = formatObservationsForPrompt(observations)
-  return runPrompt('observations.summary', { childName, age, observationText })
+  return runPrompt('observations.summary', {
+    childName: pseudo.code,
+    age: pseudo.ageBucket,
+    observationText,
+  })
 }
 
 export async function detectPatterns(
@@ -69,7 +64,7 @@ export async function generateActionGuidance(patterns: string): Promise<string> 
 }
 
 export async function generateInsightReport(
-  child: { name: string; dateOfBirth: Date },
+  child: { id: string; dateOfBirth: Date },
   observations: Array<{
     date: Date
     behaviourType: string
@@ -78,12 +73,12 @@ export async function generateInsightReport(
     context: string
   }>,
 ): Promise<{ summary: string; patterns: string; recommendations: string }> {
-  const age = getAgeString(child.dateOfBirth)
+  const pseudo = pseudonymiseChildForAi(child)
   const observationText = formatObservationsForPrompt(observations)
 
   const text = await runPrompt('observations.report', {
-    childName: child.name,
-    age,
+    childName: pseudo.code,
+    age: pseudo.ageBucket,
     observationCount: String(observations.length),
     observationText,
   })
