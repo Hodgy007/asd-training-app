@@ -6,7 +6,7 @@ import { generateInsightReport } from '@/lib/gemini'
 import { subDays } from 'date-fns'
 import { logObservationAccess, ipFromHeaders } from '@/lib/observation-audit'
 
-export async function GET(req: NextRequest, { params }: { params: { childId: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (session.user.role !== 'CAREGIVER') {
@@ -23,15 +23,7 @@ export async function GET(req: NextRequest, { params }: { params: { childId: str
     orderBy: { generatedAt: 'desc' },
   })
 
-  if (insight) {
-    await logObservationAccess({
-      childId: params.childId,
-      actorId: session.user.id,
-      action: 'AI_INSIGHT_READ',
-      metadata: { insightId: insight.id },
-      ipAddress: ipFromHeaders(req.headers),
-    })
-  }
+  // Owner reads of their own AI report are not audited. Generation (POST) is.
 
   return NextResponse.json(insight)
 }

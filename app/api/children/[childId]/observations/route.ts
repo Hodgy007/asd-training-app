@@ -14,7 +14,7 @@ const observationSchema = z.object({
   notes: z.string().max(2000).optional(),
 })
 
-export async function GET(req: NextRequest, { params }: { params: { childId: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (session.user.role !== 'CAREGIVER') {
@@ -32,13 +32,9 @@ export async function GET(req: NextRequest, { params }: { params: { childId: str
     orderBy: { date: 'desc' },
   })
 
-  await logObservationAccess({
-    childId: params.childId,
-    actorId: session.user.id,
-    action: 'OBSERVATION_READ',
-    metadata: { count: observations.length },
-    ipAddress: ipFromHeaders(req.headers),
-  })
+  // Owner reads are not audited — every GET here is by definition the caregiver
+  // who owns the child. If ORG_ADMIN drill-down or shared-child access is added
+  // later, log *those* non-owner reads specifically.
 
   return NextResponse.json(observations)
 }

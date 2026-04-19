@@ -4,12 +4,17 @@ import type { ObservationAccessAction } from '@prisma/client'
 /**
  * Record an access event against a child's observation record.
  *
- * Every read, create, update, delete, AI-generation and export action on a
- * child's observations must land here. The DPIA commits to a tamper-evident
- * audit trail of who accessed what, when.
+ * Logged: CREATE, UPDATE, DELETE, AI_INSIGHT_GENERATE, EXPORT.
+ *
+ * NOT logged: owner-reads (OBSERVATION_READ / AI_INSIGHT_READ where the actor
+ * is the caregiver who owns the child). The current model only permits the
+ * owner to read, so every read is self — logging them is noise. If non-owner
+ * read paths are added later (ORG_ADMIN drill-down, shared-child access),
+ * log those reads specifically. The enum values remain in the schema so no
+ * migration is needed when that happens.
  *
  * Failures are swallowed (logged only) — an audit write must never block a
- * user-initiated action. A follow-up alerting job covers missed writes.
+ * user-initiated action.
  */
 export async function logObservationAccess(params: {
   childId: string
