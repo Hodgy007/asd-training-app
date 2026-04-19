@@ -1,6 +1,7 @@
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { fontStack, Theme } from "../../theme";
 import { SceneHeader } from "./shell";
+import { SceneVoiceover } from "./SceneVoiceover";
 
 const STRENGTHS = [
   "Exceptional focus",
@@ -10,7 +11,11 @@ const STRENGTHS = [
   "Pattern recognition",
 ];
 
-export const SceneOrgOpportunity: React.FC<{ theme: Theme }> = ({ theme }) => {
+export const SceneOrgOpportunity: React.FC<{ theme: Theme; voiceoverSrc?: string; durationInFrames: number }> = ({
+  theme,
+  voiceoverSrc,
+  durationInFrames,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -131,6 +136,7 @@ export const SceneOrgOpportunity: React.FC<{ theme: Theme }> = ({ theme }) => {
           With the right support, autistic employees thrive.
         </div>
       </div>
+      <SceneVoiceover src={voiceoverSrc} durationInFrames={durationInFrames} />
     </AbsoluteFill>
   );
 };

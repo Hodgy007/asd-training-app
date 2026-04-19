@@ -8,8 +8,13 @@ import {
   useVideoConfig,
 } from "remotion";
 import { fontStack, Theme } from "../../theme";
+import { SceneVoiceover } from "./SceneVoiceover";
 
-export const SceneOrgHero: React.FC<{ theme: Theme }> = ({ theme }) => {
+export const SceneOrgHero: React.FC<{ theme: Theme; voiceoverSrc?: string; durationInFrames: number }> = ({
+  theme,
+  voiceoverSrc,
+  durationInFrames,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -103,6 +108,7 @@ export const SceneOrgHero: React.FC<{ theme: Theme }> = ({ theme }) => {
           The UK&apos;s leading charity for autistic children, young people and their families.
         </div>
       </div>
+      <SceneVoiceover src={voiceoverSrc} durationInFrames={durationInFrames} />
     </AbsoluteFill>
   );
 };

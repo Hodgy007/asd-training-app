@@ -2,6 +2,7 @@ import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } fr
 import { IconCheck } from "../../components/Icons";
 import { fontStack, Theme } from "../../theme";
 import { SceneHeader } from "./shell";
+import { SceneVoiceover } from "./SceneVoiceover";
 
 const JOURNEY = [
   "Placement matching",
@@ -18,7 +19,11 @@ const OUTCOMES = [
   { label: "Real careers", colorKey: "success" as const },
 ];
 
-export const SceneOrgInternship: React.FC<{ theme: Theme }> = ({ theme }) => {
+export const SceneOrgInternship: React.FC<{ theme: Theme; voiceoverSrc?: string; durationInFrames: number }> = ({
+  theme,
+  voiceoverSrc,
+  durationInFrames,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -194,6 +199,7 @@ export const SceneOrgInternship: React.FC<{ theme: Theme }> = ({ theme }) => {
           </div>
         </div>
       </div>
+      <SceneVoiceover src={voiceoverSrc} durationInFrames={durationInFrames} />
     </AbsoluteFill>
   );
 };

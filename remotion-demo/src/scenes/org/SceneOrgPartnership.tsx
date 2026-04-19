@@ -7,6 +7,7 @@ import {
 } from "../../components/Icons";
 import { fontStack, Theme } from "../../theme";
 import { SceneHeader, useCardAnim } from "./shell";
+import { SceneVoiceover } from "./SceneVoiceover";
 
 type Benefit = {
   Icon: React.FC<{ size?: number; color?: string }>;
@@ -42,7 +43,11 @@ const BENEFITS: Benefit[] = [
   },
 ];
 
-export const SceneOrgPartnership: React.FC<{ theme: Theme }> = ({ theme }) => {
+export const SceneOrgPartnership: React.FC<{ theme: Theme; voiceoverSrc?: string; durationInFrames: number }> = ({
+  theme,
+  voiceoverSrc,
+  durationInFrames,
+}) => {
   const anims = [
     useCardAnim(0.4, 1.6),
     useCardAnim(0.7, 1.9),
@@ -126,6 +131,7 @@ export const SceneOrgPartnership: React.FC<{ theme: Theme }> = ({ theme }) => {
           );
         })}
       </div>
+      <SceneVoiceover src={voiceoverSrc} durationInFrames={durationInFrames} />
     </AbsoluteFill>
   );
 };

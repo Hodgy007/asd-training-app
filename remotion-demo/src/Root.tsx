@@ -1,6 +1,6 @@
 import { Composition } from "remotion";
 import { DemoComposition } from "./Composition";
-import { OrgPitchComposition } from "./OrgPitchComposition";
+import { DEFAULT_VOICEOVER, OrgPitchComposition } from "./OrgPitchComposition";
 import { aaaDark, aaaLight } from "./theme";
 import "./index.css";
 
@@ -22,7 +22,7 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
-        defaultProps={{ theme: aaaDark }}
+        defaultProps={{ theme: aaaDark, voiceover: undefined }}
       />
       <Composition
         id="OrgPitchLight"
@@ -31,7 +31,25 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
-        defaultProps={{ theme: aaaLight }}
+        defaultProps={{ theme: aaaLight, voiceover: undefined }}
+      />
+      <Composition
+        id="OrgPitchDarkVO"
+        component={OrgPitchComposition}
+        durationInFrames={1800}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{ theme: aaaDark, voiceover: DEFAULT_VOICEOVER }}
+      />
+      <Composition
+        id="OrgPitchLightVO"
+        component={OrgPitchComposition}
+        durationInFrames={1800}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{ theme: aaaLight, voiceover: DEFAULT_VOICEOVER }}
       />
     </>
   );
