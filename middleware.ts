@@ -105,7 +105,7 @@ export async function middleware(req: NextRequest) {
     const previewPaths = ['/training', '/careers']
     const isPreview = (role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE') && previewPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
     if (!isPreview) {
-      const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/children', '/reports', '/settings', '/guide', '/careers-advisor', '/activity']
+      const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/children', '/reports', '/settings', '/guide', '/careers-advisor', '/activity', '/students']
       if (leafOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
         return NextResponse.redirect(new URL(homeForRole(role), req.url))
       }
@@ -114,6 +114,11 @@ export async function middleware(req: NextRequest) {
 
   // /children/*, /reports/* and /activity — CAREGIVER only
   if ((pathname.startsWith('/children') || pathname.startsWith('/reports') || pathname.startsWith('/activity')) && role !== 'CAREGIVER') {
+    return NextResponse.redirect(new URL(homeForRole(role), req.url))
+  }
+
+  // /students/* — CAREER_DEV_OFFICER only (within leaf roles)
+  if (pathname.startsWith('/students') && role !== 'CAREER_DEV_OFFICER') {
     return NextResponse.redirect(new URL(homeForRole(role), req.url))
   }
 

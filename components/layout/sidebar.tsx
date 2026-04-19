@@ -17,6 +17,7 @@ import {
   FileText,
   Compass,
   Shield,
+  BarChart3,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
@@ -55,6 +56,12 @@ function getNavItems(
     }
     if (careersAdvisorEnabled) {
       items.push({ href: '/careers-advisor', label: 'Careers Advisor', icon: Compass })
+    }
+    if (role === 'CAREER_DEV_OFFICER') {
+      items.push(
+        { href: '/students', label: 'My Students', icon: Users },
+        { href: '/students/reports', label: 'Student Reports', icon: BarChart3 },
+      )
     }
   }
 

@@ -132,6 +132,14 @@ export function canAccessCaregiving(session: Session | null): boolean {
   return hasRole(session, 'CAREGIVER')
 }
 
+/** Leaf roles that a CAREER_DEV_OFFICER manages (students). */
+export const CDO_MANAGED_ROLES: Role[] = ['STUDENT', 'INTERN', 'EMPLOYEE']
+
+/** Returns true if the session is a CAREER_DEV_OFFICER (can manage students). */
+export function canManageStudents(session: Session | null): boolean {
+  return hasRole(session, 'CAREER_DEV_OFFICER')
+}
+
 /** Roles that can create and manage virtual classroom sessions */
 export function canCreateSessions(session: Session | null): boolean {
   if (!session?.user?.role) return false
