@@ -51,10 +51,11 @@ export function NotificationsBell({ iconClassName }: NotificationsBellProps) {
       await fetch('/api/notifications', { method: 'POST' })
       setData((prev) => {
         if (!prev) return prev
+        const forYou = prev.sections.forYou.map((item) => ({ ...item, isNew: false }))
         const whatsNew = prev.sections.whatsNew.map((item) => ({ ...item, isNew: false }))
         return {
-          count: prev.sections.forYou.length,
-          sections: { forYou: prev.sections.forYou, whatsNew },
+          count: 0,
+          sections: { forYou, whatsNew },
         }
       })
     } catch {

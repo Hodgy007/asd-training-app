@@ -84,7 +84,7 @@ export async function getNotifications(session: Session): Promise<NotificationsP
         },
       },
     },
-    select: { id: true, title: true, scheduledAt: true },
+    select: { id: true, title: true, scheduledAt: true, createdAt: true },
     orderBy: { scheduledAt: 'asc' },
     take: SECTION_CAP,
   })
@@ -100,8 +100,8 @@ export async function getNotifications(session: Session): Promise<NotificationsP
       minute: '2-digit',
     }),
     href: '/sessions',
-    createdAt: s.scheduledAt,
-    isNew: true,
+    createdAt: s.createdAt,
+    isNew: s.createdAt > lastOpenedAt,
   }))
 
   // ── New training modules (informational, 14-day window) ────────────────
@@ -191,8 +191,8 @@ export async function getNotifications(session: Session): Promise<NotificationsP
     .slice(0, SECTION_CAP)
 
   const count =
-    surveyItems.length +
-    workshopItems.length +
+    surveyItems.filter((item) => item.isNew).length +
+    workshopItems.filter((item) => item.isNew).length +
     whatsNew.filter((item) => item.isNew).length
 
   return { count, sections: { forYou, whatsNew } }
