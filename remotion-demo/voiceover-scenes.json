@@ -1,0 +1,52 @@
+{
+  "name": "orgpitch",
+  "voice": "Xb7hH8MSUJpSbSDYk0k2",
+  "character": "narrator",
+  "model": "eleven_multilingual_v2",
+  "scenes": [
+    {
+      "id": "scene1-hero",
+      "text": "Ambitious about Autism. Empowering employers. Changing lives.",
+      "duration": 5.0,
+      "character": "calm"
+    },
+    {
+      "id": "scene2-who",
+      "text": "For over twenty-five years, we've championed autistic people across the UK, through education, employment, and national advocacy.",
+      "duration": 8.0
+    },
+    {
+      "id": "scene3-opportunity",
+      "text": "Only twenty-two percent of autistic adults are in full-time employment. With the right support, they thrive.",
+      "duration": 8.5,
+      "character": "dramatic"
+    },
+    {
+      "id": "scene4-training",
+      "text": "Our CPD-accredited training prepares your team for inclusive hiring: awareness, interviewing, and onboarding done right.",
+      "duration": 9.0
+    },
+    {
+      "id": "scene5-internship",
+      "text": "Our guided internship programme gives autistic young people real placements, with matched mentors, structured check-ins, and job coaching every step of the way.",
+      "duration": 9.0
+    },
+    {
+      "id": "scene6-platform",
+      "text": "Our digital platform tracks training, captures feedback, and delivers live dashboards. Measure impact. Don't guess at it.",
+      "duration": 8.0,
+      "character": "expert"
+    },
+    {
+      "id": "scene7-partnership",
+      "text": "Partner with us for a dedicated manager, accredited training, ESG evidence, and a national network already driving real change.",
+      "duration": 8.0
+    },
+    {
+      "id": "scene8-cta",
+      "text": "Build a truly inclusive workplace. Visit ambitious about autism dot org dot UK to start your partnership today.",
+      "duration": 8.0,
+      "character": "calm"
+    }
+  ]
+}
