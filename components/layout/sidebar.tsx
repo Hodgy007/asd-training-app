@@ -16,6 +16,7 @@ import {
   FolderOpen,
   FileText,
   Compass,
+  Shield,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
@@ -43,6 +44,7 @@ function getNavItems(
     }
     items.push(
       { href: '/children', label: 'Child Observations', icon: Users },
+      { href: '/activity', label: 'My Activity', icon: Shield },
     )
   } else if (role === 'CAREER_DEV_OFFICER' || role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
     for (const program of programs) {

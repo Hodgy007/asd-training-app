@@ -13,6 +13,8 @@ import {
   Calendar,
   FileText,
   Trash2,
+  Download,
+  Info,
 } from 'lucide-react'
 import { differenceInYears, differenceInMonths, format } from 'date-fns'
 import { ObservationForm } from '@/components/children/observation-form'
@@ -199,6 +201,13 @@ export default function ChildPage() {
             <Plus className="h-4 w-4" />
             Log observation
           </button>
+          <a
+            href={`/api/children/${childId}/export`}
+            className="p-2 rounded-xl text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+            title="Download this child's full record (JSON)"
+          >
+            <Download className="h-4 w-4" />
+          </a>
           <button
             onClick={handleDelete}
             disabled={deleting}
@@ -209,6 +218,21 @@ export default function ChildPage() {
           </button>
         </div>
       </div>
+
+      {ageYears >= 13 && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 p-4 flex items-start gap-3">
+          <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-amber-900 dark:text-amber-200">
+            <p className="font-semibold mb-1">This child is 13 or older</p>
+            <p>
+              Under UK GDPR, young people aged 13 and over can exercise their own data-protection
+              rights (access, rectification, erasure). Before continuing to record observations,
+              confirm that {child.name} is aware their data is being kept and has been offered a
+              copy. You can download the full record with the ⬇ button above.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 bg-calm-100 p-1 rounded-xl overflow-x-auto">
