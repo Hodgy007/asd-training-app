@@ -70,6 +70,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   const [noteSaving, setNoteSaving] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
   const [showTranscript, setShowTranscript] = useState(false)
+  const [showContent, setShowContent] = useState(true)
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -95,6 +96,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
       })
       .then((data) => {
         setLesson(data)
+        setShowContent(data.type !== 'VIDEO')
         setLoading(false)
         // Fetch interaction data for interactive blocks
         if (data.interactiveBlocks && Array.isArray(data.interactiveBlocks) && data.interactiveBlocks.length > 0) {
@@ -301,11 +303,22 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
 
       {/* Lesson content */}
       <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-900">Lesson Content</h2>
-          <TextToSpeech contentRef={contentRef} />
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <button
+            onClick={() => setShowContent((v) => !v)}
+            className="flex items-center gap-2 text-left flex-1 min-w-0"
+            aria-expanded={showContent}
+          >
+            {showContent ? (
+              <ChevronDown className="h-4 w-4 text-slate-500 flex-shrink-0" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
+            )}
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Lesson Content</h2>
+          </button>
+          {showContent && <TextToSpeech contentRef={contentRef} />}
         </div>
-        <div ref={contentRef}>
+        <div ref={contentRef} hidden={!showContent}>
           {contentSegments.map((segment, idx) => {
             if (segment.type === 'html') {
               return (

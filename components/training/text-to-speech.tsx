@@ -13,16 +13,65 @@ const TTS_SELECTORS = 'p, li, h2, h3, td'
 const TTS_HIGHLIGHT_CLASS = 'tts-reading'
 const LS_KEY = 'tts-enabled'
 
+// Preference list — the first match wins. These are the most natural-sounding
+// voices commonly available on Windows/macOS/Chrome. Falls back to any
+// en-GB/en-US voice, then to the browser default.
+const VOICE_PREFERENCES = [
+  // Windows — neural/online voices (much better than "Microsoft David")
+  'Microsoft Libby Online',
+  'Microsoft Sonia Online',
+  'Microsoft Ryan Online',
+  'Microsoft Aria Online',
+  'Microsoft Jenny Online',
+  // macOS / iOS
+  'Samantha',
+  'Daniel',
+  'Karen',
+  'Moira',
+  // Chrome / Android built-in
+  'Google UK English Female',
+  'Google UK English Male',
+  'Google US English',
+]
+
+function pickBestVoice(): SpeechSynthesisVoice | null {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null
+  const voices = window.speechSynthesis.getVoices()
+  if (!voices.length) return null
+
+  for (const pref of VOICE_PREFERENCES) {
+    const match = voices.find((v) => v.name === pref || v.name.includes(pref))
+    if (match) return match
+  }
+  // Prefer en-GB over en-US; prefer non-local (cloud) voices as they tend to sound better
+  const enGb = voices.filter((v) => v.lang?.startsWith('en-GB'))
+  const enUs = voices.filter((v) => v.lang?.startsWith('en-US'))
+  const en = [...enGb, ...enUs]
+  const cloud = en.find((v) => !v.localService)
+  if (cloud) return cloud
+  return en[0] ?? voices[0] ?? null
+}
+
 export function TextToSpeech({ contentRef }: TextToSpeechProps) {
   const [state, setState] = useState<TTSState>('idle')
   const [supported, setSupported] = useState(false)
   const currentIndexRef = useRef(0)
   const elementsRef = useRef<Element[]>([])
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
+  const voiceRef = useRef<SpeechSynthesisVoice | null>(null)
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      setSupported(true)
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    setSupported(true)
+
+    // Voice list may load asynchronously (especially on Chrome). Pick on ready.
+    const loadVoice = () => {
+      voiceRef.current = pickBestVoice()
+    }
+    loadVoice()
+    window.speechSynthesis.addEventListener('voiceschanged', loadVoice)
+    return () => {
+      window.speechSynthesis.removeEventListener('voiceschanged', loadVoice)
     }
   }, [])
 
@@ -65,7 +114,13 @@ export function TextToSpeech({ contentRef }: TextToSpeechProps) {
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 
     const utterance = new SpeechSynthesisUtterance(text)
+    if (voiceRef.current) {
+      utterance.voice = voiceRef.current
+      utterance.lang = voiceRef.current.lang
+    }
     utterance.rate = 0.95
+    utterance.pitch = 1
+    utterance.volume = 1
     utterance.onend = () => {
       currentIndexRef.current = index + 1
       speakElement(index + 1)
