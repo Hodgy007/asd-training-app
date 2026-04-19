@@ -4,8 +4,9 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateInsightReport } from '@/lib/gemini'
 import { subDays } from 'date-fns'
+import { logObservationAccess, ipFromHeaders } from '@/lib/observation-audit'
 
-export async function GET(_req: NextRequest, { params }: { params: { childId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (session.user.role !== 'CAREGIVER') {
@@ -22,10 +23,20 @@ export async function GET(_req: NextRequest, { params }: { params: { childId: st
     orderBy: { generatedAt: 'desc' },
   })
 
+  if (insight) {
+    await logObservationAccess({
+      childId: params.childId,
+      actorId: session.user.id,
+      action: 'AI_INSIGHT_READ',
+      metadata: { insightId: insight.id },
+      ipAddress: ipFromHeaders(req.headers),
+    })
+  }
+
   return NextResponse.json(insight)
 }
 
-export async function POST(_req: NextRequest, { params }: { params: { childId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (session.user.role !== 'CAREGIVER') {
@@ -66,6 +77,14 @@ export async function POST(_req: NextRequest, { params }: { params: { childId: s
         disclaimer:
           'This tool supports observation and pattern recognition only. It is not a diagnostic tool. Always discuss concerns with a qualified healthcare professional such as your GP, health visitor, or SENCO.',
       },
+    })
+
+    await logObservationAccess({
+      childId: params.childId,
+      actorId: session.user.id,
+      action: 'AI_INSIGHT_GENERATE',
+      metadata: { insightId: insight.id, observationCount: observations.length },
+      ipAddress: ipFromHeaders(req.headers),
     })
 
     return NextResponse.json(insight, { status: 201 })

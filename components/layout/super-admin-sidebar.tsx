@@ -21,6 +21,7 @@ import {
   FolderOpen,
   UsersRound,
   Sparkles,
+  Shield,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/super-admin/ai-prompts', label: 'AI Prompts', icon: Sparkles, permission: CHARITY_PERMISSIONS.MANAGE_AI_PROMPTS },
   { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone, permission: CHARITY_PERMISSIONS.MANAGE_ANNOUNCEMENTS },
+  { href: '/super-admin/audit', label: 'Audit Log', icon: Shield, charityAdminOnly: true },
   { href: '/super-admin/cohorts', label: 'Cohorts', icon: UsersRound, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
   { href: '/super-admin/library', label: 'Document Library', icon: FolderOpen, permission: CHARITY_PERMISSIONS.MANAGE_LIBRARY },
   { href: '/super-admin/impact', label: 'Impact & Reach', icon: TrendingUp, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },

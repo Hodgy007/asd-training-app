@@ -96,6 +96,8 @@ model Organisation {
   allowedRoles      String[]
   cvBuilderEnabled      Boolean  @default(true)
   careersAdvisorEnabled Boolean  @default(true)
+  observationLawfulBasis   ObservationLawfulBasis @default(CONSENT)
+  observationRetentionDays Int                    @default(1095)
   logoUrl               String?
   contactName       String?
   contactEmail      String?
@@ -148,12 +150,16 @@ model Child {
   name         String
   dateOfBirth  DateTime
   notes        String?
+  consentObtainedAt      DateTime?
+  consentObtainedBy      String?
+  consentDocumentedNote  String?   @db.Text
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   userId       String
   aiInsights   AiInsight[]
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   observations Observation[]
+  accessLogs   ObservationAccessLog[]
 }
 
 model Observation {
@@ -189,6 +195,37 @@ model TrainingProgress {
   @@unique([userId, moduleId, lessonId])
   @@index([userId])
   @@index([lessonId])
+}
+
+model ObservationAccessLog {
+  id        String                @id @default(cuid())
+  childId   String
+  actorId   String
+  action    ObservationAccessAction
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime              @default(now())
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([childId, createdAt])
+  @@index([actorId])
+}
+
+enum ObservationAccessAction {
+  OBSERVATION_READ
+  OBSERVATION_CREATE
+  OBSERVATION_UPDATE
+  OBSERVATION_DELETE
+  AI_INSIGHT_GENERATE
+  AI_INSIGHT_READ
+  EXPORT
+}
+
+enum ObservationLawfulBasis {
+  CONSENT
+  PUBLIC_TASK
+  LEGITIMATE_INTERESTS
 }
 
 model AiInsight {

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { logObservationAccess, ipFromHeaders } from '@/lib/observation-audit'
 
 const observationSchema = z.object({
   date: z.string().refine((d) => !isNaN(Date.parse(d))),
@@ -13,7 +14,7 @@ const observationSchema = z.object({
   notes: z.string().max(2000).optional(),
 })
 
-export async function GET(_req: NextRequest, { params }: { params: { childId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { childId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (session.user.role !== 'CAREGIVER') {
@@ -29,6 +30,14 @@ export async function GET(_req: NextRequest, { params }: { params: { childId: st
   const observations = await prisma.observation.findMany({
     where: { childId: params.childId },
     orderBy: { date: 'desc' },
+  })
+
+  await logObservationAccess({
+    childId: params.childId,
+    actorId: session.user.id,
+    action: 'OBSERVATION_READ',
+    metadata: { count: observations.length },
+    ipAddress: ipFromHeaders(req.headers),
   })
 
   return NextResponse.json(observations)
@@ -60,6 +69,14 @@ export async function POST(req: NextRequest, { params }: { params: { childId: st
         date: new Date(parsed.data.date),
         childId: params.childId,
       },
+    })
+
+    await logObservationAccess({
+      childId: params.childId,
+      actorId: session.user.id,
+      action: 'OBSERVATION_CREATE',
+      metadata: { observationId: observation.id, domain: observation.domain },
+      ipAddress: ipFromHeaders(req.headers),
     })
 
     return NextResponse.json(observation, { status: 201 })

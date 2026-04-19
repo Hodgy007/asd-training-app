@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { logObservationAccess, ipFromHeaders } from '@/lib/observation-audit'
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { childId: string; observationId: string } }
 ) {
   const session = await getServerSession(authOptions)
@@ -26,5 +27,14 @@ export async function DELETE(
   if (!observation) return NextResponse.json({ error: 'Observation not found' }, { status: 404 })
 
   await prisma.observation.delete({ where: { id: params.observationId } })
+
+  await logObservationAccess({
+    childId: params.childId,
+    actorId: session.user.id,
+    action: 'OBSERVATION_DELETE',
+    metadata: { observationId: params.observationId },
+    ipAddress: ipFromHeaders(req.headers),
+  })
+
   return NextResponse.json({ success: true })
 }
