@@ -103,12 +103,17 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
     <div className={clsx('flex flex-col h-full', chrome.sidebar)}>
       {/* Logo */}
       <div className={clsx('flex items-center justify-between h-20 px-5 flex-shrink-0', chrome.logoBorder)}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo-aaa.svg"
-          alt="Ambitious about Autism"
-          className={clsx('h-16 w-auto', isDark && 'invert brightness-125')}
-        />
+        {isClassic ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-16 w-auto dark:hidden" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-aaa-white.svg" alt="Ambitious about Autism" className="hidden h-16 w-auto dark:block" />
+          </>
+        ) : (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img src="/logo-aaa-white.svg" alt="Ambitious about Autism" className="h-16 w-auto" />
+        )}
         {mobile && (
           <button
             onClick={onClose}
