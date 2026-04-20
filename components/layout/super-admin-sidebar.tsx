@@ -145,7 +145,7 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1" aria-label="Super admin navigation">
+      <nav className="flex-1 min-h-0 overflow-y-auto p-4 space-y-1" aria-label="Super admin navigation">
         {visibleItems.map((item) => {
           const Icon = item.icon
           const isActive = item.exact

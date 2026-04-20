@@ -120,7 +120,7 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1" aria-label="Org admin navigation">
+      <nav className="flex-1 min-h-0 overflow-y-auto p-4 space-y-1" aria-label="Org admin navigation">
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = item.exact
