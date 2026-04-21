@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // ─── Block type union ─────────────────────────────────────────────────────────
 
-export type InteractiveBlockType = 'scenario' | 'drag-drop' | 'hotspot' | 'knowledge-check' | 'carousel'
+export type InteractiveBlockType = 'scenario' | 'drag-drop' | 'hotspot' | 'knowledge-check' | 'carousel' | 'video'
 
 export interface InteractiveBlock {
   id: string
@@ -10,7 +10,7 @@ export interface InteractiveBlock {
   title: string
   instructions: string
   order: number
-  data: ScenarioData | DragDropData | HotspotData | KnowledgeCheckData | CarouselData
+  data: ScenarioData | DragDropData | HotspotData | KnowledgeCheckData | CarouselData | VideoData
 }
 
 // ─── Scenario (branching decision tree) ───────────────────────────────────────
@@ -115,6 +115,13 @@ export interface CarouselData {
   slides: CarouselSlide[]
 }
 
+// ─── Video (inline player) ────────────────────────────────────────────────────
+
+export interface VideoData {
+  url: string
+  caption?: string
+}
+
 // ─── Interaction progress tracking ────────────────────────────────────────────
 
 export interface BlockInteraction {
@@ -217,13 +224,18 @@ const carouselDataSchema = z.object({
   slides: z.array(carouselSlideSchema),
 })
 
+const videoDataSchema = z.object({
+  url: z.string(),
+  caption: z.string().optional(),
+})
+
 export const interactiveBlockSchema = z.object({
   id: z.string().min(1),
-  type: z.enum(['scenario', 'drag-drop', 'hotspot', 'knowledge-check', 'carousel']),
+  type: z.enum(['scenario', 'drag-drop', 'hotspot', 'knowledge-check', 'carousel', 'video']),
   title: z.string(),
   instructions: z.string(),
   order: z.number().int().min(0),
-  data: z.union([scenarioDataSchema, dragDropDataSchema, hotspotDataSchema, knowledgeCheckDataSchema, carouselDataSchema]),
+  data: z.union([scenarioDataSchema, dragDropDataSchema, hotspotDataSchema, knowledgeCheckDataSchema, carouselDataSchema, videoDataSchema]),
 })
 
 export const interactiveBlocksSchema = z.array(interactiveBlockSchema)

@@ -20,16 +20,42 @@ import {
   FileText,
   Paperclip,
   Video,
+  HelpCircle,
 } from 'lucide-react'
 import { VideoPlayer } from '@/components/training/video-player'
 import { clsx } from 'clsx'
 import { InteractiveBlock } from '@/types/interactive'
 import { InteractiveBlocksPanel } from '@/components/admin/interactive-builder/interactive-blocks-panel'
-import { generateBlockPlaceholder, removeBlockPlaceholder, validateInteractiveBlocks } from '@/lib/interactive-blocks'
+import { generateBlockPlaceholder, removeBlockPlaceholder, validateInteractiveBlocks, normaliseBlockPlaceholderAlignment } from '@/lib/interactive-blocks'
+import { registerResizableImage } from '@/lib/quill-image-format'
+import { registerVideoFormat } from '@/lib/quill-video-format'
 
 import dynamic from 'next/dynamic'
 
-const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false })
+// Cached Quill constructor after dynamic import; used by the image resize overlay.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let QuillCtor: any = null
+
+const ReactQuill = dynamic(
+  async () => {
+    const mod = await import('react-quill-new')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Base = mod.default as any
+    QuillCtor = Base.Quill
+    registerResizableImage(QuillCtor)
+    registerVideoFormat(QuillCtor)
+    return { default: Base }
+  },
+  { ssr: false }
+)
+
+type ImageSize = '25%' | '50%' | '75%' | '100%'
+const IMAGE_SIZES: { label: string; value: ImageSize }[] = [
+  { label: 'Small', value: '25%' },
+  { label: 'Medium', value: '50%' },
+  { label: 'Large', value: '75%' },
+  { label: 'Full', value: '100%' },
+]
 
 /* ──────────────────────────── Types ──────────────────────────── */
 
@@ -110,6 +136,7 @@ export default function LessonEditorPage() {
   // Quiz state
   const [questions, setQuestions] = useState<ParsedQuestion[]>([])
   const [expandedQ, setExpandedQ] = useState<string | null>(null)
+  const [quizVisible, setQuizVisible] = useState(false)
 
   // Video upload state
   const [videoUploading, setVideoUploading] = useState(false)
@@ -124,7 +151,39 @@ export default function LessonEditorPage() {
 
   // Quill editor container ref for custom image handler
   const editorContainerRef = useRef<HTMLDivElement>(null)
+  // next/dynamic drops refs through to react-quill-new's class instance, so
+  // instead we walk the React fiber tree from .ql-container to locate the
+  // ReactQuill instance and call its getEditor() method. Caching the result
+  // on a ref avoids re-walking on every toolbar click.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const quillRef = useRef<any>(null)
+  const getQuill = useCallback(() => {
+    if (quillRef.current) return quillRef.current
+    const container = editorContainerRef.current?.querySelector('.ql-container')
+    if (!container) return null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fiberKey = Object.keys(container as any).find(k => k.startsWith('__reactFiber'))
+    if (!fiberKey) return null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let fiber = (container as any)[fiberKey]
+    let depth = 0
+    while (fiber && depth < 30) {
+      if (fiber.stateNode && typeof fiber.stateNode.getEditor === 'function') {
+        const editor = fiber.stateNode.getEditor()
+        quillRef.current = editor
+        return editor
+      }
+      fiber = fiber.return
+      depth++
+    }
+    return null
+  }, [])
   const [uploadingImage, setUploadingImage] = useState(false)
+
+  // Image resize overlay state: the currently-selected image inside the editor
+  // and its position on screen (updated on click + scroll).
+  const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null)
+  const [imagePos, setImagePos] = useState<{ top: number; left: number; width: number } | null>(null)
 
   // Read the live Quill DOM into React state. Used before any update that
   // re-renders the editor so we don't clobber typed text that hasn't yet
@@ -162,21 +221,13 @@ export default function LessonEditorPage() {
           return
         }
         const { url } = await res.json()
-        // Access the Quill instance from the editor container DOM
-        const qlEditor = editorContainerRef.current?.querySelector('.ql-editor')
-        if (qlEditor) {
-          // react-quill-new stores the Quill instance on the container element
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const qlContainer = editorContainerRef.current?.querySelector('.ql-container') as any
-          const quill = qlContainer?.__quill
-          if (quill) {
-            const range = quill.getSelection(true)
-            quill.insertEmbed(range.index, 'image', url)
-            quill.setSelection(range.index + 1)
-          } else {
-            // Fallback: append image to content via state
-            setEditContent(prev => prev + `<img src="${url}" />`)
-          }
+        const quill = getQuill()
+        if (quill) {
+          const range = quill.getSelection(true) ?? { index: quill.getLength(), length: 0 }
+          quill.insertEmbed(range.index, 'image', url, 'user')
+          quill.setSelection(range.index + 1, 0, 'user')
+        } else {
+          setEditContent(prev => prev + `<img src="${url}" />`)
         }
       } catch {
         setToast({ message: 'Image upload failed', type: 'error' })
@@ -184,7 +235,7 @@ export default function LessonEditorPage() {
         setUploadingImage(false)
       }
     }
-  }, [])
+  }, [getQuill])
 
   const handleVideoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -220,9 +271,12 @@ export default function LessonEditorPage() {
   const quillModules = useMemo(() => ({
     toolbar: {
       container: [
+        [{ font: [] }, { size: ['small', false, 'large', 'huge'] }],
         ['bold', 'italic', 'underline'],
         [{ header: [2, 3, false] }],
+        [{ color: [] }, { background: [] }],
         [{ list: 'ordered' }, { list: 'bullet' }],
+        [{ align: '' }, { align: 'center' }, { align: 'right' }, { align: 'justify' }],
         ['link', 'image'],
         ['clean'],
       ],
@@ -241,10 +295,12 @@ export default function LessonEditorPage() {
         setLesson(data)
         setEditTitle(data.title)
         setEditType(data.type)
-        setEditContent(data.content || '')
+        setEditContent(normaliseBlockPlaceholderAlignment(data.content || ''))
         setEditVideoUrl(data.videoUrl || '')
         setEditTranscript(data.transcript || '')
-        setQuestions(data.quizQuestions.map(parseQuestion))
+        const parsed = data.quizQuestions.map(parseQuestion)
+        setQuestions(parsed)
+        setQuizVisible(parsed.length > 0)
         setAttachments(data.attachments ?? [])
         setInteractiveBlocks(validateInteractiveBlocks(data.interactiveBlocks) ?? [])
       }
@@ -256,6 +312,63 @@ export default function LessonEditorPage() {
   useEffect(() => {
     fetchLesson()
   }, [fetchLesson])
+
+  // Attach click listener to the editor so clicking an image shows a size picker.
+  // Re-runs when the editor DOM is (re)created: loading -> false.
+  useEffect(() => {
+    if (loading) return
+    const container = editorContainerRef.current
+    if (!container) return
+    const editor = container.querySelector('.ql-editor') as HTMLElement | null
+    if (!editor) return
+
+    const positionFor = (img: HTMLImageElement) => {
+      const rect = img.getBoundingClientRect()
+      return { top: rect.top + window.scrollY - 44, left: rect.left + window.scrollX, width: rect.width }
+    }
+
+    const handleClick = (e: Event) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === 'IMG' && editor.contains(target)) {
+        const img = target as HTMLImageElement
+        setSelectedImage(img)
+        setImagePos(positionFor(img))
+      } else if (!target.closest('[data-image-size-picker]')) {
+        setSelectedImage(null)
+        setImagePos(null)
+      }
+    }
+
+    document.addEventListener('click', handleClick, true)
+    return () => document.removeEventListener('click', handleClick, true)
+  }, [loading])
+
+  const resizeSelectedImage = useCallback((size: ImageSize) => {
+    const img = selectedImage
+    if (!img) return
+    const qlContainer = editorContainerRef.current?.querySelector('.ql-container') as unknown as
+      | { __quill?: { formatText: (i: number, l: number, fmt: Record<string, string>) => void; getIndex: (b: unknown) => number; root: HTMLElement } }
+      | null
+    const quill = qlContainer?.__quill
+    if (!quill || !QuillCtor) {
+      // Fallback: direct DOM edit. Width will only persist until Quill rebuilds
+      // the content from its delta (e.g. next keystroke). The custom blot and
+      // formatText path below is the supported way.
+      img.style.width = size
+      img.style.height = 'auto'
+      img.setAttribute('width', size)
+      return
+    }
+    const blot = QuillCtor.find(img)
+    if (!blot) return
+    const index = quill.getIndex(blot)
+    quill.formatText(index, 1, { width: size, style: `width: ${size}; height: auto;` })
+    // Reposition overlay since the image has changed size.
+    requestAnimationFrame(() => {
+      const rect = img.getBoundingClientRect()
+      setImagePos({ top: rect.top + window.scrollY - 44, left: rect.left + window.scrollX, width: rect.width })
+    })
+  }, [selectedImage])
 
   useEffect(() => {
     if (toast) {
@@ -447,6 +560,37 @@ export default function LessonEditorPage() {
           </div>
         )}
 
+        {selectedImage && imagePos && (
+          <div
+            data-image-size-picker
+            role="toolbar"
+            aria-label="Image size"
+            style={{ position: 'absolute', top: imagePos.top, left: imagePos.left }}
+            className="flex items-center gap-1 rounded-lg border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-lg px-1.5 py-1"
+          >
+            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 px-1.5">Size</span>
+            {IMAGE_SIZES.map((s) => {
+              const current = selectedImage.getAttribute('width') || selectedImage.style.width || '100%'
+              const isActive = current === s.value
+              return (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => resizeSelectedImage(s.value)}
+                  className={clsx(
+                    'text-xs font-medium px-2 py-1 rounded transition-colors',
+                    isActive
+                      ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700'
+                  )}
+                >
+                  {s.label}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
         {/* ─── Attachments (PDF) ─── */}
         <div className="border-t border-calm-200 dark:border-slate-600 pt-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -576,17 +720,37 @@ export default function LessonEditorPage() {
         </div>
       </div>
 
-      {/* ─── Section 2: Quiz Management ─── */}
-      <QuizSection
-        lessonId={lessonId}
-        questions={questions}
-        setQuestions={setQuestions}
-        expandedQ={expandedQ}
-        setExpandedQ={setExpandedQ}
-        lessonContent={editContent}
-        setToast={setToast}
-        refetch={fetchLesson}
-      />
+      {/* ─── Section 2: Quiz Management (opt-in) ─── */}
+      {quizVisible ? (
+        <QuizSection
+          lessonId={lessonId}
+          questions={questions}
+          setQuestions={setQuestions}
+          expandedQ={expandedQ}
+          setExpandedQ={setExpandedQ}
+          lessonContent={editContent}
+          setToast={setToast}
+          refetch={fetchLesson}
+          onHide={() => setQuizVisible(false)}
+        />
+      ) : (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-calm-200 dark:border-slate-700 p-6 shadow-sm flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <HelpCircle className="h-5 w-5 text-slate-400" />
+            <div>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Knowledge Quiz</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Optional. Add a quiz to check learners&apos; understanding.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setQuizVisible(true)}
+            className="inline-flex items-center gap-2 border border-calm-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add Quiz
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -602,6 +766,7 @@ interface QuizSectionProps {
   lessonContent: string
   setToast: (t: { message: string; type: 'success' | 'error' }) => void
   refetch: () => Promise<void>
+  onHide: () => void
 }
 
 function QuizSection({
@@ -613,6 +778,7 @@ function QuizSection({
   lessonContent,
   setToast,
   refetch,
+  onHide,
 }: QuizSectionProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -712,6 +878,16 @@ function QuizSection({
             <Sparkles className="h-4 w-4" />
             Generate Quiz with AI
           </button>
+          {questions.length === 0 && (
+            <button
+              onClick={onHide}
+              className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+              title="Hide quiz section"
+              aria-label="Hide quiz section"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 

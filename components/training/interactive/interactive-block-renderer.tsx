@@ -1,12 +1,13 @@
 'use client'
 
 import { useCallback } from 'react'
-import { InteractiveBlock, ScenarioData, KnowledgeCheckData, DragDropData, HotspotData, CarouselData, InteractionData } from '@/types/interactive'
+import { InteractiveBlock, ScenarioData, KnowledgeCheckData, DragDropData, HotspotData, CarouselData, VideoData, InteractionData } from '@/types/interactive'
 import { ScenarioPlayer } from './scenario-player'
 import { KnowledgeCheck } from './knowledge-check'
 import { DragDropActivity } from './drag-drop-activity'
 import { HotspotActivity } from './hotspot-activity'
 import { CarouselActivity } from './carousel-activity'
+import { VideoBlock } from './video-block'
 
 interface InteractiveBlockRendererProps {
   block: InteractiveBlock
@@ -79,6 +80,17 @@ export function InteractiveBlockRenderer({
           title={block.title}
           instructions={block.instructions}
           data={block.data as CarouselData}
+          completed={completed}
+          onComplete={handleComplete}
+        />
+      )
+
+    case 'video':
+      return (
+        <VideoBlock
+          title={block.title}
+          instructions={block.instructions}
+          data={block.data as VideoData}
           completed={completed}
           onComplete={handleComplete}
         />

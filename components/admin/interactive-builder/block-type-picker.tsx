@@ -1,6 +1,6 @@
 'use client'
 
-import { X, GitBranch, GripVertical, MousePointer, HelpCircle, Images } from 'lucide-react'
+import { X, GitBranch, GripVertical, MousePointer, HelpCircle, Images, Video } from 'lucide-react'
 import { InteractiveBlockType } from '@/types/interactive'
 
 interface BlockTypePickerProps {
@@ -9,6 +9,7 @@ interface BlockTypePickerProps {
 }
 
 const BLOCK_TYPES: { type: InteractiveBlockType; label: string; description: string; icon: React.ElementType; available: boolean }[] = [
+  { type: 'video', label: 'Video', description: 'Embed a YouTube, Vimeo, or uploaded video anywhere in the lesson.', icon: Video, available: true },
   { type: 'scenario', label: 'Branching Scenario', description: 'Learners make choices and see consequences in a decision tree.', icon: GitBranch, available: true },
   { type: 'drag-drop', label: 'Drag & Drop', description: 'Match items, sort into categories, or put steps in order.', icon: GripVertical, available: true },
   { type: 'hotspot', label: 'Hotspot / Click-to-Reveal', description: 'Click areas on an image or cards to reveal information.', icon: MousePointer, available: true },

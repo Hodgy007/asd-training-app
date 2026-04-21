@@ -87,7 +87,48 @@ export function generateBlockPlaceholder(blockId: string, _title: string): strin
   // Use a text-based marker that survives Quill's HTML processing.
   // Quill strips data attributes and may rewrite divs as paragraphs,
   // but preserves visible text content inside styled elements.
-  return `<p style="background:#f0fdf4;border:2px dashed #86efac;border-radius:8px;padding:12px 16px;margin:8px 0;font-size:14px;color:#166534;text-align:center;">[INTERACTIVE:${blockId}]</p><p><br></p>`
+  //
+  // No text-align here: Quill converts paragraph-level text-align into its
+  // own `align` attribute, which the following paragraph then inherits — so
+  // typing after the block would stay centered. Keep the pill left-aligned.
+  return `<p style="background:#f0fdf4;border:2px dashed #86efac;border-radius:8px;padding:12px 16px;margin:8px 0;font-size:14px;color:#166534;">[INTERACTIVE:${blockId}]</p><p><br></p>`
+}
+
+/**
+ * Strip `text-align` from any paragraph containing an interactive-block marker.
+ * Older lessons were saved with `text-align:center` on the placeholder <p>,
+ * which Quill converts to `ql-align-center` on load — and every paragraph the
+ * user types after it inherits the alignment. Running this on load de-sticks
+ * the alignment so new paragraphs render left-aligned.
+ */
+export function normaliseBlockPlaceholderAlignment(html: string): string {
+  if (!html) return html
+  // Match a whole <p>…</p> that contains [INTERACTIVE:…] anywhere inside
+  // (including wrapping <span>s that Quill may add).
+  return html.replace(
+    /<p([^>]*)>((?:(?!<\/p>)[\s\S])*?\[INTERACTIVE:[^\]]+\](?:(?!<\/p>)[\s\S])*?)<\/p>/gi,
+    (_match, attrs: string, inner: string) => {
+      let cleaned = attrs
+      // Strip any text-align from inline style.
+      cleaned = cleaned.replace(/style\s*=\s*"([^"]*)"/gi, (_m, styles: string) => {
+        const next = styles
+          .split(';')
+          .map(s => s.trim())
+          .filter(s => s && !/^text-align\s*:/i.test(s))
+          .join('; ')
+        return next ? `style="${next}"` : ''
+      })
+      // Strip ql-align-* classes (Quill-normalized form of text-align).
+      cleaned = cleaned.replace(/class\s*=\s*"([^"]*)"/gi, (_m, classes: string) => {
+        const next = classes
+          .split(/\s+/)
+          .filter(c => c && !/^ql-align-/.test(c))
+          .join(' ')
+        return next ? `class="${next}"` : ''
+      })
+      return `<p${cleaned.replace(/\s+/g, ' ').trimEnd()}>${inner}</p>`
+    }
+  )
 }
 
 /**

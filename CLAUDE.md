@@ -34,6 +34,7 @@ Copy `.env.example` to `.env.local` for local dev. For production (Vercel), the 
 | `AZURE_AD_CLIENT_SECRET` | Azure AD client secret |
 | `AZURE_AD_TENANT_ID` | Use `common` for personal + work accounts; or your tenant ID |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage token (used for document uploads and AI-generated thumbnails) |
+| `ELEVENLABS_API_KEY` | ElevenLabs API key (used for text-to-speech play button on interactive blocks -- "Daniel" voice, same as the ambient-pitch demo) |
 
 **Critical:** `DATABASE_URL` must use the Neon pooler (port 6543) in production. Using the direct connection (5432) exhausts connection limits on serverless. `DIRECT_URL` is used only by Prisma for migrations.
 

@@ -24,8 +24,11 @@ export function RichDescriptionEditor({
   const modules = useMemo(
     () => ({
       toolbar: [
+        [{ font: [] }, { size: ['small', false, 'large', 'huge'] }],
         ['bold', 'italic', 'underline'],
+        [{ color: [] }, { background: [] }],
         [{ list: 'ordered' }, { list: 'bullet' }],
+        [{ align: '' }, { align: 'center' }, { align: 'right' }, { align: 'justify' }],
         ['link'],
         ['clean'],
       ],
@@ -34,7 +37,7 @@ export function RichDescriptionEditor({
   )
 
   const formats = useMemo(
-    () => ['bold', 'italic', 'underline', 'list', 'link'],
+    () => ['bold', 'italic', 'underline', 'list', 'link', 'align', 'font', 'size', 'color', 'background'],
     []
   )
 

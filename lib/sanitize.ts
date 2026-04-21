@@ -9,6 +9,7 @@ const ALLOWED_TAGS = [
   'table', 'thead', 'tbody', 'tr', 'th', 'td',
   'blockquote', 'pre', 'code',
   'span', 'div',
+  'video', 'source', 'iframe',
 ]
 
 const ALLOWED_ATTR = [
@@ -17,6 +18,8 @@ const ALLOWED_ATTR = [
   'class', 'style',
   'colspan', 'rowspan',
   'data-interactive-block',
+  'controls', 'preload', 'poster', 'loop', 'muted', 'playsinline', 'type',
+  'allowfullscreen', 'frameborder', 'allow',
 ]
 
 export function sanitizeHtml(dirty: string): string {

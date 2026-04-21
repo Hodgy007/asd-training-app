@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight, Zap } from 'lucide-react'
-import { InteractiveBlock, InteractiveBlockType, ScenarioData, KnowledgeCheckData, CarouselData } from '@/types/interactive'
+import { InteractiveBlock, InteractiveBlockType, ScenarioData, KnowledgeCheckData, CarouselData, VideoData } from '@/types/interactive'
 import { BlockTypePicker } from './block-type-picker'
 import { ScenarioBuilder } from './scenario-builder'
 import { KnowledgeCheckBuilder } from './knowledge-check-builder'
 import { DragDropBuilder } from './drag-drop-builder'
 import { HotspotBuilder } from './hotspot-builder'
 import { CarouselBuilder } from './carousel-builder'
+import { VideoBuilder } from './video-builder'
 
 interface InteractiveBlocksPanelProps {
   blocks: InteractiveBlock[]
@@ -47,6 +48,10 @@ function createDefaultBlock(type: InteractiveBlockType): InteractiveBlock {
     case 'carousel': {
       const carouselData: CarouselData = { slides: [] }
       return { ...base, data: carouselData }
+    }
+    case 'video': {
+      const videoData: VideoData = { url: '' }
+      return { ...base, data: videoData }
     }
   }
 }
@@ -136,6 +141,9 @@ export function InteractiveBlocksPanel({ blocks, onChange, onInsertPlaceholder, 
               )}
               {block.type === 'carousel' && (
                 <CarouselBuilder block={block} onChange={updateBlock} />
+              )}
+              {block.type === 'video' && (
+                <VideoBuilder block={block} onChange={updateBlock} />
               )}
             </div>
           )}

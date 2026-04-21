@@ -11,7 +11,8 @@ import { QuizComponent } from '@/components/training/quiz-component'
 import { InteractiveBlockRenderer } from '@/components/training/interactive/interactive-block-renderer'
 import { splitContentAtBlocks, validateInteractiveBlocks } from '@/lib/interactive-blocks'
 import { InteractiveBlock, InteractionData } from '@/types/interactive'
-import { TextToSpeech } from '@/components/training/text-to-speech'
+import { TtsAudioPlayer } from '@/components/training/interactive/tts-audio-player'
+import { htmlToPlainText } from '@/lib/html-to-text'
 import { LessonOutlineRail } from '@/components/training/lesson-outline-rail'
 import { clsx } from 'clsx'
 
@@ -187,6 +188,10 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   const blocks: InteractiveBlock[] = validateInteractiveBlocks(lesson.interactiveBlocks) ?? []
   const contentSegments = splitContentAtBlocks(lesson.content, blocks)
   const blocksById = new Map(blocks.map(b => [b.id, b]))
+  const lessonTtsText = [
+    lesson.title,
+    htmlToPlainText(contentSegments.filter(s => s.type === 'html').map(s => s.type === 'html' ? s.content : '').join(' ')),
+  ].filter(Boolean).join('. ')
 
   async function handleBlockComplete(blockId: string) {
     const current = interactionData[blockId]
@@ -303,21 +308,23 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
 
       {/* Lesson content */}
       <div className="card">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <button
-            onClick={() => setShowContent((v) => !v)}
-            className="flex items-center gap-2 text-left flex-1 min-w-0"
-            aria-expanded={showContent}
-          >
-            {showContent ? (
-              <ChevronDown className="h-4 w-4 text-slate-500 flex-shrink-0" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
-            )}
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Lesson Content</h2>
-          </button>
-          {showContent && <TextToSpeech contentRef={contentRef} />}
-        </div>
+        <button
+          onClick={() => setShowContent((v) => !v)}
+          className="flex items-center gap-2 text-left w-full mb-4"
+          aria-expanded={showContent}
+        >
+          {showContent ? (
+            <ChevronDown className="h-4 w-4 text-slate-500 flex-shrink-0" />
+          ) : (
+            <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
+          )}
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Lesson Content</h2>
+        </button>
+        {showContent && lessonTtsText && (
+          <div className="mb-4">
+            <TtsAudioPlayer text={lessonTtsText} ariaLabel={`Read "${lesson.title}" aloud`} />
+          </div>
+        )}
         <div ref={contentRef} hidden={!showContent}>
           {contentSegments.map((segment, idx) => {
             if (segment.type === 'html') {
