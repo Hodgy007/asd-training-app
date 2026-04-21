@@ -31,6 +31,7 @@ import { registerResizableImage } from '@/lib/quill-image-format'
 import { registerVideoFormat } from '@/lib/quill-video-format'
 
 import dynamic from 'next/dynamic'
+import type ReactQuillType from 'react-quill-new'
 
 // Cached Quill constructor after dynamic import; used by the image resize overlay.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,10 +45,10 @@ const ReactQuill = dynamic(
     QuillCtor = Base.Quill
     registerResizableImage(QuillCtor)
     registerVideoFormat(QuillCtor)
-    return { default: Base }
+    return { default: Base as typeof ReactQuillType }
   },
   { ssr: false }
-)
+) as unknown as typeof ReactQuillType
 
 type ImageSize = '25%' | '50%' | '75%' | '100%'
 const IMAGE_SIZES: { label: string; value: ImageSize }[] = [
