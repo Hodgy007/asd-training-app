@@ -15,6 +15,8 @@ import {
   Download,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { sanitizeHtml } from '@/lib/sanitize'
+import { isHtml } from '@/lib/rich-text'
 
 export default async function ProgramModulePage({
   params,
@@ -77,7 +79,14 @@ export default async function ProgramModulePage({
           isComplete ? 'border-l-sage-500' : 'border-l-primary-500'
         )}
       >
-        <p className="text-slate-600 mb-4">{module.description}</p>
+        {isHtml(module.description) ? (
+          <div
+            className="prose prose-sm max-w-none text-slate-600 mb-4 dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(module.description) }}
+          />
+        ) : (
+          <p className="text-slate-600 mb-4 whitespace-pre-wrap">{module.description}</p>
+        )}
         <div className="space-y-1.5 mb-4">
           <div className="flex justify-between text-sm">
             <span className="text-slate-500">Progress</span>

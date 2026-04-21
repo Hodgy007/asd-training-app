@@ -19,6 +19,9 @@ import {
 import { clsx } from 'clsx'
 import { ContentGenerationModal } from '@/components/super-admin/content-generation-modal'
 import type { GenerationMode } from '@/lib/content-generator-types'
+import { RichDescriptionEditor } from '@/components/ui/rich-description-editor'
+import { normaliseHtml, stripHtml } from '@/lib/rich-text'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 /* ──────────────────────────── Types ──────────────────────────── */
 
@@ -365,9 +368,9 @@ export default function TrainingContentPage() {
                         {program._count.modules} {program._count.modules === 1 ? 'module' : 'modules'}
                       </span>
                     </div>
-                    {program.description && (
+                    {program.description && stripHtml(program.description) && (
                       <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
-                        {program.description}
+                        {stripHtml(program.description)}
                       </p>
                     )}
                   </div>
@@ -522,7 +525,7 @@ export default function TrainingContentPage() {
                             </span>
                           </div>
                           <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-                            {mod.description}
+                            {stripHtml(mod.description)}
                           </p>
                         </div>
 
@@ -603,7 +606,7 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
-          description: description.trim() || undefined,
+          description: normaliseHtml(description) || undefined,
           version: version.trim() || '1.0',
           status,
         }),
@@ -681,12 +684,12 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
           Description
         </label>
-        <textarea
+        <RichDescriptionEditor
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
+          onChange={setDescription}
           placeholder="Brief description of the training program"
-          className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400"
+          minHeight={120}
+          ariaLabel="Program description"
         />
       </div>
       <div className="flex items-center gap-3">
@@ -744,7 +747,7 @@ function EditProgramForm({
     try {
       const body: Record<string, unknown> = {
         name: name.trim(),
-        description: description.trim() || null,
+        description: normaliseHtml(description) || null,
         version: version.trim() || '1.0',
         status,
         active,
@@ -830,11 +833,12 @@ function EditProgramForm({
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Description</label>
-          <textarea
+          <RichDescriptionEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={2}
-            className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white"
+            onChange={setDescription}
+            placeholder="Brief description of the training program"
+            minHeight={100}
+            ariaLabel="Program description"
           />
         </div>
 
@@ -954,7 +958,8 @@ function AddModuleForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!id.trim() || !title.trim() || !description.trim()) return
+    const descValue = normaliseHtml(description)
+    if (!id.trim() || !title.trim() || !descValue) return
     setSubmitting(true)
     setError('')
     try {
@@ -964,7 +969,7 @@ function AddModuleForm({
         body: JSON.stringify({
           id: id.trim(),
           title: title.trim(),
-          description: description.trim(),
+          description: descValue,
           programId,
           order: existingCount + 1,
         }),
@@ -1015,13 +1020,12 @@ function AddModuleForm({
       </div>
       <div>
         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Description</label>
-        <textarea
+        <RichDescriptionEditor
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          required
+          onChange={setDescription}
           placeholder="Brief description"
-          className="w-full rounded-lg border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-1.5 text-sm text-slate-900 dark:text-white placeholder-slate-400"
+          minHeight={100}
+          ariaLabel="Module description"
         />
       </div>
       <div className="flex items-center gap-3">

@@ -126,6 +126,22 @@ export default function LessonEditorPage() {
   const editorContainerRef = useRef<HTMLDivElement>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
 
+  // Read the live Quill DOM into React state. Used before any update that
+  // re-renders the editor so we don't clobber typed text that hasn't yet
+  // propagated through Quill's onChange.
+  const syncQuillFromDom = useCallback(() => {
+    const qlEditor = editorContainerRef.current?.querySelector('.ql-editor') as HTMLElement | null
+    const liveHtml = qlEditor?.innerHTML
+    if (liveHtml != null && liveHtml !== '<p><br></p>') {
+      setEditContent(liveHtml)
+    }
+  }, [])
+
+  const handleBlocksChange = useCallback((next: InteractiveBlock[]) => {
+    syncQuillFromDom()
+    setInteractiveBlocks(next)
+  }, [syncQuillFromDom])
+
   const imageHandler = useCallback(() => {
     const input = document.createElement('input')
     input.setAttribute('type', 'file')
@@ -522,10 +538,15 @@ export default function LessonEditorPage() {
         {/* ─── Interactive Blocks ─── */}
         <InteractiveBlocksPanel
           blocks={interactiveBlocks}
-          onChange={setInteractiveBlocks}
+          onChange={handleBlocksChange}
           onInsertPlaceholder={(blockId, title) => {
             const placeholder = generateBlockPlaceholder(blockId, title)
-            setEditContent(prev => prev + placeholder)
+            const qlEditor = editorContainerRef.current?.querySelector('.ql-editor') as HTMLElement | null
+            const liveHtml = qlEditor?.innerHTML
+            setEditContent(prev => {
+              const base = liveHtml && liveHtml !== '<p><br></p>' ? liveHtml : prev
+              return base + placeholder
+            })
           }}
         />
 

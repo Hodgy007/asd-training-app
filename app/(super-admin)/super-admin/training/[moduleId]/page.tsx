@@ -15,6 +15,8 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { GATSBY_BENCHMARK_CODES, GATSBY_BENCHMARKS } from '@/lib/gatsby-benchmarks'
+import { RichDescriptionEditor } from '@/components/ui/rich-description-editor'
+import { normaliseHtml } from '@/lib/rich-text'
 
 interface Lesson {
   id: string
@@ -88,7 +90,7 @@ export default function ModuleEditorPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: editTitle.trim(),
-          description: editDescription.trim(),
+          description: normaliseHtml(editDescription),
           gatsbyBenchmarks: editBenchmarks,
         }),
       })
@@ -219,11 +221,12 @@ export default function ModuleEditorPage() {
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Description</label>
-            <textarea
+            <RichDescriptionEditor
               value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              rows={3}
-              className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white"
+              onChange={setEditDescription}
+              placeholder="Describe this module"
+              minHeight={120}
+              ariaLabel="Module description"
             />
           </div>
           <div>

@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation'
 import { ModuleCard } from '@/components/training/module-card'
 import { isCharityLevel } from '@/lib/rbac'
 import { Award, Download } from 'lucide-react'
+import { sanitizeHtml } from '@/lib/sanitize'
+import { isHtml } from '@/lib/rich-text'
 
 export default async function ProgramPage({ params }: { params: { programId: string } }) {
   const session = await getServerSession(authOptions)
@@ -58,7 +60,14 @@ export default async function ProgramPage({ params }: { params: { programId: str
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{program.name}</h1>
           {program.description && (
-            <p className="text-slate-500 dark:text-slate-400 mt-1">{program.description}</p>
+            isHtml(program.description) ? (
+              <div
+                className="prose prose-sm max-w-none text-slate-500 dark:text-slate-400 dark:prose-invert mt-1"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(program.description) }}
+              />
+            ) : (
+              <p className="text-slate-500 dark:text-slate-400 mt-1 whitespace-pre-wrap">{program.description}</p>
+            )
           )}
         </div>
         {programComplete && (

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { isCharityLevel } from '@/lib/rbac'
 import Link from 'next/link'
 import { BookOpen, ChevronRight } from 'lucide-react'
+import { stripHtml } from '@/lib/rich-text'
 
 export default async function TrainingPage() {
   const session = await getServerSession(authOptions)
@@ -90,8 +91,8 @@ export default async function TrainingPage() {
                   <h2 className="font-bold text-slate-900 group-hover:text-primary-600 transition-colors">
                     {program.name}
                   </h2>
-                  {program.description && (
-                    <p className="text-sm text-slate-500 mt-1 line-clamp-2">{program.description}</p>
+                  {program.description && stripHtml(program.description) && (
+                    <p className="text-sm text-slate-500 mt-1 line-clamp-2">{stripHtml(program.description)}</p>
                   )}
                 </div>
                 <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary-500 transition-colors flex-shrink-0 mt-1" />
