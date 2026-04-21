@@ -9,7 +9,7 @@ const createSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(1000).optional(),
   allowedProgramIds: z.array(z.string()).default([]),
-  allowedRoles: z.array(z.string()).default(['STUDENT', 'CAREGIVER', 'CAREER_DEV_OFFICER', 'INTERN', 'EMPLOYEE']),
+  allowedRoles: z.array(z.string()).default(['CAREGIVER', 'STUDENT', 'CAREER_DEV_OFFICER', 'INTERN', 'EMPLOYEE']),
 })
 
 function slugify(name: string): string {

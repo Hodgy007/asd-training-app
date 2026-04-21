@@ -63,10 +63,10 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
           </div>
           <div className="hidden md:block">
             <p className={clsx('text-sm font-medium leading-tight', nameColor)}>
-              {session?.user?.name || 'Practitioner'}
+              {session?.user?.name || 'User'}
             </p>
             <p className={clsx('text-xs', roleColor)}>
-              {session?.user?.role ? getRoleLabel(session.user.role) : 'Practitioner'}
+              {session?.user?.role ? getRoleLabel(session.user.role) : 'User'}
             </p>
           </div>
         </div>

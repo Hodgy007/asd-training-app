@@ -16,7 +16,6 @@ import {
   FolderOpen,
   FileText,
   Compass,
-  Shield,
   BarChart3,
   Briefcase,
 } from 'lucide-react'
@@ -40,25 +39,19 @@ function getNavItems(
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   ]
 
-  if (role === 'CAREGIVER') {
+  if (role === 'CAREGIVER' || role === 'CAREER_DEV_OFFICER' || role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
     for (const program of programs) {
       items.push({ href: `/training/${program.id}`, label: program.name, icon: BookOpen })
     }
-    items.push(
-      { href: '/children', label: 'Child Observations', icon: Users },
-      { href: '/activity', label: 'My Activity', icon: Shield },
-    )
-  } else if (role === 'CAREER_DEV_OFFICER' || role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
-    for (const program of programs) {
-      items.push({ href: `/training/${program.id}`, label: program.name, icon: BookOpen })
-    }
-    if (cvBuilderEnabled) {
+    if (role !== 'CAREGIVER' && cvBuilderEnabled) {
       items.push({ href: '/cv-builder', label: 'CV Builder', icon: FileText })
     }
-    if (careersAdvisorEnabled) {
+    if (role !== 'CAREGIVER' && careersAdvisorEnabled) {
       items.push({ href: '/careers-advisor', label: 'Careers Advisor', icon: Compass })
     }
-    items.push({ href: '/jobs', label: 'Jobs', icon: Briefcase })
+    if (role !== 'CAREGIVER') {
+      items.push({ href: '/jobs', label: 'Jobs', icon: Briefcase })
+    }
     if (role === 'CAREER_DEV_OFFICER') {
       items.push(
         { href: '/students', label: 'My Students', icon: Users },
@@ -91,7 +84,7 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 const ROLE_BADGE_STYLES: Record<string, string> = {
-  CAREGIVER: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+  CAREGIVER: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
   INTERN: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
@@ -203,13 +196,6 @@ export function Sidebar({ onClose, mobile }: SidebarProps) {
 
       {/* Bottom section */}
       <div className={clsx('p-4 border-t space-y-2', chrome.divider)}>
-        {role === 'CAREGIVER' && (
-          <div className="bg-orange-50 dark:bg-slate-700 border-l-4 border-primary-500 rounded-r-xl p-3 mb-3">
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              <strong className="text-primary-600 dark:text-primary-400">Reminder:</strong> This tool does not diagnose. Share observations with your GP or health visitor.
-            </p>
-          </div>
-        )}
         <Link
           href="/settings"
           onClick={onClose}

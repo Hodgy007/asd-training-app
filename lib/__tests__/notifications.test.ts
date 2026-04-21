@@ -21,7 +21,7 @@ function mockSession(overrides: Partial<Session['user']> = {}): Session {
       id: 'u1',
       email: 'u@x.com',
       name: 'User',
-      role: 'CAREGIVER',
+      role: 'EMPLOYEE',
       organisationId: 'o1',
       mustChangePassword: false,
       totpEnabled: false,

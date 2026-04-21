@@ -53,7 +53,7 @@ export default function MfaVerifyPage() {
         <div className="text-center mb-8">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-28 w-auto mx-auto mb-4" />
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Practitioner Training &amp; Observation Tool</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Training Platform</p>
         </div>
 
         {/* MFA Card */}

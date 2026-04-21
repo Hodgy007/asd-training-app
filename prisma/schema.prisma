@@ -29,7 +29,6 @@ model User {
 
   organisation       Organisation?          @relation(fields: [organisationId], references: [id])
   accounts           Account[]
-  children           Child[]
   sessions           Session[]
   trainingProgress   TrainingProgress[]
   announcements      Announcement[]         @relation("AnnouncementsCreated")
@@ -99,8 +98,6 @@ model Organisation {
   allowedRoles      String[]
   cvBuilderEnabled      Boolean  @default(true)
   careersAdvisorEnabled Boolean  @default(true)
-  observationLawfulBasis   ObservationLawfulBasis @default(CONSENT)
-  observationRetentionDays Int                    @default(1095)
   logoUrl               String?
   contactName       String?
   contactEmail      String?
@@ -148,38 +145,6 @@ model Announcement {
   @@index([organisationId])
 }
 
-model Child {
-  id           String        @id @default(cuid())
-  name         String
-  dateOfBirth  DateTime
-  consentObtainedAt      DateTime?
-  consentObtainedBy      String?
-  consentDocumentedNote  String?   @db.Text
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  userId       String
-  aiInsights   AiInsight[]
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  observations Observation[]
-  accessLogs   ObservationAccessLog[]
-}
-
-model Observation {
-  id            String    @id @default(cuid())
-  childId       String
-  date          DateTime
-  behaviourType String
-  domain        Domain
-  frequency     Frequency
-  context       Context
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  child         Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
-
-  @@index([childId])
-  @@index([date])
-}
-
 model TrainingProgress {
   id          String    @id @default(cuid())
   userId      String
@@ -196,48 +161,6 @@ model TrainingProgress {
   @@unique([userId, moduleId, lessonId])
   @@index([userId])
   @@index([lessonId])
-}
-
-model ObservationAccessLog {
-  id        String                @id @default(cuid())
-  childId   String
-  actorId   String
-  action    ObservationAccessAction
-  metadata  Json?
-  ipAddress String?
-  createdAt DateTime              @default(now())
-
-  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
-
-  @@index([childId, createdAt])
-  @@index([actorId])
-}
-
-enum ObservationAccessAction {
-  OBSERVATION_READ
-  OBSERVATION_CREATE
-  OBSERVATION_UPDATE
-  OBSERVATION_DELETE
-  AI_INSIGHT_GENERATE
-  AI_INSIGHT_READ
-  EXPORT
-}
-
-enum ObservationLawfulBasis {
-  CONSENT
-  PUBLIC_TASK
-  LEGITIMATE_INTERESTS
-}
-
-model AiInsight {
-  id              String   @id @default(cuid())
-  childId         String
-  generatedAt     DateTime @default(now())
-  summary         String
-  patterns        String
-  recommendations String
-  disclaimer      String   @default("This is not a diagnosis. This tool supports observation and pattern recognition only. Always consult a qualified healthcare professional.")
-  child           Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
 }
 
 model PasswordResetToken {
@@ -563,25 +486,6 @@ enum Role {
   STUDENT
   INTERN
   EMPLOYEE
-}
-
-enum Domain {
-  SOCIAL_COMMUNICATION
-  BEHAVIOUR_AND_PLAY
-  SENSORY_RESPONSES
-}
-
-enum Frequency {
-  RARE
-  SOMETIMES
-  OFTEN
-}
-
-enum Context {
-  HOME
-  NURSERY
-  OUTDOORS
-  OTHER
 }
 
 enum SurveyStatus {

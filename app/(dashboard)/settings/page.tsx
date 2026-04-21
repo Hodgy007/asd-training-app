@@ -133,7 +133,11 @@ export default function SettingsPage() {
                 ? 'Administrator'
                 : session?.user?.role === 'CAREER_DEV_OFFICER'
                 ? 'Careers Professional'
-                : 'Practitioner'}
+                : session?.user?.role === 'STUDENT'
+                ? 'Student'
+                : session?.user?.role === 'INTERN'
+                ? 'Intern'
+                : 'Employee'}
             </p>
           </div>
         </div>
@@ -296,7 +300,7 @@ export default function SettingsPage() {
         </div>
         <p className="text-sm text-slate-600 leading-relaxed">
           Your data is stored securely on Neon PostgreSQL (hosted on Azure, EU). We store your name,
-          email{session?.user?.role === 'CAREGIVER' ? ', child profiles, and observations' : ', and training progress'}. No data is sold or shared with third parties{session?.user?.role === 'CAREGIVER' ? ' except Google Gemini for AI report generation (observation data only, no retention by Google)' : ''}.
+          email, and training progress. No data is sold or shared with third parties.
         </p>
         <p className="text-sm text-slate-600">
           Under UK GDPR you have the right to access, correct, and erase your data. To request a
@@ -318,7 +322,7 @@ export default function SettingsPage() {
         <div>
           <h3 className="font-semibold text-slate-900 text-sm">Delete my account</h3>
           <p className="text-sm text-slate-500 mt-1">
-            Permanently deletes your account and all associated data{session?.user?.role === 'CAREGIVER' ? ' including child profiles, observations, AI insights, and' : ' including'} training progress. <strong>This cannot be undone.</strong>
+            Permanently deletes your account and all associated data including training progress. <strong>This cannot be undone.</strong>
           </p>
         </div>
 

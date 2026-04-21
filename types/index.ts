@@ -16,10 +16,6 @@ export const LEAF_ROLES: Role[] = [
   'EMPLOYEE',
 ]
 
-export type Domain = 'SOCIAL_COMMUNICATION' | 'BEHAVIOUR_AND_PLAY' | 'SENSORY_RESPONSES'
-export type Frequency = 'RARE' | 'SOMETIMES' | 'OFTEN'
-export type Context = 'HOME' | 'NURSERY' | 'OUTDOORS' | 'OTHER'
-
 export interface Organisation {
   id: string
   name: string
@@ -62,32 +58,6 @@ export interface User {
   updatedAt: Date
 }
 
-export interface Child {
-  id: string
-  name: string
-  dateOfBirth: Date
-  createdAt: Date
-  updatedAt: Date
-  userId: string
-  observations?: Observation[]
-  aiInsights?: AiInsight[]
-  _count?: {
-    observations: number
-  }
-}
-
-export interface Observation {
-  id: string
-  childId: string
-  date: Date
-  behaviourType: string
-  domain: Domain
-  frequency: Frequency
-  context: Context
-  createdAt: Date
-  updatedAt: Date
-}
-
 export interface TrainingProgress {
   id: string
   userId: string
@@ -98,16 +68,6 @@ export interface TrainingProgress {
   completedAt?: Date | null
   createdAt: Date
   updatedAt: Date
-}
-
-export interface AiInsight {
-  id: string
-  childId: string
-  generatedAt: string
-  summary: string
-  patterns: string
-  recommendations: string
-  disclaimer: string
 }
 
 export interface QuizQuestion {
@@ -136,21 +96,6 @@ export interface TrainingModule {
   lessons: Lesson[]
 }
 
-export interface WeeklyChartData {
-  week: string
-  social: number
-  behaviour: number
-  sensory: number
-}
-
-export interface DomainSummary {
-  domain: Domain
-  label: string
-  count: number
-  weight: number
-  hasThreshold: boolean
-}
-
 export interface ApiResponse<T> {
   data?: T
   error?: string
@@ -161,19 +106,6 @@ export interface PaginatedResponse<T> {
   total: number
   page: number
   pageSize: number
-}
-
-export interface CreateChildForm {
-  name: string
-  dateOfBirth: string
-}
-
-export interface CreateObservationForm {
-  date: string
-  domain: Domain
-  behaviourType: string
-  frequency: Frequency
-  context: Context
 }
 
 export interface RegisterForm {

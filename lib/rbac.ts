@@ -126,14 +126,6 @@ export function canAccessCareers(session: Session | null): boolean {
   return hasRole(session, 'CAREER_DEV_OFFICER')
 }
 
-/**
- * Returns true if the user's role is CAREGIVER.
- * SUPER_ADMIN and ORG_ADMIN do NOT access training routes.
- */
-export function canAccessCaregiving(session: Session | null): boolean {
-  return hasRole(session, 'CAREGIVER')
-}
-
 /** Leaf roles that a CAREER_DEV_OFFICER manages (students). */
 export const CDO_MANAGED_ROLES: Role[] = ['STUDENT', 'INTERN', 'EMPLOYEE']
 

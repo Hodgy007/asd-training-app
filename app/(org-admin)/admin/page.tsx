@@ -27,7 +27,6 @@ import { CredentialCardModal } from '@/components/ui/credential-card-modal'
 import { SendInviteButton } from '@/components/ui/send-invite-button'
 
 const ROLE_LABELS: Record<string, string> = {
-  CAREGIVER: 'Practitioner',
   CAREER_DEV_OFFICER: 'Careers Professional',
   STUDENT: 'Student',
   INTERN: 'Intern',
@@ -35,7 +34,6 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  CAREGIVER: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
   CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
   INTERN: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
@@ -43,7 +41,6 @@ const ROLE_COLORS: Record<string, string> = {
 }
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
-  CAREGIVER: UserCircle,
   CAREER_DEV_OFFICER: Briefcase,
   STUDENT: GraduationCap,
   INTERN: Layers,
@@ -771,9 +768,6 @@ export default function OrgAdminUsersPage() {
 
                       {/* Activity counts */}
                       <td className="px-4 py-3 text-slate-400 hidden lg:table-cell text-xs">
-                        {user.role === 'CAREGIVER' && (
-                          <span className="mr-3">{user._count.children} children</span>
-                        )}
                         <span>{user._count.trainingProgress} lessons</span>
                       </td>
 

@@ -10,7 +10,6 @@ import {
   isLeafRole,
   isAdmin,
   canAccessCareers,
-  canAccessCaregiving,
   canCreateSessions,
   hasPermission,
   CHARITY_PERMISSIONS,
@@ -42,7 +41,7 @@ describe('hasRole', () => {
   })
 
   it('returns false when session role does not match', () => {
-    const session = makeSession('CAREGIVER')
+    const session = makeSession('STUDENT')
     expect(hasRole(session, 'SUPER_ADMIN')).toBe(false)
     expect(hasRole(session, 'ORG_ADMIN', 'SUPER_ADMIN')).toBe(false)
   })
@@ -69,7 +68,7 @@ describe('isSuperAdmin', () => {
 
   it('returns false for other roles', () => {
     expect(isSuperAdmin(makeSession('ORG_ADMIN'))).toBe(false)
-    expect(isSuperAdmin(makeSession('CAREGIVER'))).toBe(false)
+    expect(isSuperAdmin(makeSession('STUDENT'))).toBe(false)
     expect(isSuperAdmin(makeSession('CHARITY_EMPLOYEE'))).toBe(false)
   })
 
@@ -116,8 +115,8 @@ describe('isCharityLevel', () => {
   })
 
   it('returns false for leaf roles', () => {
-    expect(isCharityLevel(makeSession('CAREGIVER'))).toBe(false)
     expect(isCharityLevel(makeSession('STUDENT'))).toBe(false)
+    expect(isCharityLevel(makeSession('EMPLOYEE'))).toBe(false)
   })
 })
 
@@ -131,7 +130,7 @@ describe('isOrgAdmin', () => {
   })
 
   it('returns false for leaf roles', () => {
-    expect(isOrgAdmin(makeSession('CAREGIVER'))).toBe(false)
+    expect(isOrgAdmin(makeSession('STUDENT'))).toBe(false)
   })
 })
 
@@ -171,26 +170,8 @@ describe('canAccessCareers', () => {
     expect(canAccessCareers(makeSession('SUPER_ADMIN'))).toBe(false)
   })
 
-  it('returns false for CAREGIVER', () => {
-    expect(canAccessCareers(makeSession('CAREGIVER'))).toBe(false)
-  })
-
   it('returns false for ORG_ADMIN', () => {
     expect(canAccessCareers(makeSession('ORG_ADMIN'))).toBe(false)
-  })
-})
-
-describe('canAccessCaregiving', () => {
-  it('returns true for CAREGIVER', () => {
-    expect(canAccessCaregiving(makeSession('CAREGIVER'))).toBe(true)
-  })
-
-  it('returns false for CAREER_DEV_OFFICER', () => {
-    expect(canAccessCaregiving(makeSession('CAREER_DEV_OFFICER'))).toBe(false)
-  })
-
-  it('returns false for SUPER_ADMIN', () => {
-    expect(canAccessCaregiving(makeSession('SUPER_ADMIN'))).toBe(false)
   })
 })
 
@@ -199,12 +180,12 @@ describe('canCreateSessions', () => {
     expect(canCreateSessions(makeSession('ORG_ADMIN'))).toBe(true)
   })
 
-  it('returns true for CAREGIVER', () => {
-    expect(canCreateSessions(makeSession('CAREGIVER'))).toBe(true)
-  })
-
   it('returns true for CAREER_DEV_OFFICER', () => {
     expect(canCreateSessions(makeSession('CAREER_DEV_OFFICER'))).toBe(true)
+  })
+
+  it('returns true for CAREGIVER', () => {
+    expect(canCreateSessions(makeSession('CAREGIVER'))).toBe(true)
   })
 
   it('returns true for SUPER_ADMIN (has all permissions)', () => {
@@ -277,8 +258,8 @@ describe('hasPermission', () => {
     expect(hasPermission(session, 'manage_organisations')).toBe(false)
   })
 
-  it('returns false for CAREGIVER regardless of permission', () => {
-    const session = makeSession('CAREGIVER')
+  it('returns false for STUDENT regardless of permission', () => {
+    const session = makeSession('STUDENT')
     expect(hasPermission(session, 'view_reports')).toBe(false)
   })
 

@@ -728,19 +728,19 @@ async function main() {
   })
   console.log('Created admin user:', admin.email)
 
-  // Create demo caregiver user
-  const caregiverPassword = await bcrypt.hash('demo123', 12)
-  const caregiver = await prisma.user.upsert({
+  // Create demo learner user
+  const learnerPassword = await bcrypt.hash('demo123', 12)
+  const learner = await prisma.user.upsert({
     where: { email: 'demo@example.com' },
     update: {},
     create: {
       email: 'demo@example.com',
       name: 'Sarah Thompson',
-      password: caregiverPassword,
-      role: 'CAREGIVER',
+      password: learnerPassword,
+      role: 'EMPLOYEE',
     },
   })
-  console.log('Created demo caregiver:', caregiver.email)
+  console.log('Created demo learner:', learner.email)
 
   // Seed training progress records for demo user
   for (const module of trainingModules) {
@@ -750,14 +750,14 @@ async function main() {
         await prisma.trainingProgress.upsert({
           where: {
             userId_moduleId_lessonId: {
-              userId: caregiver.id,
+              userId: learner.id,
               moduleId: module.id,
               lessonId: lesson.id,
             },
           },
           update: {},
           create: {
-            userId: caregiver.id,
+            userId: learner.id,
             moduleId: module.id,
             lessonId: lesson.id,
             completed: false,
@@ -767,179 +767,21 @@ async function main() {
     }
   }
 
-  // Seed demo child under the demo caregiver
-  const demoChild = await prisma.child.upsert({
-    where: { id: 'demo-child-jamie' },
-    update: {},
-    create: {
-      id: 'demo-child-jamie',
-      name: 'Jamie Collins',
-      dateOfBirth: new Date('2021-09-14'), // ~4.5 years old
-      userId: caregiver.id,
-    },
-  })
-  console.log('Created demo child:', demoChild.name)
-
-  // Observations spread across domains and dates
-  const demoObservations = [
-    // Social communication
-    {
-      childId: demoChild.id,
-      date: new Date('2026-01-08'),
-      behaviourType: 'Limited eye contact during shared play',
-      domain: 'SOCIAL_COMMUNICATION' as const,
-      frequency: 'OFTEN' as const,
-      context: 'NURSERY' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-01-15'),
-      behaviourType: 'Delayed response to name',
-      domain: 'SOCIAL_COMMUNICATION' as const,
-      frequency: 'OFTEN' as const,
-      context: 'HOME' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-01-22'),
-      behaviourType: 'Reduced declarative pointing',
-      domain: 'SOCIAL_COMMUNICATION' as const,
-      frequency: 'SOMETIMES' as const,
-      context: 'OUTDOORS' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-02-03'),
-      behaviourType: 'Echolalia — repeating TV phrases',
-      domain: 'SOCIAL_COMMUNICATION' as const,
-      frequency: 'OFTEN' as const,
-      context: 'HOME' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-02-18'),
-      behaviourType: 'Difficulty with back-and-forth conversation',
-      domain: 'SOCIAL_COMMUNICATION' as const,
-      frequency: 'OFTEN' as const,
-      context: 'NURSERY' as const,
-    },
-    // Behaviour and play
-    {
-      childId: demoChild.id,
-      date: new Date('2026-01-10'),
-      behaviourType: 'Lining up toys in precise rows',
-      domain: 'BEHAVIOUR_AND_PLAY' as const,
-      frequency: 'OFTEN' as const,
-      context: 'HOME' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-01-19'),
-      behaviourType: 'Distress at routine change',
-      domain: 'BEHAVIOUR_AND_PLAY' as const,
-      frequency: 'OFTEN' as const,
-      context: 'HOME' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-02-05'),
-      behaviourType: 'Repetitive hand-flapping when excited',
-      domain: 'BEHAVIOUR_AND_PLAY' as const,
-      frequency: 'OFTEN' as const,
-      context: 'HOME' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-02-12'),
-      behaviourType: 'Limited imaginative play',
-      domain: 'BEHAVIOUR_AND_PLAY' as const,
-      frequency: 'OFTEN' as const,
-      context: 'NURSERY' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-03-01'),
-      behaviourType: 'Insistence on specific seat at mealtimes',
-      domain: 'BEHAVIOUR_AND_PLAY' as const,
-      frequency: 'OFTEN' as const,
-      context: 'HOME' as const,
-    },
-    // Sensory responses
-    {
-      childId: demoChild.id,
-      date: new Date('2026-01-13'),
-      behaviourType: 'Hypersensitivity to hand dryer noise',
-      domain: 'SENSORY_RESPONSES' as const,
-      frequency: 'OFTEN' as const,
-      context: 'OUTDOORS' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-01-27'),
-      behaviourType: 'Refusal of textured foods',
-      domain: 'SENSORY_RESPONSES' as const,
-      frequency: 'OFTEN' as const,
-      context: 'HOME' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-02-09'),
-      behaviourType: 'Seeks deep pressure / tight clothing',
-      domain: 'SENSORY_RESPONSES' as const,
-      frequency: 'SOMETIMES' as const,
-      context: 'HOME' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-02-24'),
-      behaviourType: 'Distress at clothing labels and seams',
-      domain: 'SENSORY_RESPONSES' as const,
-      frequency: 'OFTEN' as const,
-      context: 'HOME' as const,
-    },
-    {
-      childId: demoChild.id,
-      date: new Date('2026-03-10'),
-      behaviourType: 'Unusual pain response — apparent indifference to injury',
-      domain: 'SENSORY_RESPONSES' as const,
-      frequency: 'SOMETIMES' as const,
-      context: 'OUTDOORS' as const,
-    },
-  ]
-
-  for (const obs of demoObservations) {
-    await prisma.observation.create({ data: obs })
-  }
-  console.log(`Created ${demoObservations.length} demo observations`)
-
-  // AI insight for the demo child
-  await prisma.aiInsight.create({
-    data: {
-      childId: demoChild.id,
-      generatedAt: new Date('2026-03-15'),
-      summary: `Over the observed period (January–March 2026), Jamie (age 4, 6 months) shows a consistent pattern of differences across all three observation domains: social communication, behaviour and play, and sensory processing. The frequency and consistency of these observations across both home and nursery settings is notable.`,
-      patterns: `Social communication: Reduced joint attention behaviours are consistently observed — Jamie rarely points to share interest and does not look back to check for shared experience. Delayed response to name and limited back-and-forth exchange are reported frequently across contexts. Echolalia (repeating TV phrases) is present and appears non-functional.\n\nBehaviour and play: A strong preference for sameness and routine is evident, with significant distress when routines are disrupted. Repetitive behaviours including lining up objects and hand-flapping are observed regularly. Imaginative and pretend play appears absent; play is predominantly sensory-exploratory or systematic.\n\nSensory processing: Hypersensitivity to auditory input (particularly sudden loud noises) and tactile input (seams, food textures) is documented across multiple observations. Simultaneous sensory-seeking behaviour (deep pressure, tight clothing) suggests a complex sensory profile rather than uniform over- or under-sensitivity.`,
-      recommendations: `These observations present a consistent pattern that warrants further professional exploration. The following steps are recommended:\n\n1. Discuss these documented observations with Jamie's GP or health visitor at the next available appointment. Bring printed copies of the observation records.\n\n2. Request a referral to the community paediatric team or local autism assessment service. Note that waiting times in many areas exceed 12 months — early referral is advisable.\n\n3. Speak with the nursery SENCO (Special Educational Needs Coordinator) about Jamie's observed differences. The nursery can provide a professional SENCO report which will support any formal assessment.\n\n4. Consider a referral to Speech and Language Therapy for assessment of Jamie's communication profile, particularly the echolalia and limited conversational exchange.\n\n5. An Occupational Therapy (sensory integration) referral may be helpful given the significant sensory differences noted, particularly the food selectivity and tactile sensitivities.\n\nPlease remember: these observations do not constitute a diagnosis. Many children display some of these behaviours. The pattern, frequency, and consistency across multiple settings is what makes these observations worth sharing with healthcare professionals.`,
-      disclaimer: 'This is not a diagnosis. This tool supports observation and pattern recognition only. Always consult a qualified healthcare professional.',
-    },
-  })
-  console.log('Created demo AI insight')
-
-  // Mark first 2 modules complete for demo caregiver
+  // Mark first 2 modules complete for demo learner
   const completedModules = trainingModules.slice(0, 2)
   for (const module of completedModules) {
     for (const lesson of module.lessons) {
       await prisma.trainingProgress.upsert({
         where: {
           userId_moduleId_lessonId: {
-            userId: caregiver.id,
+            userId: learner.id,
             moduleId: module.id,
             lessonId: lesson.id,
           },
         },
         update: { completed: true, completedAt: new Date('2026-02-20') },
         create: {
-          userId: caregiver.id,
+          userId: learner.id,
           moduleId: module.id,
           lessonId: lesson.id,
           completed: true,
@@ -948,7 +790,7 @@ async function main() {
       })
     }
   }
-  console.log('Marked first 2 training modules complete for demo caregiver')
+  console.log('Marked first 2 training modules complete for demo learner')
 
   console.log('\nSeeding complete!')
   console.log('\nDemo credentials:')

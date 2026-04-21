@@ -205,7 +205,7 @@ export const authOptions: NextAuthOptions = {
       // Credentials login — user object already has DB fields
       if (user && account?.provider === 'credentials') {
         token.id = user.id
-        token.role = (user as { role?: string }).role ?? 'CAREGIVER'
+        token.role = (user as { role?: string }).role ?? 'EMPLOYEE'
         token.organisationId = (user as { organisationId?: string | null }).organisationId ?? null
         token.mustChangePassword = (user as { mustChangePassword?: boolean }).mustChangePassword ?? false
         token.totpEnabled = (user as { totpEnabled?: boolean }).totpEnabled ?? false

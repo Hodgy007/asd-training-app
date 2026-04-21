@@ -5,7 +5,6 @@ import { SessionProvider } from '@/components/providers/session-provider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { ColorThemeProvider } from '@/components/providers/color-theme-provider'
 import { FontProvider } from '@/components/providers/font-provider'
-import { CaregiverDisclaimer } from '@/components/ui/caregiver-disclaimer'
 import { CookieConsent } from '@/components/ui/cookie-consent'
 
 const inter = Inter({
@@ -15,10 +14,10 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Ambitious about Autism — Training & Observation Platform',
+  title: 'Ambitious about Autism — Training Platform',
   description:
-    'A training and observation platform for practitioners and early years professionals to support early identification of autism patterns. Not a diagnostic tool.',
-  keywords: ['autism', 'practitioner training', 'observation', 'early years', 'UK', 'Ambitious about Autism'],
+    'A training platform for careers professionals, students, interns and employees supporting autistic learners.',
+  keywords: ['autism', 'careers training', 'UK', 'Ambitious about Autism'],
   authors: [{ name: 'Ambitious about Autism' }],
   robots: 'noindex, nofollow',
 }
@@ -40,7 +39,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <FontProvider>
           <SessionProvider>
             <div className="min-h-screen flex flex-col">
-              <CaregiverDisclaimer />
               <div className="flex-1">{children}</div>
             </div>
           </SessionProvider>

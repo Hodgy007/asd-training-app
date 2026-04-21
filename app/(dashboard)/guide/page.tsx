@@ -4,19 +4,15 @@ import { useSession } from 'next-auth/react'
 import {
   LayoutDashboard,
   BookOpen,
-  Users,
   Calendar,
   Settings,
   HelpCircle,
   ClipboardList,
-
-  BarChart3,
   FileText,
   Compass,
 } from 'lucide-react'
 
 const ROLE_LABELS: Record<string, string> = {
-  CAREGIVER: 'Practitioner',
   CAREER_DEV_OFFICER: 'Careers Professional',
   STUDENT: 'Student',
   INTERN: 'Intern',
@@ -56,7 +52,6 @@ export default function GuidePage() {
   const role = session?.user?.role ?? ''
   const roleLabel = ROLE_LABELS[role] ?? 'User'
   const firstName = session?.user?.name?.split(' ')[0] ?? 'there'
-  const isPractitioner = role === 'CAREGIVER'
 
   const commonSections: GuideSection[] = [
     {
@@ -245,51 +240,7 @@ export default function GuidePage() {
     },
   ]
 
-  const practitionerSections: GuideSection[] = [
-    {
-      title: 'Child Observations',
-      icon: Users,
-      content: (
-        <>
-          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-            Record and track observations for children in your care to identify patterns and support development.
-          </p>
-          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Adding children and observations</h3>
-          <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-            <li>Add children to your profile with their name and date of birth</li>
-            <li>Record observations for each child: select a behaviour, domain (Social Communication, Behaviour &amp; Play, Sensory Responses), frequency, and context</li>
-            <li>View all observations for a child on their profile page</li>
-            <li>AI-generated insights are available: click &quot;Generate Insights&quot; on a child&apos;s page for AI analysis of patterns and recommendations</li>
-          </ol>
-          <div className="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-400 rounded-r-lg p-3">
-            <p className="text-sm text-amber-800 dark:text-amber-300">
-              <strong>Important disclaimer:</strong> This tool does not diagnose. Share observations with your GP or health visitor.
-            </p>
-          </div>
-        </>
-      ),
-    },
-    {
-      title: 'Reports',
-      icon: BarChart3,
-      content: (
-        <>
-          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-            View reports to understand training progress and observation patterns.
-          </p>
-          <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-            <li>View your personal training progress and completion statistics</li>
-            <li>See observation summaries and charts for your children</li>
-            <li>Reports use charts to visualise patterns across domains and frequencies</li>
-          </ol>
-        </>
-      ),
-    },
-  ]
-
-  const allSections = isPractitioner
-    ? [...commonSections, ...practitionerSections]
-    : isCVRole
+  const allSections = isCVRole
     ? [...commonSections, ...cvBuilderSections, ...careersAdvisorSections]
     : commonSections
 
@@ -309,14 +260,12 @@ export default function GuidePage() {
         <SectionCard key={section.title} {...section} />
       ))}
 
-      {!isPractitioner && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 rounded-r-lg p-4">
-          <p className="text-sm text-blue-800 dark:text-blue-300">
-            <strong>Your Role: {roleLabel}</strong> — Your primary focus is completing your assigned training programs.
-            Check your dashboard regularly for new announcements, surveys, and upcoming workshops.
-          </p>
-        </div>
-      )}
+      <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 rounded-r-lg p-4">
+        <p className="text-sm text-blue-800 dark:text-blue-300">
+          <strong>Your Role: {roleLabel}</strong> — Your primary focus is completing your assigned training programs.
+          Check your dashboard regularly for new announcements, surveys, and upcoming workshops.
+        </p>
+      </div>
     </div>
   )
 }

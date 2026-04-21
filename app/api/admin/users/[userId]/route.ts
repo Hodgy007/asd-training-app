@@ -25,7 +25,7 @@ export async function GET(
     select: {
       id: true, name: true, email: true, role: true, active: true,
       organisationId: true, createdAt: true, updatedAt: true,
-      _count: { select: { children: true, trainingProgress: true } },
+      _count: { select: { trainingProgress: true } },
     },
   })
 

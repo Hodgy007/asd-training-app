@@ -11,7 +11,6 @@ import { formatDistanceToNow } from 'date-fns'
 const CATEGORY_LABEL: Record<string, string> = {
   cv: 'CV Builder',
   careers: 'Careers Advisor',
-  observations: 'Child Observations',
   survey: 'Surveys',
   training: 'Training',
   library: 'Document Library',

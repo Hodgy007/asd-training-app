@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
         id: true, name: true, email: true, role: true, active: true,
         mustChangePassword: true, createdAt: true,
         password: true,
-        _count: { select: { children: true, trainingProgress: true } },
+        _count: { select: { trainingProgress: true } },
       },
     }),
     prisma.user.count({ where }),
