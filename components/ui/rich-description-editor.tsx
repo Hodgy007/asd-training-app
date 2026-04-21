@@ -47,7 +47,14 @@ export function RichDescriptionEditor({
       <ReactQuill
         theme="snow"
         value={value}
-        onChange={onChange}
+        onChange={(next, _delta, source) => {
+          // Only forward user-initiated changes. Quill fires text-change with
+          // source='api' during mount and prop updates as it normalises HTML;
+          // forwarding those causes infinite setState loops when multiple
+          // editors are mounted together (e.g. carousel slide bodies).
+          if (source !== 'user') return
+          onChange(next)
+        }}
         placeholder={placeholder}
         modules={modules}
         formats={formats}

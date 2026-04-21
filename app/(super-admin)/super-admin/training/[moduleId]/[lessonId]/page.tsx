@@ -25,7 +25,7 @@ import { VideoPlayer } from '@/components/training/video-player'
 import { clsx } from 'clsx'
 import { InteractiveBlock } from '@/types/interactive'
 import { InteractiveBlocksPanel } from '@/components/admin/interactive-builder/interactive-blocks-panel'
-import { generateBlockPlaceholder, validateInteractiveBlocks } from '@/lib/interactive-blocks'
+import { generateBlockPlaceholder, removeBlockPlaceholder, validateInteractiveBlocks } from '@/lib/interactive-blocks'
 
 import dynamic from 'next/dynamic'
 
@@ -546,6 +546,14 @@ export default function LessonEditorPage() {
             setEditContent(prev => {
               const base = liveHtml && liveHtml !== '<p><br></p>' ? liveHtml : prev
               return base + placeholder
+            })
+          }}
+          onRemovePlaceholder={(blockId) => {
+            const qlEditor = editorContainerRef.current?.querySelector('.ql-editor') as HTMLElement | null
+            const liveHtml = qlEditor?.innerHTML
+            setEditContent(prev => {
+              const base = liveHtml && liveHtml !== '<p><br></p>' ? liveHtml : prev
+              return removeBlockPlaceholder(base, blockId)
             })
           }}
         />

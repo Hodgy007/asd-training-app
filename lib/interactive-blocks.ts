@@ -26,8 +26,11 @@ export function splitContentAtBlocks(
   // Match placeholder markers. Quill may wrap the marker text in various tags
   // (p, span with styles, etc.), so we match the raw [INTERACTIVE:blockId] text
   // along with the enclosing paragraph/element.
-  // Pattern: match a <p> (or similar block) that contains [INTERACTIVE:blockId]
-  const pattern = /<p[^>]*>[^]*?\[INTERACTIVE:([^\]]+)\][^]*?<\/p>/gi
+  // Pattern: match a single <p>…</p> that contains [INTERACTIVE:blockId].
+  // The `(?:(?!<\/p>)[\s\S])*?` negative lookahead prevents the lazy quantifier
+  // from crossing paragraph boundaries — without it, the regex would swallow
+  // every earlier <p> up to the marker and wipe out the lesson text.
+  const pattern = /<p[^>]*>(?:(?!<\/p>)[\s\S])*?\[INTERACTIVE:([^\]]+)\](?:(?!<\/p>)[\s\S])*?<\/p>/gi
   const segments: ContentSegment[] = []
   let lastIndex = 0
   let match: RegExpExecArray | null
@@ -85,4 +88,17 @@ export function generateBlockPlaceholder(blockId: string, _title: string): strin
   // Quill strips data attributes and may rewrite divs as paragraphs,
   // but preserves visible text content inside styled elements.
   return `<p style="background:#f0fdf4;border:2px dashed #86efac;border-radius:8px;padding:12px 16px;margin:8px 0;font-size:14px;color:#166534;text-align:center;">[INTERACTIVE:${blockId}]</p><p><br></p>`
+}
+
+/**
+ * Remove a block's placeholder paragraph from Quill HTML content.
+ * Matches a single <p>…</p> containing [INTERACTIVE:blockId] and removes it.
+ */
+export function removeBlockPlaceholder(html: string, blockId: string): string {
+  const escaped = blockId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const pattern = new RegExp(
+    `<p[^>]*>(?:(?!<\\/p>)[\\s\\S])*?\\[INTERACTIVE:${escaped}\\](?:(?!<\\/p>)[\\s\\S])*?<\\/p>`,
+    'gi'
+  )
+  return html.replace(pattern, '')
 }

@@ -6,6 +6,8 @@ import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
 import { Badge } from '@/components/ui/badge'
 import { GATSBY_BENCHMARKS, type GatsbyBenchmarkCode } from '@/lib/gatsby-benchmarks'
+import { isHtml } from '@/lib/rich-text'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 interface ModuleForCard {
   id: string
@@ -69,7 +71,14 @@ export function ModuleCard({ module, completedLessons, locked, programId }: Modu
         </div>
         <div className="flex-1 min-w-0 pr-8">
           <h3 className="font-semibold text-slate-900 leading-snug">{module.title}</h3>
-          <p className="text-sm text-slate-500 mt-1 line-clamp-2">{module.description}</p>
+          {isHtml(module.description) ? (
+            <div
+              className="prose-lesson text-sm text-slate-500 mt-1"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(module.description) }}
+            />
+          ) : (
+            <p className="text-sm text-slate-500 mt-1 whitespace-pre-wrap">{module.description}</p>
+          )}
         </div>
       </div>
 

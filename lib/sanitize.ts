@@ -20,9 +20,13 @@ const ALLOWED_ATTR = [
 ]
 
 export function sanitizeHtml(dirty: string): string {
-  return DOMPurify.sanitize(dirty, {
+  const clean = DOMPurify.sanitize(dirty, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false,
   })
+  // Rich-text editors (and paste-from-Word) often insert non-breaking spaces
+  // between every word, which prevents normal word-wrap in narrow containers
+  // (e.g. list items on module cards). Normalise them to regular spaces.
+  return clean.replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
 }

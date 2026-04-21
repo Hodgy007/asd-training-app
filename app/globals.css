@@ -291,11 +291,11 @@ html[data-color-theme="blue"].dark .text-primary-800 { color: rgb(68 199 238); }
 }
 
 .prose-lesson ul {
-  @apply list-disc list-inside space-y-1 mb-4 ml-1 sm:ml-2;
+  @apply list-disc list-outside space-y-1 mb-4 pl-5 sm:pl-6;
 }
 
 .prose-lesson ol {
-  @apply list-decimal list-inside space-y-1 mb-4 ml-1 sm:ml-2;
+  @apply list-decimal list-outside space-y-1 mb-4 pl-5 sm:pl-6;
 }
 
 .prose-lesson img {

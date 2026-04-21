@@ -1,6 +1,6 @@
 'use client'
 
-import { X, GitBranch, GripVertical, MousePointer, HelpCircle } from 'lucide-react'
+import { X, GitBranch, GripVertical, MousePointer, HelpCircle, Images } from 'lucide-react'
 import { InteractiveBlockType } from '@/types/interactive'
 
 interface BlockTypePickerProps {
@@ -13,6 +13,7 @@ const BLOCK_TYPES: { type: InteractiveBlockType; label: string; description: str
   { type: 'drag-drop', label: 'Drag & Drop', description: 'Match items, sort into categories, or put steps in order.', icon: GripVertical, available: true },
   { type: 'hotspot', label: 'Hotspot / Click-to-Reveal', description: 'Click areas on an image or cards to reveal information.', icon: MousePointer, available: true },
   { type: 'knowledge-check', label: 'Knowledge Check', description: 'Quick 1-3 question check embedded mid-lesson with instant feedback.', icon: HelpCircle, available: true },
+  { type: 'carousel', label: 'Image Carousel', description: 'Swipeable slides — each with an image, title, and body text.', icon: Images, available: true },
 ]
 
 export function BlockTypePicker({ onSelect, onClose }: BlockTypePickerProps) {

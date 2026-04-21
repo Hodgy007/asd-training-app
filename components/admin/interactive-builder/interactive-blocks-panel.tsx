@@ -2,17 +2,19 @@
 
 import { useState } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight, Zap } from 'lucide-react'
-import { InteractiveBlock, InteractiveBlockType, ScenarioData, KnowledgeCheckData } from '@/types/interactive'
+import { InteractiveBlock, InteractiveBlockType, ScenarioData, KnowledgeCheckData, CarouselData } from '@/types/interactive'
 import { BlockTypePicker } from './block-type-picker'
 import { ScenarioBuilder } from './scenario-builder'
 import { KnowledgeCheckBuilder } from './knowledge-check-builder'
 import { DragDropBuilder } from './drag-drop-builder'
 import { HotspotBuilder } from './hotspot-builder'
+import { CarouselBuilder } from './carousel-builder'
 
 interface InteractiveBlocksPanelProps {
   blocks: InteractiveBlock[]
   onChange: (blocks: InteractiveBlock[]) => void
   onInsertPlaceholder: (blockId: string, title: string) => void
+  onRemovePlaceholder?: (blockId: string) => void
 }
 
 function generateBlockId() {
@@ -42,10 +44,14 @@ function createDefaultBlock(type: InteractiveBlockType): InteractiveBlock {
       const kcData: KnowledgeCheckData = { questions: [{ id: 'q-1', question: '', options: ['', ''], correctAnswer: '', feedback: '' }] }
       return { ...base, data: kcData }
     }
+    case 'carousel': {
+      const carouselData: CarouselData = { slides: [] }
+      return { ...base, data: carouselData }
+    }
   }
 }
 
-export function InteractiveBlocksPanel({ blocks, onChange, onInsertPlaceholder }: InteractiveBlocksPanelProps) {
+export function InteractiveBlocksPanel({ blocks, onChange, onInsertPlaceholder, onRemovePlaceholder }: InteractiveBlocksPanelProps) {
   const [showTypePicker, setShowTypePicker] = useState(false)
   const [expandedBlockId, setExpandedBlockId] = useState<string | null>(null)
 
@@ -66,6 +72,7 @@ export function InteractiveBlocksPanel({ blocks, onChange, onInsertPlaceholder }
   function deleteBlock(blockId: string) {
     onChange(blocks.filter(b => b.id !== blockId))
     if (expandedBlockId === blockId) setExpandedBlockId(null)
+    onRemovePlaceholder?.(blockId)
   }
 
   return (
@@ -126,6 +133,9 @@ export function InteractiveBlocksPanel({ blocks, onChange, onInsertPlaceholder }
               )}
               {block.type === 'knowledge-check' && (
                 <KnowledgeCheckBuilder block={block} onChange={updateBlock} />
+              )}
+              {block.type === 'carousel' && (
+                <CarouselBuilder block={block} onChange={updateBlock} />
               )}
             </div>
           )}

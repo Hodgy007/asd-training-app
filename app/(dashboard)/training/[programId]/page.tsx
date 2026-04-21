@@ -62,7 +62,7 @@ export default async function ProgramPage({ params }: { params: { programId: str
           {program.description && (
             isHtml(program.description) ? (
               <div
-                className="prose prose-sm max-w-none text-slate-500 dark:text-slate-400 dark:prose-invert mt-1"
+                className="prose-lesson text-slate-500 dark:text-slate-400 mt-1"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(program.description) }}
               />
             ) : (

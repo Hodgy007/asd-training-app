@@ -81,7 +81,7 @@ export default async function ProgramModulePage({
       >
         {isHtml(module.description) ? (
           <div
-            className="prose prose-sm max-w-none text-slate-600 mb-4 dark:prose-invert"
+            className="prose-lesson text-slate-600 mb-4"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(module.description) }}
           />
         ) : (

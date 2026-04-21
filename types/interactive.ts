@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // ─── Block type union ─────────────────────────────────────────────────────────
 
-export type InteractiveBlockType = 'scenario' | 'drag-drop' | 'hotspot' | 'knowledge-check'
+export type InteractiveBlockType = 'scenario' | 'drag-drop' | 'hotspot' | 'knowledge-check' | 'carousel'
 
 export interface InteractiveBlock {
   id: string
@@ -10,7 +10,7 @@ export interface InteractiveBlock {
   title: string
   instructions: string
   order: number
-  data: ScenarioData | DragDropData | HotspotData | KnowledgeCheckData
+  data: ScenarioData | DragDropData | HotspotData | KnowledgeCheckData | CarouselData
 }
 
 // ─── Scenario (branching decision tree) ───────────────────────────────────────
@@ -102,6 +102,19 @@ export interface KnowledgeCheckData {
   questions: KnowledgeCheckQuestion[]
 }
 
+// ─── Carousel (multi-image slides) ────────────────────────────────────────────
+
+export interface CarouselSlide {
+  id: string
+  title: string
+  imageUrl: string
+  body: string
+}
+
+export interface CarouselData {
+  slides: CarouselSlide[]
+}
+
 // ─── Interaction progress tracking ────────────────────────────────────────────
 
 export interface BlockInteraction {
@@ -159,8 +172,11 @@ const hotspotSchema = z.object({
   x: z.number(),
   y: z.number(),
   radius: z.number(),
-  title: z.string().min(1),
-  content: z.string().min(1),
+  // title/content are populated by the author after the hotspot is placed —
+  // allow empty strings so an unfinished hotspot still renders the image
+  // rather than silently dropping the whole interactive block.
+  title: z.string(),
+  content: z.string(),
 })
 
 const revealCardSchema = z.object({
@@ -190,13 +206,24 @@ const knowledgeCheckDataSchema = z.object({
   questions: z.array(knowledgeCheckQuestionSchema).min(1).max(3),
 })
 
+const carouselSlideSchema = z.object({
+  id: z.string().min(1),
+  title: z.string(),
+  imageUrl: z.string(),
+  body: z.string(),
+})
+
+const carouselDataSchema = z.object({
+  slides: z.array(carouselSlideSchema),
+})
+
 export const interactiveBlockSchema = z.object({
   id: z.string().min(1),
-  type: z.enum(['scenario', 'drag-drop', 'hotspot', 'knowledge-check']),
-  title: z.string().min(1),
+  type: z.enum(['scenario', 'drag-drop', 'hotspot', 'knowledge-check', 'carousel']),
+  title: z.string(),
   instructions: z.string(),
   order: z.number().int().min(0),
-  data: z.union([scenarioDataSchema, dragDropDataSchema, hotspotDataSchema, knowledgeCheckDataSchema]),
+  data: z.union([scenarioDataSchema, dragDropDataSchema, hotspotDataSchema, knowledgeCheckDataSchema, carouselDataSchema]),
 })
 
 export const interactiveBlocksSchema = z.array(interactiveBlockSchema)

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import {
   BookOpen,
@@ -87,26 +88,18 @@ export default function TrainingContentPage() {
       const res = await fetch('/api/super-admin/training/programs')
       if (res.ok) {
         const data: Program[] = await res.json()
-        // For expanded programs, fetch their modules
-        const expanded = Array.from(expandedIds)
-        const withModules = await Promise.all(
-          data.map(async (p) => {
-            if (expanded.includes(p.id)) {
-              const mRes = await fetch(`/api/super-admin/training/programs/${p.id}`)
-              if (mRes.ok) {
-                const full = await mRes.json()
-                return { ...p, modules: full.modules ?? [] }
-              }
-            }
-            return p
-          })
-        )
-        setPrograms(withModules)
+        // Preserve already-fetched modules on currently-expanded programs so
+        // the expanded panel doesn't flicker to empty during a reorder refetch.
+        setPrograms((prev) => {
+          const modulesById = new Map<string, Module[] | undefined>()
+          for (const p of prev) modulesById.set(p.id, p.modules)
+          return data.map((p) => ({ ...p, modules: modulesById.get(p.id) }))
+        })
       }
     } finally {
       setLoading(false)
     }
-  }, [expandedIds])
+  }, [])
 
   useEffect(() => { fetchPrograms() }, [fetchPrograms])
 
@@ -315,7 +308,7 @@ export default function TrainingContentPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-6 animate-stagger">
+        <div className="inline-flex flex-col gap-6 max-w-full animate-stagger">
           {programs.map((program, idx) => (
             <div
               key={program.id}
@@ -726,6 +719,7 @@ function EditProgramForm({
   onDeleted: () => void
   onCancel: () => void
 }) {
+  const { data: session } = useSession()
   const [name, setName] = useState(program.name)
   const [description, setDescription] = useState(program.description ?? '')
   const [version, setVersion] = useState(program.version)
@@ -744,6 +738,16 @@ function EditProgramForm({
     if (!name.trim()) return
     setSubmitting(true)
     setError('')
+
+    const today = new Date().toISOString().split('T')[0]
+    const currentUserLabel =
+      session?.user?.name?.trim() || session?.user?.email?.trim() || ''
+    const effectiveReviewedBy = reviewedBy.trim() || currentUserLabel
+    const effectiveReviewedAt = reviewedAt || today
+    // Keep the form fields in sync so the UI reflects what was saved
+    if (!reviewedBy.trim() && currentUserLabel) setReviewedBy(currentUserLabel)
+    if (!reviewedAt) setReviewedAt(today)
+
     try {
       const body: Record<string, unknown> = {
         name: name.trim(),
@@ -751,8 +755,8 @@ function EditProgramForm({
         version: version.trim() || '1.0',
         status,
         active,
-        reviewedBy: reviewedBy.trim() || null,
-        reviewedAt: reviewedAt ? new Date(reviewedAt).toISOString() : null,
+        reviewedBy: effectiveReviewedBy || null,
+        reviewedAt: effectiveReviewedAt ? new Date(effectiveReviewedAt).toISOString() : null,
         reviewNotes: reviewNotes.trim() || null,
       }
       const res = await fetch(`/api/super-admin/training/programs/${program.id}`, {

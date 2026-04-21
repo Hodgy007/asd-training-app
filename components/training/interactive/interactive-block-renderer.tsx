@@ -1,11 +1,12 @@
 'use client'
 
 import { useCallback } from 'react'
-import { InteractiveBlock, ScenarioData, KnowledgeCheckData, DragDropData, HotspotData, InteractionData } from '@/types/interactive'
+import { InteractiveBlock, ScenarioData, KnowledgeCheckData, DragDropData, HotspotData, CarouselData, InteractionData } from '@/types/interactive'
 import { ScenarioPlayer } from './scenario-player'
 import { KnowledgeCheck } from './knowledge-check'
 import { DragDropActivity } from './drag-drop-activity'
 import { HotspotActivity } from './hotspot-activity'
+import { CarouselActivity } from './carousel-activity'
 
 interface InteractiveBlockRendererProps {
   block: InteractiveBlock
@@ -67,6 +68,17 @@ export function InteractiveBlockRenderer({
           title={block.title}
           instructions={block.instructions}
           data={block.data as KnowledgeCheckData}
+          completed={completed}
+          onComplete={handleComplete}
+        />
+      )
+
+    case 'carousel':
+      return (
+        <CarouselActivity
+          title={block.title}
+          instructions={block.instructions}
+          data={block.data as CarouselData}
           completed={completed}
           onComplete={handleComplete}
         />
