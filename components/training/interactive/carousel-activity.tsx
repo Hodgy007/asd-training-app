@@ -7,7 +7,8 @@ import { CarouselData } from '@/types/interactive'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
-import { buildCarouselReadAloudText } from '@/lib/tts-extract'
+import { TtsAudioPlayer } from './tts-audio-player'
+import { buildCarouselSlideTtsText } from '@/lib/tts-extract'
 
 interface CarouselActivityProps {
   title: string
@@ -36,9 +37,13 @@ export function CarouselActivity({
   const slide = slides[safeIdx]
   const hasSlides = slides.length > 0
 
-  // Shared with the server-side prewarm so both sides produce identical
-  // sha256 keys against the Blob TTS cache.
-  const readAloudText = data.readAloud ? buildCarouselReadAloudText(data) : ''
+  // Per-slide TTS text — only computed when the author opted in via the
+  // readAloud flag. Each slide's text hashes to its own Blob entry, so the
+  // player only reads what's currently on screen (no more "all slides at
+  // once"). The buildCarouselSlideTtsText helper is shared with the server-
+  // side prewarm so both sides produce identical sha256 cache keys.
+  const slideReadAloudText =
+    data.readAloud && slide ? buildCarouselSlideTtsText(slide) : ''
 
   // Fire completion once the learner has visited every slide.
   useEffect(() => {
@@ -111,11 +116,7 @@ export function CarouselActivity({
 
   return (
     <div className="my-6">
-      <BlockInstructions
-        title={title}
-        instructions={instructions}
-        readAloudText={readAloudText}
-      />
+      <BlockInstructions title={title} instructions={instructions} />
 
       <div
         ref={containerRef}
@@ -130,6 +131,22 @@ export function CarouselActivity({
       >
         {/* Slide content */}
         <div className="p-6 sm:p-8">
+          {slideReadAloudText && (
+            // Keyed on slide.id so the player fully resets (pauses, drops
+            // the previous blob URL, re-fetches the new slide's MP3) when
+            // the learner navigates between slides.
+            <div className="mb-4">
+              <TtsAudioPlayer
+                key={slide.id}
+                text={slideReadAloudText}
+                ariaLabel={
+                  slide.title
+                    ? `Read slide "${slide.title}" aloud`
+                    : `Read slide ${safeIdx + 1} aloud`
+                }
+              />
+            </div>
+          )}
           {slide.title && (
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
               {slide.title}
