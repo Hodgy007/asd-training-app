@@ -1,7 +1,7 @@
 import {
   Users, Calendar, Megaphone, BarChart3, Video, Shield,
   Plus, Pencil, Trash2, UserPlus, Mail, Lock,
-  Settings, HelpCircle, CheckCircle
+  Settings, HelpCircle, CheckCircle, FolderOpen
 } from 'lucide-react'
 
 export default function OrgAdminGuidePage() {
@@ -46,7 +46,7 @@ export default function OrgAdminGuidePage() {
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                <span><strong>Practitioner</strong> &mdash; Access to ASD Awareness Training modules and child observation tools.</span>
+                <span><strong>Practitioner</strong> &mdash; Access to ASD Awareness Training modules.</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
@@ -252,6 +252,41 @@ export default function OrgAdminGuidePage() {
                 creating sessions.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* 5b. Document Library */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-4 bg-emerald-50 dark:bg-emerald-900/20 border-b border-calm-200 dark:border-slate-700">
+            <FolderOpen className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Document Library</h2>
+          </div>
+          <div className="px-6 py-5 space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              The <strong>Document Library</strong> page lets you see all document collections that the charity
+              has shared with your organisation, and tweak collection titles and descriptions where appropriate.
+            </p>
+
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">What you can do</h3>
+            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                <span>View all collections targeted to your organisation or to roles within it.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Pencil className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                <span>Edit the title and description of a collection to better fit your context.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <BarChart3 className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                <span>See download stats for documents within your organisation.</span>
+              </li>
+            </ul>
+
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              Your users see visible collections as individual links in their sidebar. If a collection you
+              expected is missing, speak to the charity &mdash; visibility is configured at the charity level.
+            </p>
           </div>
         </div>
 

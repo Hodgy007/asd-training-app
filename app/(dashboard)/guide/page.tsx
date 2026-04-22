@@ -10,6 +10,8 @@ import {
   ClipboardList,
   FileText,
   Compass,
+  FolderOpen,
+  Briefcase,
 } from 'lucide-react'
 
 const ROLE_LABELS: Record<string, string> = {
@@ -85,11 +87,13 @@ export default function GuidePage() {
           <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
             <li>Click a training program in the sidebar to see its modules</li>
             <li>Click a module to see its lessons, then click a lesson to start</li>
-            <li>Lessons can be text-based or video-based</li>
-            <li>After completing a lesson, take the quiz to test your understanding</li>
-            <li>Your progress is tracked automatically — completed lessons show a green checkmark</li>
+            <li>Lessons can be text-based or video-based, and may include interactive elements like hotspot images and carousels</li>
+            <li>Use the <strong>read-aloud player</strong> at the top of a lesson to listen to the content — carousels offer per-slide audio too</li>
+            <li>Look for the <strong>Resources</strong> section on some lessons to download supporting PDFs</li>
+            <li>After completing a lesson, take the quiz (if one is provided) to test your understanding</li>
+            <li>Your progress is tracked automatically — completed lessons show a green checkmark, and finishing a module unlocks a Certificate of Completion</li>
           </ol>
-          <Tip>You can revisit completed lessons at any time to refresh your knowledge.</Tip>
+          <Tip>You can revisit completed lessons at any time to refresh your knowledge, and jot down personal notes from the lesson page.</Tip>
         </>
       ),
     },
@@ -110,6 +114,23 @@ export default function GuidePage() {
             <li>Once submitted, your response is recorded and the survey disappears from your pending list</li>
           </ol>
           <Tip>Surveys may have a close date — complete them before they expire.</Tip>
+        </>
+      ),
+    },
+    {
+      title: 'Document Library',
+      icon: FolderOpen,
+      content: (
+        <>
+          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Your organisation (or the charity) may share document collections with you — guides, templates, policies, or reading material.
+          </p>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <li>Collections you have access to appear as individual links in the sidebar</li>
+            <li>Click a collection to open it, then click any document to preview or download it</li>
+            <li>New documents are added regularly — check back periodically for updates</li>
+          </ol>
+          <Tip>If you expect to see a collection that isn&apos;t showing up, contact your Org Admin — visibility is set per-role and per-organisation.</Tip>
         </>
       ),
     },
@@ -240,8 +261,40 @@ export default function GuidePage() {
     },
   ]
 
+  const jobsSections: GuideSection[] = [
+    {
+      title: 'Jobs',
+      icon: Briefcase,
+      content: (
+        <>
+          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            The Jobs page lists current openings &mdash; internships, apprenticeships, part-time, full-time, and volunteer roles &mdash; curated for our learners, with autism-friendly notes where applicable.
+          </p>
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Browsing jobs</h3>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <li>Click <strong>Jobs</strong> in the sidebar to see the list of open roles</li>
+            <li>Each listing shows the employer, location (on-site / hybrid / remote), employment type, and closing date</li>
+            <li>Click a job to see the full description, required skills, autism-friendly notes, and any attached documents</li>
+            <li>Use the apply link or contact details on the job to apply directly with the employer</li>
+          </ol>
+          {isCDO && (
+            <>
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-4">Assigning jobs to your students</h3>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                <li>Jobs can be directly assigned to specific students, interns, or employees you manage</li>
+                <li>Assigned jobs are highlighted for that learner so they don&apos;t miss them</li>
+                <li>Speak to the charity admin if you&apos;d like to discuss a role on behalf of a learner</li>
+              </ol>
+            </>
+          )}
+          <Tip>Jobs close automatically after the closing date. If something looks interesting, apply early.</Tip>
+        </>
+      ),
+    },
+  ]
+
   const allSections = isCVRole
-    ? [...commonSections, ...cvBuilderSections, ...careersAdvisorSections]
+    ? [...commonSections, ...cvBuilderSections, ...careersAdvisorSections, ...jobsSections]
     : commonSections
 
   return (

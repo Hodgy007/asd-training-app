@@ -23,6 +23,10 @@ import {
   Download,
   Lock,
   Video,
+  Briefcase,
+  Bot,
+  Users2,
+  TrendingUp,
 } from 'lucide-react'
 
 export const metadata = {
@@ -443,11 +447,9 @@ export default function SuperAdminGuidePage() {
           <li><strong>Charity Admin</strong> <Crown className="inline h-3.5 w-3.5 text-purple-500" /> &mdash; full platform access including user management. Manages organisations, training content, surveys, announcements, and reports across the entire platform.</li>
           <li><strong>Charity Employee</strong> <Shield className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; delegated platform access with specific permissions granted by a Charity Admin. Can manage organisations, training, surveys, announcements, and/or reports depending on assigned permissions.</li>
           <li><strong>Org Admin</strong> <Users className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; manages users, announcements, sessions, and reports within their own organisation.</li>
-          <li><strong>Practitioner</strong> (Caregiver) &mdash; accesses ASD training, child observations, and reports.</li>
-          <li><strong>Career Dev Officer</strong> &mdash; accesses careers CPD training.</li>
-          <li><strong>Student</strong> &mdash; accesses training modules assigned to their organisation.</li>
-          <li><strong>Intern</strong> &mdash; accesses training modules assigned to their organisation.</li>
-          <li><strong>Employee</strong> &mdash; accesses training modules assigned to their organisation.</li>
+          <li><strong>Practitioner</strong> (Caregiver) &mdash; accesses ASD training modules and training reports.</li>
+          <li><strong>Careers Professional</strong> (Career Dev Officer) &mdash; accesses careers CPD training, CV Builder, Careers Advisor, Jobs, and manages their students.</li>
+          <li><strong>Student</strong> / <strong>Intern</strong> / <strong>Employee</strong> &mdash; access training modules assigned to their organisation, plus CV Builder, Careers Advisor, and Jobs.</li>
         </ul>
 
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">MFA / TOTP requirement</h3>
@@ -476,6 +478,112 @@ export default function SuperAdminGuidePage() {
         </p>
 
         <Tip>Always ensure Org Admins have MFA configured before granting them access. The platform enforces this automatically, but it is good practice to communicate the requirement during onboarding.</Tip>
+      </SectionCard>
+
+      {/* 9b. Charity Employee permissions */}
+      <SectionCard icon={Shield} title="Delegating access to Charity Employees">
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          <strong>Charity Employee</strong> accounts let you delegate parts of the Charity Admin job without handing over the full keys. Each Charity Employee has a <strong>permissions</strong> array &mdash; the sidebar and APIs dynamically show only the areas their permissions cover.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">The nine permissions</h3>
+        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li><strong>Manage Organisations</strong> &mdash; create, edit, activate/deactivate organisations and their admins.</li>
+          <li><strong>Manage Training</strong> &mdash; create and edit training programs, modules, lessons, and quiz questions.</li>
+          <li><strong>Manage Surveys</strong> &mdash; create surveys, manage lifecycle, and generate insights.</li>
+          <li><strong>Manage Announcements</strong> &mdash; post and schedule charity-wide or org-scoped announcements.</li>
+          <li><strong>View Reports</strong> &mdash; see platform-wide training, library, and survey reports.</li>
+          <li><strong>Manage Workshops</strong> &mdash; create and run charity-level virtual workshops.</li>
+          <li><strong>Manage Library</strong> &mdash; create collections, upload documents, and set visibility.</li>
+          <li><strong>Manage AI Prompts</strong> &mdash; edit prompts in the AI registry that power the platform&apos;s AI features.</li>
+          <li><strong>Manage Job Openings</strong> &mdash; create, publish, and manage jobs shown to learners.</li>
+        </ul>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Assigning permissions</h3>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Create a user from the <strong>Users</strong> page with role <em>Charity Employee</em>.</li>
+          <li>Tick each permission you want to grant. Charity Admins always have all permissions implicitly.</li>
+          <li>Save. The user&apos;s sidebar will only include the sections they can manage.</li>
+        </ol>
+
+        <Tip>Grant the minimum set of permissions needed. You can always add more later.</Tip>
+      </SectionCard>
+
+      {/* 9c. Cohorts */}
+      <SectionCard icon={Users2} title="Cohorts">
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          A <strong>Cohort</strong> is a special kind of organisation used for group-based delivery &mdash; e.g. a training cohort for interns on a shared programme. They behave like organisations but are tagged so you can distinguish them in reports and target them separately.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Managing cohorts</h3>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Open <strong>Cohorts</strong> from the sidebar.</li>
+          <li>Create a new cohort with a name, training programs, and allowed roles.</li>
+          <li>Add users and assign a cohort lead (Org Admin-equivalent).</li>
+          <li>Cohorts support the same hierarchy, training-plan assignment, and reporting as regular organisations.</li>
+        </ol>
+
+        <Tip>Use cohorts when you want to ring-fence analytics for a specific intake or programme.</Tip>
+      </SectionCard>
+
+      {/* 9d. Job Openings */}
+      <SectionCard icon={Briefcase} title="Job Openings">
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Job Openings are curated roles (internships, apprenticeships, part-time, full-time, volunteer) surfaced to your learners &mdash; students, interns, employees, and their Careers Professionals.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a job</h3>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Go to <strong>Job Openings</strong> in the sidebar and click <strong>New job</strong>.</li>
+          <li>Fill in the employer, title, location type (on-site / hybrid / remote), employment type, and closing date.</li>
+          <li>Add a summary, full description, required skills, and &mdash; importantly &mdash; any <strong>autism-friendly notes</strong> (e.g. low-noise office, flexible hours, clear written instructions).</li>
+          <li>Add apply URL and/or a contact email for direct applications.</li>
+          <li>Optionally upload an employer logo and PDF attachments (e.g. a full job spec).</li>
+          <li>Set status to <strong>Published</strong> to make it visible to learners. Jobs auto-close after their closing date.</li>
+        </ol>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Targeting and assignments</h3>
+        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Restrict visibility to specific organisations or roles via the targeting fields.</li>
+          <li>Explicitly <strong>assign</strong> a job to a named learner so it&apos;s highlighted for them. Careers Professionals can also do this.</li>
+        </ul>
+
+        <Tip>Keep autism-friendly notes plain and specific &mdash; they&apos;re a key trust signal for learners applying to a role.</Tip>
+      </SectionCard>
+
+      {/* 9e. AI Prompts */}
+      <SectionCard icon={Bot} title="AI Prompts">
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Every AI feature on the platform &mdash; CV writing help, careers reports, quiz generation, survey insights, lesson-content suggestions &mdash; is driven by a named prompt in the <strong>AI Prompts</strong> registry. You can tune the tone, model, requirements, and example output without a deploy.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing a prompt</h3>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Open <strong>AI Prompts</strong> from the sidebar. Each row is a prompt with a key, purpose, and model.</li>
+          <li>Click a prompt to edit its <strong>tone</strong>, <strong>requirements</strong> (bullet-style constraints the model must follow), <strong>example output</strong>, and <strong>response format</strong>.</li>
+          <li>Pick the <strong>model</strong> &mdash; Gemini, Claude, or GPT. Everything routes through the Vercel AI Gateway.</li>
+          <li>Upload <strong>context files</strong> (PDF, DOCX, TXT) that the prompt should always consider &mdash; e.g. a style guide or safeguarding policy.</li>
+          <li>Toggle <strong>enabled</strong> off to temporarily disable a prompt; the feature will surface a &ldquo;temporarily unavailable&rdquo; message instead of calling the AI.</li>
+          <li>Save. Changes take effect immediately. Previous values are kept so you can revert.</li>
+        </ol>
+
+        <Tip>Keep a prompt&apos;s requirements explicit about what the AI must <em>not</em> say (e.g. &ldquo;never mention autism or disability&rdquo;). Models follow bulleted requirements far more reliably than prose instructions.</Tip>
+      </SectionCard>
+
+      {/* 9f. Impact */}
+      <SectionCard icon={TrendingUp} title="Impact">
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          The <strong>Impact</strong> page is a charity-wide view of outcomes and engagement &mdash; designed for sharing with trustees, funders, and partners rather than for day-to-day operations.
+        </p>
+
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">What it shows</h3>
+        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Headline numbers &mdash; learners trained, modules completed, workshops delivered, documents shared.</li>
+          <li>Trends over time &mdash; month-on-month engagement and completion rates.</li>
+          <li>Breakdowns by organisation type (School, College, Academy, University, Employer).</li>
+        </ul>
+
+        <Tip>Use the Impact page as the source for your quarterly and annual reports. Reports &rarr; CSV export is the best place for raw data.</Tip>
       </SectionCard>
 
       {/* 10. Integrations */}
