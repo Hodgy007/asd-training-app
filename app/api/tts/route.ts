@@ -40,31 +40,47 @@ export async function POST(req: NextRequest) {
 
   const voiceId = parsed.voiceId || DEFAULT_VOICE_ID
 
-  // Cache-hit fast path: fetch the MP3 from Blob and stream it back through
-  // this route. We can't 302-redirect the browser to the Blob URL because
-  // fetch() following a cross-origin redirect needs CORS headers the Blob
-  // host doesn't always send for public binary GETs — the browser would
-  // reject the response with "Failed to fetch". Streaming keeps the learner's
-  // connection same-origin and preserves session auth semantics.
+  // Cache-hit fast path: fetch the MP3 from Blob into memory and return the
+  // bytes through this route. A 302-redirect to the Blob host is ruled out
+  // because cross-origin fetch redirects need CORS headers the Blob host
+  // doesn't reliably send for binary GETs (the browser would reject it with
+  // "Failed to fetch"). Streaming via blobRes.body was tried and ruled out
+  // too — Next.js/Vercel's response pipeline can apply transfer-encoding or
+  // gzip transforms to streamed bodies that corrupt binary audio, producing
+  // MEDIA_ERR_SRC_NOT_SUPPORTED on the <audio> element. Buffering into a
+  // Uint8Array matches the miss path below, which is known to work.
   const cachedUrl = await getCachedTtsUrl(parsed.text, voiceId)
   if (cachedUrl) {
     try {
       const blobRes = await fetch(cachedUrl)
-      if (blobRes.ok && blobRes.body) {
-        return new NextResponse(blobRes.body, {
-          status: 200,
-          headers: {
-            'Content-Type': blobRes.headers.get('content-type') || 'audio/mpeg',
-            'Content-Length': blobRes.headers.get('content-length') || '',
-            'Cache-Control': 'private, max-age=86400',
-            'X-Tts-Cache': 'HIT',
-          },
-        })
+      if (blobRes.ok) {
+        const arrayBuffer = await blobRes.arrayBuffer()
+        const bytes = new Uint8Array(arrayBuffer)
+        // Sanity-check MP3 magic bytes before serving — guards against a
+        // stale/corrupted Blob silently poisoning the learner's audio
+        // element. Valid MP3 frames start with 0xFF 0xFB/0xFA/0xF3/0xF2 or
+        // an ID3 tag ("ID3"). If neither matches, fall through to regenerate.
+        const looksLikeMp3 =
+          (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) || // "ID3"
+          (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0) // MPEG frame sync
+        if (looksLikeMp3 && bytes.byteLength > 0) {
+          return new NextResponse(bytes, {
+            status: 200,
+            headers: {
+              'Content-Type': 'audio/mpeg',
+              'Content-Length': String(bytes.byteLength),
+              'Cache-Control': 'private, max-age=86400',
+              'X-Tts-Cache': 'HIT',
+            },
+          })
+        }
+        console.warn('[tts] cached blob failed MP3 sanity check, regenerating:', cachedUrl)
+        // Fall through to regeneration — fresh bytes overwrite the stale blob.
+      } else {
+        console.warn('[tts] cached blob unreachable:', blobRes.status, cachedUrl)
       }
-      console.warn('[tts] cached blob unreachable:', blobRes.status, cachedUrl)
-      // Fall through to regeneration if the blob disappeared for any reason.
     } catch (err) {
-      console.error('[tts] error streaming cached blob:', err)
+      console.error('[tts] error reading cached blob:', err)
       // Fall through.
     }
   }
