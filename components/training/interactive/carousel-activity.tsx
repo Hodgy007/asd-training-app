@@ -7,7 +7,6 @@ import { CarouselData } from '@/types/interactive'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
-import { TtsAudioPlayer } from './tts-audio-player'
 import { buildCarouselReadAloudText } from '@/lib/tts-extract'
 
 interface CarouselActivityProps {
@@ -36,6 +35,10 @@ export function CarouselActivity({
   const safeIdx = Math.min(activeIdx, Math.max(slides.length - 1, 0))
   const slide = slides[safeIdx]
   const hasSlides = slides.length > 0
+
+  // Shared with the server-side prewarm so both sides produce identical
+  // sha256 keys against the Blob TTS cache.
+  const readAloudText = data.readAloud ? buildCarouselReadAloudText(data) : ''
 
   // Fire completion once the learner has visited every slide.
   useEffect(() => {
@@ -91,7 +94,7 @@ export function CarouselActivity({
   if (!hasSlides || !slide) {
     return (
       <div className="my-6">
-        {title && <BlockInstructions title={title} instructions={instructions} />}
+        <BlockInstructions title={title} instructions={instructions} />
         <div className="card text-sm text-slate-500 dark:text-slate-400">
           This carousel has no slides yet.
         </div>
@@ -108,7 +111,11 @@ export function CarouselActivity({
 
   return (
     <div className="my-6">
-      {title && <BlockInstructions title={title} instructions={instructions} />}
+      <BlockInstructions
+        title={title}
+        instructions={instructions}
+        readAloudText={readAloudText}
+      />
 
       <div
         ref={containerRef}
@@ -191,18 +198,6 @@ export function CarouselActivity({
           </button>
         </div>
       </div>
-
-      {data.readAloud && (() => {
-        // buildCarouselReadAloudText is shared with the server-side prewarm so
-        // both sides produce identical sha256 keys against the Blob TTS cache.
-        const readAloudText = buildCarouselReadAloudText(data)
-        if (!readAloudText) return null
-        return (
-          <div className="mt-3">
-            <TtsAudioPlayer text={readAloudText} ariaLabel="Read this carousel's content aloud" />
-          </div>
-        )
-      })()}
 
       <BlockCompletionBadge completed={completed} />
     </div>

@@ -5,7 +5,6 @@ import { X } from 'lucide-react'
 import { HotspotData, Hotspot, RevealCard } from '@/types/interactive'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
-import { TtsAudioPlayer } from './tts-audio-player'
 import { buildHotspotReadAloudText } from '@/lib/tts-extract'
 
 interface HotspotActivityProps {
@@ -283,12 +282,18 @@ export function HotspotActivity({ title, instructions, data, completed, onComple
   }, [hasCompleted, onComplete])
 
   // buildHotspotReadAloudText is shared with the server-side prewarm so both
-  // sides produce identical sha256 keys against the Blob TTS cache.
+  // sides produce identical sha256 keys against the Blob TTS cache. The text
+  // is passed to BlockInstructions, which renders a single TTS player at the
+  // top of the block that reads title + instructions + content as one track.
   const readAloudText = data.readAloud ? buildHotspotReadAloudText(data) : ''
 
   return (
     <div className="my-6">
-      <BlockInstructions title={title} instructions={instructions} />
+      <BlockInstructions
+        title={title}
+        instructions={instructions}
+        readAloudText={readAloudText}
+      />
 
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 p-5">
         {data.variant === 'image-hotspot' && (
@@ -306,12 +311,6 @@ export function HotspotActivity({ title, instructions, data, completed, onComple
           />
         )}
       </div>
-
-      {data.readAloud && readAloudText && (
-        <div className="mt-3">
-          <TtsAudioPlayer text={readAloudText} ariaLabel="Read this block's content aloud" />
-        </div>
-      )}
 
       <BlockCompletionBadge completed={hasCompleted} />
     </div>
