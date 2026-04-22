@@ -178,6 +178,8 @@ Leaf role types are also exported from `types/index.ts` as `LEAF_ROLES`. Navigat
 - **Vercel Blob:** Document uploads and AI-generated thumbnails use `@vercel/blob`. Requires `BLOB_READ_WRITE_TOKEN` env var.
 - **CHARITY_EMPLOYEE role:** Delegated charity-level access. Permissions are configured per-user via the `charityPermissions` array. The super admin sidebar dynamically filters nav items based on these permissions.
 - **CSP:** The deployed Content Security Policy allows Google Fonts and `blob:` URLs for media (TTS playback). If you add a new external asset source, update the CSP header in `next.config.js`.
+- **In-app "How to Guide" pages:** Three role-scoped guides live at `app/(dashboard)/guide/page.tsx` (learners), `app/(org-admin)/admin/guide/page.tsx` (org admins), and `app/(super-admin)/super-admin/guide/page.tsx` (charity admins). Keep these in sync with feature changes — they're linked from each role's sidebar and drift quickly.
+- **Preview verification limits:** The `preview_*` tools can't render authenticated routes anonymously — `fetch('/dashboard')` returns `status: 0` because middleware redirects to `/login`. Only `/login`, `/privacy`, and password-reset flows are previewable without a session. For auth-gated pages, rely on type/build checks instead of visual verification.
 
 ## Recent Changes
 
