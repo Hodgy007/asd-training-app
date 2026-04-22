@@ -6,6 +6,7 @@ import { HotspotData, Hotspot, RevealCard } from '@/types/interactive'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
 import { TtsAudioPlayer } from './tts-audio-player'
+import { buildHotspotReadAloudText } from '@/lib/tts-extract'
 
 interface HotspotActivityProps {
   title: string
@@ -271,19 +272,6 @@ function CardRevealVariant({
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-function buildReadAloudText(data: HotspotData): string {
-  if (data.variant === 'image-hotspot') {
-    return (data.hotspots ?? [])
-      .map(h => [h.title, h.content].filter(Boolean).join('. '))
-      .filter(Boolean)
-      .join('. ')
-  }
-  return (data.cards ?? [])
-    .map(c => [c.frontLabel, c.backContent].filter(Boolean).join('. '))
-    .filter(Boolean)
-    .join('. ')
-}
-
 export function HotspotActivity({ title, instructions, data, completed, onComplete }: HotspotActivityProps) {
   const [hasCompleted, setHasCompleted] = useState(completed)
 
@@ -294,7 +282,9 @@ export function HotspotActivity({ title, instructions, data, completed, onComple
     }
   }, [hasCompleted, onComplete])
 
-  const readAloudText = data.readAloud ? buildReadAloudText(data) : ''
+  // buildHotspotReadAloudText is shared with the server-side prewarm so both
+  // sides produce identical sha256 keys against the Blob TTS cache.
+  const readAloudText = data.readAloud ? buildHotspotReadAloudText(data) : ''
 
   return (
     <div className="my-6">

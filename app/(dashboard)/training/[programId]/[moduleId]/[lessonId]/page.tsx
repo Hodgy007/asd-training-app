@@ -13,6 +13,7 @@ import { splitContentAtBlocks, validateInteractiveBlocks } from '@/lib/interacti
 import { InteractiveBlock, InteractionData } from '@/types/interactive'
 import { TtsAudioPlayer } from '@/components/training/interactive/tts-audio-player'
 import { htmlToPlainText } from '@/lib/html-to-text'
+import { extractLessonTtsTexts } from '@/lib/tts-extract'
 import { LessonOutlineRail } from '@/components/training/lesson-outline-rail'
 import { clsx } from 'clsx'
 
@@ -188,6 +189,19 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   const blocks: InteractiveBlock[] = validateInteractiveBlocks(lesson.interactiveBlocks) ?? []
   const contentSegments = splitContentAtBlocks(lesson.content, blocks)
   const blocksById = new Map(blocks.map(b => [b.id, b]))
+  // Combined narration of every readable segment (HTML + any hotspot/carousel
+  // blocks with readAloud enabled). Used by the "Read whole lesson" player
+  // at the bottom of the content area. Must match the exact strings the
+  // prewarm job hashes, so both live in extractLessonTtsTexts.
+  //
+  // Capped at the TTS API's 8000-char limit. For very long lessons this means
+  // the bottom player narrates the opening portion; the per-segment players
+  // above cover the rest.
+  const TTS_MAX_CHARS = 7900
+  const joinedTtsText = extractLessonTtsTexts(lesson.content, blocks).join('. ')
+  const wholeLessonTtsText = joinedTtsText.length > TTS_MAX_CHARS
+    ? joinedTtsText.slice(0, TTS_MAX_CHARS)
+    : joinedTtsText
 
   async function handleBlockComplete(blockId: string) {
     const current = interactionData[blockId]
@@ -371,6 +385,18 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
               />
             )
           })}
+
+          {wholeLessonTtsText && (
+            <div className="mt-6 pt-4 border-t border-calm-200 dark:border-slate-700">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                Read whole lesson aloud
+              </p>
+              <TtsAudioPlayer
+                text={wholeLessonTtsText}
+                ariaLabel="Read the entire lesson aloud, including hotspot and carousel content"
+              />
+            </div>
+          )}
         </div>
       </div>
 

@@ -5,10 +5,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CarouselData } from '@/types/interactive'
 import { sanitizeHtml } from '@/lib/sanitize'
-import { htmlToPlainText } from '@/lib/html-to-text'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
 import { TtsAudioPlayer } from './tts-audio-player'
+import { buildCarouselReadAloudText } from '@/lib/tts-extract'
 
 interface CarouselActivityProps {
   title: string
@@ -193,10 +193,9 @@ export function CarouselActivity({
       </div>
 
       {data.readAloud && (() => {
-        const readAloudText = slides
-          .map((s) => [s.title, htmlToPlainText(s.body)].filter(Boolean).join('. '))
-          .filter(Boolean)
-          .join('. ')
+        // buildCarouselReadAloudText is shared with the server-side prewarm so
+        // both sides produce identical sha256 keys against the Blob TTS cache.
+        const readAloudText = buildCarouselReadAloudText(data)
         if (!readAloudText) return null
         return (
           <div className="mt-3">
