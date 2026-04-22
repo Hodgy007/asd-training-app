@@ -1,9 +1,10 @@
 import { list, put } from '@vercel/blob'
 import crypto from 'crypto'
 
-// ElevenLabs — "Daniel" (British male, confident). Duplicated from the route
-// so prewarm can run without importing the route file.
-export const DEFAULT_VOICE_ID = 'onwK4e9ZLuTAKqWW03F9'
+// ElevenLabs — "Lily" (British female, calm, gentle). Voice ID is part of
+// the Blob cache path so swapping voices cleanly invalidates old audio
+// without disturbing it — previous Daniel clips stay on disk, just unused.
+export const DEFAULT_VOICE_ID = 'pFZP5JQG7iQjIQuC4Bku'
 const ELEVENLABS_MODEL = 'eleven_multilingual_v2'
 
 // Pathname scheme keeps voice clips isolated per voice so swapping voices
