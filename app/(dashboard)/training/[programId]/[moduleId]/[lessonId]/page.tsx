@@ -232,6 +232,27 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
     }
   }
 
+  async function handleMarkComplete() {
+    setSaving(true)
+    try {
+      await fetch('/api/training/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          moduleId: params.moduleId,
+          lessonId: params.lessonId,
+          completed: true,
+        }),
+      })
+      setCompleted(true)
+      setCompletedLessonIds((prev) => new Set(prev).add(params.lessonId))
+    } catch (err) {
+      console.error('Failed to save progress', err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto animate-page-enter">
       {/* Breadcrumb spans full width */}
@@ -409,65 +430,120 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
       <div className="bg-primary-50 border border-primary-100 rounded-2xl p-5">
         <p className="text-primary-800 font-semibold mb-2">What did you notice?</p>
         <p className="text-primary-700 text-sm">
-          Before moving on to the quiz, take a moment to reflect on what you have learned
-          in this lesson and how it applies to your practice.
+          {quizQuestions.length > 0
+            ? 'Before moving on to the quiz, take a moment to reflect on what you have learned in this lesson and how it applies to your practice.'
+            : 'Take a moment to reflect on what you have learned in this lesson and how it applies to your practice.'}
         </p>
       </div>
 
-      {/* Quiz section */}
-      <div className="card">
-        {!quizStarted ? (
-          <div className="text-center py-6">
-            <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="h-6 w-6 text-primary-600" />
-            </div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">Knowledge Check</h2>
-            <p className="text-slate-500 text-sm mb-6">
-              {quizQuestions.length} questions to test your understanding
-            </p>
-            <button onClick={() => setQuizStarted(true)} className="btn-primary px-8">
-              Start quiz
-            </button>
-          </div>
-        ) : (
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-5">Knowledge Check</h2>
-            <QuizComponent questions={quizQuestions} onComplete={handleQuizComplete} />
-
-            {completed && (
-              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="flex items-center gap-2 text-sage-600">
-                  <CheckCircle className="h-6 w-6" />
-                  <span className="font-semibold">Lesson complete!</span>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  {nextLesson && !isLastLesson ? (
-                    <Link
-                      href={`/training/${params.programId}/${lesson.module.id}/${nextLesson.id}`}
-                      className="btn-primary flex items-center justify-center gap-2"
-                    >
-                      Next lesson: {nextLesson.title}
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/training/${params.programId}/${lesson.module.id}`}
-                      className="btn-primary flex items-center justify-center gap-2"
-                    >
-                      Back to module overview
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  )}
-                  <Link href={`/training/${params.programId}`} className="btn-secondary flex items-center justify-center gap-2">
-                    <ArrowLeft className="h-4 w-4" />
-                    All modules
-                  </Link>
-                </div>
+      {/* Quiz section — only when the author added questions */}
+      {quizQuestions.length > 0 ? (
+        <div className="card">
+          {!quizStarted ? (
+            <div className="text-center py-6">
+              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="h-6 w-6 text-primary-600" />
               </div>
-            )}
-          </div>
-        )}
-      </div>
+              <h2 className="text-lg font-semibold text-slate-900 mb-2">Knowledge Check</h2>
+              <p className="text-slate-500 text-sm mb-6">
+                {quizQuestions.length} questions to test your understanding
+              </p>
+              <button onClick={() => setQuizStarted(true)} className="btn-primary px-8">
+                Start quiz
+              </button>
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900 mb-5">Knowledge Check</h2>
+              <QuizComponent questions={quizQuestions} onComplete={handleQuizComplete} />
+
+              {completed && (
+                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                  <div className="flex items-center gap-2 text-sage-600">
+                    <CheckCircle className="h-6 w-6" />
+                    <span className="font-semibold">Lesson complete!</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {nextLesson && !isLastLesson ? (
+                      <Link
+                        href={`/training/${params.programId}/${lesson.module.id}/${nextLesson.id}`}
+                        className="btn-primary flex items-center justify-center gap-2"
+                      >
+                        Next lesson: {nextLesson.title}
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/training/${params.programId}/${lesson.module.id}`}
+                        className="btn-primary flex items-center justify-center gap-2"
+                      >
+                        Back to module overview
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
+                    )}
+                    <Link href={`/training/${params.programId}`} className="btn-secondary flex items-center justify-center gap-2">
+                      <ArrowLeft className="h-4 w-4" />
+                      All modules
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* No quiz — show a simple "mark as complete" card so the learner can still finish the lesson */
+        <div className="card">
+          {!completed ? (
+            <div className="text-center py-6">
+              <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-6 w-6 text-sage-600" />
+              </div>
+              <h2 className="text-lg font-semibold text-slate-900 mb-2">Finished this lesson?</h2>
+              <p className="text-slate-500 text-sm mb-6">
+                Mark it complete to move on to the next one.
+              </p>
+              <button
+                onClick={handleMarkComplete}
+                disabled={saving}
+                className="btn-primary px-8 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {saving ? 'Saving…' : 'Mark as complete'}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sage-600">
+                <CheckCircle className="h-6 w-6" />
+                <span className="font-semibold">Lesson complete!</span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                {nextLesson && !isLastLesson ? (
+                  <Link
+                    href={`/training/${params.programId}/${lesson.module.id}/${nextLesson.id}`}
+                    className="btn-primary flex items-center justify-center gap-2"
+                  >
+                    Next lesson: {nextLesson.title}
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/training/${params.programId}/${lesson.module.id}`}
+                    className="btn-primary flex items-center justify-center gap-2"
+                  >
+                    Back to module overview
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                )}
+                <Link href={`/training/${params.programId}`} className="btn-secondary flex items-center justify-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  All modules
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
         </div>
 
         {/* Right rail — lesson outline. Stacks below on < lg. */}
