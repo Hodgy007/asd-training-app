@@ -789,6 +789,37 @@ function QuizSection({
   const [aiPreview, setAiPreview] = useState<GeneratedQuestion[] | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [removingQuiz, setRemovingQuiz] = useState(false)
+
+  const removeQuiz = async () => {
+    if (questions.length === 0) {
+      onHide()
+      return
+    }
+    const ok = window.confirm(
+      `Remove this quiz? This will permanently delete ${questions.length} question${questions.length !== 1 ? 's' : ''}.`
+    )
+    if (!ok) return
+    setRemovingQuiz(true)
+    try {
+      const res = await fetch(`/api/super-admin/training/quiz/${lessonId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questions: [] }),
+      })
+      if (res.ok) {
+        setToast({ message: 'Quiz removed', type: 'success' })
+        await refetch()
+        onHide()
+      } else {
+        setToast({ message: 'Failed to remove quiz', type: 'error' })
+      }
+    } catch {
+      setToast({ message: 'Network error removing quiz', type: 'error' })
+    } finally {
+      setRemovingQuiz(false)
+    }
+  }
 
   const deleteQuestion = async (qId: string) => {
     setDeletingId(qId)
@@ -879,16 +910,20 @@ function QuizSection({
             <Sparkles className="h-4 w-4" />
             Generate Quiz with AI
           </button>
-          {questions.length === 0 && (
-            <button
-              onClick={onHide}
-              className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
-              title="Hide quiz section"
-              aria-label="Hide quiz section"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
+          <button
+            onClick={removeQuiz}
+            disabled={removingQuiz}
+            className="inline-flex items-center gap-2 border border-red-200 dark:border-red-900/60 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            title={questions.length > 0 ? 'Remove quiz (deletes all questions)' : 'Remove quiz section'}
+            aria-label="Remove quiz"
+          >
+            {removingQuiz ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+            Remove Quiz
+          </button>
         </div>
       </div>
 

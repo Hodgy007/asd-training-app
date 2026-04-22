@@ -5,8 +5,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CarouselData } from '@/types/interactive'
 import { sanitizeHtml } from '@/lib/sanitize'
+import { htmlToPlainText } from '@/lib/html-to-text'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
+import { TtsAudioPlayer } from './tts-audio-player'
 
 interface CarouselActivityProps {
   title: string
@@ -189,6 +191,19 @@ export function CarouselActivity({
           </button>
         </div>
       </div>
+
+      {data.readAloud && (() => {
+        const readAloudText = slides
+          .map((s) => [s.title, htmlToPlainText(s.body)].filter(Boolean).join('. '))
+          .filter(Boolean)
+          .join('. ')
+        if (!readAloudText) return null
+        return (
+          <div className="mt-3">
+            <TtsAudioPlayer text={readAloudText} ariaLabel="Read this carousel's content aloud" />
+          </div>
+        )
+      })()}
 
       <BlockCompletionBadge completed={completed} />
     </div>

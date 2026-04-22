@@ -86,6 +86,11 @@ export interface HotspotData {
   imageUrl?: string
   hotspots?: Hotspot[]
   cards?: RevealCard[]
+  /**
+   * When true, the block renders a TTS player at the bottom that reads out
+   * every hotspot/card content in order. Defaults to false.
+   */
+  readAloud?: boolean
 }
 
 // ─── Knowledge check ─────────────────────────────────────────────────────────
@@ -113,6 +118,11 @@ export interface CarouselSlide {
 
 export interface CarouselData {
   slides: CarouselSlide[]
+  /**
+   * When true, the block renders a TTS player at the bottom that reads out
+   * every slide's title and body in order. Defaults to false.
+   */
+  readAloud?: boolean
 }
 
 // ─── Video (inline player) ────────────────────────────────────────────────────
@@ -199,6 +209,7 @@ const hotspotDataSchema = z.object({
   imageUrl: z.string().optional(),
   hotspots: z.array(hotspotSchema).optional(),
   cards: z.array(revealCardSchema).optional(),
+  readAloud: z.boolean().optional(),
 })
 
 const knowledgeCheckQuestionSchema = z.object({
@@ -222,6 +233,7 @@ const carouselSlideSchema = z.object({
 
 const carouselDataSchema = z.object({
   slides: z.array(carouselSlideSchema),
+  readAloud: z.boolean().optional(),
 })
 
 const videoDataSchema = z.object({

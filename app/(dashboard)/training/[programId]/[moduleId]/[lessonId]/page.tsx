@@ -188,10 +188,6 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   const blocks: InteractiveBlock[] = validateInteractiveBlocks(lesson.interactiveBlocks) ?? []
   const contentSegments = splitContentAtBlocks(lesson.content, blocks)
   const blocksById = new Map(blocks.map(b => [b.id, b]))
-  const lessonTtsText = [
-    lesson.title,
-    htmlToPlainText(contentSegments.filter(s => s.type === 'html').map(s => s.type === 'html' ? s.content : '').join(' ')),
-  ].filter(Boolean).join('. ')
 
   async function handleBlockComplete(blockId: string) {
     const current = interactionData[blockId]
@@ -320,20 +316,25 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           )}
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Lesson Content</h2>
         </button>
-        {showContent && lessonTtsText && (
-          <div className="mb-4">
-            <TtsAudioPlayer text={lessonTtsText} ariaLabel={`Read "${lesson.title}" aloud`} />
-          </div>
-        )}
         <div ref={contentRef} hidden={!showContent}>
           {contentSegments.map((segment, idx) => {
             if (segment.type === 'html') {
+              const segmentText = htmlToPlainText(segment.content)
               return (
-                <div
-                  key={`html-${idx}`}
-                  className="prose-lesson space-y-1 text-slate-700 dark:text-slate-300 overflow-x-hidden break-words [&_h1]:font-bold [&_h1]:text-xl [&_h1]:text-slate-900 [&_h1]:dark:text-slate-100 [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:font-semibold [&_h2]:text-lg [&_h2]:text-slate-900 [&_h2]:dark:text-slate-100 [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:text-base [&_h3]:text-slate-900 [&_h3]:dark:text-slate-100 [&_h3]:mt-5 [&_h3]:mb-2 [&_p]:mb-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:sm:ml-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:sm:ml-6 [&_ol]:mb-3 [&_li]:mb-1 [&_li]:leading-relaxed [&_strong]:text-slate-900 [&_strong]:dark:text-slate-100 [&_strong]:font-semibold [&_em]:italic [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block [&_table]:text-sm [&_pre]:overflow-x-auto [&_pre]:max-w-full"
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(segment.content) }}
-                />
+                <div key={`html-${idx}`} className="mb-4">
+                  {segmentText && (
+                    <div className="mb-3">
+                      <TtsAudioPlayer
+                        text={segmentText}
+                        ariaLabel={`Read this section aloud`}
+                      />
+                    </div>
+                  )}
+                  <div
+                    className="prose-lesson space-y-1 text-slate-700 dark:text-slate-300 overflow-x-hidden break-words [&_h1]:font-bold [&_h1]:text-xl [&_h1]:text-slate-900 [&_h1]:dark:text-slate-100 [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:font-semibold [&_h2]:text-lg [&_h2]:text-slate-900 [&_h2]:dark:text-slate-100 [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:font-semibold [&_h3]:text-base [&_h3]:text-slate-900 [&_h3]:dark:text-slate-100 [&_h3]:mt-5 [&_h3]:mb-2 [&_p]:mb-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:sm:ml-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:sm:ml-6 [&_ol]:mb-3 [&_li]:mb-1 [&_li]:leading-relaxed [&_strong]:text-slate-900 [&_strong]:dark:text-slate-100 [&_strong]:font-semibold [&_em]:italic [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block [&_table]:text-sm [&_pre]:overflow-x-auto [&_pre]:max-w-full"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(segment.content) }}
+                  />
+                </div>
               )
             }
             const block = blocksById.get(segment.blockId)

@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { HotspotData, Hotspot, RevealCard } from '@/types/interactive'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
+import { TtsAudioPlayer } from './tts-audio-player'
 
 interface HotspotActivityProps {
   title: string
@@ -270,6 +271,19 @@ function CardRevealVariant({
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
+function buildReadAloudText(data: HotspotData): string {
+  if (data.variant === 'image-hotspot') {
+    return (data.hotspots ?? [])
+      .map(h => [h.title, h.content].filter(Boolean).join('. '))
+      .filter(Boolean)
+      .join('. ')
+  }
+  return (data.cards ?? [])
+    .map(c => [c.frontLabel, c.backContent].filter(Boolean).join('. '))
+    .filter(Boolean)
+    .join('. ')
+}
+
 export function HotspotActivity({ title, instructions, data, completed, onComplete }: HotspotActivityProps) {
   const [hasCompleted, setHasCompleted] = useState(completed)
 
@@ -279,6 +293,8 @@ export function HotspotActivity({ title, instructions, data, completed, onComple
       onComplete()
     }
   }, [hasCompleted, onComplete])
+
+  const readAloudText = data.readAloud ? buildReadAloudText(data) : ''
 
   return (
     <div className="my-6">
@@ -300,6 +316,12 @@ export function HotspotActivity({ title, instructions, data, completed, onComple
           />
         )}
       </div>
+
+      {data.readAloud && readAloudText && (
+        <div className="mt-3">
+          <TtsAudioPlayer text={readAloudText} ariaLabel="Read this block's content aloud" />
+        </div>
+      )}
 
       <BlockCompletionBadge completed={hasCompleted} />
     </div>
