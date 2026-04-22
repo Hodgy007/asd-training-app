@@ -36,11 +36,16 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              "style-src 'self' 'unsafe-inline'",
+              // fonts.googleapis.com — Google Fonts stylesheets (Lexend).
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://via.placeholder.com https://placehold.co https://*.public.blob.vercel-storage.com",
-              "font-src 'self'",
+              // fonts.gstatic.com — Google Fonts font binaries.
+              "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://generativelanguage.googleapis.com",
-              "media-src 'self' https://*.public.blob.vercel-storage.com",
+              // blob: — URL.createObjectURL() results used by the TTS player's
+              // <audio> element. Without this, the browser silently rejects
+              // blob URLs as "no supported source was found".
+              "media-src 'self' blob: https://*.public.blob.vercel-storage.com",
               "frame-src 'self' https://www.youtube.com https://player.vimeo.com",
               "frame-ancestors 'self'",
             ].join('; '),
