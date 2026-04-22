@@ -94,13 +94,34 @@ export async function POST(req: NextRequest) {
 
   if (!res.ok) {
     const detail = await res.text().catch(() => '')
+    console.error('[tts] ElevenLabs error', res.status, detail.slice(0, 300))
     return NextResponse.json(
       { error: 'Text-to-speech provider error.', detail: detail.slice(0, 200) },
       { status: 502 }
     )
   }
 
+  // Guard against ElevenLabs occasionally returning a 200 with a JSON body
+  // (e.g. deprecated voice / malformed settings) — would poison the cache and
+  // give the browser "no supported source" on the <audio> element.
+  const contentType = res.headers.get('content-type') || ''
+  if (!contentType.toLowerCase().startsWith('audio/')) {
+    const detail = await res.text().catch(() => '')
+    console.error('[tts] ElevenLabs returned non-audio', contentType, detail.slice(0, 300))
+    return NextResponse.json(
+      { error: 'Text-to-speech provider returned a non-audio response.', detail: detail.slice(0, 200) },
+      { status: 502 }
+    )
+  }
+
   const arrayBuffer = await res.arrayBuffer()
+  if (arrayBuffer.byteLength === 0) {
+    console.error('[tts] ElevenLabs returned 0 bytes')
+    return NextResponse.json(
+      { error: 'Text-to-speech provider returned an empty audio stream.' },
+      { status: 502 }
+    )
+  }
   const buffer = Buffer.from(arrayBuffer)
   putInCache(key, buffer)
 
@@ -108,6 +129,7 @@ export async function POST(req: NextRequest) {
     status: 200,
     headers: {
       'Content-Type': 'audio/mpeg',
+      'Content-Length': String(buffer.length),
       'Cache-Control': 'private, max-age=86400',
       'X-Tts-Cache': 'MISS',
     },

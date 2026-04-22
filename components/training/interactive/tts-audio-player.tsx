@@ -47,7 +47,18 @@ export function TtsAudioPlayer({ text, ariaLabel }: TtsAudioPlayerProps) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || 'Could not load audio.')
       }
-      const blob = await res.blob()
+      const contentType = res.headers.get('content-type') || ''
+      const rawBlob = await res.blob()
+      if (rawBlob.size === 0) {
+        throw new Error('Audio response was empty.')
+      }
+      if (!contentType.toLowerCase().startsWith('audio/')) {
+        throw new Error(`Unexpected audio type: ${contentType || 'unknown'}`)
+      }
+      // Re-wrap with an explicit type — some proxies/edges can strip the
+      // Content-Type when transporting binary payloads; pinning it here
+      // ensures the <audio> element picks the right decoder.
+      const blob = new Blob([await rawBlob.arrayBuffer()], { type: 'audio/mpeg' })
       const url = URL.createObjectURL(blob)
       audioUrlRef.current = url
       setHasAudio(true)
@@ -198,6 +209,25 @@ export function TtsAudioPlayer({ text, ariaLabel }: TtsAudioPlayerProps) {
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => { setPlaying(false); setCurrentTime(0) }}
+        onError={(e) => {
+          const mediaErr = (e.currentTarget as HTMLAudioElement).error
+          const code = mediaErr?.code
+          // 4 = MEDIA_ERR_SRC_NOT_SUPPORTED — blob URL opened but the bytes
+          // weren't decodable as audio. Invalidate the cached URL so the
+          // learner can retry (and the next fetch will go to the server,
+          // bypassing any bad blob that somehow got created).
+          if (audioUrlRef.current) {
+            URL.revokeObjectURL(audioUrlRef.current)
+            audioUrlRef.current = null
+          }
+          setHasAudio(false)
+          setPlaying(false)
+          setError(
+            code === 4
+              ? 'Audio format not supported. Please try again.'
+              : mediaErr?.message || 'Audio playback failed.'
+          )
+        }}
         preload="metadata"
         className="sr-only"
         aria-hidden={!hasAudio}
