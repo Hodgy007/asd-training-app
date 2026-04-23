@@ -88,8 +88,8 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
   }
 
-  await prisma.lesson.update({
-    where: { id: params.lessonId },
+  const result = await prisma.lesson.updateMany({
+    where: { id: params.lessonId, type: 'SCORM' },
     data: {
       type: 'TEXT',
       scormBlobPrefix: null,
@@ -97,5 +97,10 @@ export async function DELETE(
       scormVersion: null,
     },
   })
+
+  if (result.count === 0) {
+    return NextResponse.json({ error: 'Not a SCORM lesson' }, { status: 404 })
+  }
+
   return NextResponse.json({ ok: true })
 }
