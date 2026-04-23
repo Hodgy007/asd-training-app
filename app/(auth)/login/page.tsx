@@ -171,6 +171,7 @@ function LoginForm() {
               placeholder="you@example.com"
               required
               autoComplete="email"
+              form="credentials-form"
             />
           </div>
 
@@ -253,7 +254,7 @@ function LoginForm() {
               </div>
 
               {loginMethod === 'password' ? (
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form id="credentials-form" onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label htmlFor="password" className="label">Password</label>
