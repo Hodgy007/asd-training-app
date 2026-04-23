@@ -79,6 +79,10 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   const [showContent, setShowContent] = useState(true)
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
   const [initialScormCmi, setInitialScormCmi] = useState<Record<string, string> | undefined>(undefined)
+  // The SCORM player captures `initialCmi` once on mount. Gate its render on
+  // the progress fetch resolving so it doesn't boot with `undefined` and lose
+  // the saved CMI seed.
+  const [scormProgressLoaded, setScormProgressLoaded] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -131,9 +135,12 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   // Fetch training progress and derive completed lessons in this module
   useEffect(() => {
     if (status !== 'authenticated') return
+    let cancelled = false
+    setScormProgressLoaded(false)
     fetch('/api/training/progress')
       .then((r) => (r.ok ? r.json() : []))
       .then((records: Array<{ moduleId: string; lessonId: string | null; completed: boolean; interactionData?: unknown }>) => {
+        if (cancelled) return
         const list = Array.isArray(records) ? records : []
         const completed = new Set(
           list
@@ -149,6 +156,10 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
         setInitialScormCmi(scorm && typeof scorm === 'object' ? scorm : undefined)
       })
       .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setScormProgressLoaded(true)
+      })
+    return () => { cancelled = true }
   }, [params.moduleId, params.lessonId, status])
 
   // Auto-save notes with 500ms debounce
@@ -324,8 +335,10 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
         </div>
       </div>
 
-      {/* SCORM player (if applicable) */}
-      {lesson.type === 'SCORM' && lesson.scormEntryPath && (
+      {/* SCORM player (if applicable). Gated on progress fetch so the player
+          captures the saved CMI seed on first mount rather than booting with
+          `undefined` and losing resume state. */}
+      {lesson.type === 'SCORM' && lesson.scormEntryPath && scormProgressLoaded && (
         <div className="card">
           <ScormPlayer
             lessonId={lesson.id}
@@ -335,6 +348,10 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           />
         </div>
       )}
+
+      {/* Everything below is hidden for SCORM lessons — the SCORM package
+          owns its own narration, quizzes, notes, and completion handling. */}
+      {lesson.type !== 'SCORM' && <>
 
       {/* Video (if applicable) */}
       {lesson.type === 'VIDEO' && (
@@ -363,7 +380,6 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
       )}
 
       {/* Lesson content */}
-      {lesson.type !== 'SCORM' && (
       <div className="card">
         <button
           onClick={() => setShowContent((v) => !v)}
@@ -425,10 +441,9 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           )}
         </div>
       </div>
-      )}
 
       {/* Attachments / Resources */}
-      {lesson.type !== 'SCORM' && lesson.attachments && lesson.attachments.length > 0 && (
+      {lesson.attachments && lesson.attachments.length > 0 && (
         <div className="card space-y-3">
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
             <FileText className="h-4 w-4 text-slate-500" />
@@ -459,7 +474,6 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
       )}
 
       {/* My Notes */}
-      {lesson.type !== 'SCORM' && (
       <div className="card">
         <button
           onClick={() => setShowNotes(!showNotes)}
@@ -479,10 +493,8 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           />
         )}
       </div>
-      )}
 
       {/* Reflection prompt */}
-      {lesson.type !== 'SCORM' && (
       <div className="bg-primary-50 border border-primary-100 rounded-2xl p-5">
         <p className="text-primary-800 font-semibold mb-2">What did you notice?</p>
         <p className="text-primary-700 text-sm">
@@ -491,11 +503,9 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
             : 'Take a moment to reflect on what you have learned in this lesson and how it applies to your practice.'}
         </p>
       </div>
-      )}
 
       {/* Quiz section — only when the author added questions */}
-      {lesson.type !== 'SCORM' && (
-      quizQuestions.length > 0 ? (
+      {quizQuestions.length > 0 ? (
         <div className="card">
           {!quizStarted ? (
             <div className="text-center py-6">
@@ -601,8 +611,9 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
             </div>
           )}
         </div>
-      )
       )}
+
+      </>}
         </div>
 
         {/* Right rail — lesson outline. Stacks below on < lg. */}
