@@ -59,7 +59,7 @@ export function ScormUpload({ lessonId, initial }: ScormUploadProps) {
           <p><strong>Version:</strong> {state.scormVersion}</p>
           <div className="flex gap-2">
             <a
-              href={`/api/scorm/${lessonId}/${state.scormEntryPath}`}
+              href={`/api/scorm/${lessonId}/${state.scormEntryPath.split('/').map(encodeURIComponent).join('/')}`}
               target="_blank"
               rel="noreferrer"
               className="rounded border px-3 py-1"

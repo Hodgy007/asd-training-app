@@ -71,7 +71,7 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
     }
   }, [lessonId, moduleId])
 
-  const src = `/api/scorm/${lessonId}/${entryPath}`
+  const src = `/api/scorm/${lessonId}/${entryPath.split('/').map(encodeURIComponent).join('/')}`
 
   return (
     <div className="space-y-2">
