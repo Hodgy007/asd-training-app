@@ -15,6 +15,7 @@ import { TtsAudioPlayer } from '@/components/training/interactive/tts-audio-play
 import { htmlToPlainText } from '@/lib/html-to-text'
 import { extractLessonProseTtsText } from '@/lib/tts-extract'
 import { LessonOutlineRail } from '@/components/training/lesson-outline-rail'
+import { ScormPlayer } from '@/components/lessons/scorm-player'
 import { clsx } from 'clsx'
 
 interface LessonPageProps {
@@ -24,10 +25,13 @@ interface LessonPageProps {
 interface LessonData {
   id: string
   title: string
-  type: 'VIDEO' | 'TEXT'
+  type: 'VIDEO' | 'TEXT' | 'SCORM'
   content: string
   videoUrl?: string | null
   order: number
+  scormEntryPath?: string | null
+  scormVersion?: string | null
+  scormBlobPrefix?: string | null
   quizQuestions: {
     id: string
     question: string
@@ -74,6 +78,11 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   const [showTranscript, setShowTranscript] = useState(false)
   const [showContent, setShowContent] = useState(true)
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
+  const [initialScormCmi, setInitialScormCmi] = useState<Record<string, string> | undefined>(undefined)
+  // The SCORM player captures `initialCmi` once on mount. Gate its render on
+  // the progress fetch resolving so it doesn't boot with `undefined` and lose
+  // the saved CMI seed.
+  const [scormProgressLoaded, setScormProgressLoaded] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -126,18 +135,32 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   // Fetch training progress and derive completed lessons in this module
   useEffect(() => {
     if (status !== 'authenticated') return
+    let cancelled = false
+    setScormProgressLoaded(false)
     fetch('/api/training/progress')
       .then((r) => (r.ok ? r.json() : []))
-      .then((records: Array<{ moduleId: string; lessonId: string | null; completed: boolean }>) => {
+      .then((records: Array<{ moduleId: string; lessonId: string | null; completed: boolean; interactionData?: unknown }>) => {
+        if (cancelled) return
+        const list = Array.isArray(records) ? records : []
         const completed = new Set(
-          (Array.isArray(records) ? records : [])
+          list
             .filter((p) => p.moduleId === params.moduleId && p.completed && p.lessonId)
             .map((p) => p.lessonId as string),
         )
         setCompletedLessonIds(completed)
+        // Capture SCORM CMI state for this lesson (if any)
+        const current = list.find(
+          (p) => p.moduleId === params.moduleId && p.lessonId === params.lessonId,
+        )
+        const scorm = (current?.interactionData as { scorm?: Record<string, string> } | null | undefined)?.scorm
+        setInitialScormCmi(scorm && typeof scorm === 'object' ? scorm : undefined)
       })
       .catch(() => {})
-  }, [params.moduleId, status])
+      .finally(() => {
+        if (!cancelled) setScormProgressLoaded(true)
+      })
+    return () => { cancelled = true }
+  }, [params.moduleId, params.lessonId, status])
 
   // Auto-save notes with 500ms debounce
   const noteInitialised = useRef(false)
@@ -311,6 +334,24 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           </div>
         </div>
       </div>
+
+      {/* SCORM player (if applicable). Gated on progress fetch so the player
+          captures the saved CMI seed on first mount rather than booting with
+          `undefined` and losing resume state. */}
+      {lesson.type === 'SCORM' && lesson.scormEntryPath && scormProgressLoaded && (
+        <div className="card">
+          <ScormPlayer
+            lessonId={lesson.id}
+            moduleId={lesson.module.id}
+            entryPath={lesson.scormEntryPath}
+            initialCmi={initialScormCmi}
+          />
+        </div>
+      )}
+
+      {/* Everything below is hidden for SCORM lessons — the SCORM package
+          owns its own narration, quizzes, notes, and completion handling. */}
+      {lesson.type !== 'SCORM' && <>
 
       {/* Video (if applicable) */}
       {lesson.type === 'VIDEO' && (
@@ -571,6 +612,8 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           )}
         </div>
       )}
+
+      </>}
         </div>
 
         {/* Right rail — lesson outline. Stacks below on < lg. */}

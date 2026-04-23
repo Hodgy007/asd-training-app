@@ -177,6 +177,7 @@ model PasswordResetToken {
 enum LessonType {
   TEXT
   VIDEO
+  SCORM
 }
 
 model Module {
@@ -206,6 +207,9 @@ model Lesson {
   active        Boolean        @default(true)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  scormBlobPrefix  String?
+  scormEntryPath   String?
+  scormVersion     String?
   module        Module             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   quizQuestions QuizQuestion[]
   attachments   LessonAttachment[]
