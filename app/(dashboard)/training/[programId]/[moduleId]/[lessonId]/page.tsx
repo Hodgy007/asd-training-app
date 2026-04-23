@@ -15,6 +15,7 @@ import { TtsAudioPlayer } from '@/components/training/interactive/tts-audio-play
 import { htmlToPlainText } from '@/lib/html-to-text'
 import { extractLessonProseTtsText } from '@/lib/tts-extract'
 import { LessonOutlineRail } from '@/components/training/lesson-outline-rail'
+import { ScormPlayer } from '@/components/lessons/scorm-player'
 import { clsx } from 'clsx'
 
 interface LessonPageProps {
@@ -24,10 +25,13 @@ interface LessonPageProps {
 interface LessonData {
   id: string
   title: string
-  type: 'VIDEO' | 'TEXT'
+  type: 'VIDEO' | 'TEXT' | 'SCORM'
   content: string
   videoUrl?: string | null
   order: number
+  scormEntryPath?: string | null
+  scormVersion?: string | null
+  scormBlobPrefix?: string | null
   quizQuestions: {
     id: string
     question: string
@@ -74,6 +78,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   const [showTranscript, setShowTranscript] = useState(false)
   const [showContent, setShowContent] = useState(true)
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
+  const [initialScormCmi, setInitialScormCmi] = useState<Record<string, string> | undefined>(undefined)
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -128,16 +133,23 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
     if (status !== 'authenticated') return
     fetch('/api/training/progress')
       .then((r) => (r.ok ? r.json() : []))
-      .then((records: Array<{ moduleId: string; lessonId: string | null; completed: boolean }>) => {
+      .then((records: Array<{ moduleId: string; lessonId: string | null; completed: boolean; interactionData?: unknown }>) => {
+        const list = Array.isArray(records) ? records : []
         const completed = new Set(
-          (Array.isArray(records) ? records : [])
+          list
             .filter((p) => p.moduleId === params.moduleId && p.completed && p.lessonId)
             .map((p) => p.lessonId as string),
         )
         setCompletedLessonIds(completed)
+        // Capture SCORM CMI state for this lesson (if any)
+        const current = list.find(
+          (p) => p.moduleId === params.moduleId && p.lessonId === params.lessonId,
+        )
+        const scorm = (current?.interactionData as { scorm?: Record<string, string> } | null | undefined)?.scorm
+        setInitialScormCmi(scorm && typeof scorm === 'object' ? scorm : undefined)
       })
       .catch(() => {})
-  }, [params.moduleId, status])
+  }, [params.moduleId, params.lessonId, status])
 
   // Auto-save notes with 500ms debounce
   const noteInitialised = useRef(false)
@@ -312,6 +324,18 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
         </div>
       </div>
 
+      {/* SCORM player (if applicable) */}
+      {lesson.type === 'SCORM' && lesson.scormEntryPath && (
+        <div className="card">
+          <ScormPlayer
+            lessonId={lesson.id}
+            moduleId={lesson.module.id}
+            entryPath={lesson.scormEntryPath}
+            initialCmi={initialScormCmi}
+          />
+        </div>
+      )}
+
       {/* Video (if applicable) */}
       {lesson.type === 'VIDEO' && (
         <div className="max-w-xs mx-auto">
@@ -339,6 +363,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
       )}
 
       {/* Lesson content */}
+      {lesson.type !== 'SCORM' && (
       <div className="card">
         <button
           onClick={() => setShowContent((v) => !v)}
@@ -400,9 +425,10 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           )}
         </div>
       </div>
+      )}
 
       {/* Attachments / Resources */}
-      {lesson.attachments && lesson.attachments.length > 0 && (
+      {lesson.type !== 'SCORM' && lesson.attachments && lesson.attachments.length > 0 && (
         <div className="card space-y-3">
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
             <FileText className="h-4 w-4 text-slate-500" />
@@ -433,6 +459,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
       )}
 
       {/* My Notes */}
+      {lesson.type !== 'SCORM' && (
       <div className="card">
         <button
           onClick={() => setShowNotes(!showNotes)}
@@ -452,8 +479,10 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           />
         )}
       </div>
+      )}
 
       {/* Reflection prompt */}
+      {lesson.type !== 'SCORM' && (
       <div className="bg-primary-50 border border-primary-100 rounded-2xl p-5">
         <p className="text-primary-800 font-semibold mb-2">What did you notice?</p>
         <p className="text-primary-700 text-sm">
@@ -462,9 +491,11 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
             : 'Take a moment to reflect on what you have learned in this lesson and how it applies to your practice.'}
         </p>
       </div>
+      )}
 
       {/* Quiz section — only when the author added questions */}
-      {quizQuestions.length > 0 ? (
+      {lesson.type !== 'SCORM' && (
+      quizQuestions.length > 0 ? (
         <div className="card">
           {!quizStarted ? (
             <div className="text-center py-6">
@@ -570,6 +601,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
             </div>
           )}
         </div>
+      )
       )}
         </div>
 
