@@ -228,6 +228,27 @@ export default function SuperAdminGuidePage() {
           <li>Review and edit any AI-generated questions before saving.</li>
         </ol>
 
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+          <span className="inline-flex items-center gap-1.5"><Upload className="h-4 w-4 text-purple-500" /> Uploading SCORM packages</span>
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          SCORM is an industry-standard format for self-contained e-learning packages produced by authoring tools like Articulate and Captivate. Upload a SCORM <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> to play a third-party course inline inside a lesson — no other lesson content (video, text, quiz, notes) renders when a lesson is set to SCORM.
+        </p>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li>Edit the lesson you want to host the package on.</li>
+          <li>Set the lesson <strong>Type</strong> to <strong>SCORM package</strong>.</li>
+          <li>Drop the <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> into the uploader and wait for extraction to finish.</li>
+          <li>Use <strong>Preview</strong> to open the entry file and check it runs.</li>
+        </ol>
+        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <li><strong>Supported version:</strong> SCORM 1.2 only. SCORM 2004 packages are rejected at upload.</li>
+          <li><strong>Maximum package size:</strong> 200 MB.</li>
+          <li><strong>Test packages:</strong> free SCORM 1.2 samples are available at <a href="https://scorm.com/scorm-explained/technical-scorm/golf-examples/" className="text-purple-600 dark:text-purple-400 hover:underline" target="_blank" rel="noopener noreferrer">scorm.com</a>.</li>
+          <li><strong>Progress tracking:</strong> the learner&rsquo;s completion status and quiz score are saved to their training record. On return, the package resumes from where they left off.</li>
+          <li><strong>Replacing a package:</strong> upload a new <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> over the existing one, or use <strong>Remove package</strong> to convert the lesson back to a normal text lesson.</li>
+        </ul>
+        <Tip>If a package fails to load, export it from your authoring tool as SCORM <strong>1.2</strong> (not 2004) and confirm the <code className="px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-xs">imsmanifest.xml</code> sits at the root of the zip.</Tip>
+
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Previewing content as a learner</h3>
         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
           Click the <strong>View</strong> button on any program or module to open it in a new tab. This renders the content exactly as a learner would see it, allowing you to verify formatting, quiz flow, and overall experience.
