@@ -26,6 +26,7 @@ import { VideoPlayer } from '@/components/training/video-player'
 import { clsx } from 'clsx'
 import { InteractiveBlock } from '@/types/interactive'
 import { InteractiveBlocksPanel } from '@/components/admin/interactive-builder/interactive-blocks-panel'
+import { ScormUpload } from '@/components/admin/scorm-upload'
 import { generateBlockPlaceholder, removeBlockPlaceholder, validateInteractiveBlocks, normaliseBlockPlaceholderAlignment } from '@/lib/interactive-blocks'
 import { registerResizableImage } from '@/lib/quill-image-format'
 import { registerVideoFormat } from '@/lib/quill-video-format'
@@ -92,6 +93,9 @@ interface LessonData {
   attachments: { id: string; fileName: string; fileSize: number; url: string; createdAt: string }[]
   interactiveBlocks?: unknown
   transcript?: string | null
+  scormBlobPrefix?: string | null
+  scormEntryPath?: string | null
+  scormVersion?: string | null
 }
 
 interface GeneratedQuestion {
@@ -479,6 +483,7 @@ export default function LessonEditorPage() {
             >
               <option value="TEXT">Text</option>
               <option value="VIDEO">Video</option>
+              <option value="SCORM">SCORM package</option>
             </select>
           </div>
         </div>
@@ -540,6 +545,17 @@ export default function LessonEditorPage() {
               className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 min-h-[80px]"
             />
           </div>
+        )}
+
+        {editType === 'SCORM' && (
+          <ScormUpload
+            lessonId={lesson.id}
+            initial={{
+              scormBlobPrefix: lesson.scormBlobPrefix ?? null,
+              scormEntryPath: lesson.scormEntryPath ?? null,
+              scormVersion: lesson.scormVersion ?? null,
+            }}
+          />
         )}
 
         <div>
