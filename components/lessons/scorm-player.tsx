@@ -11,6 +11,8 @@ interface ScormPlayerProps {
 
 export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: ScormPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const initialCmiRef = useRef(initialCmi)
+  const [apiReady, setApiReady] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saved' | 'saving' | 'error'>('idle')
 
   useEffect(() => {
@@ -30,8 +32,9 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
         logLevel: 4, // errors only
       })
 
-      if (initialCmi) {
-        for (const [k, v] of Object.entries(initialCmi)) {
+      const seed = initialCmiRef.current
+      if (seed) {
+        for (const [k, v] of Object.entries(seed)) {
           try { api.loadFromJSON({ [k]: v }) } catch {}
         }
       }
@@ -52,6 +55,8 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
           setStatus('error')
         }
       })
+
+      setApiReady(true)
     }
 
     setup().catch((err) => {
@@ -61,21 +66,28 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
 
     return () => {
       cancelled = true
+      try { api?.terminate?.('Terminate', true) } catch {}
       try { delete (window as any).API } catch {}
     }
-  }, [lessonId, moduleId, initialCmi])
+  }, [lessonId, moduleId])
 
   const src = `/api/scorm/${lessonId}/${entryPath}`
 
   return (
     <div className="space-y-2">
       <div ref={containerRef} className="aspect-video w-full overflow-hidden rounded-lg border bg-black">
-        <iframe
-          title="SCORM content"
-          src={src}
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-          className="h-full w-full"
-        />
+        {apiReady ? (
+          <iframe
+            title="SCORM content"
+            src={src}
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            className="h-full w-full"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-xs text-white/70">
+            Loading SCORM runtime…
+          </div>
+        )}
       </div>
       <p className="text-xs text-muted-foreground" role="status">
         {status === 'saving' && 'Saving progress…'}
