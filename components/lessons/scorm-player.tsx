@@ -13,6 +13,7 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
   const containerRef = useRef<HTMLDivElement>(null)
   const initialCmiRef = useRef(initialCmi)
   const [apiReady, setApiReady] = useState(false)
+  const [initFailed, setInitFailed] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saved' | 'saving' | 'error'>('idle')
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
 
     setup().catch((err) => {
       console.error('SCORM init failed', err)
-      setStatus('error')
+      if (!cancelled) setInitFailed(true)
     })
 
     return () => {
@@ -76,7 +77,18 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
   return (
     <div className="space-y-2">
       <div ref={containerRef} className="aspect-video w-full overflow-hidden rounded-lg border bg-black">
-        {apiReady ? (
+        {initFailed ? (
+          <div
+            className="flex h-full w-full flex-col items-center justify-center px-6 text-center text-sm text-white/90"
+            role="alert"
+            aria-live="polite"
+          >
+            <p className="font-semibold">This lesson couldn&rsquo;t load.</p>
+            <p className="mt-1 text-xs text-white/70">
+              Please refresh the page to try again. If it keeps failing, contact your administrator.
+            </p>
+          </div>
+        ) : apiReady ? (
           <iframe
             title="SCORM content"
             src={src}
@@ -84,12 +96,16 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
             className="h-full w-full"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-white/70">
-            Loading SCORM runtime…
+          <div
+            className="flex h-full w-full items-center justify-center text-xs text-white/70"
+            role="status"
+            aria-live="polite"
+          >
+            Loading your lesson…
           </div>
         )}
       </div>
-      <p className="text-xs text-muted-foreground" role="status">
+      <p className="text-xs text-muted-foreground" role="status" aria-live="polite">
         {status === 'saving' && 'Saving progress…'}
         {status === 'saved' && 'Progress saved.'}
         {status === 'error' && 'Could not save progress — check your connection.'}

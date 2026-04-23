@@ -25,6 +25,18 @@ export async function POST(req: NextRequest) {
   }
 
   const { moduleId, lessonId, cmi } = parsed
+
+  // Only accept progress writes for SCORM lessons — stops stray clients or
+  // future refactors from stamping non-SCORM lessons with SCORM-shaped
+  // interaction data.
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+    select: { type: true, moduleId: true },
+  })
+  if (!lesson || lesson.type !== 'SCORM' || lesson.moduleId !== moduleId) {
+    return NextResponse.json({ error: 'Not a SCORM lesson' }, { status: 404 })
+  }
+
   const update = mapScormStateToProgress(cmi as CmiState)
 
   const saved = await prisma.trainingProgress.upsert({

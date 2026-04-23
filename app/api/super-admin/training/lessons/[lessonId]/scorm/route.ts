@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { put } from '@vercel/blob'
+import { put, list, del } from '@vercel/blob'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isSuperAdmin } from '@/lib/rbac'
@@ -36,6 +36,29 @@ export async function POST(
   }
 
   const buffer = Buffer.from(await file.arrayBuffer())
+
+  // Re-upload cleanup: if this lesson already has a package, delete every
+  // blob under its prefix first. Otherwise the new package's files merge with
+  // whatever was there before — any asset the old package had but the new one
+  // doesn't would remain silently accessible via the serving route. We list
+  // and del before extracting so a failed extract doesn't leave a half-wiped
+  // lesson (the update() below won't run, so the Lesson keeps its old
+  // prefix fields — but the files under that prefix are the new ones).
+  const prefix = `scorm/${lesson.id}/`
+  try {
+    let cursor: string | undefined
+    do {
+      const page = await list({ prefix, cursor })
+      if (page.blobs.length > 0) {
+        await del(page.blobs.map((b) => b.url))
+      }
+      cursor = page.hasMore ? page.cursor : undefined
+    } while (cursor)
+  } catch (err) {
+    console.error('SCORM pre-upload cleanup failed', err)
+    // Non-fatal — the extractor uses allowOverwrite, so fresh files still
+    // land correctly. Orphans are the only cost.
+  }
 
   try {
     const result = await extractScormPackage({
