@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { list } from '@vercel/blob'
+import { head } from '@vercel/blob'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -36,15 +36,24 @@ export async function GET(
 
   const fullPath = `${lesson.scormBlobPrefix}/${relPath}`
 
-  // Resolve the public Blob URL via listing (prefix search).
-  const { blobs } = await list({ prefix: fullPath })
-  const match = blobs.find((b) => b.pathname === fullPath)
-  if (!match) return new NextResponse('Not found', { status: 404 })
+  let blobUrl: string
+  try {
+    const metadata = await head(fullPath)
+    blobUrl = metadata.url
+  } catch {
+    return new NextResponse('Not found', { status: 404 })
+  }
 
-  const upstream = await fetch(match.url)
-  if (!upstream.ok || !upstream.body) {
+  const upstream = await fetch(blobUrl)
+  if (!upstream.ok) {
     return new NextResponse('Blob fetch failed', { status: 502 })
   }
+
+  // Buffer the full body before returning. Streaming upstream.body through
+  // Next.js/Vercel's response pipeline is known to corrupt binary media —
+  // see the comment in app/api/tts/route.ts. SCORM packages ship binary
+  // assets (images, fonts, videos), so we match the TTS pattern.
+  const bytes = new Uint8Array(await upstream.arrayBuffer())
 
   const headers = new Headers()
   const contentType = upstream.headers.get('content-type') ?? 'application/octet-stream'
@@ -58,5 +67,5 @@ export async function GET(
       "connect-src 'self'; frame-ancestors 'self'",
   )
 
-  return new NextResponse(upstream.body, { status: 200, headers })
+  return new NextResponse(bytes, { status: 200, headers })
 }
