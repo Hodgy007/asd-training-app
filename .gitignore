@@ -30,3 +30,6 @@ remotion-demo/.remotion/
 
 # Pre-migration data backups (may contain PII — never commit)
 backups/
+
+# Git worktrees
+.worktrees/
