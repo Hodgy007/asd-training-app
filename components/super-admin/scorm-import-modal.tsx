@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Loader2, Package, X } from 'lucide-react'
+import { upload } from '@vercel/blob/client'
 
 interface ScormImportModalProps {
   open: boolean
@@ -14,21 +15,26 @@ interface ScormImportModalProps {
  * is auto-scaffolded with one Module and one Lesson; the admin edits metadata
  * afterwards on the training page.
  *
- * POSTs multipart/form-data to `/api/super-admin/training/scorm-import`:
- *   - `file`: the .zip
- *   - `name`: optional program name override
+ * Upload flow (two-stage, needed to bypass the 4.5 MB serverless body limit):
+ *   1. `upload()` uploads the zip directly from the browser to Vercel Blob,
+ *      using a short-lived token minted by
+ *      `POST /api/super-admin/training/scorm-import/upload-url`.
+ *   2. `POST /api/super-admin/training/scorm-import` is called with JSON
+ *      `{ blobUrl, filename, name? }` — the server fetches the zip back from
+ *      Blob, scaffolds the DB rows, extracts the package, and cleans up.
  *
- * The real work on the server is file upload to Blob + extraction, which can
- * take 10–60 seconds for large packages. We show a blocking in-progress state
- * and disable the cancel button while uploading so the admin doesn't submit
- * twice or close the modal mid-upload (which would leak a half-scaffolded
- * program — the server's rollback handles extract failures, but not client
- * disconnects).
+ * Extraction can take 10–60 seconds for large packages. We show a blocking
+ * in-progress state and disable the cancel button while uploading so the
+ * admin doesn't submit twice or close the modal mid-upload (which would leak
+ * a half-scaffolded program — the server's rollback handles extract failures,
+ * but not client disconnects).
  */
 export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalProps) {
   const [file, setFile] = useState<File | null>(null)
   const [name, setName] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState<number | null>(null)
+  const [statusText, setStatusText] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -40,6 +46,8 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
       setName('')
       setError(null)
       setUploading(false)
+      setProgress(null)
+      setStatusText(null)
     }
   }, [open])
 
@@ -50,15 +58,39 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
 
       setUploading(true)
       setError(null)
-
-      const body = new FormData()
-      body.set('file', file)
-      if (name.trim().length > 0) body.set('name', name.trim())
+      setProgress(0)
+      setStatusText('Uploading package…')
 
       try {
+        // Stage 1 — upload the zip directly from the browser to Blob.
+        const pathname = `scorm-imports/${Date.now()}-${file.name}`
+        const blob = await upload(pathname, file, {
+          access: 'public',
+          handleUploadUrl: '/api/super-admin/training/scorm-import/upload-url',
+          onUploadProgress: (event) => {
+            // `percentage` is 0–100; fall back to computing it if older client
+            // versions only surface bytes.
+            const percent =
+              typeof event.percentage === 'number'
+                ? event.percentage
+                : event.total > 0
+                  ? (event.loaded / event.total) * 100
+                  : 0
+            setProgress(Math.min(99, Math.round(percent)))
+          },
+        })
+
+        // Stage 2 — ask the server to extract and scaffold.
+        setProgress(100)
+        setStatusText('Processing package…')
         const res = await fetch('/api/super-admin/training/scorm-import', {
           method: 'POST',
-          body,
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            blobUrl: blob.url,
+            filename: file.name,
+            ...(name.trim().length > 0 ? { name: name.trim() } : {}),
+          }),
         })
         const data = await res.json().catch(() => ({}))
         if (!res.ok || !data?.programId) {
@@ -68,6 +100,8 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Import failed')
         setUploading(false)
+        setProgress(null)
+        setStatusText(null)
       }
     },
     [file, name, uploading, onCreated],
@@ -154,6 +188,27 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
             />
           </div>
 
+          {uploading && progress !== null && (
+            <div>
+              <div className="mb-1 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+                <span>{statusText ?? 'Uploading…'}</span>
+                <span>{progress}%</span>
+              </div>
+              <div
+                role="progressbar"
+                aria-valuenow={progress}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
+              >
+                <div
+                  className="h-full bg-indigo-500 transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {error && (
             <div
               role="alert"
@@ -186,7 +241,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
               {uploading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Uploading…
+                  {statusText ?? 'Uploading…'}
                 </>
               ) : (
                 <>
