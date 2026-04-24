@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
-import { AlertTriangle, Trash2, Shield, User, Lock, Eye, EyeOff, CheckCircle, Palette } from 'lucide-react'
+import { AlertTriangle, Trash2, Shield, User, Lock, Eye, EyeOff, CheckCircle, Palette, CreditCard } from 'lucide-react'
 import { useColorTheme, type ColorTheme } from '@/components/providers/color-theme-provider'
 import { FontSettings } from '@/components/ui/font-settings'
+import { ManageBillingButton } from '@/components/billing/manage-billing-button'
 
 const THEMES: { id: ColorTheme; label: string; description: string; swatchBg: string; swatchAccent: string }[] = [
   {
@@ -142,6 +143,20 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Billing (personal-org users only) */}
+      {session?.user?.isPersonalOrg && (
+        <div className="card space-y-3">
+          <div className="flex items-center gap-3 mb-2">
+            <CreditCard className="h-5 w-5 text-slate-400" />
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Billing</h2>
+          </div>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Subscription status: <span className="font-semibold text-slate-900 dark:text-slate-100">{session.user.subscriptionStatus ?? 'NONE'}</span>
+          </p>
+          <ManageBillingButton />
+        </div>
+      )}
 
       {/* Colour theme */}
       <div className="card space-y-4">

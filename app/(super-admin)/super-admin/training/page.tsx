@@ -47,6 +47,11 @@ interface Program {
   reviewedAt: string | null
   reviewedBy: string | null
   reviewNotes: string | null
+  priceAmount: number | null
+  currency: string
+  purchasable: boolean
+  stripeProductId: string | null
+  stripePriceId: string | null
   _count: { modules: number }
   modules?: Module[]
 }
@@ -730,6 +735,15 @@ function EditProgramForm({
     program.reviewedAt ? new Date(program.reviewedAt).toISOString().split('T')[0] : ''
   )
   const [reviewNotes, setReviewNotes] = useState(program.reviewNotes ?? '')
+  const [priceGbp, setPriceGbp] = useState(
+    program.priceAmount ? (program.priceAmount / 100).toFixed(2) : ''
+  )
+  const [currency, setCurrency] = useState(program.currency || 'gbp')
+  const [purchasable, setPurchasable] = useState(program.purchasable)
+  const [stripeProductId, setStripeProductId] = useState(program.stripeProductId ?? '')
+  const [stripePriceId, setStripePriceId] = useState(program.stripePriceId ?? '')
+  const [publishing, setPublishing] = useState(false)
+  const [publishMessage, setPublishMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -748,6 +762,12 @@ function EditProgramForm({
     if (!reviewedBy.trim() && currentUserLabel) setReviewedBy(currentUserLabel)
     if (!reviewedAt) setReviewedAt(today)
 
+    const priceNumber = priceGbp.trim() ? Number(priceGbp) : null
+    const priceAmountPence =
+      priceNumber !== null && Number.isFinite(priceNumber) && priceNumber > 0
+        ? Math.round(priceNumber * 100)
+        : null
+
     try {
       const body: Record<string, unknown> = {
         name: name.trim(),
@@ -758,6 +778,9 @@ function EditProgramForm({
         reviewedBy: effectiveReviewedBy || null,
         reviewedAt: effectiveReviewedAt ? new Date(effectiveReviewedAt).toISOString() : null,
         reviewNotes: reviewNotes.trim() || null,
+        priceAmount: priceAmountPence,
+        currency: currency.toLowerCase() || 'gbp',
+        purchasable,
       }
       const res = await fetch(`/api/super-admin/training/programs/${program.id}`, {
         method: 'PATCH',
@@ -774,6 +797,28 @@ function EditProgramForm({
       setError('Network error')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handlePublishToStripe = async () => {
+    setPublishing(true)
+    setPublishMessage(null)
+    try {
+      const res = await fetch(`/api/super-admin/training/programs/${program.id}/stripe-publish`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setPublishMessage({ type: 'error', text: data.error || 'Failed to publish' })
+      } else {
+        setStripeProductId(data.stripeProductId ?? '')
+        setStripePriceId(data.stripePriceId ?? '')
+        setPublishMessage({ type: 'success', text: 'Published to Stripe.' })
+      }
+    } catch {
+      setPublishMessage({ type: 'error', text: 'Network error' })
+    } finally {
+      setPublishing(false)
     }
   }
 
@@ -844,6 +889,89 @@ function EditProgramForm({
             minHeight={100}
             ariaLabel="Program description"
           />
+        </div>
+
+        {/* Pricing section */}
+        <div className="border-t border-calm-200 dark:border-slate-700 pt-4">
+          <h4 className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3">
+            Pricing
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Price ({currency.toUpperCase()})
+              </label>
+              <input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="0.01"
+                value={priceGbp}
+                onChange={(e) => setPriceGbp(e.target.value)}
+                placeholder="49.00"
+                className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Currency
+              </label>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white"
+              >
+                <option value="gbp">GBP</option>
+                <option value="usd">USD</option>
+                <option value="eur">EUR</option>
+              </select>
+            </div>
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={purchasable}
+                  onChange={(e) => setPurchasable(e.target.checked)}
+                  className="rounded border-calm-300 text-purple-600 focus:ring-purple-500"
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Listed on /courses
+                </span>
+              </label>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={handlePublishToStripe}
+              disabled={publishing}
+              className="inline-flex items-center gap-2 border border-purple-600 text-purple-700 dark:text-purple-300 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors disabled:opacity-50"
+            >
+              {publishing && <Loader2 className="h-4 w-4 animate-spin" />}
+              Publish to Stripe
+            </button>
+            {stripePriceId ? (
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Product: <code>{stripeProductId}</code> · Price: <code>{stripePriceId}</code>
+              </span>
+            ) : (
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Not yet on Stripe. Save the price first, then publish.
+              </span>
+            )}
+          </div>
+          {publishMessage ? (
+            <p
+              className={clsx(
+                'mt-2 text-sm font-semibold',
+                publishMessage.type === 'success'
+                  ? 'text-green-700 dark:text-green-300'
+                  : 'text-red-600 dark:text-red-400'
+              )}
+            >
+              {publishMessage.text}
+            </p>
+          ) : null}
         </div>
 
         {/* Revision section */}

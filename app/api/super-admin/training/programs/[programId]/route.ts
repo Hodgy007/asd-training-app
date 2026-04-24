@@ -52,6 +52,7 @@ export async function PATCH(
   const allowedFields = [
     'name', 'description', 'order', 'active', 'version',
     'status', 'reviewedAt', 'reviewedBy', 'reviewNotes',
+    'priceAmount', 'currency', 'purchasable',
   ]
 
   const data: Record<string, unknown> = {}

@@ -137,6 +137,8 @@ declare module 'next-auth' {
       cvBuilderEnabled: boolean
       careersAdvisorEnabled: boolean
       isParentOrg: boolean
+      subscriptionStatus: string
+      isPersonalOrg: boolean
     }
   }
 }
@@ -155,6 +157,8 @@ declare module 'next-auth/jwt' {
     cvBuilderEnabled: boolean
     careersAdvisorEnabled: boolean
     isParentOrg: boolean
+    subscriptionStatus: string
+    isPersonalOrg: boolean
   }
 }
 

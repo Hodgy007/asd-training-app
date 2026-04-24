@@ -1,3 +1,4 @@
+import type { SubscriptionStatus } from '@prisma/client'
 import prisma from './prisma'
 import { getEffectiveOrgSettings } from './org-hierarchy'
 
@@ -6,8 +7,44 @@ export interface ProgramInfo {
   name: string
 }
 
+export interface OrgSubscriptionState {
+  hasAccess: boolean
+  status: SubscriptionStatus
+  renewsAt: Date | null
+}
+
+const GRACE_PERIOD_MS = 3 * 24 * 60 * 60 * 1000
+
+export function subscriptionGrantsAccess(
+  status: SubscriptionStatus | null | undefined,
+  periodEnd: Date | null | undefined,
+  now: Date = new Date()
+): boolean {
+  if (!status) return false
+  if (status === 'ACTIVE' || status === 'TRIALING') return true
+  if (status === 'PAST_DUE' && periodEnd) {
+    return now.getTime() < periodEnd.getTime() + GRACE_PERIOD_MS
+  }
+  return false
+}
+
 export async function getOrgPrograms(orgId: string): Promise<ProgramInfo[]> {
-  const settings = await getEffectiveOrgSettings(orgId)
+  const [settings, org] = await Promise.all([
+    getEffectiveOrgSettings(orgId),
+    prisma.organisation.findUnique({
+      where: { id: orgId },
+      select: { subscriptionStatus: true, subscriptionCurrentPeriodEnd: true },
+    }),
+  ])
+
+  if (subscriptionGrantsAccess(org?.subscriptionStatus, org?.subscriptionCurrentPeriodEnd)) {
+    return prisma.trainingProgram.findMany({
+      where: { active: true, status: 'APPROVED' },
+      select: { id: true, name: true },
+      orderBy: { order: 'asc' },
+    })
+  }
+
   if (settings.allowedProgramIds.length === 0) return []
   return prisma.trainingProgram.findMany({
     where: { id: { in: settings.allowedProgramIds }, active: true },
@@ -23,6 +60,18 @@ export async function getUserPrograms(userId: string): Promise<ProgramInfo[]> {
   })
   if (!user?.organisationId) return []
   return getOrgPrograms(user.organisationId)
+}
+
+export async function getOrgSubscriptionState(orgId: string): Promise<OrgSubscriptionState> {
+  const org = await prisma.organisation.findUnique({
+    where: { id: orgId },
+    select: { subscriptionStatus: true, subscriptionCurrentPeriodEnd: true },
+  })
+  return {
+    hasAccess: subscriptionGrantsAccess(org?.subscriptionStatus, org?.subscriptionCurrentPeriodEnd),
+    status: org?.subscriptionStatus ?? 'NONE',
+    renewsAt: org?.subscriptionCurrentPeriodEnd ?? null,
+  }
 }
 
 export function hasAccess(programIds: string[], programId: string): boolean {

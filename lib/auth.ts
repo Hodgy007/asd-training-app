@@ -30,6 +30,20 @@ async function getOrgIsParent(organisationId: string | null | undefined): Promis
   return org?.isParentOrg ?? false
 }
 
+async function getOrgSubscriptionInfo(
+  organisationId: string | null | undefined
+): Promise<{ subscriptionStatus: string; isPersonalOrg: boolean }> {
+  if (!organisationId) return { subscriptionStatus: 'NONE', isPersonalOrg: false }
+  const org = await prisma.organisation.findUnique({
+    where: { id: organisationId },
+    select: { subscriptionStatus: true, isPersonal: true },
+  })
+  return {
+    subscriptionStatus: org?.subscriptionStatus ?? 'NONE',
+    isPersonalOrg: org?.isPersonal ?? false,
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   // No adapter — we use JWT sessions and handle SSO linking manually in signIn callback
   providers: [
@@ -222,6 +236,9 @@ export const authOptions: NextAuthOptions = {
         token.cvBuilderEnabled = flags.cvBuilderEnabled
         token.careersAdvisorEnabled = flags.careersAdvisorEnabled
         token.isParentOrg = await getOrgIsParent(token.organisationId as string | null)
+        const subInfo = await getOrgSubscriptionInfo(token.organisationId as string | null)
+        token.subscriptionStatus = subInfo.subscriptionStatus
+        token.isPersonalOrg = subInfo.isPersonalOrg
       }
 
       // SSO login — look up DB user by email since there's no adapter
@@ -244,6 +261,9 @@ export const authOptions: NextAuthOptions = {
           token.cvBuilderEnabled = ssoFlags.cvBuilderEnabled
           token.careersAdvisorEnabled = ssoFlags.careersAdvisorEnabled
           token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
+          const ssoSubInfo = await getOrgSubscriptionInfo(dbUser.organisationId)
+          token.subscriptionStatus = ssoSubInfo.subscriptionStatus
+          token.isPersonalOrg = ssoSubInfo.isPersonalOrg
         }
       }
 
@@ -263,6 +283,9 @@ export const authOptions: NextAuthOptions = {
           token.cvBuilderEnabled = updateFlags.cvBuilderEnabled
           token.careersAdvisorEnabled = updateFlags.careersAdvisorEnabled
           token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
+          const updateSubInfo = await getOrgSubscriptionInfo(dbUser.organisationId)
+          token.subscriptionStatus = updateSubInfo.subscriptionStatus
+          token.isPersonalOrg = updateSubInfo.isPersonalOrg
         }
         token.mfaPending = false
         token.effectivePrograms = await getUserEffectivePrograms(token.id as string)
@@ -284,6 +307,8 @@ export const authOptions: NextAuthOptions = {
         session.user.cvBuilderEnabled = (token.cvBuilderEnabled as boolean) ?? true
         session.user.careersAdvisorEnabled = (token.careersAdvisorEnabled as boolean) ?? true
         session.user.isParentOrg = (token.isParentOrg as boolean) ?? false
+        session.user.subscriptionStatus = (token.subscriptionStatus as string) ?? 'NONE'
+        session.user.isPersonalOrg = (token.isPersonalOrg as boolean) ?? false
       }
       return session
     },

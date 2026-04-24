@@ -2,7 +2,7 @@
 import { getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/register-organisation', '/privacy', '/terms', '/api/auth', '/api/organisations/register', '/api/cron']
+const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/register-organisation', '/privacy', '/terms', '/api/auth', '/api/organisations/register', '/api/cron', '/courses', '/api/checkout/session', '/api/stripe/webhook']
 
 // Temporary MFA kill-switch. Set `DISABLE_MFA=true` in env to skip all MFA
 // enforcement (verify + setup). Existing TOTP secrets remain intact; users
