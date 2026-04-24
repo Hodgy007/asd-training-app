@@ -6,7 +6,6 @@ import { prisma } from '@/lib/prisma'
 import {
   requireStripe,
   isPaymentsEnabled,
-  STRIPE_SUBSCRIPTION_PRICE_MONTHLY,
   STRIPE_SUBSCRIPTION_PRICE_YEARLY,
 } from '@/lib/stripe'
 import { createRateLimiter, getClientIp } from '@/lib/rate-limit'
@@ -17,7 +16,7 @@ const checkoutLimiter = createRateLimiter('stripe-checkout', 5 * 60 * 1000, 10)
 
 const schema = z.discriminatedUnion('mode', [
   z.object({ mode: z.literal('purchase'), programId: z.string().min(1) }),
-  z.object({ mode: z.literal('subscription'), interval: z.enum(['month', 'year']) }),
+  z.object({ mode: z.literal('subscription'), interval: z.literal('year') }),
 ])
 
 export async function POST(req: NextRequest) {
@@ -101,15 +100,12 @@ export async function POST(req: NextRequest) {
     metadata = { programId: program.id, mode: 'purchase' }
     mode = 'payment'
   } else {
-    const priceId =
-      parsed.data.interval === 'month'
-        ? STRIPE_SUBSCRIPTION_PRICE_MONTHLY
-        : STRIPE_SUBSCRIPTION_PRICE_YEARLY
+    const priceId = STRIPE_SUBSCRIPTION_PRICE_YEARLY
     if (!priceId) {
       return NextResponse.json({ error: 'Subscription not configured' }, { status: 500 })
     }
     lineItems = [{ price: priceId, quantity: 1 }]
-    metadata = { interval: parsed.data.interval, mode: 'subscription' }
+    metadata = { interval: 'year', mode: 'subscription' }
     mode = 'subscription'
   }
 
