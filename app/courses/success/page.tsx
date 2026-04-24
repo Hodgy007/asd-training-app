@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,22 @@ const POLL_INTERVAL_MS = 1500
 const POLL_TIMEOUT_MS = 10_000
 
 export default function CheckoutSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <Shell>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            Confirming your payment…
+          </h1>
+        </Shell>
+      }
+    >
+      <CheckoutSuccessInner />
+    </Suspense>
+  )
+}
+
+function CheckoutSuccessInner() {
   const params = useSearchParams()
   const sessionId = params.get('session_id')
   const [status, setStatus] = useState<Status | null>(null)
