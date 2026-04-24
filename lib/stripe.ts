@@ -24,7 +24,5 @@ export function requireStripe(): Stripe {
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? ''
 export const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY ?? ''
-export const STRIPE_SUBSCRIPTION_PRICE_MONTHLY =
-  process.env.STRIPE_SUBSCRIPTION_PRICE_MONTHLY ?? ''
 export const STRIPE_SUBSCRIPTION_PRICE_YEARLY =
   process.env.STRIPE_SUBSCRIPTION_PRICE_YEARLY ?? ''

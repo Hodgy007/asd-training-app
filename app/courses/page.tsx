@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma'
 import {
   isPaymentsEnabled,
   stripe,
-  STRIPE_SUBSCRIPTION_PRICE_MONTHLY,
   STRIPE_SUBSCRIPTION_PRICE_YEARLY,
 } from '@/lib/stripe'
 import { ProgramCard } from '@/components/courses/program-card'
@@ -52,12 +51,9 @@ export default async function CoursesPage() {
     orderBy: { name: 'asc' },
   })
 
-  const [monthlyPrice, yearlyPrice] = await Promise.all([
-    formatStripePrice(STRIPE_SUBSCRIPTION_PRICE_MONTHLY),
-    formatStripePrice(STRIPE_SUBSCRIPTION_PRICE_YEARLY),
-  ])
+  const yearlyPrice = await formatStripePrice(STRIPE_SUBSCRIPTION_PRICE_YEARLY)
 
-  const subscriptionConfigured = Boolean(monthlyPrice || yearlyPrice)
+  const subscriptionConfigured = Boolean(yearlyPrice)
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -92,7 +88,7 @@ export default async function CoursesPage() {
               Subscription
             </h3>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <SubscriptionCard monthlyPrice={monthlyPrice} yearlyPrice={yearlyPrice} />
+              <SubscriptionCard yearlyPrice={yearlyPrice} />
             </div>
           </section>
         ) : null}

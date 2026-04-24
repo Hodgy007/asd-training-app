@@ -43,7 +43,6 @@ Copy `.env.example` to `.env.local` for local dev. For production (Vercel), the 
 | `STRIPE_SECRET_KEY` | Stripe secret key. Use `sk_test_...` during the build; swap to `sk_live_...` once the charity's Stripe account is activated. |
 | `STRIPE_PUBLISHABLE_KEY` | Stripe publishable key (`pk_test_...` / `pk_live_...`). |
 | `STRIPE_WEBHOOK_SECRET` | Endpoint signing secret (`whsec_...`). Comes from `stripe listen` locally or the dashboard webhook config in prod. |
-| `STRIPE_SUBSCRIPTION_PRICE_MONTHLY` | Stripe Price ID for the "All-Access" monthly recurring tier. |
 | `STRIPE_SUBSCRIPTION_PRICE_YEARLY` | Stripe Price ID for the "All-Access" yearly recurring tier. |
 | `ENABLE_PAYMENTS` | Feature flag for the payments layer. `true` to expose `/courses` + checkout; anything else hides it. Keep `false` in production until the charity's live Stripe account is configured. |
 
