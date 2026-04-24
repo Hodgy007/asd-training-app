@@ -50,6 +50,7 @@ model User {
   jobsCreated          JobOpening[]    @relation("JobOpeningCreatedBy")
   jobAssignments       JobAssignment[] @relation("JobAssignmentUser")
   jobAssignmentsGiven  JobAssignment[] @relation("JobAssignmentAssignedBy")
+  purchases            Purchase[]
 
   @@index([organisationId])
 }
@@ -113,6 +114,12 @@ model Organisation {
   parentOrgId       String?
   isParentOrg       Boolean  @default(false)
   inheritSettings   Boolean  @default(true)
+  isPersonal                   Boolean            @default(false)
+  stripeCustomerId             String?            @unique
+  stripeSubscriptionId         String?
+  subscriptionStatus           SubscriptionStatus @default(NONE)
+  subscriptionCurrentPeriodEnd DateTime?
+  subscriptionPriceId          String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -124,6 +131,7 @@ model Organisation {
   meetingConfig OrgMeetingConfig?
   ssoConfig     OrgSsoConfig?
   surveyTargets SurveyTarget[]
+  purchases     Purchase[]
 
   @@index([parentOrgId])
 }
@@ -257,20 +265,26 @@ model LessonNote {
 }
 
 model TrainingProgram {
-  id          String        @id @default(cuid())
-  name        String
-  description String?       @db.Text
-  order       Int
-  active      Boolean       @default(true)
-  version     String        @default("1.0")
-  status      ProgramStatus @default(DRAFT)
-  reviewedAt  DateTime?
-  reviewedBy  String?
-  reviewNotes String?       @db.Text
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id              String        @id @default(cuid())
+  name            String
+  description     String?       @db.Text
+  order           Int
+  active          Boolean       @default(true)
+  version         String        @default("1.0")
+  status          ProgramStatus @default(DRAFT)
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  reviewNotes     String?       @db.Text
+  priceAmount     Int?
+  currency        String        @default("gbp")
+  stripeProductId String?
+  stripePriceId   String?
+  purchasable     Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  modules Module[]
+  modules   Module[]
+  purchases Purchase[]
 }
 
 model ClassSession {
@@ -455,6 +469,7 @@ enum MeetingPlatform {
 enum OrgType {
   ORGANISATION
   COHORT
+  PERSONAL
 }
 
 enum SessionStatus {
@@ -842,4 +857,53 @@ model JobAssignment {
   @@unique([jobId, userId])
   @@index([userId])
   @@index([jobId])
+}
+
+// ─── Stripe Payments ──────────────────────────────────────────────────────────
+
+enum SubscriptionStatus {
+  NONE
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+enum PurchaseStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+model Purchase {
+  id                      String         @id @default(cuid())
+  userId                  String?
+  organisationId          String
+  programId               String
+  stripeCheckoutSessionId String         @unique
+  stripePaymentIntentId   String?
+  amount                  Int
+  currency                String         @default("gbp")
+  status                  PurchaseStatus @default(PENDING)
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organisation Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  program      TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId])
+  @@index([programId])
+  @@index([userId])
+  @@index([status])
+}
+
+model StripeEvent {
+  id        String   @id
+  type      String
+  createdAt DateTime @default(now())
+
+  @@index([type])
 }

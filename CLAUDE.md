@@ -14,6 +14,7 @@ npm run prisma:studio    # Open Prisma Studio (visual DB browser)
 npm run test             # Run Vitest unit tests
 npm run test:e2e         # Run Playwright E2E tests
 npx tsx prisma/seed-training-content.ts  # Seed training modules/lessons/quizzes into DB
+stripe listen --forward-to localhost:3000/api/stripe/webhook   # Forward Stripe webhooks to local dev (requires Stripe CLI)
 ```
 
 Build runs `prisma generate && cross-env NODE_ENV=test vitest run && next build`. Unit tests (Vitest) run during `npm run build`, so a failing test blocks deployment. E2E tests via Playwright.
@@ -39,6 +40,12 @@ Copy `.env.example` to `.env.local` for local dev. For production (Vercel), the 
 | `ELEVENLABS_API_KEY` | ElevenLabs API key (used for text-to-speech play button on training lessons -- "Lily" voice, British female). Synthesised MP3s are cached to Vercel Blob under `tts/<voiceId>/<sha256>.mp3` by `lib/tts-blob.ts` and streamed via `/api/tts`. |
 | `AI_GATEWAY_API_KEY` | Vercel AI Gateway key. AI features route through the gateway using provider/model strings (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`, `openai/gpt-4o-mini`) — see `lib/ai-models.ts`. |
 | `DISABLE_MFA` | Optional kill-switch. Set to `true` to skip all MFA setup/verify enforcement. TOTP secrets remain intact; users simply aren't forced through the flow. |
+| `STRIPE_SECRET_KEY` | Stripe secret key. Use `sk_test_...` during the build; swap to `sk_live_...` once the charity's Stripe account is activated. |
+| `STRIPE_PUBLISHABLE_KEY` | Stripe publishable key (`pk_test_...` / `pk_live_...`). |
+| `STRIPE_WEBHOOK_SECRET` | Endpoint signing secret (`whsec_...`). Comes from `stripe listen` locally or the dashboard webhook config in prod. |
+| `STRIPE_SUBSCRIPTION_PRICE_MONTHLY` | Stripe Price ID for the "All-Access" monthly recurring tier. |
+| `STRIPE_SUBSCRIPTION_PRICE_YEARLY` | Stripe Price ID for the "All-Access" yearly recurring tier. |
+| `ENABLE_PAYMENTS` | Feature flag for the payments layer. `true` to expose `/courses` + checkout; anything else hides it. Keep `false` in production until the charity's live Stripe account is configured. |
 
 **Critical:** `DATABASE_URL` must use the Neon pooler (port 6543) in production. Using the direct connection (5432) exhausts connection limits on serverless. `DIRECT_URL` is used only by Prisma for migrations.
 

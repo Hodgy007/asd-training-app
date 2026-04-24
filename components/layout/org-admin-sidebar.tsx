@@ -17,6 +17,7 @@ import {
   FolderOpen,
   Building2,
   Settings,
+  CreditCard,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
@@ -40,6 +41,7 @@ const PARENT_ORG_NAV: NavItem = { href: '/admin/schools', label: 'Schools', icon
 const MIDDLE_NAV_ITEMS: NavItem[] = [
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/admin/audit', label: 'Audit Log', icon: ShieldCheck },
+  { href: '/admin/billing', label: 'Billing', icon: CreditCard },
   { href: '/admin/library', label: 'Document Library', icon: FolderOpen },
   { href: '/admin/settings/sso', label: 'Enterprise SSO', icon: Shield },
   { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
