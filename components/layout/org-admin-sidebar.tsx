@@ -18,6 +18,7 @@ import {
   Building2,
   Settings,
   CreditCard,
+  Home,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
@@ -44,6 +45,7 @@ const MIDDLE_NAV_ITEMS: NavItem[] = [
   { href: '/admin/billing', label: 'Billing', icon: CreditCard },
   { href: '/admin/library', label: 'Document Library', icon: FolderOpen },
   { href: '/admin/settings/sso', label: 'Enterprise SSO', icon: Shield },
+  { href: '/home', label: 'Home', icon: Home },
   { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
   { href: '/admin/sessions', label: 'Workshops', icon: Calendar },

@@ -907,3 +907,12 @@ model StripeEvent {
 
   @@index([type])
 }
+
+model HomePage {
+  id          String   @id @default("singleton")
+  htmlContent String   @db.Text
+  brief       String?  @db.Text
+  updatedBy   String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
