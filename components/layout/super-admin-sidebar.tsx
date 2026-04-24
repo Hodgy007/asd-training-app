@@ -22,6 +22,7 @@ import {
   UsersRound,
   Sparkles,
   Briefcase,
+  ShoppingBag,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -36,6 +37,8 @@ interface NavItem {
   permission?: string
   /** If true, only visible to SUPER_ADMIN (not CHARITY_EMPLOYEE) */
   charityAdminOnly?: boolean
+  /** If true, open in a new tab (for public-facing pages with their own shell) */
+  openInNewTab?: boolean
 }
 
 // Overview stays first, How to Guide stays last. Everything in between is
@@ -44,6 +47,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/super-admin/ai-prompts', label: 'AI Prompts', icon: Sparkles, permission: CHARITY_PERMISSIONS.MANAGE_AI_PROMPTS },
   { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone, permission: CHARITY_PERMISSIONS.MANAGE_ANNOUNCEMENTS },
+  { href: '/courses', label: 'Catalogue', icon: ShoppingBag, openInNewTab: true },
   { href: '/super-admin/cohorts', label: 'Cohorts', icon: UsersRound, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
   { href: '/super-admin/library', label: 'Document Library', icon: FolderOpen, permission: CHARITY_PERMISSIONS.MANAGE_LIBRARY },
   { href: '/super-admin/impact', label: 'Usage & Reach', icon: TrendingUp, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
@@ -157,6 +161,8 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
               key={item.href}
               href={item.href}
               onClick={onClose}
+              target={item.openInNewTab ? '_blank' : undefined}
+              rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
               className={clsx(
                 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all',
                 isActive ? chrome.navActive : chrome.navInactive,
