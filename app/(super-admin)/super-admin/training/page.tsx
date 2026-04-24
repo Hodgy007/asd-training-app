@@ -16,9 +16,11 @@ import {
   Trash2,
   Upload,
   Sparkles,
+  Package,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { ContentGenerationModal } from '@/components/super-admin/content-generation-modal'
+import { ScormImportModal } from '@/components/super-admin/scorm-import-modal'
 import type { GenerationMode } from '@/lib/content-generator-types'
 import { RichDescriptionEditor } from '@/components/ui/rich-description-editor'
 import { normaliseHtml, stripHtml } from '@/lib/rich-text'
@@ -76,6 +78,7 @@ export default function TrainingContentPage() {
 
   const [generationModalOpen, setGenerationModalOpen] = useState(false)
   const [generationMode, setGenerationMode] = useState<GenerationMode>('structure')
+  const [scormImportOpen, setScormImportOpen] = useState(false)
 
   // Track expanded programs (shows modules) and programs being edited
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -273,6 +276,13 @@ export default function TrainingContentPage() {
           >
             <Sparkles className="h-4 w-4" />
             Generate from Files
+          </button>
+          <button
+            onClick={() => setScormImportOpen(true)}
+            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+          >
+            <Package className="h-4 w-4" />
+            Import SCORM
           </button>
           <button
             onClick={() => setShowNewProgram(!showNewProgram)}
@@ -573,6 +583,20 @@ export default function TrainingContentPage() {
         isOpen={generationModalOpen}
         onClose={() => setGenerationModalOpen(false)}
         onComplete={() => fetchPrograms()}
+      />
+
+      <ScormImportModal
+        open={scormImportOpen}
+        onClose={() => setScormImportOpen(false)}
+        onCreated={async (programId) => {
+          setScormImportOpen(false)
+          await fetchPrograms()
+          // Auto-expand the new program so the admin can see the scaffolded
+          // module/lesson immediately — otherwise it appears at the bottom
+          // of the list and is easy to miss.
+          await toggleExpand(programId)
+          showToast('SCORM program created', 'success')
+        }}
       />
     </div>
   )
