@@ -19,6 +19,7 @@ import {
   Settings,
   CreditCard,
   Home,
+  ShoppingBag,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
@@ -28,6 +29,8 @@ interface NavItem {
   label: string
   icon: React.ElementType
   exact?: boolean
+  /** If true, open in a new tab (for public-facing pages with their own shell) */
+  openInNewTab?: boolean
 }
 
 // Users stays first, How to Guide stays last. Everything in between is sorted
@@ -43,6 +46,7 @@ const MIDDLE_NAV_ITEMS: NavItem[] = [
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/admin/audit', label: 'Audit Log', icon: ShieldCheck },
   { href: '/admin/billing', label: 'Billing', icon: CreditCard },
+  { href: '/courses', label: 'Catalogue', icon: ShoppingBag, openInNewTab: true },
   { href: '/admin/library', label: 'Document Library', icon: FolderOpen },
   { href: '/admin/settings/sso', label: 'Enterprise SSO', icon: Shield },
   { href: '/home', label: 'Home', icon: Home },
@@ -136,6 +140,8 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
               key={item.href}
               href={item.href}
               onClick={onClose}
+              target={item.openInNewTab ? '_blank' : undefined}
+              rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
               className={clsx(
                 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all',
                 isActive ? chrome.navActive : chrome.navInactive,
