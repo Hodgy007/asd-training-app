@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Apply saved colour theme before first paint to prevent flash */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('aaa-color-theme');if(t==='blue'||t==='dark')document.documentElement.setAttribute('data-color-theme',t);var f=localStorage.getItem('aaa-font');if(f&&f!=='default')document.documentElement.setAttribute('data-font',f);var s=localStorage.getItem('aaa-font-size');if(s){var n=parseInt(s,10);if(n>=90&&n<=130)document.documentElement.style.fontSize=n+'%';}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('aaa-color-theme');if(t==='blue'||t==='dark'){document.documentElement.setAttribute('data-color-theme',t);}else if(t!=='classic'){document.documentElement.setAttribute('data-color-theme','blue');}var f=localStorage.getItem('aaa-font');if(f&&f!=='default')document.documentElement.setAttribute('data-font',f);var s=localStorage.getItem('aaa-font-size');if(s){var n=parseInt(s,10);if(n>=90&&n<=130)document.documentElement.style.fontSize=n+'%';}}catch(e){}})();`,
           }}
         />
       </head>

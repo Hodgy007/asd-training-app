@@ -12,7 +12,7 @@ interface ColorThemeContextValue {
 }
 
 const ColorThemeContext = createContext<ColorThemeContextValue>({
-  colorTheme: 'classic',
+  colorTheme: 'blue',
   setColorTheme: () => {},
 })
 
@@ -21,7 +21,7 @@ export function useColorTheme() {
 }
 
 export function ColorThemeProvider({ children }: { children: React.ReactNode }) {
-  const [colorTheme, setColorThemeState] = useState<ColorTheme>('classic')
+  const [colorTheme, setColorThemeState] = useState<ColorTheme>('blue')
 
   // Read saved preference on mount (before first paint via suppressHydrationWarning on <html>)
   useEffect(() => {
@@ -29,6 +29,8 @@ export function ColorThemeProvider({ children }: { children: React.ReactNode }) 
     if (saved === 'blue' || saved === 'classic' || saved === 'dark') {
       setColorThemeState(saved)
       applyTheme(saved)
+    } else {
+      applyTheme('blue')
     }
   }, [])
 
@@ -47,9 +49,10 @@ export function ColorThemeProvider({ children }: { children: React.ReactNode }) 
 
 function applyTheme(theme: ColorTheme) {
   const html = document.documentElement
-  if (theme === 'blue' || theme === 'dark') {
-    html.setAttribute('data-color-theme', theme)
-  } else {
+  if (theme === 'classic') {
+    // Classic is the legacy orange CSS — applied when the attribute is absent.
     html.removeAttribute('data-color-theme')
+  } else {
+    html.setAttribute('data-color-theme', theme)
   }
 }
