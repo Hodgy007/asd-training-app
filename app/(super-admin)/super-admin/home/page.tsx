@@ -6,6 +6,8 @@ import {
   Sparkles, Save, ExternalLink, Loader2, Code2, Wand2,
   ImagePlus, Film, Youtube, BookmarkCheck, RotateCcw, Undo2,
 } from 'lucide-react'
+import { HowToPanel } from '@/components/howto/panel'
+import HomePageBuilderHowTo from '@/components/howto/super-admin/home'
 
 /** Convert a YouTube/Vimeo watch URL to an embed URL. Returns null on miss. */
 function toEmbedUrl(raw: string): string | null {
@@ -593,6 +595,10 @@ export default function SuperAdminHomePage() {
           />
         </div>
       </details>
+
+      <HowToPanel title="How to use the Home Page Builder">
+        <HomePageBuilderHowTo />
+      </HowToPanel>
     </div>
   )
 }
