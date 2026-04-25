@@ -12,6 +12,7 @@ import {
   Users,
   Settings,
   Package,
+  Home,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -34,6 +35,7 @@ interface NavItem {
 // sorted alphabetically by label for predictability as the menu grows.
 const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
+  { href: '/super-admin/home', label: 'Home Page', icon: Home, charityAdminOnly: true },
   { href: '/super-admin/organisations', label: 'Organisations', icon: Building2, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
   { href: '/super-admin/products', label: 'Products', icon: Package },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
