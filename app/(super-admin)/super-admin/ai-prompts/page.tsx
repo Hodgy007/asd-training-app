@@ -14,6 +14,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   survey: 'Surveys',
   training: 'Training',
   library: 'Document Library',
+  home: 'Home Page',
 }
 
 export default async function AiPromptsListPage() {

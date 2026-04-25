@@ -6,24 +6,13 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
   Building2,
-  BookOpen,
-  ClipboardList,
-  Megaphone,
   BarChart3,
-  TrendingUp,
   LogOut,
   X,
-  Crown,
   Users,
   HelpCircle,
-  Calendar,
   Settings,
-  FolderOpen,
-  UsersRound,
-  Sparkles,
-  Briefcase,
-  Home,
-  ShoppingBag,
+  Package,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -46,20 +35,10 @@ interface NavItem {
 // sorted alphabetically by label for predictability as the menu grows.
 const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/super-admin/ai-prompts', label: 'AI Prompts', icon: Sparkles, permission: CHARITY_PERMISSIONS.MANAGE_AI_PROMPTS },
-  { href: '/super-admin/announcements', label: 'Announcements', icon: Megaphone, permission: CHARITY_PERMISSIONS.MANAGE_ANNOUNCEMENTS },
-  { href: '/courses', label: 'Catalogue', icon: ShoppingBag, openInNewTab: true },
-  { href: '/super-admin/cohorts', label: 'Cohorts', icon: UsersRound, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
-  { href: '/super-admin/library', label: 'Document Library', icon: FolderOpen, permission: CHARITY_PERMISSIONS.MANAGE_LIBRARY },
-  { href: '/super-admin/home', label: 'Home Page', icon: Home, charityAdminOnly: true },
-  { href: '/super-admin/impact', label: 'Usage & Reach', icon: TrendingUp, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
-  { href: '/super-admin/jobs', label: 'Job Openings', icon: Briefcase, permission: CHARITY_PERMISSIONS.MANAGE_JOBS },
   { href: '/super-admin/organisations', label: 'Organisations', icon: Building2, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
+  { href: '/super-admin/products', label: 'Products', icon: Package },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
-  { href: '/super-admin/surveys', label: 'Surveys', icon: ClipboardList, permission: CHARITY_PERMISSIONS.MANAGE_SURVEYS },
-  { href: '/super-admin/training', label: 'Training Content', icon: BookOpen, permission: CHARITY_PERMISSIONS.MANAGE_TRAINING },
   { href: '/super-admin/users', label: 'Users', icon: Users, charityAdminOnly: true },
-  { href: '/super-admin/sessions', label: 'Workshops', icon: Calendar, permission: CHARITY_PERMISSIONS.MANAGE_SESSIONS },
   { href: '/super-admin/guide', label: 'How to Guide', icon: HelpCircle },
 ]
 
