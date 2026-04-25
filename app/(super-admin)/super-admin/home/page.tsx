@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, ChangeEvent } from 'react'
 import Link from 'next/link'
 import {
   Sparkles, Save, ExternalLink, Loader2, Code2, Wand2,
-  ImagePlus, Film, Youtube, BookmarkCheck, RotateCcw,
+  ImagePlus, Film, Youtube, BookmarkCheck, RotateCcw, Undo2,
 } from 'lucide-react'
 
 /** Convert a YouTube/Vimeo watch URL to an embed URL. Returns null on miss. */
@@ -43,6 +43,11 @@ export default function SuperAdminHomePage() {
   const [defaultSetAt, setDefaultSetAt] = useState<string | null>(null)
   const [settingDefault, setSettingDefault] = useState(false)
   const [resetting, setResetting] = useState(false)
+  // Single-level undo for AI actions. We capture the HTML *immediately before*
+  // a generate/modify call so the editor can roll back if the result isn't an
+  // improvement. Cleared once consumed; not persisted across reloads.
+  const [previousHtml, setPreviousHtml] = useState<string | null>(null)
+  const [previousAction, setPreviousAction] = useState<'generate' | 'modify' | null>(null)
   const previewRef = useRef<HTMLDivElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
@@ -216,9 +221,21 @@ export default function SuperAdminHomePage() {
     }
   }
 
+  function undoLastAiChange() {
+    if (previousHtml === null) return
+    const restore = previousHtml
+    setHtml(restore)
+    setPreviousHtml(null)
+    setPreviousAction(null)
+    showToast('Reverted the last AI change.', 'success')
+  }
+
   async function generate() {
     const usingExample = !brief.trim()
     const briefToSend = usingExample ? EXAMPLE_BRIEF : brief
+    // Snapshot whatever the editor currently has (including in-progress inline
+    // edits) so the user can undo this AI overwrite.
+    const before = previewRef.current?.innerHTML ?? html
     setGenerating(true)
     try {
       const res = await fetch('/api/super-admin/home/generate', {
@@ -231,6 +248,8 @@ export default function SuperAdminHomePage() {
         showToast(data.error ?? 'Generation failed.', 'error')
         return
       }
+      setPreviousHtml(before)
+      setPreviousAction('generate')
       setHtml(data.html ?? '')
       if (usingExample) setBrief(EXAMPLE_BRIEF)
       showToast(
@@ -257,21 +276,26 @@ export default function SuperAdminHomePage() {
     }
     // Make sure any in-progress inline edit is captured before we send.
     commitPreviewEdit()
+    // Snapshot the pre-modify HTML so the user can undo if the AI's tweak
+    // isn't what they wanted.
+    const before = previewRef.current?.innerHTML ?? html
     setModifying(true)
     try {
       const res = await fetch('/api/super-admin/home/modify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ instruction, currentHtml: previewRef.current?.innerHTML ?? html }),
+        body: JSON.stringify({ instruction, currentHtml: before }),
       })
       const data = await res.json()
       if (!res.ok) {
         showToast(data.error ?? 'Update failed.', 'error')
         return
       }
+      setPreviousHtml(before)
+      setPreviousAction('modify')
       setHtml(data.html ?? '')
       setInstruction('')
-      showToast('Layout updated. Review below and save to publish.', 'success')
+      showToast('Layout updated. Click Undo if it’s not right, or Save to publish.', 'success')
     } catch {
       showToast('Update failed.', 'error')
     } finally {
@@ -519,7 +543,7 @@ export default function SuperAdminHomePage() {
           placeholder="e.g. Change the hero heading to 'Welcome to the Ambitious about Autism platform' and make the third card teal."
           className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <button
             onClick={modify}
             disabled={modifying || loading || !html}
@@ -528,6 +552,24 @@ export default function SuperAdminHomePage() {
             {modifying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
             {modifying ? 'Updating…' : 'Apply changes'}
           </button>
+          <button
+            onClick={undoLastAiChange}
+            disabled={previousHtml === null || modifying || generating || saving || loading}
+            title={
+              previousHtml === null
+                ? 'Nothing to undo — apply an AI change first'
+                : `Revert the last ${previousAction === 'generate' ? 'Generate' : 'Modify'} action`
+            }
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+          >
+            <Undo2 className="h-4 w-4" />
+            Undo last AI change
+          </button>
+          {previousHtml !== null && (
+            <span className="text-xs text-slate-500 dark:text-slate-500">
+              Last AI action: {previousAction === 'generate' ? 'Generate' : 'Modify'}
+            </span>
+          )}
         </div>
       </section>
 
