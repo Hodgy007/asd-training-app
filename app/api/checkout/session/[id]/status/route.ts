@@ -39,11 +39,17 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   } else {
     const subscriptionId = stripeSession.subscription as string | null
     if (subscriptionId) {
-      const org = await prisma.organisation.findFirst({
-        where: { stripeSubscriptionId: subscriptionId },
-        select: { id: true },
-      })
-      fulfilled = Boolean(org)
+      const [org, user] = await Promise.all([
+        prisma.organisation.findFirst({
+          where: { stripeSubscriptionId: subscriptionId },
+          select: { id: true },
+        }),
+        prisma.user.findFirst({
+          where: { stripeSubscriptionId: subscriptionId },
+          select: { id: true },
+        }),
+      ])
+      fulfilled = Boolean(org || user)
     }
   }
 

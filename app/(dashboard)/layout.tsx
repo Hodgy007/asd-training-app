@@ -19,10 +19,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   // Redirect admin roles to their portals — except when previewing training/careers
-  // content, or when viewing the shared /home page.
+  // content, self-testing CV Builder / Careers Advisor, or viewing the shared /home page.
   const isSharedHome = pathname === '/home' || pathname.startsWith('/home/')
   const isPreview =
-    pathname.startsWith('/training') || pathname.startsWith('/careers') || isSharedHome
+    pathname.startsWith('/training') ||
+    pathname.startsWith('/careers') ||
+    pathname.startsWith('/cv-builder') ||
+    pathname.startsWith('/careers-advisor') ||
+    isSharedHome
   if (status === 'authenticated') {
     if (session?.user?.role === 'SUPER_ADMIN' && !isPreview) redirect('/super-admin')
     if (session?.user?.role === 'ORG_ADMIN' && !isSharedHome) redirect('/admin')
@@ -31,10 +35,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // The shared /home page lives in this route group so all roles can render
   // the same content, but admins should keep their own sidebar — otherwise the
   // nav suddenly switches to the leaf-role one (with Workshops, training links,
-  // etc.) the moment they click Home Page.
+  // etc.) the moment they click Home Page. Same idea for charity admins
+  // self-testing CV Builder / Careers Advisor.
   const role = session?.user?.role
+  const keepAdminSidebar =
+    isSharedHome ||
+    pathname.startsWith('/cv-builder') ||
+    pathname.startsWith('/careers-advisor')
   const SidebarComponent =
-    isSharedHome && role === 'SUPER_ADMIN'
+    keepAdminSidebar && role === 'SUPER_ADMIN'
       ? SuperAdminSidebar
       : isSharedHome && role === 'ORG_ADMIN'
         ? OrgAdminSidebar

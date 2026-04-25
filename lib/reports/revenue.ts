@@ -19,12 +19,16 @@ export interface RevenueSummary {
 }
 
 export async function getRevenueSummary(): Promise<RevenueSummary> {
-  const [purchases, activeOrgs, recent] = await Promise.all([
+  const [purchases, activeOrgs, activeUsers, recent] = await Promise.all([
     prisma.purchase.findMany({
       where: { status: 'PAID' },
       select: { amount: true, currency: true },
     }),
     prisma.organisation.findMany({
+      where: { subscriptionStatus: { in: ['ACTIVE', 'TRIALING'] } },
+      select: { subscriptionPriceId: true },
+    }),
+    prisma.user.findMany({
       where: { subscriptionStatus: { in: ['ACTIVE', 'TRIALING'] } },
       select: { subscriptionPriceId: true },
     }),
@@ -51,7 +55,7 @@ export async function getRevenueSummary(): Promise<RevenueSummary> {
       paidPurchases: purchases.length,
       paidAmountPence,
       currency,
-      activeSubscriptions: activeOrgs.length,
+      activeSubscriptions: activeOrgs.length + activeUsers.length,
       mrrPence: 0,
     },
     recentPurchases: recent.map((r) => ({

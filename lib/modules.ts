@@ -56,10 +56,30 @@ export async function getOrgPrograms(orgId: string): Promise<ProgramInfo[]> {
 export async function getUserPrograms(userId: string): Promise<ProgramInfo[]> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { organisationId: true },
+    select: {
+      organisationId: true,
+      subscriptionStatus: true,
+      subscriptionCurrentPeriodEnd: true,
+      allowedProgramIds: true,
+    },
   })
-  if (!user?.organisationId) return []
-  return getOrgPrograms(user.organisationId)
+  if (!user) return []
+  if (user.organisationId) return getOrgPrograms(user.organisationId)
+
+  // Individual subscriber — fall back to user-level fields
+  if (subscriptionGrantsAccess(user.subscriptionStatus, user.subscriptionCurrentPeriodEnd)) {
+    return prisma.trainingProgram.findMany({
+      where: { active: true, status: 'APPROVED' },
+      select: { id: true, name: true },
+      orderBy: { order: 'asc' },
+    })
+  }
+  if (user.allowedProgramIds.length === 0) return []
+  return prisma.trainingProgram.findMany({
+    where: { id: { in: user.allowedProgramIds }, active: true },
+    select: { id: true, name: true },
+    orderBy: { order: 'asc' },
+  })
 }
 
 export async function getOrgSubscriptionState(orgId: string): Promise<OrgSubscriptionState> {

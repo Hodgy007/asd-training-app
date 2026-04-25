@@ -12,21 +12,32 @@ export async function POST() {
   }
 
   const session = await getServerSession(authOptions)
-  if (!session?.user?.organisationId) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
 
   const role = session.user.role
-  const isPersonalOrg = Boolean(session.user.isPersonalOrg)
-  if (role !== 'ORG_ADMIN' && !isPersonalOrg) {
+  const isIndividual = !session.user.organisationId
+  if (role !== 'ORG_ADMIN' && !isIndividual) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const org = await prisma.organisation.findUnique({
-    where: { id: session.user.organisationId },
-    select: { stripeCustomerId: true },
-  })
-  if (!org?.stripeCustomerId) {
+  let stripeCustomerId: string | null = null
+  if (session.user.organisationId) {
+    const org = await prisma.organisation.findUnique({
+      where: { id: session.user.organisationId },
+      select: { stripeCustomerId: true },
+    })
+    stripeCustomerId = org?.stripeCustomerId ?? null
+  } else {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { stripeCustomerId: true },
+    })
+    stripeCustomerId = user?.stripeCustomerId ?? null
+  }
+
+  if (!stripeCustomerId) {
     return NextResponse.json(
       { error: 'No billing account yet. Make a purchase or subscription to set one up.' },
       { status: 400 }
@@ -38,8 +49,8 @@ export async function POST() {
 
   try {
     const portal = await stripe.billingPortal.sessions.create({
-      customer: org.stripeCustomerId,
-      return_url: isPersonalOrg ? `${baseUrl}/settings` : `${baseUrl}/admin/billing`,
+      customer: stripeCustomerId,
+      return_url: isIndividual ? `${baseUrl}/settings` : `${baseUrl}/admin/billing`,
     })
     return NextResponse.json({ url: portal.url })
   } catch (error) {

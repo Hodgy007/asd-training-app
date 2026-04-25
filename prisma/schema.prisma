@@ -24,6 +24,15 @@ model User {
   notificationsLastOpenedAt DateTime?
   invitedAt          DateTime?
   invitedBy          String?
+  // Individual-subscriber fields. Only used when organisationId is null —
+  // i.e. the user purchased on their own and isn't part of a shared org.
+  // Resolved alongside org-level fields by lib/subscription.ts.
+  stripeCustomerId             String?            @unique
+  stripeSubscriptionId         String?
+  subscriptionStatus           SubscriptionStatus @default(NONE)
+  subscriptionCurrentPeriodEnd DateTime?
+  subscriptionPriceId          String?
+  allowedProgramIds            String[]           @default([])
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -880,7 +889,8 @@ enum PurchaseStatus {
 model Purchase {
   id                      String         @id @default(cuid())
   userId                  String?
-  organisationId          String
+  // Nullable: individual subscribers (no org) own the purchase via userId only.
+  organisationId          String?
   programId               String
   stripeCheckoutSessionId String         @unique
   stripePaymentIntentId   String?
@@ -891,7 +901,7 @@ model Purchase {
   updatedAt               DateTime       @updatedAt
 
   user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  organisation Organisation    @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  organisation Organisation?   @relation(fields: [organisationId], references: [id], onDelete: SetNull)
   program      TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
 
   @@index([organisationId])

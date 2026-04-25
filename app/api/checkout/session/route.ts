@@ -74,6 +74,27 @@ export async function POST(req: NextRequest) {
       })
     }
     clientReferenceId = org.id
+  } else if (session?.user?.id) {
+    // Individual subscriber — reuse the user's Stripe customer if we already have one,
+    // otherwise let Stripe match by email.
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { stripeCustomerId: true, email: true, name: true },
+    })
+    if (user?.stripeCustomerId) {
+      customerId = user.stripeCustomerId
+    } else {
+      const customer = await stripe.customers.create({
+        email: user?.email ?? session.user.email ?? undefined,
+        name: user?.name ?? undefined,
+        metadata: { userId: session.user.id },
+      })
+      customerId = customer.id
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { stripeCustomerId: customer.id },
+      })
+    }
   } else if (session?.user?.email) {
     customerEmail = session.user.email
   }

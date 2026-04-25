@@ -141,17 +141,29 @@ export function canCreateSessions(session: Session | null): boolean {
   return hasRole(session, 'ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER')
 }
 
-/** Roles that can access the CV Builder feature (also requires org-level flag to be enabled) */
+/**
+ * Roles that can access the CV Builder feature.
+ * Charity-level users (SUPER_ADMIN, CHARITY_EMPLOYEE) can always use it for
+ * self-testing — they bypass the org-level feature flag because they have no org.
+ * Leaf roles also require the org-level flag to be enabled.
+ */
 export function canAccessCVBuilder(session: Session | null): boolean {
   if (!session?.user?.role) return false
+  if (isCharityLevel(session)) return true
   const hasRole = ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE'].includes(session.user.role)
   const orgEnabled = (session.user as { cvBuilderEnabled?: boolean }).cvBuilderEnabled !== false
   return hasRole && orgEnabled
 }
 
-/** Roles that can access the Careers Advisor feature (also requires org-level flag to be enabled) */
+/**
+ * Roles that can access the Careers Advisor feature.
+ * Charity-level users (SUPER_ADMIN, CHARITY_EMPLOYEE) can always use it for
+ * self-testing — they bypass the org-level feature flag because they have no org.
+ * Leaf roles also require the org-level flag to be enabled.
+ */
 export function canAccessCareersAdvisor(session: Session | null): boolean {
   if (!session?.user?.role) return false
+  if (isCharityLevel(session)) return true
   const hasRole = ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE'].includes(session.user.role)
   const orgEnabled = (session.user as { careersAdvisorEnabled?: boolean }).careersAdvisorEnabled !== false
   return hasRole && orgEnabled

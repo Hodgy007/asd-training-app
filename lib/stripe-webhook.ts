@@ -46,35 +46,26 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
   await prisma.stripeEvent.create({ data: { id: event.id, type: event.type } })
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  const org = await resolveOrgFromSession(session)
-  if (!org) return
+// ─── Owner resolution ─────────────────────────────────────────────────────────
+// A Stripe subscription belongs to either an Organisation (shared seat) or a
+// User (individual subscriber with no org). resolveOwner* helpers look up
+// whichever owns a given customer/subscription so we can write to the right row.
 
-  const customerId = (session.customer as string | null) ?? null
-  if (customerId && !org.stripeCustomerId) {
-    await prisma.organisation.update({
-      where: { id: org.id },
-      data: { stripeCustomerId: customerId },
-    })
-  }
+type Owner =
+  | { kind: 'org'; id: string; stripeCustomerId: string | null }
+  | { kind: 'user'; id: string; stripeCustomerId: string | null }
 
-  if (session.mode === 'payment') {
-    await handlePurchaseFulfilment(session, org.id)
-  } else if (session.mode === 'subscription') {
-    await handleSubscriptionFulfilment(session, org.id)
-  }
-}
-
-async function resolveOrgFromSession(
-  session: Stripe.Checkout.Session
-): Promise<{ id: string; stripeCustomerId: string | null } | null> {
+async function resolveOwnerFromSession(session: Stripe.Checkout.Session): Promise<Owner | null> {
+  // 1. Explicit org reference (set by org-admin checkout flow).
   if (session.client_reference_id) {
-    return prisma.organisation.findUnique({
+    const org = await prisma.organisation.findUnique({
       where: { id: session.client_reference_id },
       select: { id: true, stripeCustomerId: true },
     })
+    if (org) return { kind: 'org', id: org.id, stripeCustomerId: org.stripeCustomerId }
   }
 
+  // 2. Anonymous individual checkout — resolve by email.
   const email = session.customer_details?.email
   if (!email) {
     console.error(`[stripe-webhook] Session ${session.id} has no email and no client_reference_id`)
@@ -83,73 +74,61 @@ async function resolveOrgFromSession(
 
   const name = session.customer_details?.name ?? null
   const programId = session.metadata?.programId ?? null
+  const customerId = (session.customer as string | null) ?? null
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
-    include: {
-      organisation: {
-        select: { id: true, isPersonal: true, stripeCustomerId: true },
-      },
-    },
+    select: { id: true, organisationId: true, stripeCustomerId: true },
   })
 
-  if (existingUser?.organisation) {
-    if (existingUser.organisation.isPersonal) {
-      return {
-        id: existingUser.organisation.id,
-        stripeCustomerId: existingUser.organisation.stripeCustomerId,
-      }
+  if (existingUser) {
+    // Already a user — attach subscription to whichever scope they belong to.
+    if (existingUser.organisationId) {
+      const org = await prisma.organisation.findUnique({
+        where: { id: existingUser.organisationId },
+        select: { id: true, stripeCustomerId: true },
+      })
+      if (!org) return null
+      return { kind: 'org', id: org.id, stripeCustomerId: org.stripeCustomerId }
     }
-    console.error(
-      `[stripe-webhook] Refusing to attach anonymous purchase for ${email} — user already in shared org ${existingUser.organisation.id}. Manual follow-up required.`
-    )
-    return null
+    return { kind: 'user', id: existingUser.id, stripeCustomerId: existingUser.stripeCustomerId }
   }
 
-  const customerId = (session.customer as string | null) ?? null
-  return provisionPersonalAccount(email, name, programId, customerId)
+  // 3. Brand-new individual subscriber — provision a User (no org).
+  return provisionIndividualUser(email, name, programId, customerId)
 }
 
-async function provisionPersonalAccount(
+async function provisionIndividualUser(
   email: string,
   name: string | null,
   initialProgramId: string | null,
   stripeCustomerId: string | null
-): Promise<{ id: string; stripeCustomerId: string | null }> {
+): Promise<Owner | null> {
   const tempPassword = crypto.randomBytes(9).toString('base64url')
   const passwordHash = await bcrypt.hash(tempPassword, 10)
-
   const emailLocal = email.split('@')[0] ?? 'user'
-  const sluggedLocal = emailLocal.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'user'
-  const slug = `personal-${sluggedLocal}-${crypto.randomBytes(3).toString('hex')}`
 
-  const org = await prisma.organisation.create({
-    data: {
-      name: `${email} (Personal)`,
-      slug,
-      orgType: 'PERSONAL',
-      isPersonal: true,
-      allowedRoles: ['CAREGIVER', 'STUDENT'],
-      allowedProgramIds: initialProgramId ? [initialProgramId] : [],
-      stripeCustomerId,
-    },
-    select: { id: true, stripeCustomerId: true },
-  })
-
-  await prisma.user.create({
-    data: {
-      email,
-      name: name ?? emailLocal,
-      password: passwordHash,
-      role: 'CAREGIVER',
-      organisationId: org.id,
-      mustChangePassword: true,
-      active: true,
-    },
+  // Single transaction — if user.create fails (e.g. email collision under race),
+  // nothing is left dangling.
+  const user = await prisma.$transaction(async (tx) => {
+    return tx.user.create({
+      data: {
+        email,
+        name: name ?? emailLocal,
+        password: passwordHash,
+        role: 'CAREGIVER',
+        organisationId: null,
+        mustChangePassword: true,
+        active: true,
+        stripeCustomerId,
+        allowedProgramIds: initialProgramId ? [initialProgramId] : [],
+      },
+      select: { id: true, stripeCustomerId: true },
+    })
   })
 
   await sendCredentialsEmail(email, tempPassword, name)
-  return org
+  return { kind: 'user', id: user.id, stripeCustomerId: user.stripeCustomerId }
 }
 
 async function sendCredentialsEmail(
@@ -195,9 +174,51 @@ async function sendCredentialsEmail(
   }
 }
 
+async function resolveOwnerFromSubscriptionId(subscriptionId: string): Promise<Owner | null> {
+  const org = await prisma.organisation.findFirst({
+    where: { stripeSubscriptionId: subscriptionId },
+    select: { id: true },
+  })
+  if (org) return { kind: 'org', id: org.id, stripeCustomerId: null }
+  const user = await prisma.user.findFirst({
+    where: { stripeSubscriptionId: subscriptionId },
+    select: { id: true },
+  })
+  if (user) return { kind: 'user', id: user.id, stripeCustomerId: null }
+  return null
+}
+
+// ─── Event handlers ───────────────────────────────────────────────────────────
+
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  const owner = await resolveOwnerFromSession(session)
+  if (!owner) return
+
+  const customerId = (session.customer as string | null) ?? null
+  if (customerId && !owner.stripeCustomerId) {
+    if (owner.kind === 'org') {
+      await prisma.organisation.update({
+        where: { id: owner.id },
+        data: { stripeCustomerId: customerId },
+      })
+    } else {
+      await prisma.user.update({
+        where: { id: owner.id },
+        data: { stripeCustomerId: customerId },
+      })
+    }
+  }
+
+  if (session.mode === 'payment') {
+    await handlePurchaseFulfilment(session, owner)
+  } else if (session.mode === 'subscription') {
+    await handleSubscriptionFulfilment(session, owner)
+  }
+}
+
 async function handlePurchaseFulfilment(
   session: Stripe.Checkout.Session,
-  orgId: string
+  owner: Owner
 ): Promise<void> {
   const programId = session.metadata?.programId
   if (!programId) {
@@ -208,6 +229,38 @@ async function handlePurchaseFulfilment(
   const amount = session.amount_total ?? 0
   const currency = session.currency ?? 'gbp'
 
+  if (owner.kind === 'org') {
+    await prisma.purchase.upsert({
+      where: { stripeCheckoutSessionId: session.id },
+      update: {
+        status: 'PAID',
+        stripePaymentIntentId: (session.payment_intent as string) ?? null,
+      },
+      create: {
+        organisationId: owner.id,
+        programId,
+        stripeCheckoutSessionId: session.id,
+        stripePaymentIntentId: (session.payment_intent as string) ?? null,
+        amount,
+        currency,
+        status: 'PAID',
+      },
+    })
+
+    const org = await prisma.organisation.findUnique({
+      where: { id: owner.id },
+      select: { allowedProgramIds: true },
+    })
+    if (org && !org.allowedProgramIds.includes(programId)) {
+      await prisma.organisation.update({
+        where: { id: owner.id },
+        data: { allowedProgramIds: [...org.allowedProgramIds, programId] },
+      })
+    }
+    return
+  }
+
+  // Individual purchase — record purchase against the user, append to user.allowedProgramIds.
   await prisma.purchase.upsert({
     where: { stripeCheckoutSessionId: session.id },
     update: {
@@ -215,7 +268,8 @@ async function handlePurchaseFulfilment(
       stripePaymentIntentId: (session.payment_intent as string) ?? null,
     },
     create: {
-      organisationId: orgId,
+      userId: owner.id,
+      organisationId: null,
       programId,
       stripeCheckoutSessionId: session.id,
       stripePaymentIntentId: (session.payment_intent as string) ?? null,
@@ -225,21 +279,21 @@ async function handlePurchaseFulfilment(
     },
   })
 
-  const org = await prisma.organisation.findUnique({
-    where: { id: orgId },
+  const user = await prisma.user.findUnique({
+    where: { id: owner.id },
     select: { allowedProgramIds: true },
   })
-  if (org && !org.allowedProgramIds.includes(programId)) {
-    await prisma.organisation.update({
-      where: { id: orgId },
-      data: { allowedProgramIds: [...org.allowedProgramIds, programId] },
+  if (user && !user.allowedProgramIds.includes(programId)) {
+    await prisma.user.update({
+      where: { id: owner.id },
+      data: { allowedProgramIds: [...user.allowedProgramIds, programId] },
     })
   }
 }
 
 async function handleSubscriptionFulfilment(
   session: Stripe.Checkout.Session,
-  orgId: string
+  owner: Owner
 ): Promise<void> {
   const subscriptionId = session.subscription as string | null
   if (!subscriptionId) {
@@ -248,16 +302,13 @@ async function handleSubscriptionFulfilment(
   }
   const stripe = requireStripe()
   const sub = await stripe.subscriptions.retrieve(subscriptionId)
-  await syncSubscriptionToOrg(orgId, sub)
+  await syncSubscriptionToOwner(owner, sub)
 }
 
 async function handleSubscriptionChange(sub: Stripe.Subscription): Promise<void> {
-  const org = await prisma.organisation.findFirst({
-    where: { stripeSubscriptionId: sub.id },
-    select: { id: true },
-  })
-  if (!org) return
-  await syncSubscriptionToOrg(org.id, sub)
+  const owner = await resolveOwnerFromSubscriptionId(sub.id)
+  if (!owner) return
+  await syncSubscriptionToOwner(owner, sub)
 }
 
 // current_period_end moved from the subscription to each item in API 2026-03-25.dahlia.
@@ -277,33 +328,36 @@ function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
   return null
 }
 
-async function syncSubscriptionToOrg(
-  orgId: string,
-  sub: Stripe.Subscription
-): Promise<void> {
-  await prisma.organisation.update({
-    where: { id: orgId },
-    data: {
-      subscriptionStatus: mapStripeSubscriptionStatus(sub.status),
-      stripeSubscriptionId: sub.id,
-      subscriptionCurrentPeriodEnd: getSubscriptionPeriodEnd(sub),
-      subscriptionPriceId: sub.items.data[0]?.price.id ?? null,
-    },
-  })
+async function syncSubscriptionToOwner(owner: Owner, sub: Stripe.Subscription): Promise<void> {
+  const data = {
+    subscriptionStatus: mapStripeSubscriptionStatus(sub.status),
+    stripeSubscriptionId: sub.id,
+    subscriptionCurrentPeriodEnd: getSubscriptionPeriodEnd(sub),
+    subscriptionPriceId: sub.items.data[0]?.price.id ?? null,
+  }
+  if (owner.kind === 'org') {
+    await prisma.organisation.update({ where: { id: owner.id }, data })
+  } else {
+    await prisma.user.update({ where: { id: owner.id }, data })
+  }
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
   const subscriptionId = getInvoiceSubscriptionId(invoice)
   if (!subscriptionId) return
-  const org = await prisma.organisation.findFirst({
-    where: { stripeSubscriptionId: subscriptionId },
-    select: { id: true },
-  })
-  if (!org) return
-  await prisma.organisation.update({
-    where: { id: org.id },
-    data: { subscriptionStatus: 'PAST_DUE' },
-  })
+  const owner = await resolveOwnerFromSubscriptionId(subscriptionId)
+  if (!owner) return
+  if (owner.kind === 'org') {
+    await prisma.organisation.update({
+      where: { id: owner.id },
+      data: { subscriptionStatus: 'PAST_DUE' },
+    })
+  } else {
+    await prisma.user.update({
+      where: { id: owner.id },
+      data: { subscriptionStatus: 'PAST_DUE' },
+    })
+  }
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {

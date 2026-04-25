@@ -30,17 +30,28 @@ async function getOrgIsParent(organisationId: string | null | undefined): Promis
   return org?.isParentOrg ?? false
 }
 
-async function getOrgSubscriptionInfo(
+async function getUserSubscriptionInfo(
+  userId: string | null | undefined,
   organisationId: string | null | undefined
 ): Promise<{ subscriptionStatus: string; isPersonalOrg: boolean }> {
-  if (!organisationId) return { subscriptionStatus: 'NONE', isPersonalOrg: false }
-  const org = await prisma.organisation.findUnique({
-    where: { id: organisationId },
-    select: { subscriptionStatus: true, isPersonal: true },
+  // Org-attached users: read from the org.
+  if (organisationId) {
+    const org = await prisma.organisation.findUnique({
+      where: { id: organisationId },
+      select: { subscriptionStatus: true },
+    })
+    return { subscriptionStatus: org?.subscriptionStatus ?? 'NONE', isPersonalOrg: false }
+  }
+  // Individual subscribers: read from the user. `isPersonalOrg` is retained
+  // for session compatibility but always true for individuals (no org).
+  if (!userId) return { subscriptionStatus: 'NONE', isPersonalOrg: false }
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { subscriptionStatus: true },
   })
   return {
-    subscriptionStatus: org?.subscriptionStatus ?? 'NONE',
-    isPersonalOrg: org?.isPersonal ?? false,
+    subscriptionStatus: user?.subscriptionStatus ?? 'NONE',
+    isPersonalOrg: true,
   }
 }
 
@@ -236,7 +247,10 @@ export const authOptions: NextAuthOptions = {
         token.cvBuilderEnabled = flags.cvBuilderEnabled
         token.careersAdvisorEnabled = flags.careersAdvisorEnabled
         token.isParentOrg = await getOrgIsParent(token.organisationId as string | null)
-        const subInfo = await getOrgSubscriptionInfo(token.organisationId as string | null)
+        const subInfo = await getUserSubscriptionInfo(
+          token.id as string,
+          token.organisationId as string | null
+        )
         token.subscriptionStatus = subInfo.subscriptionStatus
         token.isPersonalOrg = subInfo.isPersonalOrg
       }
@@ -261,7 +275,7 @@ export const authOptions: NextAuthOptions = {
           token.cvBuilderEnabled = ssoFlags.cvBuilderEnabled
           token.careersAdvisorEnabled = ssoFlags.careersAdvisorEnabled
           token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
-          const ssoSubInfo = await getOrgSubscriptionInfo(dbUser.organisationId)
+          const ssoSubInfo = await getUserSubscriptionInfo(dbUser.id, dbUser.organisationId)
           token.subscriptionStatus = ssoSubInfo.subscriptionStatus
           token.isPersonalOrg = ssoSubInfo.isPersonalOrg
         }
@@ -283,7 +297,7 @@ export const authOptions: NextAuthOptions = {
           token.cvBuilderEnabled = updateFlags.cvBuilderEnabled
           token.careersAdvisorEnabled = updateFlags.careersAdvisorEnabled
           token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
-          const updateSubInfo = await getOrgSubscriptionInfo(dbUser.organisationId)
+          const updateSubInfo = await getUserSubscriptionInfo(token.id as string, dbUser.organisationId)
           token.subscriptionStatus = updateSubInfo.subscriptionStatus
           token.isPersonalOrg = updateSubInfo.isPersonalOrg
         }

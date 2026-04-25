@@ -100,12 +100,13 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(homeForRole(role), req.url))
   }
 
-  // Charity-level, ORG_ADMIN cannot access leaf-role routes (except training/careers preview for charity-level users)
+  // Charity-level, ORG_ADMIN cannot access leaf-role routes (except training/careers/CV/advisor preview for charity-level users).
+  // Charity admins use /cv-builder and /careers-advisor to self-test the tools — they only ever see their own data.
   if (role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE' || role === 'ORG_ADMIN') {
-    const previewPaths = ['/training', '/careers']
+    const previewPaths = ['/training', '/careers', '/cv-builder', '/careers-advisor']
     const isPreview = (role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE') && previewPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
     if (!isPreview) {
-      const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/settings', '/guide', '/careers-advisor', '/students']
+      const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/settings', '/guide', '/careers-advisor', '/cv-builder', '/students']
       if (leafOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
         return NextResponse.redirect(new URL(homeForRole(role), req.url))
       }

@@ -16,6 +16,11 @@ import {
   FolderOpen,
   ClipboardList,
   ChevronDown,
+  Pencil,
+  Mail,
+  Phone,
+  MapPin,
+  ClipboardCheck,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { LEAF_ROLES } from '@/types'
@@ -157,6 +162,7 @@ export default function OrgDetailPage() {
   const [editOrgType, setEditOrgType] = useState<string>('SCHOOL')
   const [editIsParentOrg, setEditIsParentOrg] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   // Add org admin form
   const [showAdminForm, setShowAdminForm] = useState(false)
@@ -236,6 +242,31 @@ export default function OrgDetailPage() {
 
   // ── Edit helpers ───────────────────────────────────────────────────────────
 
+  function cancelEdit() {
+    if (!org) return
+    setEditName(org.name)
+    setEditSlug(org.slug)
+    setEditRoles(org.allowedRoles)
+    setEditProgramIds(org.allowedProgramIds)
+    setEditActive(org.active)
+    setEditContactName(org.contactName || '')
+    setEditContactEmail(org.contactEmail || '')
+    setEditContactPhone(org.contactPhone || '')
+    setEditAddress1(org.addressLine1 || '')
+    setEditAddress2(org.addressLine2 || '')
+    setEditCity(org.city || '')
+    setEditCounty(org.county || '')
+    setEditPostcode(org.postcode || '')
+    setEditCountry(org.country || 'United Kingdom')
+    setEditCollectionIds(org.assignedCollectionIds || [])
+    setEditSurveyIds(org.assignedSurveyIds || [])
+    setEditCvBuilder(org.cvBuilderEnabled ?? true)
+    setEditCareersAdvisor(org.careersAdvisorEnabled ?? true)
+    setEditOrgType(org.organisationType ?? 'SCHOOL')
+    setEditIsParentOrg(org.isParentOrg ?? false)
+    setIsEditing(false)
+  }
+
   function toggleRole(role: string) {
     setEditRoles((prev) =>
       prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
@@ -292,6 +323,7 @@ export default function OrgDetailPage() {
       })
       if (res.ok) {
         showToast('Organisation saved.', 'success')
+        setIsEditing(false)
         fetchOrg()
       } else {
         const d = await res.json()
@@ -438,9 +470,30 @@ export default function OrgDetailPage() {
         </div>
       </div>
 
-      {/* Edit form */}
+      {/* Organisation Details (view / edit) */}
       <div className="card space-y-5">
-        <h2 className="text-lg font-semibold text-slate-900">Organisation Details</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Organisation Details</h2>
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl border border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Edit
+            </button>
+          )}
+        </div>
+
+        {!isEditing ? (
+          <OrgDetailsView
+            org={org}
+            programs={programs}
+            collections={collections}
+            surveys={surveys}
+          />
+        ) : (
         <form onSubmit={handleSave} className="space-y-5">
 
           {/* Name + Slug */}
@@ -725,12 +778,20 @@ export default function OrgDetailPage() {
             <p className="text-xs text-slate-400 mt-1 ml-7">Enable if this organisation will have child organisations underneath it.</p>
           </div>
 
-          <div className="flex justify-end pt-1">
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              Cancel
+            </button>
             <button type="submit" disabled={saving} className="btn-primary">
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>
+        )}
       </div>
 
       {/* Hierarchy section */}
@@ -1029,6 +1090,238 @@ export default function OrgDetailPage() {
           temporaryPassword={credentialCard.password}
         />
       )}
+    </div>
+  )
+}
+
+// ─── Read-only view ───────────────────────────────────────────────────────────
+
+function OrgDetailsView({
+  org,
+  programs,
+  collections,
+  surveys,
+}: {
+  org: OrgDetail
+  programs: ProgramSummary[]
+  collections: CollectionSummary[]
+  surveys: SurveySummary[]
+}) {
+  const addressLines = [
+    org.addressLine1,
+    org.addressLine2,
+    [org.city, org.county].filter(Boolean).join(', '),
+    org.postcode,
+    org.country,
+  ].filter(Boolean) as string[]
+
+  const orgTypeLabel =
+    ORG_TYPE_LABELS[org.organisationType] ??
+    (org.organisationType === 'EDUCATION'
+      ? 'Education (legacy)'
+      : org.organisationType === 'BUSINESS'
+        ? 'Business (legacy)'
+        : org.organisationType)
+
+  const assignedPrograms = programs.filter((p) => org.allowedProgramIds.includes(p.id))
+  const assignedCollections = collections.filter((c) => org.assignedCollectionIds.includes(c.id))
+  const assignedSurveys = surveys.filter((s) => org.assignedSurveyIds.includes(s.id))
+
+  function Field({ label, value }: { label: string; value: React.ReactNode }) {
+    return (
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1">{label}</p>
+        <div className="text-sm text-slate-800 dark:text-slate-200">{value || <span className="text-slate-400 italic">--</span>}</div>
+      </div>
+    )
+  }
+
+  function Chip({ children, tone = 'slate' }: { children: React.ReactNode; tone?: 'slate' | 'emerald' | 'blue' | 'purple' }) {
+    const tones: Record<string, string> = {
+      slate: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
+      emerald: 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800',
+      blue: 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800',
+      purple: 'bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800',
+    }
+    return (
+      <span className={clsx('inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium', tones[tone])}>
+        {children}
+      </span>
+    )
+  }
+
+  const roleLabels: Record<string, string> = {
+    ORG_ADMIN: 'Org Admin',
+    CAREGIVER: 'Practitioner',
+    CAREER_DEV_OFFICER: 'Careers Professional',
+    STUDENT: 'Student',
+    INTERN: 'Intern',
+    EMPLOYEE: 'Employee',
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Identity */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Name" value={org.name} />
+        <Field
+          label="URL Identifier"
+          value={<span className="font-mono text-xs">{org.slug}</span>}
+        />
+        <Field label="Organisation Type" value={orgTypeLabel} />
+        <Field
+          label="Status"
+          value={
+            <span className="inline-flex items-center gap-1">
+              {org.active ? (
+                <><CheckCircle className="h-3.5 w-3.5 text-sage-600" /> Active</>
+              ) : (
+                <><XCircle className="h-3.5 w-3.5 text-red-600" /> Inactive</>
+              )}
+              {org.isParentOrg && (
+                <span className="ml-2"><Chip tone="purple">Parent Organisation</Chip></span>
+              )}
+            </span>
+          }
+        />
+      </div>
+
+      {/* Contact */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Primary Contact</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Field label="Name" value={org.contactName} />
+          <Field
+            label="Email"
+            value={
+              org.contactEmail ? (
+                <a href={`mailto:${org.contactEmail}`} className="inline-flex items-center gap-1.5 text-primary-600 hover:underline">
+                  <Mail className="h-3.5 w-3.5" />
+                  {org.contactEmail}
+                </a>
+              ) : null
+            }
+          />
+          <Field
+            label="Phone"
+            value={
+              org.contactPhone ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Phone className="h-3.5 w-3.5 text-slate-400" />
+                  {org.contactPhone}
+                </span>
+              ) : null
+            }
+          />
+        </div>
+      </div>
+
+      {/* Address */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Address</p>
+        {addressLines.length === 0 ? (
+          <p className="text-sm text-slate-400 italic">No address on file.</p>
+        ) : (
+          <div className="flex items-start gap-2 text-sm text-slate-800 dark:text-slate-200">
+            <MapPin className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+            <div>
+              {addressLines.map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Allowed Roles */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Allowed Roles</p>
+        {org.allowedRoles.length === 0 ? (
+          <p className="text-sm text-slate-400 italic">None</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {org.allowedRoles.map((role) => (
+              <Chip key={role}>{roleLabels[role] ?? role}</Chip>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Features */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Features</p>
+        <div className="flex flex-wrap gap-2">
+          <Chip tone={org.cvBuilderEnabled ? 'emerald' : 'slate'}>
+            {org.cvBuilderEnabled ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+            CV Builder
+          </Chip>
+          <Chip tone={org.careersAdvisorEnabled ? 'emerald' : 'slate'}>
+            {org.careersAdvisorEnabled ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+            Careers Advisor
+          </Chip>
+        </div>
+      </div>
+
+      {/* Training Programs */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+          <ClipboardCheck className="h-3.5 w-3.5" />
+          Training Programs
+        </p>
+        {assignedPrograms.length === 0 ? (
+          <p className="text-sm text-slate-400 italic">No training programs assigned.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {assignedPrograms.map((p) => (
+              <Chip key={p.id} tone="emerald">
+                <CheckCircle className="h-3 w-3" />
+                {p.name}
+                <span className="opacity-70">·  {p._count.modules} {p._count.modules === 1 ? 'module' : 'modules'}</span>
+              </Chip>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Document Collections */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+          <FolderOpen className="h-3.5 w-3.5" />
+          Document Collections
+        </p>
+        {assignedCollections.length === 0 ? (
+          <p className="text-sm text-slate-400 italic">None assigned.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {assignedCollections.map((c) => (
+              <Chip key={c.id} tone="emerald">
+                <CheckCircle className="h-3 w-3" />
+                {c.title}
+              </Chip>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Surveys */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+          <ClipboardList className="h-3.5 w-3.5" />
+          Surveys
+        </p>
+        {assignedSurveys.length === 0 ? (
+          <p className="text-sm text-slate-400 italic">None assigned.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {assignedSurveys.map((s) => (
+              <Chip key={s.id} tone="blue">
+                <CheckCircle className="h-3 w-3" />
+                {s.title}
+              </Chip>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

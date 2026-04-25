@@ -13,6 +13,8 @@ import {
   Settings,
   Package,
   Home,
+  Compass,
+  FileText,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -35,6 +37,11 @@ interface NavItem {
 // sorted alphabetically by label for predictability as the menu grows.
 const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
+  // Self-test entries — charity-level users open the learner-facing tools to
+  // try them out themselves. They only ever see their own data; learner CVs
+  // and reports are not exposed here (privacy).
+  { href: '/careers-advisor', label: 'Careers Advisor', icon: Compass },
+  { href: '/cv-builder', label: 'CV Builder', icon: FileText },
   // Points at the published page (what learners see) rather than the editor.
   // Super admins reach the editor via the "Edit" button on the page itself.
   { href: '/home', label: 'Home Page', icon: Home, charityAdminOnly: true },
