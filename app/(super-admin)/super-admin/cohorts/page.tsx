@@ -16,6 +16,8 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
+import { HowToPanel } from '@/components/howto/panel'
+import CohortsHowTo from '@/components/howto/super-admin/cohorts'
 
 interface CohortRow {
   id: string
@@ -194,6 +196,10 @@ export default function CohortsPage() {
           ))}
         </div>
       )}
+
+      <HowToPanel>
+        <CohortsHowTo />
+      </HowToPanel>
     </div>
   )
 }

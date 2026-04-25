@@ -10,7 +10,6 @@ import {
   BarChart3,
   Video,
   Shield,
-  HelpCircle,
   LogOut,
   X,
   ShieldCheck,
@@ -55,8 +54,6 @@ const MIDDLE_NAV_ITEMS: NavItem[] = [
   { href: '/admin/sessions', label: 'Workshops', icon: Calendar },
 ]
 
-const GUIDE_NAV: NavItem = { href: '/admin/guide', label: 'How to Guide', icon: HelpCircle }
-
 interface OrgAdminSidebarProps {
   onClose?: () => void
   mobile?: boolean
@@ -73,7 +70,7 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
   const middleWithSchools = isParentOrg
     ? [...MIDDLE_NAV_ITEMS, PARENT_ORG_NAV].sort((a, b) => a.label.localeCompare(b.label))
     : MIDDLE_NAV_ITEMS
-  const navItems: NavItem[] = [...BASE_NAV_ITEMS, ...middleWithSchools, GUIDE_NAV]
+  const navItems: NavItem[] = [...BASE_NAV_ITEMS, ...middleWithSchools]
 
   const chrome = isClassic ? {
     sidebar: 'bg-white dark:bg-slate-900',

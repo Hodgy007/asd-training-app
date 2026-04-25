@@ -11,6 +11,8 @@ import {
   ChevronUp,
   Trash2,
 } from 'lucide-react'
+import { HowToPanel } from '@/components/howto/panel'
+import AnnouncementsHowTo from '@/components/howto/super-admin/announcements'
 
 interface Announcement {
   id: string
@@ -323,6 +325,10 @@ export default function AnnouncementsPage() {
           </table>
         </div>
       </div>
+
+      <HowToPanel>
+        <AnnouncementsHowTo />
+      </HowToPanel>
     </div>
   )
 }

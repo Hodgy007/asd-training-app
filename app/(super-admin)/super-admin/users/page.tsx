@@ -15,6 +15,8 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { PERMISSION_LABELS, ALL_CHARITY_PERMISSIONS } from '@/lib/rbac'
+import { HowToPanel } from '@/components/howto/panel'
+import UsersHowTo from '@/components/howto/super-admin/users'
 
 interface CharityUser {
   id: string
@@ -482,6 +484,10 @@ export default function CharityUsersPage() {
           </div>
         </div>
       )}
+
+      <HowToPanel>
+        <UsersHowTo />
+      </HowToPanel>
     </div>
   )
 }

@@ -15,6 +15,8 @@ import {
   WifiOff,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { HowToPanel } from '@/components/howto/panel'
+import MeetingsHowTo from '@/components/howto/org-admin/meetings'
 
 type MeetingPlatform = 'ZOOM' | 'TEAMS'
 
@@ -331,6 +333,10 @@ export default function MeetingSettingsPage() {
           </button>
         </div>
       </div>
+
+      <HowToPanel>
+        <MeetingsHowTo />
+      </HowToPanel>
     </div>
   )
 }

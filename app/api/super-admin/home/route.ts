@@ -17,6 +17,10 @@ export async function GET() {
     htmlContent: row?.htmlContent ?? '',
     brief: row?.brief ?? '',
     updatedAt: row?.updatedAt ?? null,
+    // The editor UI uses these to decide whether the "Reset to default" button
+    // should be enabled and to show when the default was last captured.
+    hasDefault: !!row?.defaultHtmlContent,
+    defaultSetAt: row?.defaultSetAt ?? null,
   })
 }
 

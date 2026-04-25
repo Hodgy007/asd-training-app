@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { Plus, FileText, Loader2, Trash2 } from 'lucide-react'
+import { HowToPanel } from '@/components/howto/panel'
+import CvBuilderHowTo from '@/components/howto/learner/cv-builder'
 
 interface CVSummary {
   id: string
@@ -196,6 +198,10 @@ export default function CvBuilderListPage() {
           </button>
         </div>
       )}
+
+      <HowToPanel>
+        <CvBuilderHowTo />
+      </HowToPanel>
     </div>
   )
 }

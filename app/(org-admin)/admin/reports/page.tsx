@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react'
 import { BarChart3, RefreshCw, ChevronDown, ChevronUp, Users, FolderOpen, FileText, Download, ChevronRight, FileCheck, FileDown, Briefcase } from 'lucide-react'
 import { clsx } from 'clsx'
 import { GATSBY_BENCHMARK_CODES, GATSBY_BENCHMARKS } from '@/lib/gatsby-benchmarks'
+import { HowToPanel } from '@/components/howto/panel'
+import ReportsHowTo from '@/components/howto/org-admin/reports'
 
 interface ModuleStat {
   moduleId: string
@@ -663,6 +665,10 @@ export default function OrgReportsPage() {
           No job openings data available.
         </div>
       )}
+
+      <HowToPanel>
+        <ReportsHowTo />
+      </HowToPanel>
     </div>
   )
 }

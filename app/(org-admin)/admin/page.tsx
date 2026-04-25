@@ -25,6 +25,8 @@ import {
 import { clsx } from 'clsx'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
 import { SendInviteButton } from '@/components/ui/send-invite-button'
+import { HowToPanel } from '@/components/howto/panel'
+import UsersHowTo from '@/components/howto/org-admin/users'
 
 const ROLE_LABELS: Record<string, string> = {
   CAREER_DEV_OFFICER: 'Careers Professional',
@@ -839,6 +841,10 @@ export default function OrgAdminUsersPage() {
           temporaryPassword={credentialCard.password}
         />
       )}
+
+      <HowToPanel>
+        <UsersHowTo />
+      </HowToPanel>
     </div>
   )
 }

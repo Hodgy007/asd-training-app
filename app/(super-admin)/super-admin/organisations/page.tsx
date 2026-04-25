@@ -17,6 +17,8 @@ import {
 } from 'lucide-react'
 import { LEAF_ROLES } from '@/types'
 import { ORG_TYPES, ORG_TYPE_LABELS } from '@/lib/rbac'
+import { HowToPanel } from '@/components/howto/panel'
+import OrganisationsHowTo from '@/components/howto/super-admin/organisations'
 
 interface ProgramOption {
   id: string
@@ -691,6 +693,10 @@ function OrganisationsContent() {
           </table>
         </div>
       </div>}
+
+      <HowToPanel>
+        <OrganisationsHowTo />
+      </HowToPanel>
     </div>
   )
 }

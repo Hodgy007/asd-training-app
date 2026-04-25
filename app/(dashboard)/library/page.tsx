@@ -17,6 +17,8 @@ import {
   ChevronRight,
   X,
 } from 'lucide-react'
+import { HowToPanel } from '@/components/howto/panel'
+import LibraryHowTo from '@/components/howto/learner/library'
 
 interface LibraryDoc {
   id: string
@@ -233,6 +235,10 @@ function LibraryPage() {
             </div>
           </div>
         )}
+
+        <HowToPanel>
+          <LibraryHowTo />
+        </HowToPanel>
       </div>
     )
   }
@@ -309,6 +315,10 @@ function LibraryPage() {
           ))}
         </div>
       )}
+
+      <HowToPanel>
+        <LibraryHowTo />
+      </HowToPanel>
     </div>
   )
 }

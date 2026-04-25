@@ -12,7 +12,6 @@ import {
   X,
   Calendar,
   Settings,
-  HelpCircle,
   FolderOpen,
   FileText,
   Compass,
@@ -68,7 +67,6 @@ function getNavItems(
     items.push({ href: '/library', label: 'Document Library', icon: FolderOpen })
   }
 
-  items.push({ href: '/guide', label: 'How to Guide', icon: HelpCircle })
   items.push({ href: '/sessions', label: 'Workshops', icon: Calendar })
 
   // Sort everything after Dashboard alphabetically

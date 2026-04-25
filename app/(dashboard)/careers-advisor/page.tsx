@@ -6,6 +6,8 @@ import { useSession } from 'next-auth/react'
 import { Plus, Compass, Loader2, Trash2, FileText, Clock, CheckCircle2, Users } from 'lucide-react'
 import Link from 'next/link'
 import { clsx } from 'clsx'
+import { HowToPanel } from '@/components/howto/panel'
+import CareersAdvisorHowTo from '@/components/howto/learner/careers-advisor'
 
 interface AdvisorSession {
   id: string
@@ -164,6 +166,10 @@ export default function CareersAdvisorPage() {
           )}
         </div>
       )}
+
+      <HowToPanel>
+        <CareersAdvisorHowTo />
+      </HowToPanel>
     </div>
   )
 }

@@ -14,6 +14,8 @@ import {
   Plus,
 } from 'lucide-react'
 import { format } from 'date-fns'
+import { HowToPanel } from '@/components/howto/panel'
+import WorkshopsHowTo from '@/components/howto/learner/workshops'
 
 interface SessionHost {
   id: string
@@ -210,6 +212,10 @@ export default function SessionsPage() {
           )}
         </>
       )}
+
+      <HowToPanel>
+        <WorkshopsHowTo />
+      </HowToPanel>
     </div>
   )
 }

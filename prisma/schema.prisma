@@ -909,10 +909,17 @@ model StripeEvent {
 }
 
 model HomePage {
-  id          String   @id @default("singleton")
-  htmlContent String   @db.Text
-  brief       String?  @db.Text
-  updatedBy   String?
-  updatedAt   DateTime @updatedAt
-  createdAt   DateTime @default(now())
+  id                 String   @id @default("singleton")
+  htmlContent        String   @db.Text
+  brief              String?  @db.Text
+  // The "default" snapshot — captured by the super admin via "Make default"
+  // and restored via "Reset to default". Independent of the live content so
+  // editors can experiment freely and roll back to a known-good baseline.
+  defaultHtmlContent String?  @db.Text
+  defaultBrief       String?  @db.Text
+  defaultSetAt       DateTime?
+  defaultSetBy       String?
+  updatedBy          String?
+  updatedAt          DateTime @updatedAt
+  createdAt          DateTime @default(now())
 }

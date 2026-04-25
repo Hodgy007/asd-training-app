@@ -18,6 +18,8 @@ import {
   Pencil,
 } from 'lucide-react'
 import Link from 'next/link'
+import { HowToPanel } from '@/components/howto/panel'
+import LibraryHowTo from '@/components/howto/super-admin/library'
 
 interface Organisation {
   id: string
@@ -538,6 +540,10 @@ export default function LibraryPage() {
           ))
         )}
       </div>
+
+      <HowToPanel>
+        <LibraryHowTo />
+      </HowToPanel>
     </div>
   )
 }
