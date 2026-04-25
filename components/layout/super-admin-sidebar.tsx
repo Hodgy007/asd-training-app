@@ -13,8 +13,6 @@ import {
   Settings,
   Package,
   Home,
-  Compass,
-  FileText,
   CreditCard,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -47,14 +45,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin/users', label: 'Users', icon: Users, charityAdminOnly: true },
 ]
 
-// Tools — charity-level users open the learner-facing tools themselves to
-// self-test them. They only ever see their own data; learner CVs and
-// careers reports are not exposed here (privacy).
-const TOOL_ITEMS: NavItem[] = [
-  { href: '/careers-advisor', label: 'Careers Advisor', icon: Compass },
-  { href: '/cv-builder', label: 'CV Builder', icon: FileText },
-]
-
 interface SuperAdminSidebarProps {
   onClose?: () => void
   mobile?: boolean
@@ -84,7 +74,6 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
   }
 
   const visibleItems = NAV_ITEMS.filter(canSee)
-  const visibleTools = TOOL_ITEMS.filter(canSee)
 
   const badgeLabel = isCharityAdmin ? 'Charity Admin' : 'Charity Employee'
   const badgeStyle = isCharityAdmin
@@ -171,33 +160,6 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
           )
         })}
 
-        {visibleTools.length > 0 && (
-          <>
-            <div className={clsx('pt-4 pb-1 px-3 text-xs font-semibold uppercase tracking-wider', chrome.iconInactive)}>
-              Tools
-            </div>
-            {visibleTools.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className={clsx(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all',
-                    isActive ? chrome.navActive : chrome.navInactive,
-                  )}
-                >
-                  <Icon
-                    className={clsx('h-5 w-5 flex-shrink-0', isActive ? chrome.iconActive : chrome.iconInactive)}
-                  />
-                  {item.label}
-                </Link>
-              )
-            })}
-          </>
-        )}
       </nav>
 
       {/* Bottom section */}

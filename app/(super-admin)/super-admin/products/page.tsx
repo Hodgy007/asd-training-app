@@ -15,6 +15,8 @@ import {
   ChevronRight,
   Package,
   Sparkles,
+  Compass,
+  FileText,
 } from 'lucide-react'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
 
@@ -50,6 +52,14 @@ const TILES: Tile[] = [
     permission: CHARITY_PERMISSIONS.MANAGE_ANNOUNCEMENTS,
   },
   {
+    href: '/careers-advisor',
+    title: 'Careers Advisor',
+    description: 'Self-test the AI careers advisor as a learner.',
+    icon: Compass,
+    iconColor: 'text-sky-600 dark:text-sky-400',
+    iconBg: 'bg-sky-100 dark:bg-sky-900/40',
+  },
+  {
     href: '/courses',
     title: 'Catalogue',
     description: 'Public-facing course catalogue.',
@@ -66,6 +76,14 @@ const TILES: Tile[] = [
     iconColor: 'text-indigo-600 dark:text-indigo-400',
     iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
     permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS,
+  },
+  {
+    href: '/cv-builder',
+    title: 'CV Builder',
+    description: 'Self-test the autism-friendly CV builder.',
+    icon: FileText,
+    iconColor: 'text-rose-600 dark:text-rose-400',
+    iconBg: 'bg-rose-100 dark:bg-rose-900/40',
   },
   {
     href: '/super-admin/library',
