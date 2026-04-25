@@ -18,6 +18,7 @@ import {
   Building2,
   Settings,
   CreditCard,
+  Home,
   ShoppingBag,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -48,6 +49,7 @@ const MIDDLE_NAV_ITEMS: NavItem[] = [
   { href: '/courses', label: 'Catalogue', icon: ShoppingBag, openInNewTab: true },
   { href: '/admin/library', label: 'Document Library', icon: FolderOpen },
   { href: '/admin/settings/sso', label: 'Enterprise SSO', icon: Shield },
+  { href: '/home', label: 'Home', icon: Home },
   { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
   { href: '/admin/sessions', label: 'Workshops', icon: Calendar },

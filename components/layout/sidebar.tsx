@@ -18,6 +18,7 @@ import {
   Compass,
   BarChart3,
   Briefcase,
+  Home,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
@@ -37,6 +38,7 @@ function getNavItems(
 ): NavItem[] {
   const items: NavItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/home', label: 'Home', icon: Home },
   ]
 
   if (role === 'CAREGIVER' || role === 'CAREER_DEV_OFFICER' || role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {

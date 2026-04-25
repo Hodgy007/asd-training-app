@@ -16,12 +16,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     redirect('/login')
   }
 
-  // Redirect admin roles to their portals — except when previewing training/careers content
-  const isPreview = pathname.startsWith('/training') || pathname.startsWith('/careers')
+  // Redirect admin roles to their portals — except when previewing training/careers
+  // content, or when viewing the shared /home page.
+  const isSharedHome = pathname === '/home' || pathname.startsWith('/home/')
+  const isPreview =
+    pathname.startsWith('/training') || pathname.startsWith('/careers') || isSharedHome
   if (status === 'authenticated') {
     if (session?.user?.role === 'SUPER_ADMIN' && !isPreview) redirect('/super-admin')
-    if (session?.user?.role === 'ORG_ADMIN') redirect('/admin')
+    if (session?.user?.role === 'ORG_ADMIN' && !isSharedHome) redirect('/admin')
   }
+
 
   return (
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900">
