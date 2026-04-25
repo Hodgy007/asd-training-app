@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, ChangeEvent } from 'react'
 import Link from 'next/link'
 import {
   Sparkles, Save, ExternalLink, Loader2, Code2, Wand2,
-  ImagePlus, Film, Youtube,
+  ImagePlus, Film, Youtube, BookmarkCheck, RotateCcw,
 } from 'lucide-react'
 
 /** Convert a YouTube/Vimeo watch URL to an embed URL. Returns null on miss. */
@@ -39,6 +39,10 @@ export default function SuperAdminHomePage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
   const [uploading, setUploading] = useState<null | 'image' | 'video'>(null)
+  const [hasDefault, setHasDefault] = useState(false)
+  const [defaultSetAt, setDefaultSetAt] = useState<string | null>(null)
+  const [settingDefault, setSettingDefault] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const previewRef = useRef<HTMLDivElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
@@ -51,6 +55,8 @@ export default function SuperAdminHomePage() {
           setHtml(data.htmlContent ?? '')
           setBrief(data.brief ?? '')
           setUpdatedAt(data.updatedAt ?? null)
+          setHasDefault(!!data.hasDefault)
+          setDefaultSetAt(data.defaultSetAt ?? null)
         }
       })
       .catch(() => {})
@@ -146,6 +152,68 @@ export default function SuperAdminHomePage() {
       `<p><iframe src="${embed}" class="w-full aspect-video rounded-xl my-4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></p>`,
     )
     showToast('Embed added. Save to publish.', 'success')
+  }
+
+  async function makeDefault() {
+    // Captures whatever's currently SAVED as the default. We require that the
+    // editor first saved any in-progress edits — otherwise the user might
+    // expect the inline tweaks to be captured but they wouldn't be.
+    const previewHtml = previewRef.current?.innerHTML ?? html
+    const savedHtml = html
+    if (previewHtml !== savedHtml) {
+      showToast('Save your current edits first, then make them the default.', 'error')
+      return
+    }
+    if (!savedHtml.trim()) {
+      showToast('There is no content to save as the default yet.', 'error')
+      return
+    }
+    if (hasDefault && !window.confirm('Replace the existing default with the current Home page?')) {
+      return
+    }
+    setSettingDefault(true)
+    try {
+      const res = await fetch('/api/super-admin/home/set-default', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        showToast(data.error ?? 'Could not save default.', 'error')
+        return
+      }
+      setHasDefault(true)
+      setDefaultSetAt(data.defaultSetAt ?? new Date().toISOString())
+      showToast('Saved as the default. You can roll back to this any time.', 'success')
+    } catch {
+      showToast('Could not save default.', 'error')
+    } finally {
+      setSettingDefault(false)
+    }
+  }
+
+  async function resetToDefault() {
+    if (!hasDefault) {
+      showToast('No default has been captured yet.', 'error')
+      return
+    }
+    if (!window.confirm('Replace the live Home page with the default? Your current unsaved edits will be lost.')) {
+      return
+    }
+    setResetting(true)
+    try {
+      const res = await fetch('/api/super-admin/home/reset-to-default', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        showToast(data.error ?? 'Reset failed.', 'error')
+        return
+      }
+      setHtml(data.htmlContent ?? '')
+      setBrief(data.brief ?? '')
+      setUpdatedAt(data.updatedAt ?? null)
+      showToast('Home page reset to the default and published.', 'success')
+    } catch {
+      showToast('Reset failed.', 'error')
+    } finally {
+      setResetting(false)
+    }
   }
 
   async function generate() {
@@ -390,7 +458,37 @@ export default function SuperAdminHomePage() {
           </p>
         )}
 
-        <div className="flex justify-end px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+        <div className="flex flex-wrap items-center gap-2 px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40">
+          <button
+            onClick={resetToDefault}
+            disabled={resetting || saving || loading || !hasDefault}
+            title={
+              hasDefault
+                ? defaultSetAt
+                  ? `Restore the default saved on ${new Date(defaultSetAt).toLocaleString('en-GB')}`
+                  : 'Restore the saved default'
+                : 'No default has been captured yet'
+            }
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+          >
+            {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+            {resetting ? 'Resetting…' : 'Reset to default'}
+          </button>
+          <button
+            onClick={makeDefault}
+            disabled={settingDefault || saving || loading || !html}
+            title="Save the current Home page as the default. Editors can roll back to this any time."
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+          >
+            {settingDefault ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookmarkCheck className="h-4 w-4" />}
+            {settingDefault ? 'Saving default…' : hasDefault ? 'Replace default' : 'Make this the default'}
+          </button>
+          {hasDefault && defaultSetAt && (
+            <span className="text-xs text-slate-500 dark:text-slate-500">
+              Default last updated {new Date(defaultSetAt).toLocaleDateString('en-GB')}
+            </span>
+          )}
+          <div className="flex-1" />
           <button
             onClick={save}
             disabled={saving || loading}
