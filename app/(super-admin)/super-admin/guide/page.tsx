@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import {
   LayoutDashboard,
   Building2,
@@ -7,701 +8,197 @@ import {
   BarChart3,
   Shield,
   Users,
-  Sparkles,
-  FileText,
-  Upload,
-  Eye,
-  Send,
-  XCircle,
-  Pencil,
-  Trash2,
-  Crown,
+  Users2,
   Settings,
   HelpCircle,
   Plug,
   FolderOpen,
-  Download,
-  Lock,
-  Video,
   Briefcase,
   Bot,
-  Users2,
   TrendingUp,
+  ChevronRight,
 } from 'lucide-react'
 
 export const metadata = {
   title: 'How to Guide | Super Admin',
 }
 
-function SectionCard({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: React.ElementType
+interface Tile {
+  href: string
   title: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 shadow-sm overflow-hidden">
-      <div className="flex items-center gap-3 px-6 py-4 bg-purple-50 dark:bg-purple-900/20 border-b border-calm-200 dark:border-slate-700">
-        <Icon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
-      </div>
-      <div className="px-6 py-5 space-y-4">
-        {children}
-      </div>
-    </div>
-  )
+  description: string
+  icon: React.ElementType
+  iconColor: string
+  iconBg: string
 }
 
-function Tip({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-400 rounded-r-lg p-3">
-      <p className="text-sm text-amber-800 dark:text-amber-300">{children}</p>
-    </div>
-  )
-}
+const TILES: Tile[] = [
+  {
+    href: '/super-admin/guide/overview',
+    title: 'Overview Dashboard',
+    description: 'Your daily landing page with platform-wide stats and quick links.',
+    icon: LayoutDashboard,
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    iconBg: 'bg-purple-50 dark:bg-purple-900/20',
+  },
+  {
+    href: '/super-admin/guide/users',
+    title: 'Managing Charity Users',
+    description: 'Create Charity Admins and Charity Employees, and reset passwords.',
+    icon: Users,
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    iconBg: 'bg-blue-50 dark:bg-blue-900/20',
+  },
+  {
+    href: '/super-admin/guide/organisations',
+    title: 'Managing Organisations',
+    description: 'Create orgs, set training programs, and assign collections.',
+    icon: Building2,
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
+  },
+  {
+    href: '/super-admin/guide/training',
+    title: 'Training Content',
+    description: 'Build programs, lessons, quizzes, and SCORM packages.',
+    icon: BookOpen,
+    iconColor: 'text-amber-600 dark:text-amber-400',
+    iconBg: 'bg-amber-50 dark:bg-amber-900/20',
+  },
+  {
+    href: '/super-admin/guide/library',
+    title: 'Document Library',
+    description: 'Organise files into collections and target them by org and role.',
+    icon: FolderOpen,
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
+    iconBg: 'bg-cyan-50 dark:bg-cyan-900/20',
+  },
+  {
+    href: '/super-admin/guide/surveys',
+    title: 'Survey Management',
+    description: 'Build surveys, target audiences, and generate AI insights.',
+    icon: ClipboardList,
+    iconColor: 'text-pink-600 dark:text-pink-400',
+    iconBg: 'bg-pink-50 dark:bg-pink-900/20',
+  },
+  {
+    href: '/super-admin/guide/announcements',
+    title: 'Announcements',
+    description: 'Send global or org-scoped messages with optional expiry dates.',
+    icon: Megaphone,
+    iconColor: 'text-orange-600 dark:text-orange-400',
+    iconBg: 'bg-orange-50 dark:bg-orange-900/20',
+  },
+  {
+    href: '/super-admin/guide/reports',
+    title: 'Reports',
+    description: 'Platform-wide training, survey, and library analytics.',
+    icon: BarChart3,
+    iconColor: 'text-indigo-600 dark:text-indigo-400',
+    iconBg: 'bg-indigo-50 dark:bg-indigo-900/20',
+  },
+  {
+    href: '/super-admin/guide/access',
+    title: 'User & Access Management',
+    description: 'Roles explained, MFA enforcement, and SSO setup.',
+    icon: Shield,
+    iconColor: 'text-slate-600 dark:text-slate-300',
+    iconBg: 'bg-slate-100 dark:bg-slate-700',
+  },
+  {
+    href: '/super-admin/guide/charity-employees',
+    title: 'Charity Employee Permissions',
+    description: 'Delegate access via the nine permission flags.',
+    icon: Shield,
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    iconBg: 'bg-blue-50 dark:bg-blue-900/20',
+  },
+  {
+    href: '/super-admin/guide/cohorts',
+    title: 'Cohorts',
+    description: 'Group-based delivery with ring-fenced reporting.',
+    icon: Users2,
+    iconColor: 'text-teal-600 dark:text-teal-400',
+    iconBg: 'bg-teal-50 dark:bg-teal-900/20',
+  },
+  {
+    href: '/super-admin/guide/jobs',
+    title: 'Job Openings',
+    description: 'Curate roles for learners with autism-friendly notes.',
+    icon: Briefcase,
+    iconColor: 'text-rose-600 dark:text-rose-400',
+    iconBg: 'bg-rose-50 dark:bg-rose-900/20',
+  },
+  {
+    href: '/super-admin/guide/ai-prompts',
+    title: 'AI Prompts',
+    description: 'Tune the prompts that drive every AI feature.',
+    icon: Bot,
+    iconColor: 'text-violet-600 dark:text-violet-400',
+    iconBg: 'bg-violet-50 dark:bg-violet-900/20',
+  },
+  {
+    href: '/super-admin/guide/impact',
+    title: 'Impact',
+    description: 'Charity-wide outcomes for trustees and funders.',
+    icon: TrendingUp,
+    iconColor: 'text-green-600 dark:text-green-400',
+    iconBg: 'bg-green-50 dark:bg-green-900/20',
+  },
+  {
+    href: '/super-admin/guide/integrations',
+    title: 'Integrations',
+    description: 'Power Automate, Dynamics 365, and the reporting API.',
+    icon: Plug,
+    iconColor: 'text-yellow-600 dark:text-yellow-400',
+    iconBg: 'bg-yellow-50 dark:bg-yellow-900/20',
+  },
+  {
+    href: '/super-admin/guide/settings',
+    title: 'Settings',
+    description: 'Meeting platform integration and SAML SSO config.',
+    icon: Settings,
+    iconColor: 'text-slate-600 dark:text-slate-300',
+    iconBg: 'bg-slate-100 dark:bg-slate-700',
+  },
+]
 
 export default function SuperAdminGuidePage() {
   return (
-    <div className="space-y-6 animate-page-enter">
-      {/* Page header */}
+    <div className="max-w-full space-y-6 animate-page-enter">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-          <HelpCircle className="h-7 w-7 text-purple-500" />
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <HelpCircle className="h-6 w-6 text-purple-500" />
           How to Guide
         </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          A comprehensive reference for managing the platform as a Charity Admin. Each section below covers a key area of the admin panel with step-by-step instructions.
+        <p className="text-slate-500 dark:text-slate-400 mt-1">
+          Step-by-step instructions for every area of the Charity Admin panel. Pick a topic to dive in.
         </p>
       </div>
 
-      {/* 1. Overview Dashboard */}
-      <SectionCard icon={LayoutDashboard} title="Overview Dashboard">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          The Overview page is your landing page after signing in. It provides a high-level snapshot of the entire platform.
-        </p>
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">What you will see</h3>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Platform-wide statistics at a glance &mdash; total organisations, users, training completion rates, and active surveys.</li>
-          <li>Quick-access cards linking to every management area (Organisations, Training Content, Surveys, Announcements, Reports).</li>
-          <li>Recent activity feed showing the latest user registrations, training completions, and survey responses across all organisations.</li>
-        </ul>
-        <Tip>Use the Overview page as your daily starting point to spot trends and quickly navigate to areas that need attention.</Tip>
-      </SectionCard>
-
-      {/* 2. Managing Charity Users */}
-      <SectionCard icon={Users} title="Managing Charity Users">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          As a Charity Admin, you can create and manage other Charity Admin and Charity Employee accounts from the <strong>Users</strong> page.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a new user</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Navigate to <strong>Users</strong> from the sidebar.</li>
-          <li>Click <strong>Add User</strong>.</li>
-          <li>Enter the user&apos;s name, email, and a temporary password.</li>
-          <li>Select the role: <strong>Charity Admin</strong> (full access) or <strong>Charity Employee</strong> (delegated access).</li>
-          <li>If Charity Employee, select which permissions to grant (Manage Organisations, Manage Training, Manage Surveys, Manage Announcements, View Reports).</li>
-          <li>Click <strong>Create User</strong>. The user will be prompted to change their password on first login.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing a user</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Click the edit button on any user to change their name, role, permissions, or active status. You can also reset their password. Note that you cannot deactivate your own account.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Charity Admin vs Charity Employee</h3>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Charity Admin</strong> &mdash; full platform access including user management. Multiple Charity Admins can exist.</li>
-          <li><strong>Charity Employee</strong> &mdash; can only access areas they have been granted permission for. Cannot manage other users.</li>
-        </ul>
-
-        <Tip>Use Charity Employee accounts for staff who only need access to specific areas. This follows the principle of least privilege.</Tip>
-      </SectionCard>
-
-      {/* 3. Managing Organisations */}
-      <SectionCard icon={Building2} title="Managing Organisations">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Organisations are the top-level tenants on the platform. Each organisation has its own users, training access, and configuration.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a new organisation</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Navigate to <strong>Organisations</strong> from the sidebar.</li>
-          <li>Click the <strong>Create Organisation</strong> button.</li>
-          <li>Enter the organisation name and a unique slug (used in URLs).</li>
-          <li>Select the allowed training programs &mdash; <strong>ASD Awareness Training</strong> and/or <strong>Careers CPD Training</strong>.</li>
-          <li>Configure the allowed roles that can be assigned to users within this organisation.</li>
-          <li>Click <strong>Save</strong> to create the organisation.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Setting up training programs</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Each organisation can be granted access to one or both training programs. These are presented as simple toggles:
-        </p>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>ASD Awareness Training</strong> &mdash; covers modules 1 through 5 of the ASD awareness curriculum.</li>
-          <li><strong>Careers CPD Training</strong> &mdash; covers modules 1 through 4 of the careers continuing professional development curriculum.</li>
-        </ul>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Configuring allowed roles</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Control which user roles can be created within each organisation. For example, you might restrict a specialist organisation to only Practitioner and Student roles.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing and deactivating organisations</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Click on an organisation row to open its settings.</li>
-          <li>Update any field (name, slug, training programs, roles) and click <strong>Save</strong>.</li>
-          <li>To deactivate an organisation, toggle the <strong>Active</strong> switch off. Deactivated organisations&apos; users will be blocked from signing in.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Assigning document collections</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          From the organisation detail page, scroll to the <strong>Document Collections</strong> section. Toggle collections on or off to control which document libraries are available to users in this organisation. Collections with no organisation filter are visible to everyone by default.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Assigning surveys</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          In the <strong>Surveys</strong> section of the organisation detail page, toggle published surveys to assign them to this organisation. Only published and closed surveys appear in the list (drafts are excluded). Users in the organisation will see assigned surveys in their dashboard.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Viewing organisation users</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          From the organisation detail view, you can see all users belonging to that organisation along with their roles and activity status.
-        </p>
-
-        <Tip>Deactivating an organisation immediately prevents all its users from logging in. Use this for offboarding or temporarily suspending access.</Tip>
-      </SectionCard>
-
-      {/* 4. Training Content Management */}
-      <SectionCard icon={BookOpen} title="Training Content Management">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Manage all training programs, modules, lessons, and quizzes from the <strong>Training Content</strong> page.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Viewing existing programs</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          The Training Content page lists all programs with their modules and current status. Use the <strong>View</strong> button to preview content as a learner (opens in a new tab) or the <strong>Edit</strong> button to modify content.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating training programs manually</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Click <strong>Create Program</strong> and enter a title, description, and program type (ASD or Careers).</li>
-          <li>Add modules to the program, each with a title and description.</li>
-          <li>Within each module, add lessons using the WYSIWYG rich-text editor.</li>
-          <li>Add quiz questions to each lesson &mdash; either manually or using AI generation.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-          <span className="inline-flex items-center gap-1.5"><Upload className="h-4 w-4 text-purple-500" /> Import from Files</span>
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Upload PDF, DOCX, or PPTX files to auto-generate training content using AI. The platform analyses your existing material and organises it into modules, lessons, and quizzes while preserving the original wording as closely as possible. This is ideal for digitising existing training documents.
-        </p>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Click <strong>Import from Files</strong> on the Training Content page.</li>
-          <li>Upload one or more files (PDF, DOCX, or PPTX).</li>
-          <li>Review the AI-generated structure and make any adjustments.</li>
-          <li>Save to create the program, modules, lessons, and quizzes.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-          <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-purple-500" /> Generate from Files</span>
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Upload files and let AI create entirely new, pedagogically-designed training content inspired by your material. Unlike Import, this generates fresh content rather than preserving original wording &mdash; ideal when you want to use source material as a foundation for new courses.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing modules and lessons</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Click <strong>Edit</strong> on any module or lesson to open the WYSIWYG editor. The editor supports rich text formatting, headings, lists, images, and more. After saving, you are redirected back to the module page.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Managing quiz questions</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Within any lesson, scroll to the <strong>Quiz Questions</strong> section.</li>
-          <li>Click <strong>Add Question</strong> to create one manually, entering the question text, answer options, and correct answer.</li>
-          <li>Alternatively, click <strong>Generate with AI</strong> to have Gemini create quiz questions based on the lesson content.</li>
-          <li>Review and edit any AI-generated questions before saving.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-          <span className="inline-flex items-center gap-1.5"><Upload className="h-4 w-4 text-purple-500" /> Uploading SCORM packages</span>
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          SCORM is an industry-standard format for self-contained e-learning packages produced by authoring tools like Articulate and Captivate. Upload a SCORM <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> to play a third-party course inline inside a lesson — no other lesson content (video, text, quiz, notes) renders when a lesson is set to SCORM.
-        </p>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Edit the lesson you want to host the package on.</li>
-          <li>Set the lesson <strong>Type</strong> to <strong>SCORM package</strong>.</li>
-          <li>Drop the <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> into the uploader and wait for extraction to finish.</li>
-          <li>Use <strong>Preview</strong> to open the entry file and check it runs.</li>
-        </ol>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Supported version:</strong> SCORM 1.2 only. SCORM 2004 packages are rejected at upload.</li>
-          <li><strong>Maximum package size:</strong> 200 MB.</li>
-          <li><strong>Test packages:</strong> free SCORM 1.2 samples are available at <a href="https://scorm.com/scorm-explained/technical-scorm/golf-examples/" className="text-purple-600 dark:text-purple-400 hover:underline" target="_blank" rel="noopener noreferrer">scorm.com</a>.</li>
-          <li><strong>Progress tracking:</strong> the learner&rsquo;s completion status and quiz score are saved to their training record. On return, the package resumes from where they left off.</li>
-          <li><strong>Replacing a package:</strong> upload a new <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> over the existing one, or use <strong>Remove package</strong> to convert the lesson back to a normal text lesson.</li>
-        </ul>
-        <Tip>If a package fails to load, export it from your authoring tool as SCORM <strong>1.2</strong> (not 2004) and confirm the <code className="px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-xs">imsmanifest.xml</code> sits at the root of the zip.</Tip>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Previewing content as a learner</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Click the <strong>View</strong> button on any program or module to open it in a new tab. This renders the content exactly as a learner would see it, allowing you to verify formatting, quiz flow, and overall experience.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Program status workflow</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Programs follow a four-stage lifecycle:
-        </p>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Draft</strong> &mdash; initial creation and editing. Not visible to learners.</li>
-          <li><strong>Under Review</strong> &mdash; content is being reviewed before approval.</li>
-          <li><strong>Approved</strong> &mdash; published and visible to learners with appropriate access.</li>
-          <li><strong>Archived</strong> &mdash; removed from active use but preserved for reference.</li>
-        </ol>
-
-        <Tip>Use &ldquo;Import from Files&rdquo; when you want to preserve your existing training material as-is. Use &ldquo;Generate from Files&rdquo; when you want AI to create new, pedagogically-structured content inspired by your source documents.</Tip>
-      </SectionCard>
-
-      {/* 5. Document Library */}
-      <SectionCard icon={FolderOpen} title="Document Library">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          The Document Library lets you organise and distribute files (PDFs, documents, spreadsheets, etc.) to organisations. Documents are grouped into collections that can be targeted to specific organisations and roles.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a collection</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Navigate to <strong>Document Library</strong> from the sidebar.</li>
-          <li>Click <strong>New Collection</strong>.</li>
-          <li>Enter a title and description for the collection.</li>
-          <li>Optionally upload a thumbnail image to visually identify the collection.</li>
-          <li>Select target organisations &mdash; leave empty to make the collection available to all organisations.</li>
-          <li>Select target roles &mdash; choose which user roles can see the collection (e.g. Practitioner, Student, Org Admin).</li>
-          <li>Click <strong>Save</strong> to create the collection.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Uploading documents</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Click on a collection to open its detail page.</li>
-          <li>Click <strong>Upload Document</strong> and select the file(s) you want to add.</li>
-          <li>Each document can have its own title and description.</li>
-          <li>Documents are stored securely and users download them directly from the platform.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing collection details</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Click the <Pencil className="inline h-3.5 w-3.5 text-slate-400" /> edit button next to the collection title on the detail page to update the name and description. Org Admins can also edit the title and description of collections assigned to their organisation.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Managing collection visibility</h3>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Active / Inactive</strong> &mdash; toggle a collection on or off. Inactive collections are hidden from all users.</li>
-          <li><strong>Target organisations</strong> &mdash; collections with no organisation filter are visible to everyone. Assigning specific organisations restricts access.</li>
-          <li><strong>Target roles</strong> &mdash; restrict which user roles can see the collection within the targeted organisations.</li>
-        </ul>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Library reports</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Click <strong>Reports</strong> from the Library page to view download analytics. Reports show total downloads per collection and per document, with an organisation breakdown. You can filter by organisation and export the data as CSV.
-        </p>
-
-        <Tip>Collections with no organisation filter are visible to all users. To restrict access, assign specific organisations either from the collection settings or from the Organisation detail page.</Tip>
-      </SectionCard>
-
-      {/* 6. Survey Management */}
-      <SectionCard icon={ClipboardList} title="Survey Management">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Create and manage surveys to collect feedback from users across the platform.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a survey manually</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Navigate to <strong>Surveys</strong> from the sidebar and click <strong>Create Survey</strong>.</li>
-          <li>Enter a survey title and optional description.</li>
-          <li>Add questions using the survey builder. Five question types are available:
-            <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
-              <li><strong>Multiple Choice</strong> &mdash; single selection from a list of options.</li>
-              <li><strong>Yes/No</strong> &mdash; simple binary question.</li>
-              <li><strong>Free Text</strong> &mdash; open-ended text response.</li>
-              <li><strong>Rating Scale (1&ndash;5)</strong> &mdash; numeric rating.</li>
-              <li><strong>Multi Select</strong> &mdash; multiple selections from a list of options.</li>
-            </ul>
-          </li>
-          <li>Reorder questions by dragging or using the move buttons.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-          <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-purple-500" /> AI Survey Generation</span>
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Generate complete surveys automatically by providing a topic description or uploading files. AI will create relevant questions using an appropriate mix of question types.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Setting up the target audience</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Use the role x organisation picker to define exactly who should receive the survey. You can target specific roles within specific organisations, all roles in certain organisations, or all users platform-wide.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Adding a close date</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Optionally set a close date. After this date, the survey will automatically stop accepting responses.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Publishing and closing surveys</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Publishing</strong> <Send className="inline h-3.5 w-3.5 text-slate-400" /> &mdash; makes the survey visible to the targeted users. Users will see it in their dashboard.</li>
-          <li><strong>Closing</strong> <XCircle className="inline h-3.5 w-3.5 text-slate-400" /> &mdash; stops the survey from accepting new responses. Existing responses are preserved.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Viewing survey details and results</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Click <strong>View</strong> <Eye className="inline h-3.5 w-3.5 text-slate-400" /> on any survey to see its questions and configuration.</li>
-          <li>Click <strong>Results</strong> to see charts and response breakdowns for each question.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-          <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-purple-500" /> Generating AI Insights</span>
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          From the results page, generate AI-powered insights to help interpret the data:
-        </p>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Summary</strong> &mdash; an overall summary of key findings and themes.</li>
-          <li><strong>Comparative</strong> &mdash; cross-role and cross-organisation analysis highlighting differences and patterns.</li>
-          <li><strong>Recommendations</strong> &mdash; actionable recommendations based on the survey responses.</li>
-        </ul>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Deleting a survey</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Click the <strong>Delete</strong> <Trash2 className="inline h-3.5 w-3.5 text-slate-400" /> button on a survey to permanently remove it and all its responses. This action cannot be undone.
-        </p>
-
-        <Tip>Publish a survey only after you have finalised all questions and configured the target audience. Once published, questions cannot be edited to ensure response consistency.</Tip>
-      </SectionCard>
-
-      {/* 7. Announcements */}
-      <SectionCard icon={Megaphone} title="Announcements">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Announcements allow you to communicate important information to users across the platform.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a global announcement</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Navigate to <strong>Announcements</strong> from the sidebar.</li>
-          <li>Click <strong>Create Announcement</strong>.</li>
-          <li>Enter a title and message body.</li>
-          <li>Leave the organisation field empty to make it a <strong>global announcement</strong> visible to all users on the platform.</li>
-          <li>Optionally set an <strong>expiry date</strong> &mdash; the announcement will automatically disappear after this date.</li>
-          <li>Click <strong>Save</strong> to publish.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating an org-scoped announcement</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Select a specific organisation when creating the announcement. Only users within that organisation will see it.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Setting expiry dates</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Expiry dates are optional. When set, the announcement is automatically hidden after the date passes. Announcements without an expiry remain visible until manually removed.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing and managing announcements</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Click on any announcement to edit its content, change the target audience, or update the expiry date. You can also delete announcements that are no longer needed.
-        </p>
-
-        <Tip>Use global announcements sparingly for platform-wide updates. For organisation-specific news, always scope the announcement to the relevant organisation.</Tip>
-      </SectionCard>
-
-      {/* 8. Reports */}
-      <SectionCard icon={BarChart3} title="Reports">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          The Reports page provides platform-wide insights into training progress and engagement.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Platform-wide training progress</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          View aggregate statistics across all organisations, including total lessons completed, average completion rates, and active learner counts.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Per-organisation completion rates</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Break down training progress by organisation to identify which groups are progressing well and which may need additional support or encouragement.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Module and lesson completion statistics</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Drill down into individual modules and lessons to see completion counts. Reports display proper module names and training plan labels (&ldquo;ASD Awareness Training&rdquo;, &ldquo;Careers CPD Training&rdquo;) rather than raw identifiers.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Survey reports</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          The Reports page includes a survey section showing totals for published, closed, and draft surveys. Expand any survey to see per-question response breakdowns, answer distributions, rating averages, and organisation-level response rates. Click <strong>Export CSV</strong> <Download className="inline h-3.5 w-3.5 text-slate-400" /> to download survey response data.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Document library reports</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Access library analytics from <strong>Document Library &rarr; Reports</strong>. View download counts per collection and per document, filter by organisation, and export the data as CSV.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Downloading overview data</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          The Overview dashboard displays key platform statistics including total organisations, users, completed lessons, and document downloads. The organisation summary table shows per-organisation metrics at a glance.
-        </p>
-
-        <Tip>Check reports regularly to identify organisations with low engagement. Consider reaching out to their Org Admins or creating targeted announcements to boost participation.</Tip>
-      </SectionCard>
-
-      {/* 9. User & Access Management */}
-      <SectionCard icon={Shield} title="User & Access Management">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Understanding the role hierarchy and access controls is essential for managing the platform securely.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Roles explained</h3>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Charity Admin</strong> <Crown className="inline h-3.5 w-3.5 text-purple-500" /> &mdash; full platform access including user management. Manages organisations, training content, surveys, announcements, and reports across the entire platform.</li>
-          <li><strong>Charity Employee</strong> <Shield className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; delegated platform access with specific permissions granted by a Charity Admin. Can manage organisations, training, surveys, announcements, and/or reports depending on assigned permissions.</li>
-          <li><strong>Org Admin</strong> <Users className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; manages users, announcements, sessions, and reports within their own organisation.</li>
-          <li><strong>Practitioner</strong> (Caregiver) &mdash; accesses ASD training modules and training reports.</li>
-          <li><strong>Careers Professional</strong> (Career Dev Officer) &mdash; accesses careers CPD training, CV Builder, Careers Advisor, Jobs, and manages their students.</li>
-          <li><strong>Student</strong> / <strong>Intern</strong> / <strong>Employee</strong> &mdash; access training modules assigned to their organisation, plus CV Builder, Careers Advisor, and Jobs.</li>
-        </ul>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">MFA / TOTP requirement</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Multi-factor authentication (TOTP) is <strong>mandatory</strong> for Charity Admin, Charity Employee, and Org Admin roles. Admin users without MFA configured will be redirected to the MFA setup page and cannot access any other part of the platform until it is enabled.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">How users are managed</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Day-to-day user management is handled by Org Admins within their respective organisations. As a Super Admin, you can view users within any organisation from the Organisations page but should delegate routine user administration to Org Admins.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">SSO setup (Google OAuth &amp; Azure AD)</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Single Sign-On is configured at the application level (not per-organisation). Both Google OAuth and Microsoft Azure AD are supported.
-        </p>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Configure the OAuth provider in the respective cloud console (Google Cloud Console or Azure Portal).</li>
-          <li>Set the redirect URIs to the appropriate callback URLs for the platform.</li>
-          <li>Add the client ID, client secret, and tenant ID (Azure only) to the platform environment variables.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Pre-creating users for SSO</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          SSO login requires that user accounts already exist in the platform. Users who attempt to sign in via SSO without a pre-existing account will be rejected. Org Admins must create the user account first (with the matching email address), after which the user can sign in via Google or Microsoft.
-        </p>
-
-        <Tip>Always ensure Org Admins have MFA configured before granting them access. The platform enforces this automatically, but it is good practice to communicate the requirement during onboarding.</Tip>
-      </SectionCard>
-
-      {/* 9b. Charity Employee permissions */}
-      <SectionCard icon={Shield} title="Delegating access to Charity Employees">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          <strong>Charity Employee</strong> accounts let you delegate parts of the Charity Admin job without handing over the full keys. Each Charity Employee has a <strong>permissions</strong> array &mdash; the sidebar and APIs dynamically show only the areas their permissions cover.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">The nine permissions</h3>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Manage Organisations</strong> &mdash; create, edit, activate/deactivate organisations and their admins.</li>
-          <li><strong>Manage Training</strong> &mdash; create and edit training programs, modules, lessons, and quiz questions.</li>
-          <li><strong>Manage Surveys</strong> &mdash; create surveys, manage lifecycle, and generate insights.</li>
-          <li><strong>Manage Announcements</strong> &mdash; post and schedule charity-wide or org-scoped announcements.</li>
-          <li><strong>View Reports</strong> &mdash; see platform-wide training, library, and survey reports.</li>
-          <li><strong>Manage Workshops</strong> &mdash; create and run charity-level virtual workshops.</li>
-          <li><strong>Manage Library</strong> &mdash; create collections, upload documents, and set visibility.</li>
-          <li><strong>Manage AI Prompts</strong> &mdash; edit prompts in the AI registry that power the platform&apos;s AI features.</li>
-          <li><strong>Manage Job Openings</strong> &mdash; create, publish, and manage jobs shown to learners.</li>
-        </ul>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Assigning permissions</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Create a user from the <strong>Users</strong> page with role <em>Charity Employee</em>.</li>
-          <li>Tick each permission you want to grant. Charity Admins always have all permissions implicitly.</li>
-          <li>Save. The user&apos;s sidebar will only include the sections they can manage.</li>
-        </ol>
-
-        <Tip>Grant the minimum set of permissions needed. You can always add more later.</Tip>
-      </SectionCard>
-
-      {/* 9c. Cohorts */}
-      <SectionCard icon={Users2} title="Cohorts">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          A <strong>Cohort</strong> is a special kind of organisation used for group-based delivery &mdash; e.g. a training cohort for interns on a shared programme. They behave like organisations but are tagged so you can distinguish them in reports and target them separately.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Managing cohorts</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Open <strong>Cohorts</strong> from the sidebar.</li>
-          <li>Create a new cohort with a name, training programs, and allowed roles.</li>
-          <li>Add users and assign a cohort lead (Org Admin-equivalent).</li>
-          <li>Cohorts support the same hierarchy, training-plan assignment, and reporting as regular organisations.</li>
-        </ol>
-
-        <Tip>Use cohorts when you want to ring-fence analytics for a specific intake or programme.</Tip>
-      </SectionCard>
-
-      {/* 9d. Job Openings */}
-      <SectionCard icon={Briefcase} title="Job Openings">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Job Openings are curated roles (internships, apprenticeships, part-time, full-time, volunteer) surfaced to your learners &mdash; students, interns, employees, and their Careers Professionals.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a job</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Go to <strong>Job Openings</strong> in the sidebar and click <strong>New job</strong>.</li>
-          <li>Fill in the employer, title, location type (on-site / hybrid / remote), employment type, and closing date.</li>
-          <li>Add a summary, full description, required skills, and &mdash; importantly &mdash; any <strong>autism-friendly notes</strong> (e.g. low-noise office, flexible hours, clear written instructions).</li>
-          <li>Add apply URL and/or a contact email for direct applications.</li>
-          <li>Optionally upload an employer logo and PDF attachments (e.g. a full job spec).</li>
-          <li>Set status to <strong>Published</strong> to make it visible to learners. Jobs auto-close after their closing date.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Targeting and assignments</h3>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Restrict visibility to specific organisations or roles via the targeting fields.</li>
-          <li>Explicitly <strong>assign</strong> a job to a named learner so it&apos;s highlighted for them. Careers Professionals can also do this.</li>
-        </ul>
-
-        <Tip>Keep autism-friendly notes plain and specific &mdash; they&apos;re a key trust signal for learners applying to a role.</Tip>
-      </SectionCard>
-
-      {/* 9e. AI Prompts */}
-      <SectionCard icon={Bot} title="AI Prompts">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Every AI feature on the platform &mdash; CV writing help, careers reports, quiz generation, survey insights, lesson-content suggestions &mdash; is driven by a named prompt in the <strong>AI Prompts</strong> registry. You can tune the tone, model, requirements, and example output without a deploy.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing a prompt</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Open <strong>AI Prompts</strong> from the sidebar. Each row is a prompt with a key, purpose, and model.</li>
-          <li>Click a prompt to edit its <strong>tone</strong>, <strong>requirements</strong> (bullet-style constraints the model must follow), <strong>example output</strong>, and <strong>response format</strong>.</li>
-          <li>Pick the <strong>model</strong> &mdash; Gemini, Claude, or GPT. Everything routes through the Vercel AI Gateway.</li>
-          <li>Upload <strong>context files</strong> (PDF, DOCX, TXT) that the prompt should always consider &mdash; e.g. a style guide or safeguarding policy.</li>
-          <li>Toggle <strong>enabled</strong> off to temporarily disable a prompt; the feature will surface a &ldquo;temporarily unavailable&rdquo; message instead of calling the AI.</li>
-          <li>Save. Changes take effect immediately. Previous values are kept so you can revert.</li>
-        </ol>
-
-        <Tip>Keep a prompt&apos;s requirements explicit about what the AI must <em>not</em> say (e.g. &ldquo;never mention autism or disability&rdquo;). Models follow bulleted requirements far more reliably than prose instructions.</Tip>
-      </SectionCard>
-
-      {/* 9f. Impact */}
-      <SectionCard icon={TrendingUp} title="Impact">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          The <strong>Impact</strong> page is a charity-wide view of outcomes and engagement &mdash; designed for sharing with trustees, funders, and partners rather than for day-to-day operations.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">What it shows</h3>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Headline numbers &mdash; learners trained, modules completed, workshops delivered, documents shared.</li>
-          <li>Trends over time &mdash; month-on-month engagement and completion rates.</li>
-          <li>Breakdowns by organisation type (School, College, Academy, University, Employer).</li>
-        </ul>
-
-        <Tip>Use the Impact page as the source for your quarterly and annual reports. Reports &rarr; CSV export is the best place for raw data.</Tip>
-      </SectionCard>
-
-      {/* 10. Integrations */}
-      <SectionCard icon={Plug} title="Integrations (Power Automate / Dynamics 365)">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          The platform provides a reporting API that external tools like Microsoft Power Automate or Dynamics 365 can connect to. This allows you to automatically sync training, survey, and document library data into your existing Microsoft ecosystem.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">How it works</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Navigate to <strong>Integrations</strong> from the sidebar (Charity Admin only).</li>
-          <li>Create an <strong>API Key</strong> &mdash; give it a name and optionally set an expiry date.</li>
-          <li>Copy the generated key immediately (it is shown only once and cannot be retrieved again).</li>
-          <li>Use the key in Power Automate or any HTTP-capable tool as a <strong>Bearer token</strong> in the Authorization header.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">API Endpoint</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          The reports API is available at <code className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-xs">/api/integrations/reports</code>. It returns JSON data covering three sections:
-        </p>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Training</strong> (<code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">?section=training</code>) &mdash; completion rates by organisation and module.</li>
-          <li><strong>Surveys</strong> (<code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">?section=surveys</code>) &mdash; all survey responses with individual answers.</li>
-          <li><strong>Library</strong> (<code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">?section=library</code>) &mdash; document download counts by collection.</li>
-          <li>Omit the parameter to get all three sections in one call.</li>
-        </ul>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Connecting Power Automate to Dynamics 365</h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Create a <strong>Scheduled cloud flow</strong> in Power Automate (e.g. run weekly).</li>
-          <li>Add an <strong>HTTP</strong> action: <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">GET</code> to the reports URL with your API key as <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">Authorization: Bearer &lt;key&gt;</code>.</li>
-          <li>Add a <strong>Parse JSON</strong> action to extract the response data.</li>
-          <li>Use <strong>Apply to each</strong> to loop through the training/survey/library arrays.</li>
-          <li>Add a <strong>Dataverse &mdash; Add a new row</strong> action to create records in your Dynamics 365 tables.</li>
-          <li>Map JSON fields (e.g. <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">organisationName</code>, <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">completionRate</code>) to Dynamics columns.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Alternative destinations</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Instead of Dynamics, you can route data to SharePoint lists, Excel Online spreadsheets, Microsoft Teams notifications, or any service available in Power Automate.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Managing API keys</h3>
-        <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li><strong>Last Used</strong> &mdash; shows when the key was last used, so you can identify unused keys.</li>
-          <li><strong>Expiry</strong> &mdash; set an expiry date for keys that should only work for a limited period.</li>
-          <li><strong>Revoke</strong> &mdash; delete a key immediately if it is compromised or no longer needed.</li>
-        </ul>
-
-        <Tip>Create separate API keys for different integrations (e.g. one for Power Automate, one for a BI tool). This way you can revoke one without affecting others.</Tip>
-      </SectionCard>
-
-      {/* 11. Settings */}
-      <SectionCard icon={Settings} title="Settings">
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Platform-wide configuration is managed from the <strong>Settings</strong> page. This includes meeting platform integration and SAML SSO configuration.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-          <span className="inline-flex items-center gap-1.5"><Video className="h-4 w-4 text-purple-500" /> Meeting Platform Integration</span>
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Configure a meeting platform (Zoom or Microsoft Teams) to enable auto-generated meeting links for virtual classroom sessions.
-        </p>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>Navigate to <strong>Settings</strong> from the sidebar.</li>
-          <li>Select the meeting platform (<strong>Zoom</strong> or <strong>Teams</strong>).</li>
-          <li>Enter the required API credentials (Client ID, Client Secret, and Account/Tenant ID).</li>
-          <li>Click <strong>Test Connection</strong> to verify the credentials work.</li>
-          <li>Click <strong>Save</strong> to store the configuration.</li>
-        </ol>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Once configured, Org Admins can auto-generate meeting links when creating virtual classroom sessions.
-        </p>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-          <span className="inline-flex items-center gap-1.5"><Lock className="h-4 w-4 text-purple-500" /> SAML SSO Configuration</span>
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Configure SAML-based Single Sign-On for Charity Admin and Charity Employee users. This allows your team to log in using your organisation&apos;s identity provider (e.g. Azure AD, Okta, Google Workspace).
-        </p>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li>In the SAML SSO section, enter a <strong>Display Name</strong> for your SSO provider (shown on the login page).</li>
-          <li>Paste the <strong>Metadata URL</strong> from your identity provider and click <strong>Parse Metadata</strong> to auto-populate the Entity ID, SSO URL, and certificate.</li>
-          <li>Alternatively, enter the <strong>Entity ID</strong>, <strong>SSO URL</strong>, and <strong>X.509 Certificate</strong> manually.</li>
-          <li>Toggle <strong>Enforce for Charity Users</strong> to require SSO for all Charity Admin and Charity Employee logins.</li>
-          <li>Click <strong>Test Connection</strong> to verify the configuration.</li>
-          <li>Click <strong>Save</strong> to enable SAML SSO.</li>
-        </ol>
-
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Configuring your identity provider</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          When setting up the application in your identity provider, you will need the platform&apos;s <strong>ACS (Assertion Consumer Service) URL</strong> and <strong>Entity ID</strong>. These are displayed on the Settings page for easy copying.
-        </p>
-
-        <Tip>Test the SAML connection before enforcing SSO. If enforcement is enabled and the configuration is incorrect, Charity Admin users may be locked out. You can always disable enforcement by signing in with email and password if needed.</Tip>
-      </SectionCard>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {TILES.map((tile) => {
+          const Icon = tile.icon
+          return (
+            <Link
+              key={tile.href}
+              href={tile.href}
+              className="card group hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-start gap-4"
+            >
+              <div className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center ${tile.iconBg}`}>
+                <Icon className={`h-5 w-5 ${tile.iconColor}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="font-semibold text-slate-900 dark:text-white">{tile.title}</h2>
+                  <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
+                </div>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">{tile.description}</p>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
     </div>
   )
 }
