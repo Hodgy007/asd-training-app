@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Pencil } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { getServerSession } from 'next-auth'
@@ -11,9 +12,22 @@ export default async function HomePage() {
   const session = await getServerSession(authOptions)
   const row = await prisma.homePage.findUnique({ where: { id: 'singleton' } })
   const html = row?.htmlContent ? sanitizeHtml(row.htmlContent) : ''
+  const canEdit = isSuperAdmin(session)
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto relative">
+      {/* Floating Edit affordance for charity admins. Hidden for everyone else
+          so the live page reads as a learner-facing page, not a CMS view. */}
+      {canEdit && (
+        <Link
+          href="/super-admin/home"
+          className="absolute right-0 top-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit
+        </Link>
+      )}
+
       <header className="flex items-center justify-center mb-8">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-20 w-auto" />

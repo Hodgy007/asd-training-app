@@ -35,7 +35,9 @@ interface NavItem {
 // sorted alphabetically by label for predictability as the menu grows.
 const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/super-admin/home', label: 'Home Page', icon: Home, charityAdminOnly: true },
+  // Points at the published page (what learners see) rather than the editor.
+  // Super admins reach the editor via the "Edit" button on the page itself.
+  { href: '/home', label: 'Home Page', icon: Home, charityAdminOnly: true },
   { href: '/super-admin/organisations', label: 'Organisations', icon: Building2, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
   { href: '/super-admin/products', label: 'Products', icon: Package },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
