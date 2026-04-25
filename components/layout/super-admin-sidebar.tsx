@@ -10,7 +10,6 @@ import {
   LogOut,
   X,
   Users,
-  HelpCircle,
   Settings,
   Package,
 } from 'lucide-react'
@@ -39,7 +38,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin/products', label: 'Products', icon: Package },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
   { href: '/super-admin/users', label: 'Users', icon: Users, charityAdminOnly: true },
-  { href: '/super-admin/guide', label: 'How to Guide', icon: HelpCircle },
 ]
 
 interface SuperAdminSidebarProps {

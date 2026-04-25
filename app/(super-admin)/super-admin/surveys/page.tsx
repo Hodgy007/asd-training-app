@@ -7,6 +7,8 @@ import { clsx } from 'clsx'
 import { SurveyBuilder } from '@/components/super-admin/survey-builder'
 import { SurveyAiModal } from '@/components/super-admin/survey-ai-modal'
 import Link from 'next/link'
+import { HowToPanel } from '@/components/howto/panel'
+import SurveysHowTo from '@/components/howto/super-admin/surveys'
 
 /* ──────────────────────────── Types ──────────────────────────── */
 
@@ -598,6 +600,10 @@ export default function SurveysPage() {
           </div>
         </div>
       )}
+
+      <HowToPanel>
+        <SurveysHowTo />
+      </HowToPanel>
     </div>
   )
 }

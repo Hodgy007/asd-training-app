@@ -13,6 +13,8 @@ import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
 import { PendingSurveys } from '@/components/dashboard/pending-surveys'
 import { isCharityLevel } from '@/lib/rbac'
+import { HowToPanel } from '@/components/howto/panel'
+import DashboardHowTo from '@/components/howto/learner/dashboard'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -156,6 +158,10 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <HowToPanel>
+        <DashboardHowTo />
+      </HowToPanel>
     </div>
   )
 }

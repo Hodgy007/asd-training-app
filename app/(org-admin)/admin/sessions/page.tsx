@@ -16,6 +16,8 @@ import {
   MapPin,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { HowToPanel } from '@/components/howto/panel'
+import SessionsHowTo from '@/components/howto/org-admin/sessions'
 
 type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 type Platform = 'ZOOM' | 'TEAMS' | 'CUSTOM' | 'IN_PERSON'
@@ -258,6 +260,10 @@ export default function SessionListPage() {
           })}
         </div>
       )}
+
+      <HowToPanel>
+        <SessionsHowTo />
+      </HowToPanel>
     </div>
   )
 }

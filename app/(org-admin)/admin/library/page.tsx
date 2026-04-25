@@ -18,6 +18,8 @@ import {
   Check,
   X,
 } from 'lucide-react'
+import { HowToPanel } from '@/components/howto/panel'
+import LibraryHowTo from '@/components/howto/org-admin/library'
 
 interface LibraryDoc {
   id: string
@@ -284,6 +286,10 @@ export default function OrgAdminLibraryPage() {
             })}
           </div>
         )}
+
+        <HowToPanel>
+          <LibraryHowTo />
+        </HowToPanel>
       </div>
     )
   }
@@ -355,6 +361,10 @@ export default function OrgAdminLibraryPage() {
           ))}
         </div>
       )}
+
+      <HowToPanel>
+        <LibraryHowTo />
+      </HowToPanel>
     </div>
   )
 }

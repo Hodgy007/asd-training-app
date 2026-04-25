@@ -6,6 +6,8 @@ import { isCharityLevel } from '@/lib/rbac'
 import Link from 'next/link'
 import { BookOpen, ChevronRight } from 'lucide-react'
 import { stripHtml } from '@/lib/rich-text'
+import { HowToPanel } from '@/components/howto/panel'
+import TrainingHowTo from '@/components/howto/learner/training'
 
 export default async function TrainingPage() {
   const session = await getServerSession(authOptions)
@@ -114,6 +116,10 @@ export default async function TrainingPage() {
           )
         })}
       </div>
+
+      <HowToPanel>
+        <TrainingHowTo />
+      </HowToPanel>
     </div>
   )
 }

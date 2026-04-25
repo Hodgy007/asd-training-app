@@ -25,6 +25,8 @@ import type { GenerationMode } from '@/lib/content-generator-types'
 import { RichDescriptionEditor } from '@/components/ui/rich-description-editor'
 import { normaliseHtml, stripHtml } from '@/lib/rich-text'
 import { sanitizeHtml } from '@/lib/sanitize'
+import { HowToPanel } from '@/components/howto/panel'
+import TrainingHowTo from '@/components/howto/super-admin/training'
 
 /* ──────────────────────────── Types ──────────────────────────── */
 
@@ -603,6 +605,10 @@ export default function TrainingContentPage() {
           showToast('SCORM program created', 'success')
         }}
       />
+
+      <HowToPanel>
+        <TrainingHowTo />
+      </HowToPanel>
     </div>
   )
 }

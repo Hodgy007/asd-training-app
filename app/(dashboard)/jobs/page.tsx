@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { canAccessJobs } from '@/lib/rbac'
 import { listVisibleJobsForUser } from '@/lib/jobs'
 import { JobsClient } from './jobs-client'
+import { HowToPanel } from '@/components/howto/panel'
+import JobsHowTo from '@/components/howto/learner/jobs'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,5 +47,12 @@ export default async function JobsPage() {
     role: session.user.role,
     organisationId: session.user.organisationId ?? null,
   })
-  return <JobsClient initialJobs={jobs.map(toCardAndDetail)} initialSelectedId={null} />
+  return (
+    <>
+      <JobsClient initialJobs={jobs.map(toCardAndDetail)} initialSelectedId={null} />
+      <HowToPanel>
+        <JobsHowTo />
+      </HowToPanel>
+    </>
+  )
 }

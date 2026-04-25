@@ -16,6 +16,8 @@ import {
   Loader2,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { HowToPanel } from '@/components/howto/panel'
+import SsoHowTo from '@/components/howto/org-admin/sso'
 
 interface SsoConfig {
   id: string
@@ -417,6 +419,10 @@ export default function SsoSettingsPage() {
           </button>
         </div>
       )}
+
+      <HowToPanel>
+        <SsoHowTo />
+      </HowToPanel>
     </div>
   )
 }

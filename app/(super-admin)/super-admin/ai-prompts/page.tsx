@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { Sparkles, FileText, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
 import { formatDistanceToNow } from 'date-fns'
+import { HowToPanel } from '@/components/howto/panel'
+import AiPromptsHowTo from '@/components/howto/super-admin/ai-prompts'
 
 const CATEGORY_LABEL: Record<string, string> = {
   cv: 'CV Builder',
@@ -108,6 +110,10 @@ export default async function AiPromptsListPage() {
           </div>
         </section>
       ))}
+
+      <HowToPanel>
+        <AiPromptsHowTo />
+      </HowToPanel>
     </div>
   )
 }

@@ -13,6 +13,8 @@ import {
   ChevronRight,
   Users,
 } from 'lucide-react'
+import { HowToPanel } from '@/components/howto/panel'
+import ReportsHowTo from '@/components/howto/super-admin/reports'
 
 interface Tile {
   href: string
@@ -140,6 +142,10 @@ export default function SuperAdminReportsIndexPage() {
           )
         })}
       </div>
+
+      <HowToPanel>
+        <ReportsHowTo />
+      </HowToPanel>
     </div>
   )
 }

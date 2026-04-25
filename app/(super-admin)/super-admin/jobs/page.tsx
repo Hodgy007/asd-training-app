@@ -6,6 +6,8 @@ import { prisma } from '@/lib/prisma'
 import { canManageJobs } from '@/lib/rbac'
 import { autoCloseExpiredJobs } from '@/lib/jobs'
 import { format } from 'date-fns'
+import { HowToPanel } from '@/components/howto/panel'
+import JobsHowTo from '@/components/howto/super-admin/jobs'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,6 +87,10 @@ export default async function JobsListPage() {
           </tbody>
         </table>
       </div>
+
+      <HowToPanel>
+        <JobsHowTo />
+      </HowToPanel>
     </div>
   )
 }

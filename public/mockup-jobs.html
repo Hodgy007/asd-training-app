@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Job board layout mockups</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .tabs button.active { background:#0f172a; color:#fff; }
+  details summary { list-style:none; cursor:pointer; }
+  details summary::-webkit-details-marker { display:none; }
+  details[open] .chev { transform:rotate(180deg); }
+  .chev { transition: transform .2s; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<div class="max-w-6xl mx-auto p-6">
+  <header class="mb-6">
+    <h1 class="text-2xl font-semibold">Job opportunities – layout mockups</h1>
+    <p class="text-slate-600 text-sm">Three variants of the learner-facing Jobs page. Tap a tab to switch.</p>
+  </header>
+
+  <div class="tabs flex gap-2 mb-6">
+    <button class="active px-4 py-2 rounded-lg border border-slate-300 text-sm" data-tab="A">A – Inline expand</button>
+    <button class="px-4 py-2 rounded-lg border border-slate-300 text-sm" data-tab="B">B – Master / detail</button>
+    <button class="px-4 py-2 rounded-lg border border-slate-300 text-sm" data-tab="C">C – List + page</button>
+  </div>
+
+  <!-- ===================== OPTION A ===================== -->
+  <section data-panel="A" class="panel">
+    <div class="mb-4 p-4 bg-white border rounded-xl">
+      <div class="flex flex-wrap gap-2">
+        <input placeholder="Search roles..." class="flex-1 min-w-[180px] px-3 py-2 border rounded-lg text-sm" />
+        <select class="px-3 py-2 border rounded-lg text-sm"><option>All types</option><option>Internship</option><option>Apprenticeship</option></select>
+        <select class="px-3 py-2 border rounded-lg text-sm"><option>All locations</option><option>Remote</option><option>Hybrid</option></select>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <!-- Card 1 (expanded) -->
+      <details open class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <summary class="p-4 flex gap-4 items-start hover:bg-slate-50">
+          <div class="h-12 w-12 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold shrink-0">JL</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="font-semibold text-slate-900">Customer Experience Host Intern (Reading)</div>
+                <div class="text-sm text-slate-600">JLL Hammerson · The Oracle Shopping Centre, RG1 2AG</div>
+              </div>
+              <span class="chev text-slate-400">▼</span>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2 text-xs">
+              <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Internship</span>
+              <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded">£28,843 pro rata</span>
+              <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded">6 months</span>
+              <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Closes 20 Apr</span>
+              <span class="bg-sky-100 text-sky-800 px-2 py-0.5 rounded">Assigned to you</span>
+            </div>
+          </div>
+        </summary>
+
+        <div class="border-t bg-slate-50 p-6 space-y-5">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div><div class="text-slate-500">Hours</div><div>9am–6pm, Mon–Fri</div></div>
+            <div><div class="text-slate-500">Start date</div><div>May 2026</div></div>
+            <div><div class="text-slate-500">Employment type</div><div>Paid internship</div></div>
+            <div><div class="text-slate-500">Contact</div><div>exchange@aaa.org.uk</div></div>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-slate-900 mb-1">About the role</h3>
+            <p class="text-sm text-slate-700">Support the destination team at The Oracle, split between office administration and public-facing customer experience work alongside experienced hosts.</p>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-slate-900 mb-1">Skills we're looking for</h3>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-xs bg-white border px-2 py-1 rounded">Team collaboration</span>
+              <span class="text-xs bg-white border px-2 py-1 rounded">Verbal communication</span>
+              <span class="text-xs bg-white border px-2 py-1 rounded">Reliable</span>
+              <span class="text-xs bg-white border px-2 py-1 rounded">Customer focused</span>
+            </div>
+          </div>
+
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <h3 class="font-semibold text-emerald-900 mb-1">Support on offer</h3>
+            <ul class="text-sm text-emerald-900 list-disc pl-5 space-y-0.5">
+              <li>Buddy system and team mentorship</li>
+              <li>Interview accommodations available on request</li>
+              <li>Portfolio of evidence at the end of placement</li>
+            </ul>
+          </div>
+
+          <div class="flex gap-2">
+            <button class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm">Apply on employer site ↗</button>
+            <button class="border px-4 py-2 rounded-lg text-sm">Save for later</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- Card 2 (collapsed) -->
+      <details class="bg-white border border-slate-200 rounded-xl">
+        <summary class="p-4 flex gap-4 items-start hover:bg-slate-50">
+          <div class="h-12 w-12 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-semibold">MS</div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="font-semibold text-slate-900">Supported Apprentice – Data Admin</div>
+                <div class="text-sm text-slate-600">Marks &amp; Spencer · Hybrid (London)</div>
+              </div>
+              <span class="chev text-slate-400">▼</span>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2 text-xs">
+              <span class="bg-violet-100 text-violet-800 px-2 py-0.5 rounded">Apprenticeship</span>
+              <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded">£22k</span>
+              <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Closes 3 May</span>
+            </div>
+          </div>
+        </summary>
+      </details>
+
+      <details class="bg-white border border-slate-200 rounded-xl">
+        <summary class="p-4 flex gap-4 items-start hover:bg-slate-50">
+          <div class="h-12 w-12 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-semibold">NT</div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="font-semibold text-slate-900">Volunteer Visitor Assistant</div>
+                <div class="text-sm text-slate-600">National Trust · St Albans</div>
+              </div>
+              <span class="chev text-slate-400">▼</span>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2 text-xs">
+              <span class="bg-teal-100 text-teal-800 px-2 py-0.5 rounded">Volunteer</span>
+              <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Flexible hours</span>
+            </div>
+          </div>
+        </summary>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===================== OPTION B ===================== -->
+  <section data-panel="B" class="panel hidden">
+    <div class="grid md:grid-cols-[360px_1fr] gap-4 h-[80vh]">
+      <!-- list -->
+      <div class="bg-white border rounded-xl overflow-auto">
+        <div class="p-3 border-b bg-slate-50 sticky top-0">
+          <input placeholder="Search roles..." class="w-full px-3 py-2 border rounded-lg text-sm" />
+        </div>
+        <ul class="divide-y">
+          <li class="p-4 bg-indigo-50 border-l-4 border-indigo-600">
+            <div class="font-medium text-slate-900">Customer Experience Host Intern</div>
+            <div class="text-xs text-slate-600">JLL Hammerson · Reading</div>
+            <div class="flex flex-wrap gap-1 mt-2 text-[11px]">
+              <span class="bg-emerald-100 text-emerald-800 px-1.5 rounded">Internship</span>
+              <span class="bg-amber-100 text-amber-800 px-1.5 rounded">Closes 20 Apr</span>
+            </div>
+          </li>
+          <li class="p-4 hover:bg-slate-50">
+            <div class="font-medium">Supported Apprentice – Data Admin</div>
+            <div class="text-xs text-slate-600">M&amp;S · Hybrid London</div>
+            <div class="flex flex-wrap gap-1 mt-2 text-[11px]">
+              <span class="bg-violet-100 text-violet-800 px-1.5 rounded">Apprenticeship</span>
+            </div>
+          </li>
+          <li class="p-4 hover:bg-slate-50">
+            <div class="font-medium">Volunteer Visitor Assistant</div>
+            <div class="text-xs text-slate-600">National Trust · St Albans</div>
+          </li>
+          <li class="p-4 hover:bg-slate-50">
+            <div class="font-medium">IT Support Apprentice</div>
+            <div class="text-xs text-slate-600">BBC · Salford</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- detail -->
+      <div class="bg-white border rounded-xl overflow-auto">
+        <div class="p-6 border-b">
+          <div class="flex gap-4 items-start">
+            <div class="h-14 w-14 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold">JL</div>
+            <div class="flex-1">
+              <h2 class="text-xl font-semibold">Customer Experience Host Intern (Reading)</h2>
+              <div class="text-slate-600">JLL Hammerson · The Oracle Shopping Centre</div>
+              <div class="flex flex-wrap gap-2 mt-3 text-xs">
+                <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Internship</span>
+                <span class="bg-slate-100 px-2 py-0.5 rounded">£28,843 pro rata</span>
+                <span class="bg-slate-100 px-2 py-0.5 rounded">6 months</span>
+                <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Closes 20 Apr</span>
+              </div>
+            </div>
+            <button class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap">Apply ↗</button>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-5 text-sm">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div><div class="text-slate-500">Hours</div><div>9am–6pm, Mon–Fri</div></div>
+            <div><div class="text-slate-500">Start</div><div>May 2026</div></div>
+            <div><div class="text-slate-500">Type</div><div>Paid internship</div></div>
+            <div><div class="text-slate-500">Contact</div><div class="truncate">exchange@aaa.org.uk</div></div>
+          </div>
+
+          <div>
+            <h3 class="font-semibold mb-1">About the role</h3>
+            <p class="text-slate-700">Support the destination team at The Oracle, split between office administration and public-facing customer experience work alongside experienced hosts.</p>
+          </div>
+
+          <div>
+            <h3 class="font-semibold mb-1">Skills</h3>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-xs bg-slate-100 px-2 py-1 rounded">Team collaboration</span>
+              <span class="text-xs bg-slate-100 px-2 py-1 rounded">Verbal communication</span>
+              <span class="text-xs bg-slate-100 px-2 py-1 rounded">Reliable</span>
+            </div>
+          </div>
+
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <h3 class="font-semibold text-emerald-900 mb-1">Support on offer</h3>
+            <ul class="list-disc pl-5 text-emerald-900 space-y-0.5">
+              <li>Buddy system &amp; mentorship</li>
+              <li>Interview accommodations on request</li>
+              <li>End-of-placement portfolio</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== OPTION C ===================== -->
+  <section data-panel="C" class="panel hidden">
+    <div class="mb-4 p-4 bg-white border rounded-xl">
+      <input placeholder="Search roles..." class="w-full px-3 py-2 border rounded-lg text-sm" />
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <a class="bg-white border rounded-xl p-4 hover:shadow-md transition block">
+        <div class="flex gap-3 items-start">
+          <div class="h-12 w-12 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold">JL</div>
+          <div class="flex-1">
+            <div class="font-semibold">Customer Experience Host Intern</div>
+            <div class="text-sm text-slate-600">JLL Hammerson · Reading</div>
+            <div class="flex flex-wrap gap-1.5 mt-2 text-xs">
+              <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Internship</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded">£28,843</span>
+              <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Closes 20 Apr</span>
+            </div>
+            <p class="text-sm text-slate-600 mt-2 line-clamp-2">Support the destination team, split between office admin and public-facing customer experience.</p>
+            <div class="text-indigo-700 text-sm mt-2 font-medium">View details →</div>
+          </div>
+        </div>
+      </a>
+
+      <a class="bg-white border rounded-xl p-4 hover:shadow-md transition block">
+        <div class="flex gap-3 items-start">
+          <div class="h-12 w-12 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-semibold">MS</div>
+          <div class="flex-1">
+            <div class="font-semibold">Supported Apprentice – Data Admin</div>
+            <div class="text-sm text-slate-600">Marks &amp; Spencer · Hybrid London</div>
+            <div class="flex flex-wrap gap-1.5 mt-2 text-xs">
+              <span class="bg-violet-100 text-violet-800 px-2 py-0.5 rounded">Apprenticeship</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded">£22k</span>
+            </div>
+            <p class="text-sm text-slate-600 mt-2 line-clamp-2">12-month supported apprenticeship in our data operations team with structured onboarding.</p>
+            <div class="text-indigo-700 text-sm mt-2 font-medium">View details →</div>
+          </div>
+        </div>
+      </a>
+
+      <a class="bg-white border rounded-xl p-4 hover:shadow-md transition block">
+        <div class="flex gap-3 items-start">
+          <div class="h-12 w-12 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-semibold">NT</div>
+          <div class="flex-1">
+            <div class="font-semibold">Volunteer Visitor Assistant</div>
+            <div class="text-sm text-slate-600">National Trust · St Albans</div>
+            <div class="flex flex-wrap gap-1.5 mt-2 text-xs">
+              <span class="bg-teal-100 text-teal-800 px-2 py-0.5 rounded">Volunteer</span>
+            </div>
+            <p class="text-sm text-slate-600 mt-2 line-clamp-2">Friendly role welcoming visitors on-site, with quiet-hour shifts available.</p>
+            <div class="text-indigo-700 text-sm mt-2 font-medium">View details →</div>
+          </div>
+        </div>
+      </a>
+
+      <a class="bg-white border rounded-xl p-4 hover:shadow-md transition block">
+        <div class="flex gap-3 items-start">
+          <div class="h-12 w-12 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-semibold">BB</div>
+          <div class="flex-1">
+            <div class="font-semibold">IT Support Apprentice</div>
+            <div class="text-sm text-slate-600">BBC · Salford</div>
+            <div class="flex flex-wrap gap-1.5 mt-2 text-xs">
+              <span class="bg-violet-100 text-violet-800 px-2 py-0.5 rounded">Apprenticeship</span>
+              <span class="bg-slate-100 px-2 py-0.5 rounded">£24k</span>
+            </div>
+            <p class="text-sm text-slate-600 mt-2 line-clamp-2">Entry-level role with full training and a dedicated buddy programme.</p>
+            <div class="text-indigo-700 text-sm mt-2 font-medium">View details →</div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="text-xs text-slate-500 mt-4">Clicking a card opens a dedicated <code>/jobs/[id]</code> page with the full detail (same shape as B's right pane, but full width).</div>
+  </section>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tabs button');
+  const panels = document.querySelectorAll('.panel');
+  tabs.forEach(btn => btn.addEventListener('click', () => {
+    tabs.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const t = btn.dataset.tab;
+    panels.forEach(p => p.classList.toggle('hidden', p.dataset.panel !== t));
+  }));
+</script>
+</body>
+</html>

@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Building2, Users, BookOpen, Download, ArrowRight, AlertCircle } from 'lucide-react'
 import { isCharityLevel, hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
+import { HowToPanel } from '@/components/howto/panel'
+import OverviewHowTo from '@/components/howto/super-admin/overview'
 
 export default async function SuperAdminPage() {
   const session = await getServerSession(authOptions)
@@ -190,6 +192,10 @@ export default async function SuperAdminPage() {
           </table>
         </div>
       </div>
+
+      <HowToPanel>
+        <OverviewHowTo />
+      </HowToPanel>
     </div>
   )
 }
