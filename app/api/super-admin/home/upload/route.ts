@@ -41,10 +41,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status })
   }
 
-  const blob = await put(`home-media/${file.name}`, file, {
-    access: 'public',
-    addRandomSuffix: true,
-  })
+  // Pre-flight: Vercel Blob client throws an opaque error when the token is
+  // missing. Surface a clear message instead of a generic 500.
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return NextResponse.json(
+      {
+        error:
+          'Image/video uploads need BLOB_READ_WRITE_TOKEN in your environment. Run `npx vercel env pull .env.local` to fetch it, then restart the dev server.',
+      },
+      { status: 503 },
+    )
+  }
 
-  return NextResponse.json({ url: blob.url, kind, fileName: file.name, size: file.size })
+  try {
+    const blob = await put(`home-media/${file.name}`, file, {
+      access: 'public',
+      addRandomSuffix: true,
+    })
+    return NextResponse.json({ url: blob.url, kind, fileName: file.name, size: file.size })
+  } catch (err) {
+    console.error('home/upload: Vercel Blob put() failed', err)
+    const message = err instanceof Error ? err.message : 'Unknown upload error.'
+    return NextResponse.json(
+      { error: `Upload failed: ${message}` },
+      { status: 502 },
+    )
+  }
 }
