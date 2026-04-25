@@ -15,6 +15,7 @@ import {
   Home,
   Compass,
   FileText,
+  CreditCard,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -42,6 +43,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin/organisations', label: 'Organisations', icon: Building2, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
   { href: '/super-admin/products', label: 'Products', icon: Package },
   { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
+  { href: '/super-admin/subscribers', label: 'Subscribers', icon: CreditCard, charityAdminOnly: true },
   { href: '/super-admin/users', label: 'Users', icon: Users, charityAdminOnly: true },
 ]
 
