@@ -177,7 +177,7 @@ export function PendingSurveys() {
 
                 {activeSurvey.questions.map((q) => (
                   <div key={q.id} className="space-y-2">
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="block text-sm font-semibold text-slate-900 dark:text-white">
                       {q.question}
                       {q.required && <span className="text-red-500 ml-1">*</span>}
                     </label>
@@ -193,7 +193,7 @@ export function PendingSurveys() {
                               'flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-left transition-colors',
                               answers[q.id] === opt
                                 ? 'bg-primary-50 text-primary-700 ring-1 ring-primary-300 dark:bg-primary-900/30 dark:text-primary-400 dark:ring-primary-700'
-                                : 'bg-calm-50 text-slate-600 hover:bg-calm-100 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
+                                : 'bg-calm-50 text-slate-900 hover:bg-calm-100 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600'
                             )}
                           >
                             <div className={clsx(
@@ -221,7 +221,7 @@ export function PendingSurveys() {
                               'flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                               answers[q.id] === val
                                 ? 'bg-primary-500 text-white'
-                                : 'bg-calm-50 text-slate-600 hover:bg-calm-100 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
+                                : 'bg-calm-50 text-slate-900 hover:bg-calm-100 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600'
                             )}
                           >
                             {val.charAt(0).toUpperCase() + val.slice(1)}
@@ -282,7 +282,7 @@ export function PendingSurveys() {
                                 'flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-left transition-colors',
                                 isSelected
                                   ? 'bg-primary-50 text-primary-700 ring-1 ring-primary-300 dark:bg-primary-900/30 dark:text-primary-400 dark:ring-primary-700'
-                                  : 'bg-calm-50 text-slate-600 hover:bg-calm-100 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
+                                  : 'bg-calm-50 text-slate-900 hover:bg-calm-100 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600'
                               )}
                             >
                               <div className={clsx(
