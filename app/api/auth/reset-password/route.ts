@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
   await prisma.user.update({
     where: { email: resetToken.email },
-    data: { password: hashed },
+    data: { password: hashed, mustChangePassword: false },
   })
 
   await prisma.passwordResetToken.delete({ where: { token } })
