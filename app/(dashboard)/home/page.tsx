@@ -14,9 +14,9 @@ export default async function HomePage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <header className="flex items-center gap-3 mb-6">
+      <header className="flex items-center justify-center mb-8">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-12 w-auto" />
+        <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-20 w-auto" />
       </header>
 
       {html ? (

@@ -1,8 +1,29 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, ChangeEvent } from 'react'
 import Link from 'next/link'
-import { Sparkles, Save, ExternalLink, Loader2, Code2, Wand2 } from 'lucide-react'
+import {
+  Sparkles, Save, ExternalLink, Loader2, Code2, Wand2,
+  ImagePlus, Film, Youtube,
+} from 'lucide-react'
+
+/** Convert a YouTube/Vimeo watch URL to an embed URL. Returns null on miss. */
+function toEmbedUrl(raw: string): string | null {
+  const url = raw.trim()
+  if (!url) return null
+  // YouTube — youtu.be/ID, youtube.com/watch?v=ID, youtube.com/shorts/ID
+  const ytShort = url.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/)
+  if (ytShort) return `https://www.youtube.com/embed/${ytShort[1]}`
+  const ytWatch = url.match(/youtube\.com\/(?:watch\?v=|shorts\/)([a-zA-Z0-9_-]{6,})/)
+  if (ytWatch) return `https://www.youtube.com/embed/${ytWatch[1]}`
+  // Already an embed
+  if (/youtube\.com\/embed\//.test(url)) return url
+  // Vimeo — vimeo.com/ID or player.vimeo.com/video/ID
+  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`
+  if (/player\.vimeo\.com\/video\//.test(url)) return url
+  return null
+}
 
 const EXAMPLE_BRIEF =
   'A warm welcome page for practitioners and students. Include a hero, three feature cards (Training, Careers Advisor, Jobs), and a closing line thanking them for being part of the programme.'
@@ -17,7 +38,10 @@ export default function SuperAdminHomePage() {
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
+  const [uploading, setUploading] = useState<null | 'image' | 'video'>(null)
   const previewRef = useRef<HTMLDivElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetch('/api/super-admin/home')
@@ -52,6 +76,76 @@ export default function SuperAdminHomePage() {
       const next = previewRef.current.innerHTML
       if (next !== html) setHtml(next)
     }
+  }
+
+  /** Append a sanitised HTML snippet to the end of the preview. */
+  function appendToPreview(snippet: string) {
+    // Make sure any in-progress inline edit is captured first.
+    const current = previewRef.current?.innerHTML ?? html
+    setHtml(`${current}${snippet}`)
+  }
+
+  async function uploadFile(file: File, kind: 'image' | 'video'): Promise<string | null> {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('kind', kind)
+    const res = await fetch('/api/super-admin/home/upload', { method: 'POST', body: formData })
+    const data = await res.json().catch(() => null)
+    if (!res.ok || !data?.url) {
+      showToast(data?.error ?? 'Upload failed.', 'error')
+      return null
+    }
+    return data.url as string
+  }
+
+  async function onImagePick(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setUploading('image')
+    try {
+      const url = await uploadFile(file, 'image')
+      if (!url) return
+      const alt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')
+      appendToPreview(
+        `<p><img src="${url}" alt="${alt}" class="w-full h-auto rounded-xl my-4" /></p>`,
+      )
+      showToast('Image added. Drag it in the preview or save to publish.', 'success')
+    } finally {
+      setUploading(null)
+    }
+  }
+
+  async function onVideoPick(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setUploading('video')
+    try {
+      const url = await uploadFile(file, 'video')
+      if (!url) return
+      const type = file.type || 'video/mp4'
+      appendToPreview(
+        `<p><video controls preload="metadata" class="w-full rounded-xl my-4"><source src="${url}" type="${type}" />Your browser does not support embedded video.</video></p>`,
+      )
+      showToast('Video added. Save to publish.', 'success')
+    } finally {
+      setUploading(null)
+    }
+  }
+
+  function addYouTube() {
+    const raw = window.prompt('Paste a YouTube or Vimeo URL:')
+    if (!raw) return
+    const embed = toEmbedUrl(raw)
+    if (!embed) {
+      showToast('That does not look like a YouTube or Vimeo URL.', 'error')
+      return
+    }
+    appendToPreview(
+      `<p><iframe src="${embed}" class="w-full aspect-video rounded-xl my-4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></p>`,
+    )
+    showToast('Embed added. Save to publish.', 'success')
   }
 
   async function generate() {
@@ -217,11 +311,68 @@ export default function SuperAdminHomePage() {
           </p>
         </div>
 
+        {/* Media toolbar — appends to the end of the preview */}
+        <div className="flex flex-wrap items-center gap-2 px-6 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1">Insert:</span>
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={uploading !== null || loading || generating || modifying || saving}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+          >
+            {uploading === 'image' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ImagePlus className="h-4 w-4" />
+            )}
+            Image
+          </button>
+          <button
+            type="button"
+            onClick={() => videoInputRef.current?.click()}
+            disabled={uploading !== null || loading || generating || modifying || saving}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+          >
+            {uploading === 'video' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Film className="h-4 w-4" />
+            )}
+            Video file
+          </button>
+          <button
+            type="button"
+            onClick={addYouTube}
+            disabled={uploading !== null || loading || generating || modifying || saving}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+          >
+            <Youtube className="h-4 w-4" />
+            YouTube / Vimeo
+          </button>
+          <span className="text-xs text-slate-500 dark:text-slate-500 ml-auto">
+            Added items appear at the bottom of the preview — drag to reposition.
+          </span>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/svg+xml"
+            hidden
+            onChange={onImagePick}
+          />
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/mp4,video/webm"
+            hidden
+            onChange={onVideoPick}
+          />
+        </div>
+
         {/* Locked logo header — matches the live page */}
         <div className="px-6 pt-6">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center justify-center mb-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-12 w-auto" />
+            <img src="/logo-aaa.svg" alt="Ambitious about Autism" className="h-20 w-auto" />
           </div>
         </div>
 
