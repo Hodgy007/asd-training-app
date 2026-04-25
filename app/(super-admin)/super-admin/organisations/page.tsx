@@ -14,6 +14,7 @@ import {
   ChevronUp,
   Clock,
   AlertCircle,
+  Search,
 } from 'lucide-react'
 import { LEAF_ROLES } from '@/types'
 import { ORG_TYPES, ORG_TYPE_LABELS } from '@/lib/rbac'
@@ -80,6 +81,7 @@ function OrganisationsContent() {
   const initialTab = searchParams.get('tab') === 'pending' ? 'pending' : 'organisations'
   const [activeTab, setActiveTab] = useState<'organisations' | 'pending'>(initialTab)
   const [orgs, setOrgs] = useState<OrgRow[]>([])
+  const [search, setSearch] = useState('')
   const [programs, setPrograms] = useState<ProgramOption[]>([])
   const [pendingOrgs, setPendingOrgs] = useState<PendingOrg[]>([])
   const [pendingCount, setPendingCount] = useState(0)
@@ -587,30 +589,50 @@ function OrganisationsContent() {
       )}
 
       {/* Table */}
-      {activeTab === 'organisations' && <div className="card overflow-hidden p-0">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-calm-200">
-          <p className="text-sm text-slate-500">{orgs.length} organisation{orgs.length !== 1 ? 's' : ''}</p>
+      {activeTab === 'organisations' && (() => {
+        const q = search.trim().toLowerCase()
+        const filteredOrgs = q
+          ? orgs.filter((o) =>
+              o.name.toLowerCase().includes(q) || o.slug.toLowerCase().includes(q)
+            )
+          : orgs
+        return (
+        <div className="card overflow-hidden p-0">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name or URL ID"
+              className="w-full rounded-lg border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
+            />
+          </div>
+          <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+            {filteredOrgs.length} of {orgs.length}
+          </span>
           <button
             onClick={fetchOrgs}
-            className="p-2 rounded-xl border border-calm-200 hover:bg-calm-50 transition-colors text-slate-500"
+            className="p-2 rounded-xl border border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors text-slate-500"
             title="Refresh"
           >
             <RefreshCw className={clsx('h-4 w-4', loading && 'animate-spin')} />
           </button>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-auto max-h-[22rem]">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-calm-200 bg-calm-50">
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Name</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">URL ID</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Users</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Active</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">Created</th>
-                <th className="px-4 py-3 font-semibold text-slate-600">Actions</th>
+            <thead className="sticky top-0 z-10">
+              <tr className="border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Name</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">URL ID</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Users</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Active</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden md:table-cell">Created</th>
+                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Actions</th>
               </tr>
             </thead>
-            <tbody className={!loading && orgs.length > 0 ? 'animate-stagger' : ''}>
+            <tbody className={!loading && filteredOrgs.length > 0 ? 'animate-stagger' : ''}>
               {loading ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
@@ -625,8 +647,14 @@ function OrganisationsContent() {
                     No organisations yet.
                   </td>
                 </tr>
+              ) : filteredOrgs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">
+                    No organisations match &ldquo;{search}&rdquo;.
+                  </td>
+                </tr>
               ) : (
-                orgs.map((org) => {
+                filteredOrgs.map((org) => {
                   const isLoading = actionLoading === org.id
                   return (
                     <tr key={org.id} className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
@@ -692,7 +720,9 @@ function OrganisationsContent() {
             </tbody>
           </table>
         </div>
-      </div>}
+      </div>
+      )
+      })()}
 
       <HowToPanel>
         <OrganisationsHowTo />

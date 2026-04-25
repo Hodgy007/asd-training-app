@@ -12,6 +12,7 @@ import {
   Check,
   AlertCircle,
   Loader2,
+  Search,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { PERMISSION_LABELS, ALL_CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -33,6 +34,7 @@ type FormMode = 'closed' | 'create' | 'edit'
 export default function CharityUsersPage() {
   const { data: session } = useSession()
   const [users, setUsers] = useState<CharityUser[]>([])
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [formMode, setFormMode] = useState<FormMode>('closed')
@@ -389,11 +391,35 @@ export default function CharityUsersPage() {
           <Users className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
           <p className="text-sm text-slate-400">No charity-level users found.</p>
         </div>
-      ) : (
+      ) : (() => {
+        const q = search.trim().toLowerCase()
+        const filtered = q
+          ? users.filter((u) =>
+              (u.name ?? '').toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+            )
+          : users
+        return (
         <div className="card overflow-hidden p-0">
-          <div className="overflow-x-auto">
+          {/* Search + count */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by name or email"
+                className="w-full rounded-lg border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
+              />
+            </div>
+            <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+              {filtered.length} of {users.length}
+            </span>
+          </div>
+          {/* Scrollable table — max ~5 rows visible, scroll the rest. Sticky header. */}
+          <div className="overflow-auto max-h-[22rem]">
             <table className="w-full text-sm">
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Name</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Email</th>
@@ -403,8 +429,15 @@ export default function CharityUsersPage() {
                   <th className="px-4 py-3 w-12"></th>
                 </tr>
               </thead>
-              <tbody className={users.length > 0 ? 'animate-stagger' : ''}>
-                {users.map((user) => (
+              <tbody className={filtered.length > 0 ? 'animate-stagger' : ''}>
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">
+                      No users match &ldquo;{search}&rdquo;.
+                    </td>
+                  </tr>
+                )}
+                {filtered.map((user) => (
                   <tr
                     key={user.id}
                     className={clsx(
@@ -483,7 +516,8 @@ export default function CharityUsersPage() {
             </table>
           </div>
         </div>
-      )}
+        )
+      })()}
 
       <HowToPanel>
         <UsersHowTo />
