@@ -38,7 +38,25 @@ import {
   type LessonAttachmentForExport,
   type QuizQuestionForExport,
 } from './export-templates'
-import { extractInteractiveBlockUrls, renderInteractiveBlockHtml } from './export-blocks'
+import {
+  extractInteractiveBlockUrls,
+  renderInteractiveBlockHtml,
+  type BlockAudioMap,
+} from './export-blocks'
+import {
+  buildBlockTtsText,
+  buildCarouselSlideTtsText,
+  extractLessonProseTtsText,
+} from '@/lib/tts-extract'
+import { ttsHash, DEFAULT_VOICE_ID } from '@/lib/tts-blob'
+
+/**
+ * Resolve a TTS phrase to MP3 bytes. The export route wires this to a function
+ * that hits the Blob cache (via `getCachedTtsUrl`) and falls back to
+ * generating + caching via ElevenLabs when an API key is present. Tests inject
+ * their own resolver — `null` means "no audio for this phrase".
+ */
+export type TtsResolver = (text: string) => Promise<Buffer | null>
 
 export interface ExportLesson {
   id: string
@@ -66,6 +84,13 @@ export interface ExportModuleArgs {
   passingScore?: number
   /** Fetches a remote URL and returns its bytes + content-type. Injectable. */
   fetchAsset?: (url: string) => Promise<{ buffer: Buffer; contentType: string }>
+  /**
+   * Optional TTS resolver — given a narration phrase, return MP3 bytes (or
+   * null if not available). The export route wires this to the same Blob
+   * cache + ElevenLabs flow used by `/api/tts`. When omitted, audio is
+   * skipped entirely.
+   */
+  resolveTts?: TtsResolver
   /** Hard cap on bundle size (default 100MB). */
   maxBundleBytes?: number
 }
@@ -183,7 +208,11 @@ async function downloadAssetPool(
 
 interface LessonRenderResult {
   bodyHtml: string
+  /** Path (relative to lesson dir) of the whole-prose narration MP3, if any. */
+  proseAudioPath: string | null
   assets: DownloadedAsset[]
+  /** MP3 buffers keyed by their lesson-dir-relative path. */
+  audioFiles: Array<{ relativePath: string; buffer: Buffer }>
   attachments: LessonAttachmentForExport[]
   bytesUsed: number
 }
@@ -196,6 +225,7 @@ interface LessonRenderResult {
 async function renderLessonBodyAndAssets(
   lesson: ExportLesson,
   fetcher: (url: string) => Promise<{ buffer: Buffer; contentType: string }>,
+  resolveTts: TtsResolver | undefined,
   budgetBytes: number,
 ): Promise<LessonRenderResult> {
   // 1. Parse interactive blocks (or treat as none if invalid/missing).
@@ -252,7 +282,62 @@ async function renderLessonBodyAndAssets(
     }
   }
 
-  // 6. Re-stitch the body. Prose is sanitised, block HTML is trusted (the
+  // 6. Resolve TTS audio. Use the same hashing scheme as the live app so the
+  //    Blob cache hits for any phrase already prewarmed during lesson save.
+  //    Per-lesson dedupe — one MP3 per unique narration string.
+  const audioFiles: Array<{ relativePath: string; buffer: Buffer }> = []
+  const audioByText = new Map<string, string>() // phrase -> relative MP3 path
+  const blockAudio: BlockAudioMap = new Map()
+  let audioBytes = 0
+
+  async function resolveAudioPath(text: string): Promise<string | null> {
+    if (!resolveTts || !text || !text.trim()) return null
+    const cached = audioByText.get(text)
+    if (cached !== undefined) return cached || null
+    if (poolBytes + attachmentBytes + audioBytes >= budgetBytes) return null
+    let mp3: Buffer | null = null
+    try {
+      mp3 = await resolveTts(text)
+    } catch {
+      mp3 = null
+    }
+    if (!mp3 || mp3.length === 0) {
+      audioByText.set(text, '') // negative cache
+      return null
+    }
+    if (poolBytes + attachmentBytes + audioBytes + mp3.length > budgetBytes) {
+      return null
+    }
+    const hash = ttsHash(text, DEFAULT_VOICE_ID)
+    const relativePath = `audio/${hash}.mp3`
+    audioFiles.push({ relativePath, buffer: mp3 })
+    audioByText.set(text, relativePath)
+    audioBytes += mp3.length
+    return relativePath
+  }
+
+  // 6a. Whole-prose narration (matches the bottom-of-page player on the live app).
+  const proseText = extractLessonProseTtsText(lesson.content ?? '', blocks)
+  const proseAudioPath = await resolveAudioPath(proseText)
+
+  // 6b. Per-block narration. Carousels skip block-level audio because each
+  //     slide has its own — same pattern as the learner UI.
+  for (const block of blocks) {
+    if (block.type === 'carousel') {
+      const slides = (block.data as { slides?: Array<{ id: string; title: string; imageUrl: string; body: string }> }).slides ?? []
+      for (let i = 0; i < slides.length; i++) {
+        const text = buildCarouselSlideTtsText(slides[i])
+        const path = await resolveAudioPath(text)
+        if (path) blockAudio.set(`slide-${block.id}-${i}`, path)
+      }
+    } else {
+      const text = buildBlockTtsText(block)
+      const path = await resolveAudioPath(text)
+      if (path) blockAudio.set(`block-${block.id}`, path)
+    }
+  }
+
+  // 7. Re-stitch the body. Prose is sanitised, block HTML is trusted (the
   //    builder is its source). Both pass through URL rewriting.
   const parts: string[] = []
   for (const seg of segments) {
@@ -261,15 +346,17 @@ async function renderLessonBodyAndAssets(
       parts.push(rewriteUrlsInHtml(sanitised, urlToPath))
     } else {
       const block = blockById.get(seg.blockId)
-      if (block) parts.push(renderInteractiveBlockHtml(block, urlToPath))
+      if (block) parts.push(renderInteractiveBlockHtml(block, urlToPath, blockAudio))
     }
   }
 
   return {
     bodyHtml: parts.join('\n'),
+    proseAudioPath,
     assets,
+    audioFiles,
     attachments,
-    bytesUsed: poolBytes + attachmentBytes,
+    bytesUsed: poolBytes + attachmentBytes + audioBytes,
   }
 }
 
@@ -280,6 +367,7 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
     lessons,
     passingScore = 80,
     fetchAsset = defaultFetchAsset,
+    resolveTts,
     maxBundleBytes = DEFAULT_MAX,
   } = args
 
@@ -321,14 +409,22 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
     const filesForManifest: string[] = [lessonHref]
 
     const budget = Math.max(0, maxBundleBytes - totalBytes)
-    const { bodyHtml, assets, attachments, bytesUsed } = await renderLessonBodyAndAssets(
-      lesson,
-      fetchAsset,
-      budget,
-    )
+    const {
+      bodyHtml,
+      proseAudioPath,
+      assets,
+      audioFiles,
+      attachments,
+      bytesUsed,
+    } = await renderLessonBodyAndAssets(lesson, fetchAsset, resolveTts, budget)
     totalBytes += bytesUsed
 
     for (const a of assets) {
+      const path = `${lessonDir}/${a.relativePath}`
+      zip.file(path, a.buffer)
+      filesForManifest.push(a.relativePath)
+    }
+    for (const a of audioFiles) {
       const path = `${lessonDir}/${a.relativePath}`
       zip.file(path, a.buffer)
       filesForManifest.push(a.relativePath)
@@ -358,6 +454,7 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
       lessonTitle: lesson.title,
       contentHtml: '', // ignored when prerenderedBodyHtml is set
       prerenderedBodyHtml: bodyHtml,
+      lessonAudioPath: proseAudioPath ?? undefined,
       videoUrl: lesson.videoUrl,
       transcript: lesson.transcript,
       attachments,

@@ -35,6 +35,29 @@ import type {
   ScenarioData,
   VideoData,
 } from '@/types/interactive'
+import { sanitizeHtml } from '@/lib/sanitize'
+
+/**
+ * Per-block audio paths. Keys:
+ *   `block-<blockId>`                — block-level narration
+ *   `slide-<blockId>-<slideIndex>`   — per-carousel-slide narration
+ * Values are relative paths inside the lesson dir (e.g. `audio/<hash>.mp3`).
+ */
+export type BlockAudioMap = Map<string, string>
+
+function audioPlayer(relativePath: string | undefined): string {
+  if (!relativePath) return ''
+  return `<audio class="ib-audio" controls preload="none" src="${escapeHtmlAttr(relativePath)}">Your LMS does not support inline audio.</audio>`
+}
+
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -104,12 +127,18 @@ function videoEmbed(rawUrl: string): string {
   return `<p><a href="${escapeHtml(url)}" target="_blank" rel="noopener">Watch the video</a></p>`
 }
 
-function renderHotspot(block: InteractiveBlock, map: Map<string, string>): string {
+function renderHotspot(
+  block: InteractiveBlock,
+  map: Map<string, string>,
+  audio: BlockAudioMap,
+): string {
   const { variant, imageUrl, hotspots = [], cards = [] } = block.data as HotspotData
 
+  const blockAudio = audioPlayer(audio.get(`block-${block.id}`))
   const head = `<header class="ib-head">
     ${block.title ? `<h3>${escapeHtml(block.title)}</h3>` : ''}
     ${block.instructions ? `<p class="ib-instructions">${escapeHtml(block.instructions)}</p>` : ''}
+    ${blockAudio}
   </header>`
 
   if (variant === 'card-reveal') {
@@ -117,14 +146,16 @@ function renderHotspot(block: InteractiveBlock, map: Map<string, string>): strin
       .map(
         (c) => `<button type="button" class="ib-card" data-flip aria-pressed="false">
           <span class="ib-card-front">${escapeHtml(c.frontLabel)}</span>
-          <span class="ib-card-back" hidden>${escapeHtml(c.backContent)}</span>
+          <span class="ib-card-back" hidden>${sanitizeHtml(c.backContent)}</span>
         </button>`,
       )
       .join('')
     return `<section class="ib ib-card-reveal">${head}<div class="ib-cards-grid">${cardsHtml}</div></section>`
   }
 
-  // image-hotspot
+  // image-hotspot — dots overlaid on the image; clicking a dot opens a popover
+  // anchored at the dot showing that hotspot's title and content. No list
+  // shown beneath by default — popover is the primary affordance.
   const imgSrc = rewriteUrl(imageUrl, map)
   const dotsHtml = hotspots
     .map(
@@ -134,28 +165,39 @@ function renderHotspot(block: InteractiveBlock, map: Map<string, string>): strin
         style="left:${h.x}%;top:${h.y}%;width:${Math.max(24, h.radius * 2)}px;height:${Math.max(24, h.radius * 2)}px"
         data-hotspot-target="${escapeHtml(h.id)}"
         aria-label="${escapeHtml(h.title || `Hotspot ${i + 1}`)}"
-      >${i + 1}</button>`,
-    )
-    .join('')
-  const listHtml = hotspots
-    .map(
-      (h, i) => `<li id="hs-${escapeHtml(h.id)}">
+        aria-expanded="false"
+      >${i + 1}</button>
+      <div
+        class="ib-hotspot-popover"
+        id="hp-${escapeHtml(block.id)}-${escapeHtml(h.id)}"
+        style="left:${h.x}%;top:${h.y}%"
+        role="dialog"
+        aria-label="${escapeHtml(h.title || `Hotspot ${i + 1}`)}"
+        hidden
+      >
+        <button type="button" class="ib-hotspot-close" data-hotspot-close aria-label="Close">×</button>
         <strong>${escapeHtml(h.title || `Point ${i + 1}`)}</strong>
-        <p>${escapeHtml(h.content)}</p>
-      </li>`,
+        <div class="ib-hotspot-content">${sanitizeHtml(h.content)}</div>
+      </div>`,
     )
     .join('')
   const imgHtml = imgSrc
-    ? `<div class="ib-hotspot-frame"><img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(block.title)}"/>${dotsHtml}</div>`
+    ? `<div class="ib-hotspot-frame">
+        <img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(block.title)}"/>
+        ${dotsHtml}
+      </div>`
     : ''
   return `<section class="ib ib-hotspot" data-hotspot-block>
     ${head}
     ${imgHtml}
-    ${hotspots.length > 0 ? `<details class="ib-hotspot-list" open><summary>Show all points</summary><ol>${listHtml}</ol></details>` : ''}
   </section>`
 }
 
-function renderCarousel(block: InteractiveBlock, map: Map<string, string>): string {
+function renderCarousel(
+  block: InteractiveBlock,
+  map: Map<string, string>,
+  audio: BlockAudioMap,
+): string {
   const slides = (block.data as CarouselData).slides
   if (slides.length === 0) return ''
   const slidesHtml = slides
@@ -163,7 +205,8 @@ function renderCarousel(block: InteractiveBlock, map: Map<string, string>): stri
       (s, i) => `<article class="ib-slide${i === 0 ? ' ib-slide-current' : ''}" data-slide-index="${i}">
         ${s.imageUrl ? `<img src="${escapeHtml(rewriteUrl(s.imageUrl, map))}" alt="${escapeHtml(s.title)}"/>` : ''}
         ${s.title ? `<h4>${escapeHtml(s.title)}</h4>` : ''}
-        ${s.body ? `<div class="ib-slide-body">${escapeHtml(s.body)}</div>` : ''}
+        ${s.body ? `<div class="ib-slide-body">${sanitizeHtml(s.body)}</div>` : ''}
+        ${audioPlayer(audio.get(`slide-${block.id}-${i}`))}
       </article>`,
     )
     .join('')
@@ -207,7 +250,7 @@ function renderKnowledgeCheck(block: InteractiveBlock): string {
             </label>`,
           )
           .join('')}
-        <p class="ib-kc-feedback" hidden>${escapeHtml(q.feedback)}</p>
+        <div class="ib-kc-feedback" hidden>${sanitizeHtml(q.feedback)}</div>
       </fieldset>`,
     )
     .join('')
@@ -233,8 +276,8 @@ function renderScenario(block: InteractiveBlock, map: Map<string, string>): stri
         : ''
       return `<article class="ib-scenario-node${endingClass}" id="sc-${escapeHtml(block.id)}-${escapeHtml(n.id)}" data-scenario-node="${escapeHtml(n.id)}"${isStart ? '' : ' hidden'}>
         ${n.imageUrl ? `<img src="${escapeHtml(rewriteUrl(n.imageUrl, map))}" alt=""/>` : ''}
-        <p>${escapeHtml(n.text)}</p>
-        ${n.feedback ? `<p class="ib-scenario-feedback">${escapeHtml(n.feedback)}</p>` : ''}
+        <div>${sanitizeHtml(n.text)}</div>
+        ${n.feedback ? `<div class="ib-scenario-feedback">${sanitizeHtml(n.feedback)}</div>` : ''}
         ${choicesHtml ? `<div class="ib-scenario-choices">${choicesHtml}</div>` : ''}
         ${n.isEnding ? `<button type="button" class="ib-scenario-restart" data-scenario-restart>Start over</button>` : ''}
       </article>`
@@ -289,12 +332,13 @@ function renderDragDrop(block: InteractiveBlock, map: Map<string, string>): stri
 export function renderInteractiveBlockHtml(
   block: InteractiveBlock,
   urlToPath: Map<string, string>,
+  audio: BlockAudioMap = new Map(),
 ): string {
   switch (block.type) {
     case 'hotspot':
-      return renderHotspot(block, urlToPath)
+      return renderHotspot(block, urlToPath, audio)
     case 'carousel':
-      return renderCarousel(block, urlToPath)
+      return renderCarousel(block, urlToPath, audio)
     case 'video':
       return renderVideo(block)
     case 'knowledge-check':
@@ -324,6 +368,51 @@ export function getInteractiveBlocksCss(): string {
 .ib-hotspot-dot:hover, .ib-hotspot-dot:focus { background: #6d28d9; outline: 2px solid #fff; }
 .ib-hotspot-list { margin-top: 16px; font-size: 14px; }
 .ib-hotspot-list li.is-active strong { color: #6d28d9; }
+
+.ib-hotspot-popover {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 16px));
+  background: #fff;
+  color: #1e293b;
+  border-radius: 12px;
+  padding: 16px 20px 12px;
+  min-width: 220px;
+  max-width: 320px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  border: 1px solid #e2e8f0;
+  z-index: 5;
+}
+.ib-hotspot-popover[hidden] { display: none; }
+.ib-hotspot-popover::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.ib-hotspot-popover strong { display: block; margin-bottom: 6px; font-size: 15px; color: #6d28d9; }
+.ib-hotspot-popover .ib-hotspot-content { font-size: 14px; line-height: 1.5; }
+.ib-hotspot-popover .ib-hotspot-content p { margin: 4px 0; }
+.ib-hotspot-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: transparent;
+  border: 0;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #64748b;
+  padding: 4px 6px;
+}
+.ib-hotspot-close:hover { color: #0f172a; }
+
+.ib-audio { display: block; width: 100%; margin: 8px 0; }
 
 .ib-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 .ib-card {
@@ -394,6 +483,11 @@ export function getInteractiveBlocksCss(): string {
   .ib-scenario-ending-positive { background: #14532d; }
   .ib-scenario-ending-negative { background: #7f1d1d; }
   .ib-scenario-ending-neutral { background: #78350f; }
+  .ib-hotspot-popover { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+  .ib-hotspot-popover::after { background: #1e293b; border-right-color: #334155; border-bottom-color: #334155; }
+  .ib-hotspot-popover strong { color: #c4b5fd; }
+  .ib-hotspot-close { color: #94a3b8; }
+  .ib-hotspot-close:hover { color: #f1f5f9; }
 }
 `
 }
@@ -439,19 +533,42 @@ export function getInteractiveBlocksJs(): string {
       });
     });
 
-    // Image hotspot — clicking a dot scrolls to and highlights its list item.
+    // Image hotspot — clicking a dot toggles a popover anchored at the dot.
+    // Click outside or press Esc to close. Only one popover open per block.
+    function closeAllPopovers(root){
+      root.querySelectorAll('.ib-hotspot-popover').forEach(function(p){ p.hidden = true; });
+      root.querySelectorAll('.ib-hotspot-dot').forEach(function(d){
+        d.setAttribute('aria-expanded', 'false');
+      });
+    }
     document.querySelectorAll('[data-hotspot-block]').forEach(function(root){
       root.querySelectorAll('.ib-hotspot-dot').forEach(function(dot){
-        dot.addEventListener('click', function(){
-          var id = dot.getAttribute('data-hotspot-target');
-          if (!id) return;
-          var li = root.querySelector('#hs-' + id);
-          if (!li) return;
-          root.querySelectorAll('.ib-hotspot-list li').forEach(function(x){ x.classList.remove('is-active'); });
-          li.classList.add('is-active');
-          li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        dot.addEventListener('click', function(e){
+          e.stopPropagation();
+          var hsId = dot.getAttribute('data-hotspot-target');
+          if (!hsId) return;
+          var pop = root.querySelector('.ib-hotspot-popover[id$="-' + hsId + '"]');
+          if (!pop) return;
+          var wasHidden = pop.hidden;
+          closeAllPopovers(root);
+          if (wasHidden){
+            pop.hidden = false;
+            dot.setAttribute('aria-expanded', 'true');
+          }
         });
       });
+      root.querySelectorAll('[data-hotspot-close]').forEach(function(btn){
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          closeAllPopovers(root);
+        });
+      });
+      root.addEventListener('click', function(){ closeAllPopovers(root); });
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape'){
+        document.querySelectorAll('[data-hotspot-block]').forEach(closeAllPopovers);
+      }
     });
 
     // Knowledge check — instant per-option feedback on click.

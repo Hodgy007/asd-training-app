@@ -269,6 +269,130 @@ describe('buildScormExport', () => {
     expect(blocksJs).toContain('ib-card')
   })
 
+  it('renders carousel slide body as HTML, not as escaped text', async () => {
+    const carouselBlock = {
+      id: 'blk-1',
+      type: 'carousel',
+      title: 'C',
+      instructions: '',
+      order: 0,
+      data: {
+        slides: [
+          { id: 's1', title: 'Slide 1', imageUrl: '', body: '<p>This is <strong>important</strong> text.</p>' },
+        ],
+      },
+    }
+    const result = await buildScormExport({
+      moduleId: 'm1',
+      moduleTitle: 'M',
+      lessons: [
+        lesson({ id: 'l1', content: '<p>[INTERACTIVE:blk-1]</p>', interactiveBlocks: [carouselBlock] }),
+      ],
+      fetchAsset: async () => ({ buffer: Buffer.alloc(0), contentType: '' }),
+    })
+    const zip = await JSZip.loadAsync(result.zip)
+    const html = await zip.file('lessons/l1/index.html')!.async('string')
+    expect(html).toContain('<strong>important</strong>')
+    expect(html).not.toContain('&lt;strong&gt;')
+  })
+
+  it('renders hotspots as popovers anchored at each dot, not as a list below the image', async () => {
+    const result = await buildScormExport({
+      moduleId: 'm1',
+      moduleTitle: 'M',
+      lessons: [
+        lesson({
+          id: 'l1',
+          content: '<p>[INTERACTIVE:blk-1]</p>',
+          interactiveBlocks: [
+            {
+              id: 'blk-1',
+              type: 'hotspot',
+              title: 'B',
+              instructions: '',
+              order: 0,
+              data: {
+                variant: 'image-hotspot',
+                imageUrl: 'https://blob.example.com/brain.png',
+                hotspots: [
+                  { id: 'h1', x: 10, y: 20, radius: 16, title: 'P1', content: '<p>Body 1</p>' },
+                  { id: 'h2', x: 50, y: 60, radius: 16, title: 'P2', content: '<p>Body 2</p>' },
+                ],
+              },
+            },
+          ],
+        }),
+      ],
+      fetchAsset: async () => ({
+        buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        contentType: 'image/png',
+      }),
+    })
+    const zip = await JSZip.loadAsync(result.zip)
+    const html = await zip.file('lessons/l1/index.html')!.async('string')
+    expect(html).toContain('class="ib-hotspot-popover"')
+    expect(html).toContain('id="hp-blk-1-h1"')
+    expect(html).toContain('id="hp-blk-1-h2"')
+    expect(html).toContain('Body 1')
+    expect(html).not.toContain('&lt;p&gt;Body 1')
+    expect(html).not.toContain('Show all points')
+    expect(html).not.toContain('class="ib-hotspot-list"')
+  })
+
+  it('bundles TTS audio when a resolver is provided and references it from the lesson', async () => {
+    const ttsCalls: string[] = []
+    const result = await buildScormExport({
+      moduleId: 'm1',
+      moduleTitle: 'M',
+      lessons: [
+        lesson({
+          id: 'l1',
+          content: '<p>This is the lesson body.</p><p>[INTERACTIVE:blk-1]</p>',
+          interactiveBlocks: [
+            {
+              id: 'blk-1',
+              type: 'carousel',
+              title: 'C',
+              instructions: '',
+              order: 0,
+              data: {
+                slides: [
+                  { id: 's1', title: 'Slide 1', imageUrl: '', body: '<p>Slide one body.</p>' },
+                ],
+              },
+            },
+          ],
+        }),
+      ],
+      fetchAsset: async () => ({ buffer: Buffer.alloc(0), contentType: '' }),
+      resolveTts: async (text) => {
+        ttsCalls.push(text)
+        return Buffer.from([0xff, 0xfb, 0x90, 0x44])
+      },
+    })
+
+    expect(ttsCalls.length).toBeGreaterThanOrEqual(2)
+    const zip = await JSZip.loadAsync(result.zip)
+    const audioFiles = Object.keys(zip.files).filter((f) => f.startsWith('lessons/l1/audio/'))
+    expect(audioFiles.length).toBeGreaterThan(0)
+    const html = await zip.file('lessons/l1/index.html')!.async('string')
+    expect(html).toMatch(/class="scorm-lesson-audio"/)
+    expect(html).toMatch(/class="ib-audio"/)
+  })
+
+  it('omits audio entirely when no resolver is provided', async () => {
+    const result = await buildScormExport({
+      moduleId: 'm1',
+      moduleTitle: 'M',
+      lessons: [lesson({ id: 'l1', content: '<p>Body</p>' })],
+      fetchAsset: async () => ({ buffer: Buffer.alloc(0), contentType: '' }),
+    })
+    const zip = await JSZip.loadAsync(result.zip)
+    expect(Object.keys(zip.files).filter((f) => f.startsWith('lessons/l1/audio/'))).toHaveLength(0)
+    const html = await zip.file('lessons/l1/index.html')!.async('string')
+    expect(html).not.toContain('class="scorm-lesson-audio"')
+  })
+
   it('respects maxBundleBytes to avoid runaway exports', async () => {
     const result = await buildScormExport({
       moduleId: 'm1',

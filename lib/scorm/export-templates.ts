@@ -48,6 +48,11 @@ export interface LessonHtmlArgs {
    * HTML survives the trip into the static page.
    */
   prerenderedBodyHtml?: string
+  /**
+   * Path (relative to the lesson dir) of an MP3 narrating the lesson prose.
+   * If set, an `<audio controls>` is rendered above the body.
+   */
+  lessonAudioPath?: string
   /** Optional video URL — embedded as iframe. Requires internet at runtime. */
   videoUrl?: string | null
   /** Optional video transcript text. */
@@ -129,6 +134,7 @@ body {
   background: #fef3c7; border: 1px solid #fcd34d; padding: 12px 16px; border-radius: 12px; font-size: 14px; margin: 16px 0;
 }
 .scorm-video { aspect-ratio: 16/9; width: 100%; border: 0; border-radius: 12px; margin: 16px 0; background: #000; }
+.scorm-lesson-audio { display: block; width: 100%; margin: 0 0 24px; }
 .scorm-resources { border-top: 1px solid #e2e8f0; margin-top: 32px; padding-top: 24px; }
 .scorm-resources li { margin: 6px 0; }
 .scorm-quiz {
@@ -289,6 +295,11 @@ export function renderLessonHtml(args: LessonHtmlArgs): string {
   <main class="scorm-shell">
     <p class="module-name">${escapeHtml(moduleTitle)}</p>
     <h1>${escapeHtml(lessonTitle)}</h1>
+    ${
+      args.lessonAudioPath
+        ? `<audio class="scorm-lesson-audio" controls preload="none" src="${escapeHtml(args.lessonAudioPath)}">Your LMS does not support inline audio.</audio>`
+        : ''
+    }
     ${interactiveNotice}
     ${videoBlock}
     <article>${safeContent}</article>
