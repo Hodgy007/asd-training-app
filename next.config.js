@@ -42,7 +42,10 @@ const nextConfig = {
               "img-src 'self' data: blob: https://via.placeholder.com https://placehold.co https://*.public.blob.vercel-storage.com https://*.stripe.com",
               // fonts.gstatic.com — Google Fonts font binaries.
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://generativelanguage.googleapis.com https://api.stripe.com",
+              // *.public.blob.vercel-storage.com — direct browser uploads to
+              // Vercel Blob (used by the SCORM import modal which bypasses the
+              // 4.5 MB serverless body limit by uploading client-side).
+              "connect-src 'self' https://generativelanguage.googleapis.com https://api.stripe.com https://blob.vercel-storage.com https://*.public.blob.vercel-storage.com",
               // blob: — URL.createObjectURL() results used by the TTS player's
               // <audio> element. Without this, the browser silently rejects
               // blob URLs as "no supported source was found".
