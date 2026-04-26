@@ -1,8 +1,24 @@
 import { XMLParser } from 'fast-xml-parser'
 
+export type ScormVersion = '1.2' | '2004'
+
 export interface ScormManifestResult {
   entryPath: string
-  version: '1.2'
+  version: ScormVersion
+}
+
+/**
+ * Decide whether a manifest is SCORM 1.2 or 2004 from the schemaversion
+ * string. SCORM 2004 packages declare values like `2004 3rd Edition`,
+ * `2004 4th Edition`, or `CAM 1.3`. SCORM 1.2 declares `1.2`. Empty/missing
+ * defaults to `1.2` for backwards compatibility with the older importer.
+ */
+function detectScormVersion(schemaVersion: string): ScormVersion {
+  if (/2004|cam\s*1\.3/i.test(schemaVersion)) return '2004'
+  if (schemaVersion === '' || /^1\.2$/.test(schemaVersion)) return '1.2'
+  // Unknown — be conservative and reject rather than mis-route to a runtime
+  // that can't speak the manifest's data model.
+  throw new Error(`Unsupported SCORM schemaversion: ${schemaVersion}`)
 }
 
 export function parseScormManifest(xml: string): ScormManifestResult {
@@ -28,11 +44,9 @@ export function parseScormManifest(xml: string): ScormManifestResult {
   const versionStr =
     rawSchemaversion !== undefined && rawSchemaversion !== ''
       ? String(rawSchemaversion).trim()
-      : '1.2'
+      : ''
 
-  if (/2004/.test(versionStr)) {
-    throw new Error('Unsupported SCORM version 2004 (only 1.2 is supported)')
-  }
+  const version = detectScormVersion(versionStr)
 
   const resourcesContainer = (manifest?.resources) as Record<string, unknown> | undefined
   const resources = resourcesContainer?.resource
@@ -54,5 +68,5 @@ export function parseScormManifest(xml: string): ScormManifestResult {
     throw new Error('Invalid SCORM manifest: resource href is not a safe relative path')
   }
 
-  return { entryPath: href, version: '1.2' }
+  return { entryPath: href, version }
 }

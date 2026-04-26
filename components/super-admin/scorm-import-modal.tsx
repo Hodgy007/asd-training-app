@@ -11,7 +11,7 @@ interface ScormImportModalProps {
 }
 
 /**
- * Modal for creating a new TrainingProgram from a SCORM 1.2 zip. The program
+ * Modal for creating a new TrainingProgram from a SCORM 1.2 or 2004 zip. The program
  * is auto-scaffolded with one Module and one Lesson; the admin edits metadata
  * afterwards on the training page.
  *
@@ -159,7 +159,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
                 Import SCORM Package
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Upload a SCORM 1.2 .zip to create a new training program.
+                Upload a SCORM 1.2 or 2004 .zip to create a new training program.
               </p>
             </div>
           </div>

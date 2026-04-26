@@ -47,4 +47,52 @@ describe('mapScormStateToProgress', () => {
     const out = mapScormStateToProgress({ 'cmi.core.score.raw': '' })
     expect(out.score).toBeNull()
   })
+
+  // SCORM 2004 ----------------------------------------------------------
+
+  it('marks complete when 2004 completion_status is completed', () => {
+    const out = mapScormStateToProgress({
+      'cmi.completion_status': 'completed',
+      'cmi.success_status': 'unknown',
+    })
+    expect(out.completed).toBe(true)
+  })
+
+  it('marks complete when 2004 success_status is passed', () => {
+    const out = mapScormStateToProgress({
+      'cmi.completion_status': 'unknown',
+      'cmi.success_status': 'passed',
+    })
+    expect(out.completed).toBe(true)
+  })
+
+  it('does not mark complete for 2004 incomplete + failed', () => {
+    const out = mapScormStateToProgress({
+      'cmi.completion_status': 'incomplete',
+      'cmi.success_status': 'failed',
+    })
+    expect(out.completed).toBe(false)
+  })
+
+  it('uses 2004 cmi.score.scaled (0-1) as percentage', () => {
+    const out = mapScormStateToProgress({
+      'cmi.completion_status': 'completed',
+      'cmi.score.scaled': '0.82',
+    })
+    expect(out.score).toBe(82)
+  })
+
+  it('clamps 2004 cmi.score.scaled into 0-1 range', () => {
+    const out = mapScormStateToProgress({ 'cmi.score.scaled': '1.5' })
+    expect(out.score).toBe(100)
+  })
+
+  it('falls back to 2004 cmi.score.raw/max when scaled missing', () => {
+    const out = mapScormStateToProgress({
+      'cmi.completion_status': 'completed',
+      'cmi.score.raw': '7',
+      'cmi.score.max': '10',
+    })
+    expect(out.score).toBe(70)
+  })
 })

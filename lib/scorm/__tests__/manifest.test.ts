@@ -46,9 +46,39 @@ describe('parseScormManifest', () => {
     expect(result.version).toBe('1.2')
   })
 
-  it('rejects SCORM 2004 packages (unsupported in this release)', () => {
-    const xml = SCORM_12_MANIFEST.replace('<schemaversion>1.2</schemaversion>', '<schemaversion>2004 3rd Edition</schemaversion>')
-    expect(() => parseScormManifest(xml)).toThrow(/unsupported.*2004/i)
+  it('detects SCORM 2004 from "2004 3rd Edition" schemaversion', () => {
+    const xml = SCORM_12_MANIFEST.replace(
+      '<schemaversion>1.2</schemaversion>',
+      '<schemaversion>2004 3rd Edition</schemaversion>',
+    )
+    const result = parseScormManifest(xml)
+    expect(result).toEqual({ entryPath: 'index_lms.html', version: '2004' })
+  })
+
+  it('detects SCORM 2004 from "2004 4th Edition" schemaversion', () => {
+    const xml = SCORM_12_MANIFEST.replace(
+      '<schemaversion>1.2</schemaversion>',
+      '<schemaversion>2004 4th Edition</schemaversion>',
+    )
+    const result = parseScormManifest(xml)
+    expect(result.version).toBe('2004')
+  })
+
+  it('detects SCORM 2004 from "CAM 1.3" schemaversion', () => {
+    const xml = SCORM_12_MANIFEST.replace(
+      '<schemaversion>1.2</schemaversion>',
+      '<schemaversion>CAM 1.3</schemaversion>',
+    )
+    const result = parseScormManifest(xml)
+    expect(result.version).toBe('2004')
+  })
+
+  it('rejects unknown schemaversion strings', () => {
+    const xml = SCORM_12_MANIFEST.replace(
+      '<schemaversion>1.2</schemaversion>',
+      '<schemaversion>SCORM 9000</schemaversion>',
+    )
+    expect(() => parseScormManifest(xml)).toThrow(/unsupported scorm schemaversion/i)
   })
 
   it('returns the first resource when multiple are present', () => {

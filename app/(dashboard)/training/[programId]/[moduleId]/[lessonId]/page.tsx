@@ -344,6 +344,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
             lessonId={lesson.id}
             moduleId={lesson.module.id}
             entryPath={lesson.scormEntryPath}
+            version={lesson.scormVersion === '2004' ? '2004' : '1.2'}
             initialCmi={initialScormCmi}
           />
         </div>

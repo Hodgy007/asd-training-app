@@ -6,28 +6,51 @@ interface ScormPlayerProps {
   lessonId: string
   moduleId: string
   entryPath: string
+  /**
+   * SCORM version of the package — drives which scorm-again runtime is
+   * instantiated and which `window` global the SCO discovers it under.
+   * Defaults to 1.2 for legacy lessons that pre-date this column.
+   */
+  version?: '1.2' | '2004' | null
   initialCmi?: Record<string, string>
 }
 
-export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: ScormPlayerProps) {
+export function ScormPlayer({
+  lessonId,
+  moduleId,
+  entryPath,
+  version,
+  initialCmi,
+}: ScormPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const initialCmiRef = useRef(initialCmi)
   const [apiReady, setApiReady] = useState(false)
   const [initFailed, setInitFailed] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saved' | 'saving' | 'error'>('idle')
 
+  // SCORM 2004 SCOs look for `window.API_1484_11`; SCORM 1.2 SCOs look for
+  // `window.API`. We pick the right runtime + global based on the lesson.
+  const isScorm2004 = version === '2004'
+
   useEffect(() => {
     let cancelled = false
     let api: any = null
+    const globalKey = isScorm2004 ? 'API_1484_11' : 'API'
 
     async function setup() {
-      const mod = await import('scorm-again')
+      const mod: any = await import('scorm-again')
       if (cancelled) return
 
-      const Scorm12API = (mod as any).Scorm12API ?? (mod as any).default?.Scorm12API
-      if (!Scorm12API) throw new Error('scorm-again: Scorm12API not found')
+      const ApiCtor = isScorm2004
+        ? mod.Scorm2004API ?? mod.default?.Scorm2004API
+        : mod.Scorm12API ?? mod.default?.Scorm12API
+      if (!ApiCtor) {
+        throw new Error(
+          `scorm-again: ${isScorm2004 ? 'Scorm2004API' : 'Scorm12API'} not found`,
+        )
+      }
 
-      api = new Scorm12API({
+      api = new ApiCtor({
         autocommit: true,
         autocommitSeconds: 30,
         logLevel: 4, // errors only
@@ -40,9 +63,11 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
         }
       }
 
-      ;(window as any).API = api
+      ;(window as any)[globalKey] = api
 
-      api.on('LMSCommit', async () => {
+      // SCORM 1.2 fires `LMSCommit`; SCORM 2004 fires `Commit`. Listen for
+      // both so the persistence path is identical regardless of version.
+      const commitHandler = async () => {
         setStatus('saving')
         const cmi = api.renderCommitCMI(true) ?? api.cmi?.toJSON?.() ?? {}
         try {
@@ -55,7 +80,8 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
         } catch {
           setStatus('error')
         }
-      })
+      }
+      api.on(isScorm2004 ? 'Commit' : 'LMSCommit', commitHandler)
 
       setApiReady(true)
     }
@@ -68,9 +94,9 @@ export function ScormPlayer({ lessonId, moduleId, entryPath, initialCmi }: Scorm
     return () => {
       cancelled = true
       try { api?.terminate?.('Terminate', true) } catch {}
-      try { delete (window as any).API } catch {}
+      try { delete (window as any)[globalKey] } catch {}
     }
-  }, [lessonId, moduleId])
+  }, [lessonId, moduleId, isScorm2004])
 
   const src = `/api/scorm/${lessonId}/${entryPath.split('/').map(encodeURIComponent).join('/')}`
 

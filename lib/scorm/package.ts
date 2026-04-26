@@ -1,5 +1,5 @@
 import JSZip from 'jszip'
-import { parseScormManifest } from './manifest'
+import { parseScormManifest, type ScormVersion } from './manifest'
 
 export type BlobUploader = (
   path: string,
@@ -16,7 +16,7 @@ export interface ExtractArgs {
 export interface ExtractResult {
   blobPrefix: string
   entryPath: string
-  version: '1.2'
+  version: ScormVersion
 }
 
 const CONTENT_TYPES: Record<string, string> = {
