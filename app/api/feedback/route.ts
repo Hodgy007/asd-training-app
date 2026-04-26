@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { feedbackLimiter } from '@/lib/rate-limit'
-import { sendFeedbackEmail } from '@/lib/feedback-email'
+import { sendFeedbackEmail, type FeedbackEmailInput } from '@/lib/feedback-email'
 
 const logEntrySchema = z.object({
   level: z.enum(['log', 'info', 'warn', 'error']),
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
       url: submission.url,
       userAgent: submission.userAgent,
       viewport: submission.viewport,
-      clientLogs: submission.clientLogs as any,
+      clientLogs: data.clientLogs.map((l) => ({ ...l, message: l.message.slice(0, 2000) })) satisfies FeedbackEmailInput['clientLogs'],
       createdAt: submission.createdAt,
       user: submission.user,
       organisation: submission.organisation,
