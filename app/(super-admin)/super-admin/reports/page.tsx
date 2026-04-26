@@ -35,6 +35,14 @@ const TILES: Tile[] = [
     iconBg: 'bg-purple-100 dark:bg-purple-900/40',
   },
   {
+    href: '/super-admin/reports/scorm-quizzes',
+    title: 'SCORM Quiz Analytics',
+    description: 'Per-question correctness — surfaces material that needs updating.',
+    icon: ClipboardList,
+    iconColor: 'text-rose-600 dark:text-rose-400',
+    iconBg: 'bg-rose-100 dark:bg-rose-900/40',
+  },
+  {
     href: '/super-admin/reports/gatsby',
     title: 'Gatsby Benchmarks',
     description: 'Coverage of the 8 Gatsby Benchmarks across modules.',

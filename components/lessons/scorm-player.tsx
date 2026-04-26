@@ -97,10 +97,12 @@ export function ScormPlayer({
 
   const isScorm2004 = version === '2004'
 
+  // Ref to the actual iframe element so we can target postMessage replies.
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+
   useEffect(() => {
     let cancelled = false
     let api: any = null
-    const globalKey = isScorm2004 ? 'API_1484_11' : 'API'
 
     async function setup() {
       const mod: any = await import('scorm-again')
@@ -128,10 +130,10 @@ export function ScormPlayer({
         }
       }
 
-      ;(window as any)[globalKey] = api
       apiRef.current = api
 
-      const commitHandler = async () => {
+      // Persist whatever the SCO has reported, including LMS-level nav.
+      const persistCommit = async () => {
         setStatus('saving')
         const cmi = api.renderCommitCMI(true) ?? api.cmi?.toJSON?.() ?? {}
         try {
@@ -142,8 +144,6 @@ export function ScormPlayer({
               moduleId,
               lessonId,
               cmi,
-              // Read from the ref so we always send the *current* TOC
-              // selection, not a value captured when the handler was set up.
               navLocation: currentHrefRef.current,
             }),
           })
@@ -152,7 +152,7 @@ export function ScormPlayer({
           setStatus('error')
         }
       }
-      api.on(isScorm2004 ? 'Commit' : 'LMSCommit', commitHandler)
+      api.on(isScorm2004 ? 'Commit' : 'LMSCommit', persistCommit)
 
       setApiReady(true)
     }
@@ -166,9 +166,77 @@ export function ScormPlayer({
       cancelled = true
       apiRef.current = null
       try { api?.terminate?.('Terminate', true) } catch {}
-      try { delete (window as any)[globalKey] } catch {}
     }
   }, [lessonId, moduleId, isScorm2004])
+
+  // postMessage bridge — relays the iframe shim's SCORM calls into the real
+  // scorm-again API in this (parent) window. This lets the iframe stay
+  // sandboxed without `allow-same-origin`: the SCO can't reach into our
+  // window directly, but it can still drive SCORM via postMessage.
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      const data: any = event.data
+      if (!data || typeof data !== 'object' || data.source !== 'scorm-shim') return
+      const api = apiRef.current
+      if (!api) return
+
+      try {
+        switch (data.type) {
+          case 'shim-ready': {
+            // Pre-warm the iframe's local cache so the SCO's first
+            // GetValue calls (which run synchronously immediately after
+            // Initialize) see real values rather than empty defaults.
+            const seed = initialCmiRef.current ?? {}
+            const iframe = iframeRef.current
+            iframe?.contentWindow?.postMessage(
+              { source: 'scorm-host', type: 'cache-seed', cmi: seed },
+              '*',
+            )
+            break
+          }
+          case 'lms-init':
+            try {
+              if (isScorm2004) api.Initialize?.('')
+              else api.LMSInitialize?.('')
+            } catch {}
+            break
+          case 'lms-set':
+            try {
+              if (typeof data.key !== 'string') break
+              if (isScorm2004) api.SetValue?.(data.key, String(data.value ?? ''))
+              else api.LMSSetValue?.(data.key, String(data.value ?? ''))
+            } catch {}
+            break
+          case 'lms-commit':
+            // The shim sends its full local cache. Mirror it onto the
+            // real API via SetValue calls before triggering commit so the
+            // server sees a complete CMI snapshot.
+            try {
+              const cmi = (data.cmi ?? {}) as Record<string, string>
+              for (const [k, v] of Object.entries(cmi)) {
+                if (typeof v !== 'string') continue
+                if (isScorm2004) api.SetValue?.(k, v)
+                else api.LMSSetValue?.(k, v)
+              }
+              if (isScorm2004) api.Commit?.('')
+              else api.LMSCommit?.('')
+            } catch {}
+            break
+          case 'lms-terminate':
+            try {
+              if (isScorm2004) api.Terminate?.('')
+              else api.LMSFinish?.('')
+            } catch {}
+            break
+        }
+      } catch (err) {
+        console.warn('SCORM bridge error', err)
+      }
+    }
+
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [isScorm2004])
 
   // Navigate to a TOC item. Updates the iframe src and fires a SCORM Commit
   // so the new nav position is persisted before the user can leave the page.
@@ -230,9 +298,13 @@ export function ScormPlayer({
             </div>
           ) : apiReady ? (
             <iframe
+              ref={iframeRef}
               title="SCORM content"
               src={src}
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              // No `allow-same-origin`: the SCO talks to the LMS via the
+              // postMessage shim injected by /api/scorm/[lessonId]/[...path]
+              // rather than reaching into window.parent.
+              sandbox="allow-scripts allow-forms allow-popups"
               className="h-full w-full bg-white"
             />
           ) : (
