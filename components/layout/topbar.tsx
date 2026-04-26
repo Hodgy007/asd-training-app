@@ -65,7 +65,9 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
 
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => setFeedbackOpen(true)}
+            aria-label="Send feedback"
             className={clsx('flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors', iconColor)}
           >
             <MessageSquarePlus className="h-4 w-4" />
