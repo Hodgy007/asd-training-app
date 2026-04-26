@@ -11,7 +11,12 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import prisma from '@/lib/prisma'
-import { buildScormExport, type ExportLesson } from '@/lib/scorm/export-builder'
+import { buildScormExport, type ExportLesson, type TtsResolver } from '@/lib/scorm/export-builder'
+import {
+  DEFAULT_VOICE_ID,
+  ensureTtsBlobUrl,
+  getCachedTtsUrl,
+} from '@/lib/tts-blob'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -70,12 +75,35 @@ export async function GET(
     })),
   }))
 
+  // TTS resolver: hit the Blob cache first (lessons prewarm on save) and
+  // fall back to ElevenLabs if a key is configured. Failures return null
+  // so the export still ships without audio rather than aborting.
+  const elevenLabsKey = process.env.ELEVENLABS_API_KEY
+  const resolveTts: TtsResolver = async (text) => {
+    if (!text || !text.trim()) return null
+    try {
+      let url = await getCachedTtsUrl(text, DEFAULT_VOICE_ID)
+      if (!url && elevenLabsKey) {
+        url = await ensureTtsBlobUrl(text, elevenLabsKey, DEFAULT_VOICE_ID)
+      }
+      if (!url) return null
+      const res = await fetch(url)
+      if (!res.ok) return null
+      const buf = Buffer.from(await res.arrayBuffer())
+      return buf.length > 0 ? buf : null
+    } catch (err) {
+      console.warn('[scorm-export] TTS resolve failed:', err)
+      return null
+    }
+  }
+
   let result
   try {
     result = await buildScormExport({
       moduleId: mod.id,
       moduleTitle: mod.title,
       lessons: lessonsForExport,
+      resolveTts,
     })
   } catch (err) {
     return NextResponse.json(
