@@ -12,6 +12,7 @@ import {
   CheckCircle,
   XCircle,
   Save,
+  Download,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { GATSBY_BENCHMARK_CODES, GATSBY_BENCHMARKS } from '@/lib/gatsby-benchmarks'
@@ -48,6 +49,7 @@ export default function ModuleEditorPage() {
   const [saving, setSaving] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showLessonForm, setShowLessonForm] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Editable fields
@@ -121,6 +123,53 @@ export default function ModuleEditorPage() {
       }
     } finally {
       setActionLoading(null)
+    }
+  }
+
+  const handleExportScorm = async () => {
+    setExporting(true)
+    try {
+      const res = await fetch(`/api/super-admin/training/modules/${moduleId}/scorm-export`)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setToast({
+          message: data.error || 'Failed to export SCORM package',
+          type: 'error',
+        })
+        return
+      }
+      const blob = await res.blob()
+      const disposition = res.headers.get('Content-Disposition') ?? ''
+      const m = disposition.match(/filename="?([^"]+)"?/i)
+      const filename = m ? m[1] : `${moduleId}-scorm.zip`
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      const skippedHeader = res.headers.get('X-Scorm-Export-Skipped')
+      if (skippedHeader) {
+        try {
+          const skipped = JSON.parse(decodeURIComponent(skippedHeader)) as Array<{
+            lessonTitle: string
+          }>
+          setToast({
+            message: `Exported. Skipped ${skipped.length} SCORM-typed lesson${skipped.length === 1 ? '' : 's'}.`,
+            type: 'success',
+          })
+        } catch {
+          setToast({ message: 'SCORM package downloaded', type: 'success' })
+        }
+      } else {
+        setToast({ message: 'SCORM package downloaded', type: 'success' })
+      }
+    } catch {
+      setToast({ message: 'Failed to export SCORM package', type: 'error' })
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -281,13 +330,24 @@ export default function ModuleEditorPage() {
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">
             Lessons ({mod.lessons.length})
           </h2>
-          <button
-            onClick={() => setShowLessonForm(!showLessonForm)}
-            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            Add Lesson
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportScorm}
+              disabled={exporting || mod.lessons.length === 0}
+              className="inline-flex items-center gap-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Download this module as a SCORM 1.2 .zip package"
+            >
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              Export SCORM
+            </button>
+            <button
+              onClick={() => setShowLessonForm(!showLessonForm)}
+              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Add Lesson
+            </button>
+          </div>
         </div>
 
         {showLessonForm && (
