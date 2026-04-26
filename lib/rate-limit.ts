@@ -70,6 +70,9 @@ export const changePasswordLimiter = createRateLimiter('change-password', 15 * 6
 // Invite send: 20 per hour per admin
 export const inviteLimiter = createRateLimiter('invite', 60 * 60 * 1000, 20)
 
+// Feedback submit: 5 per 15 minutes per user
+export const feedbackLimiter = createRateLimiter('feedback', 15 * 60 * 1000, 5)
+
 // Reset-password token introspect: 20 per 5 minutes per IP
 export const introspectLimiter = createRateLimiter('introspect', 5 * 60 * 1000, 20)
 
