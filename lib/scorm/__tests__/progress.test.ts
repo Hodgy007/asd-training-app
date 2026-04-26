@@ -95,4 +95,34 @@ describe('mapScormStateToProgress', () => {
     })
     expect(out.score).toBe(70)
   })
+
+  // Nav location persistence (LMS-level TOC position) ------------------
+
+  it('stores navLocation in interactionData when supplied', () => {
+    const out = mapScormStateToProgress(
+      { 'cmi.core.lesson_status': 'incomplete' },
+      'Etiquette/Course.html',
+    )
+    expect(out.interactionData.navLocation).toBe('Etiquette/Course.html')
+    expect(out.interactionData.scorm).toEqual({
+      'cmi.core.lesson_status': 'incomplete',
+    })
+  })
+
+  it('omits navLocation when empty / whitespace / missing', () => {
+    expect(mapScormStateToProgress({}).interactionData.navLocation).toBeUndefined()
+    expect(mapScormStateToProgress({}, '').interactionData.navLocation).toBeUndefined()
+    expect(mapScormStateToProgress({}, '   ').interactionData.navLocation).toBeUndefined()
+    expect(mapScormStateToProgress({}, null).interactionData.navLocation).toBeUndefined()
+  })
+
+  it('preserves navLocation querystring (used by Golf-style quiz items)', () => {
+    const out = mapScormStateToProgress(
+      {},
+      'shared/assessmenttemplate.html?questions=Playing',
+    )
+    expect(out.interactionData.navLocation).toBe(
+      'shared/assessmenttemplate.html?questions=Playing',
+    )
+  })
 })

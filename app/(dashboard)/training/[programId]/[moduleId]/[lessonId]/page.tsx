@@ -80,6 +80,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   const [showContent, setShowContent] = useState(true)
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
   const [initialScormCmi, setInitialScormCmi] = useState<Record<string, string> | undefined>(undefined)
+  const [initialScormNavLocation, setInitialScormNavLocation] = useState<string | null>(null)
   // The SCORM player captures `initialCmi` once on mount. Gate its render on
   // the progress fetch resolving so it doesn't boot with `undefined` and lose
   // the saved CMI seed.
@@ -153,8 +154,14 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
         const current = list.find(
           (p) => p.moduleId === params.moduleId && p.lessonId === params.lessonId,
         )
-        const scorm = (current?.interactionData as { scorm?: Record<string, string> } | null | undefined)?.scorm
+        const interactionDataValue = current?.interactionData as
+          | { scorm?: Record<string, string>; navLocation?: string }
+          | null
+          | undefined
+        const scorm = interactionDataValue?.scorm
         setInitialScormCmi(scorm && typeof scorm === 'object' ? scorm : undefined)
+        const navLocation = interactionDataValue?.navLocation
+        setInitialScormNavLocation(typeof navLocation === 'string' ? navLocation : null)
       })
       .catch(() => {})
       .finally(() => {
@@ -348,6 +355,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
             version={lesson.scormVersion === '2004' ? '2004' : '1.2'}
             toc={Array.isArray(lesson.scormToc) ? (lesson.scormToc as any) : null}
             initialCmi={initialScormCmi}
+            initialNavLocation={initialScormNavLocation}
           />
         </div>
       )}

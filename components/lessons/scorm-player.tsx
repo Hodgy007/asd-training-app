@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 /**
  * Mirror of the manifest parser's `ScormTocItem`. Kept duplicated as a plain
@@ -24,6 +24,15 @@ interface ScormPlayerProps {
   /** Optional table of contents from the manifest's `<organization>` tree. */
   toc?: ScormTocItem[] | null
   initialCmi?: Record<string, string>
+  /**
+   * Saved TOC navigation position from a prior session, persisted in
+   * `TrainingProgress.interactionData.navLocation`. When present and it
+   * matches a known leaf in the TOC, the player resumes there instead of
+   * the manifest-derived entryPath. Stored *outside* the SCO's CMI so we
+   * never clobber a SCO that uses `cmi.core.lesson_location` for its own
+   * internal state.
+   */
+  initialNavLocation?: string | null
 }
 
 /**
@@ -55,20 +64,30 @@ export function ScormPlayer({
   version,
   toc,
   initialCmi,
+  initialNavLocation,
 }: ScormPlayerProps) {
   const initialCmiRef = useRef(initialCmi)
+  const apiRef = useRef<any>(null)
   const [apiReady, setApiReady] = useState(false)
   const [initFailed, setInitFailed] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saved' | 'saving' | 'error'>('idle')
 
-  // The currently-displayed item's href (may include `?params`). Initialised
-  // to the manifest-derived entry path; updated when the user clicks a TOC
-  // entry. Stored as state so the iframe re-renders on navigation.
-  const [currentHref, setCurrentHref] = useState<string>(entryPath)
-
   // Pre-compute the flat list of leaves so the active-row highlight in the
   // sidebar doesn't depend on a recursive search every render.
   const leaves = useMemo(() => flattenLeaves(toc ?? []), [toc])
+
+  // The currently-displayed item's href (may include `?params`). Resumes
+  // from `initialNavLocation` if it matches a known leaf, otherwise starts
+  // at the manifest-derived entry path.
+  const [currentHref, setCurrentHref] = useState<string>(() => {
+    if (!initialNavLocation || leaves.length === 0) return entryPath
+    const known = leaves.some((l) => l.href === initialNavLocation)
+    return known ? initialNavLocation : entryPath
+  })
+  // Mirror of `currentHref` accessed from the (non-React) commit handler so
+  // it captures the freshest value at flush time, not the snapshot from when
+  // the handler was registered.
+  const currentHrefRef = useRef(currentHref)
 
   // Pick the leaf whose path matches the iframe's current src. When the
   // entry first loads we may not have a matching leaf (legacy single-SCO
@@ -110,6 +129,7 @@ export function ScormPlayer({
       }
 
       ;(window as any)[globalKey] = api
+      apiRef.current = api
 
       const commitHandler = async () => {
         setStatus('saving')
@@ -118,7 +138,14 @@ export function ScormPlayer({
           const res = await fetch('/api/training/progress/scorm', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ moduleId, lessonId, cmi }),
+            body: JSON.stringify({
+              moduleId,
+              lessonId,
+              cmi,
+              // Read from the ref so we always send the *current* TOC
+              // selection, not a value captured when the handler was set up.
+              navLocation: currentHrefRef.current,
+            }),
           })
           setStatus(res.ok ? 'saved' : 'error')
         } catch {
@@ -137,10 +164,29 @@ export function ScormPlayer({
 
     return () => {
       cancelled = true
+      apiRef.current = null
       try { api?.terminate?.('Terminate', true) } catch {}
       try { delete (window as any)[globalKey] } catch {}
     }
   }, [lessonId, moduleId, isScorm2004])
+
+  // Navigate to a TOC item. Updates the iframe src and fires a SCORM Commit
+  // so the new nav position is persisted before the user can leave the page.
+  const handleSelect = useCallback(
+    (href: string) => {
+      currentHrefRef.current = href
+      setCurrentHref(href)
+      const api = apiRef.current
+      if (!api) return
+      try {
+        if (isScorm2004) api.Commit?.('')
+        else api.LMSCommit?.('')
+      } catch (err) {
+        console.warn('SCORM commit-on-nav failed', err)
+      }
+    },
+    [isScorm2004],
+  )
 
   const src = buildIframeSrc(lessonId, currentHref)
   const hasToc = leaves.length > 0
@@ -163,22 +209,22 @@ export function ScormPlayer({
                   item={item}
                   depth={0}
                   activeId={activeLeafId}
-                  onSelect={(href) => setCurrentHref(href)}
+                  onSelect={handleSelect}
                 />
               ))}
             </ul>
           </nav>
         )}
 
-        <div className="aspect-video w-full overflow-hidden rounded-lg border bg-black">
+        <div className="w-full flex-1 min-h-[600px] h-[70vh] overflow-hidden rounded-lg border bg-white dark:bg-slate-900">
           {initFailed ? (
             <div
-              className="flex h-full w-full flex-col items-center justify-center px-6 text-center text-sm text-white/90"
+              className="flex h-full w-full flex-col items-center justify-center px-6 text-center text-sm text-slate-700 dark:text-slate-200"
               role="alert"
               aria-live="polite"
             >
               <p className="font-semibold">This lesson couldn&rsquo;t load.</p>
-              <p className="mt-1 text-xs text-white/70">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Please refresh the page to try again. If it keeps failing, contact your administrator.
               </p>
             </div>
@@ -187,11 +233,11 @@ export function ScormPlayer({
               title="SCORM content"
               src={src}
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              className="h-full w-full"
+              className="h-full w-full bg-white"
             />
           ) : (
             <div
-              className="flex h-full w-full items-center justify-center text-xs text-white/70"
+              className="flex h-full w-full items-center justify-center text-xs text-slate-500 dark:text-slate-400"
               role="status"
               aria-live="polite"
             >
