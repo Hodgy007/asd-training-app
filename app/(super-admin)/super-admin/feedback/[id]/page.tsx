@@ -103,9 +103,13 @@ export default function FeedbackDetailPage() {
             </p>
 
             <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-4 mb-1">Page</h2>
-            <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline break-all">
-              {item.url}
-            </a>
+            {/^https?:\/\//i.test(item.url) ? (
+              <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline break-all">
+                {item.url}
+              </a>
+            ) : (
+              <span className="text-slate-700 dark:text-slate-300 break-all">{item.url}</span>
+            )}
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Viewport {item.viewport} · {item.userAgent}
             </p>
