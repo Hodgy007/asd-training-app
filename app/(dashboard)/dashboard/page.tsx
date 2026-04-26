@@ -70,7 +70,7 @@ export default async function DashboardPage() {
       <UpcomingSessions />
       <PendingSurveys />
 
-      <div className="grid grid-cols-1 sm:grid-cols-1 max-w-sm gap-4 animate-stagger">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-stagger">
         <div className="card flex items-center gap-4">
           <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
             <BookOpen className="h-6 w-6 text-primary-600" />
@@ -83,6 +83,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-slate-500">Lessons completed</p>
           </div>
         </div>
+        <ExploreMoreCard session={session} variant="inline" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -157,7 +158,6 @@ export default async function DashboardPage() {
               </Link>
             </div>
           </div>
-          <ExploreMoreCard session={session} />
         </div>
       </div>
 

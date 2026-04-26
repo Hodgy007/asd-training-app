@@ -5,9 +5,36 @@ import type { Session } from 'next-auth'
 
 const HIDDEN_ROLES = new Set(['STUDENT', 'INTERN', 'EMPLOYEE'])
 
-export function ExploreMoreCard({ session }: { session: Session }) {
+interface ExploreMoreCardProps {
+  session: Session
+  variant?: 'inline' | 'stacked'
+}
+
+export function ExploreMoreCard({ session, variant = 'stacked' }: ExploreMoreCardProps) {
   if (!isPaymentsEnabled) return null
   if (HIDDEN_ROLES.has(session.user.role)) return null
+
+  if (variant === 'inline') {
+    return (
+      <Link
+        href="/courses"
+        className="card group flex items-center gap-4 transition-colors hover:border-warm-300"
+      >
+        <div className="w-12 h-12 bg-warm-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <Sparkles className="h-6 w-6 text-warm-600" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-slate-900">
+            Browse our course catalogue
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Buy a single course or subscribe.
+          </p>
+        </div>
+        <ArrowRight className="h-4 w-4 text-warm-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
+      </Link>
+    )
+  }
 
   return (
     <Link
