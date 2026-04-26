@@ -11,6 +11,7 @@
  */
 
 import { sanitizeHtml } from '@/lib/sanitize'
+import { getInteractiveBlocksCss, getInteractiveBlocksJs } from './export-blocks'
 
 export interface QuizQuestionForExport {
   id: string
@@ -30,8 +31,23 @@ export interface LessonAttachmentForExport {
 export interface LessonHtmlArgs {
   moduleTitle: string
   lessonTitle: string
-  /** Sanitised HTML prose. Image src attributes already rewritten to relative. */
+  /**
+   * HTML prose. Image src attributes already rewritten to relative paths.
+   * Will be passed through `sanitizeHtml` before rendering.
+   *
+   * When `prerenderedBodyHtml` is set this field is ignored — that path is
+   * used by the export builder, which has already merged sanitised prose
+   * with rendered interactive blocks (whose data-* attributes the lesson
+   * sanitiser would otherwise strip).
+   */
   contentHtml: string
+  /**
+   * Pre-rendered, already-safe body HTML. When provided, replaces
+   * `contentHtml` and is rendered verbatim (no sanitisation). The caller is
+   * responsible for safety — used by the export builder so interactive-block
+   * HTML survives the trip into the static page.
+   */
+  prerenderedBodyHtml?: string
   /** Optional video URL — embedded as iframe. Requires internet at runtime. */
   videoUrl?: string | null
   /** Optional video transcript text. */
@@ -154,7 +170,11 @@ export function getSharedScormApiJs(): string {
 }
 
 export function getSharedCss(): string {
-  return SHARED_CSS
+  return SHARED_CSS + '\n' + getInteractiveBlocksCss()
+}
+
+export function getSharedBlocksJs(): string {
+  return getInteractiveBlocksJs()
 }
 
 function escapeHtml(value: string): string {
@@ -202,7 +222,10 @@ export function renderLessonHtml(args: LessonHtmlArgs): string {
     hadStrippedInteractiveBlocks = false,
   } = args
 
-  const safeContent = sanitizeHtml(contentHtml ?? '')
+  const safeContent =
+    args.prerenderedBodyHtml !== undefined
+      ? args.prerenderedBodyHtml
+      : sanitizeHtml(contentHtml ?? '')
 
   const interactiveNotice = hadStrippedInteractiveBlocks
     ? `<div class="scorm-notice">Some interactive activities from the original lesson are not included in this export and are only available in the asd-training platform.</div>`
@@ -260,6 +283,7 @@ export function renderLessonHtml(args: LessonHtmlArgs): string {
   <title>${escapeHtml(lessonTitle)} — ${escapeHtml(moduleTitle)}</title>
   <link rel="stylesheet" href="../../shared/style.css" />
   <script src="../../shared/scorm-api.js"></script>
+  <script defer src="../../shared/scorm-blocks.js"></script>
 </head>
 <body>
   <main class="scorm-shell">

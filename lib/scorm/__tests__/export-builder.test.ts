@@ -150,18 +150,123 @@ describe('buildScormExport', () => {
     expect(html).toContain('"correctAnswer":"4"')
   })
 
-  it('shows a stripped-blocks notice when the source lesson has interactive blocks', async () => {
+  it('renders interactive blocks instead of leaving [INTERACTIVE:…] markers in the output', async () => {
+    const carouselBlock = {
+      id: 'blk-1',
+      type: 'carousel',
+      title: 'Four areas of difference',
+      instructions: 'Tap the slides to learn more.',
+      order: 0,
+      data: {
+        slides: [
+          {
+            id: 's1',
+            title: 'Communication',
+            imageUrl: 'https://blob.example.com/communication.png',
+            body: 'Autistic people may communicate differently.',
+          },
+          {
+            id: 's2',
+            title: 'Social interaction',
+            imageUrl: 'https://blob.example.com/social.png',
+            body: 'Social cues can be processed differently.',
+          },
+        ],
+      },
+    }
+    const result = await buildScormExport({
+      moduleId: 'm1',
+      moduleTitle: 'Autism in the workplace',
+      lessons: [
+        lesson({
+          id: 'l1',
+          title: 'What is autism?',
+          content:
+            '<p>Intro</p><p>[INTERACTIVE:blk-1]</p><p>Closing line.</p>',
+          interactiveBlocks: [carouselBlock],
+        }),
+      ],
+      fetchAsset: async () => ({
+        buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47]),
+        contentType: 'image/png',
+      }),
+    })
+
+    const zip = await JSZip.loadAsync(result.zip)
+    const html = await zip.file('lessons/l1/index.html')!.async('string')
+
+    // Marker is gone. Block is rendered.
+    expect(html).not.toContain('[INTERACTIVE:blk-1]')
+    expect(html).toContain('Four areas of difference')
+    expect(html).toContain('Communication')
+    expect(html).toContain('Social interaction')
+    // Carousel JS hooks are present.
+    expect(html).toMatch(/data-carousel/i)
+    // Interactive-block CSS class is on the section.
+    expect(html).toContain('ib-carousel')
+  })
+
+  it('downloads interactive-block media into the lesson asset folder', async () => {
+    const fetched: string[] = []
     const result = await buildScormExport({
       moduleId: 'm1',
       moduleTitle: 'M',
       lessons: [
-        lesson({ id: 'l1', interactiveBlocks: [{ type: 'hotspot', id: 'h1' }] }),
+        lesson({
+          id: 'l1',
+          content: '<p>[INTERACTIVE:blk-1]</p>',
+          interactiveBlocks: [
+            {
+              id: 'blk-1',
+              type: 'hotspot',
+              title: 'Brain regions',
+              instructions: 'Click each dot.',
+              order: 0,
+              data: {
+                variant: 'image-hotspot',
+                imageUrl: 'https://blob.example.com/brain.png',
+                hotspots: [
+                  { id: 'h1', x: 25, y: 30, radius: 18, title: 'Frontal', content: 'Decision making.' },
+                ],
+              },
+            },
+          ],
+        }),
       ],
+      fetchAsset: async (url) => {
+        fetched.push(url)
+        return { buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47]), contentType: 'image/png' }
+      },
+    })
+
+    expect(fetched).toContain('https://blob.example.com/brain.png')
+    const zip = await JSZip.loadAsync(result.zip)
+    // The brain image lands under lessons/l1/assets/.
+    const assetFiles = Object.keys(zip.files).filter((f) =>
+      f.startsWith('lessons/l1/assets/'),
+    )
+    expect(assetFiles.length).toBeGreaterThan(0)
+    const html = await zip.file('lessons/l1/index.html')!.async('string')
+    expect(html).not.toContain('https://blob.example.com/brain.png')
+    expect(html).toMatch(/src="assets\/asset-\d+\.png"/)
+    // Hotspot dot uses the hotspot id, not the absolute URL.
+    expect(html).toContain('data-hotspot-target="h1"')
+    expect(html).toContain('Frontal')
+    expect(html).toContain('Decision making.')
+  })
+
+  it('bundles the shared scorm-blocks.js runtime', async () => {
+    const result = await buildScormExport({
+      moduleId: 'm1',
+      moduleTitle: 'M',
+      lessons: [lesson({ id: 'l1' })],
       fetchAsset: async () => ({ buffer: Buffer.alloc(0), contentType: '' }),
     })
     const zip = await JSZip.loadAsync(result.zip)
-    const html = await zip.file('lessons/l1/index.html')!.async('string')
-    expect(html).toMatch(/interactive activities .* not included/i)
+    expect(zip.file('shared/scorm-blocks.js')).not.toBeNull()
+    const blocksJs = await zip.file('shared/scorm-blocks.js')!.async('string')
+    expect(blocksJs).toContain('data-carousel')
+    expect(blocksJs).toContain('ib-card')
   })
 
   it('respects maxBundleBytes to avoid runaway exports', async () => {

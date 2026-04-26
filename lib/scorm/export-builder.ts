@@ -1,14 +1,21 @@
 /**
  * Build a SCORM 1.2 zip from a Module + its Lessons.
  *
- * Pipeline:
- *   1. For each TEXT/VIDEO lesson, sanitise the prose, find every <img src=…>
- *      and <a href=…pdf|doc|…>, fetch the absolute Blob URLs, rewrite to
- *      relative `assets/…` paths, and bundle them into the SCO folder.
- *   2. Render `lessons/<id>/index.html` per lesson via export-templates.
- *   3. Drop shared CSS + SCORM API JS into `shared/`.
- *   4. Build `imsmanifest.xml` via export-manifest.
- *   5. Zip everything with JSZip and return a Buffer.
+ * Pipeline (per lesson):
+ *   1. Parse `lesson.interactiveBlocks` and split the prose at every
+ *      `[INTERACTIVE:blockId]` marker into prose and block segments.
+ *   2. Collect every absolute http(s) URL referenced — both in prose
+ *      (img src / pdf href) and inside interactive blocks (hotspot images,
+ *      carousel slides, scenario nodes, drag-drop items, video URLs).
+ *   3. Download each unique URL once, write it to `lessons/<id>/assets/`,
+ *      and build a `Map<absoluteUrl, relativePath>`.
+ *   4. Re-stitch the body: each prose segment is sanitised + rewritten
+ *      against the asset map; each block is rendered to static HTML by
+ *      `renderInteractiveBlockHtml`, also against the asset map.
+ *   5. Render the lesson page via `renderLessonHtml` (using the
+ *      `prerenderedBodyHtml` slot so block data-attrs survive).
+ *   6. Drop shared CSS, the SCORM 1.2 API JS, and the interactive-blocks
+ *      JS into `shared/`. Build `imsmanifest.xml`. Zip it all.
  *
  * SCORM-typed lessons (where the lesson IS already a SCORM package) are
  * skipped — the original .zip is in Blob storage and re-shipping it as a
@@ -18,15 +25,20 @@
  */
 
 import JSZip from 'jszip'
+import { sanitizeHtml } from '@/lib/sanitize'
+import { validateInteractiveBlocks } from '@/lib/interactive-blocks'
+import type { InteractiveBlock } from '@/types/interactive'
 import { buildScorm12Manifest, type ExportLessonItem } from './export-manifest'
 import {
   renderLessonHtml,
   renderIndexHtml,
   getSharedCss,
   getSharedScormApiJs,
+  getSharedBlocksJs,
   type LessonAttachmentForExport,
   type QuizQuestionForExport,
 } from './export-templates'
+import { extractInteractiveBlockUrls, renderInteractiveBlockHtml } from './export-blocks'
 
 export interface ExportLesson {
   id: string
@@ -104,66 +116,161 @@ async function defaultFetchAsset(
   return { buffer, contentType }
 }
 
-interface AssetRewriteResult {
-  rewrittenHtml: string
-  assets: Array<{ relativePath: string; buffer: Buffer; contentType: string }>
-  totalBytes: number
+/** Pull http(s) URLs from `src=` and `href=` attributes in a chunk of HTML. */
+function extractUrlsFromHtml(html: string): Set<string> {
+  const out = new Set<string>()
+  const re = /\b(?:src|href)=["'](https?:\/\/[^"']+)["']/gi
+  let m: RegExpExecArray | null
+  while ((m = re.exec(html)) !== null) out.add(m[1])
+  return out
 }
 
-/**
- * Find absolute http(s) URLs inside `<img src="…">` and `<a href="…">` tags,
- * download each unique URL, write to assets/, and rewrite the HTML to use
- * relative paths. Anything that fails to fetch is left alone — the LMS will
- * see a broken image, but the export still completes.
- */
-async function downloadAndRewriteAssets(
-  html: string,
-  fetcher: (url: string) => Promise<{ buffer: Buffer; contentType: string }>,
-  budgetRemaining: number,
-): Promise<AssetRewriteResult> {
-  const assets: Array<{ relativePath: string; buffer: Buffer; contentType: string }> = []
-  const cache = new Map<string, string>() // absolute URL -> relative path
-  let used = 0
-  let counter = 0
-
-  // Collect unique absolute URLs from src/href attributes
-  const urlRegex = /\b(?:src|href)=["'](https?:\/\/[^"']+)["']/gi
-  const urls = new Set<string>()
-  let match: RegExpExecArray | null
-  while ((match = urlRegex.exec(html)) !== null) {
-    urls.add(match[1])
-  }
-
-  for (const url of urls) {
-    if (used >= budgetRemaining) break
-    try {
-      const { buffer, contentType } = await fetcher(url)
-      if (used + buffer.length > budgetRemaining) continue
-      counter++
-      const ext =
-        EXT_FROM_CONTENT_TYPE[contentType] ?? extFromUrl(url) ?? 'bin'
-      const relativePath = `${ASSET_DIR}/asset-${counter}.${ext}`
-      assets.push({ relativePath, buffer, contentType })
-      cache.set(url, relativePath)
-      used += buffer.length
-    } catch {
-      // Best-effort — if a single asset fails, leave the URL alone so the LMS
-      // still sees the original (hot-link) version. The caller decides whether
-      // to surface partial-export warnings.
-    }
-  }
-
-  let rewrittenHtml = html
-  for (const [absUrl, relPath] of cache.entries()) {
-    // Replace every occurrence in src="" and href="" attributes only.
+/** Replace every absolute URL in `src=`/`href=` attrs with its mapped relative path. */
+function rewriteUrlsInHtml(html: string, urlToPath: Map<string, string>): string {
+  let out = html
+  for (const [absUrl, relPath] of urlToPath.entries()) {
     const escaped = absUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    rewrittenHtml = rewrittenHtml.replace(
+    out = out.replace(
       new RegExp(`(src|href)=(["'])${escaped}\\2`, 'gi'),
       `$1=$2${relPath}$2`,
     )
   }
+  return out
+}
 
-  return { rewrittenHtml, assets, totalBytes: used }
+interface DownloadedAsset {
+  absoluteUrl: string
+  relativePath: string
+  buffer: Buffer
+  contentType: string
+}
+
+/**
+ * Download a deduplicated list of URLs into `assets/` paths under the lesson
+ * directory. Honours a per-call byte budget — once exceeded, remaining URLs
+ * are skipped (their HTML/block references are left as the original URL).
+ */
+async function downloadAssetPool(
+  urls: string[],
+  fetcher: (url: string) => Promise<{ buffer: Buffer; contentType: string }>,
+  budgetBytes: number,
+): Promise<{ assets: DownloadedAsset[]; urlToPath: Map<string, string>; bytesUsed: number }> {
+  const assets: DownloadedAsset[] = []
+  const urlToPath = new Map<string, string>()
+  let used = 0
+  let counter = 0
+
+  for (const absoluteUrl of urls) {
+    if (used >= budgetBytes) break
+    try {
+      const { buffer, contentType } = await fetcher(absoluteUrl)
+      if (used + buffer.length > budgetBytes) continue
+      counter++
+      const ext =
+        EXT_FROM_CONTENT_TYPE[contentType] ?? extFromUrl(absoluteUrl) ?? 'bin'
+      const relativePath = `${ASSET_DIR}/asset-${counter}.${ext}`
+      assets.push({ absoluteUrl, relativePath, buffer, contentType })
+      urlToPath.set(absoluteUrl, relativePath)
+      used += buffer.length
+    } catch {
+      // Best-effort. Leaving URL un-rewritten means the LMS will see the
+      // original (hot-link) reference.
+    }
+  }
+
+  return { assets, urlToPath, bytesUsed: used }
+}
+
+interface LessonRenderResult {
+  bodyHtml: string
+  assets: DownloadedAsset[]
+  attachments: LessonAttachmentForExport[]
+  bytesUsed: number
+}
+
+/**
+ * Build the per-lesson body HTML and pool of assets. Splits prose at
+ * `[INTERACTIVE:…]` markers, downloads every referenced URL, then re-stitches
+ * with rendered block HTML.
+ */
+async function renderLessonBodyAndAssets(
+  lesson: ExportLesson,
+  fetcher: (url: string) => Promise<{ buffer: Buffer; contentType: string }>,
+  budgetBytes: number,
+): Promise<LessonRenderResult> {
+  // 1. Parse interactive blocks (or treat as none if invalid/missing).
+  const blocks: InteractiveBlock[] =
+    validateInteractiveBlocks(lesson.interactiveBlocks) ?? []
+  const blockById = new Map(blocks.map((b) => [b.id, b]))
+
+  // 2. Split prose at block markers — even if blocks is empty this returns
+  //    [{ type: 'html', content }] so the rest of the flow is uniform.
+  //    Inline import of splitContentAtBlocks at call site to keep test stubs
+  //    minimal — re-export under the existing alias.
+  const { splitContentAtBlocks } = await import('@/lib/interactive-blocks')
+  const segments = splitContentAtBlocks(lesson.content ?? '', blocks)
+
+  // 3. Collect every absolute URL referenced.
+  const allUrls = new Set<string>()
+  for (const seg of segments) {
+    if (seg.type === 'html') {
+      for (const u of extractUrlsFromHtml(seg.content)) allUrls.add(u)
+    }
+  }
+  for (const block of blocks) {
+    for (const u of extractInteractiveBlockUrls(block)) allUrls.add(u)
+  }
+
+  // 4. Download into a single pool keyed by absolute URL.
+  const { assets, urlToPath, bytesUsed: poolBytes } = await downloadAssetPool(
+    Array.from(allUrls),
+    fetcher,
+    budgetBytes,
+  )
+
+  // 5. Lesson attachments — bundled separately under their original filename
+  //    so they appear in the "Resources" section regardless of whether the
+  //    prose mentions them. Each gets its own attachments-only download.
+  const attachments: LessonAttachmentForExport[] = []
+  let attachmentBytes = 0
+  for (const att of lesson.attachments) {
+    if (poolBytes + attachmentBytes >= budgetBytes) break
+    try {
+      const { buffer } = await fetcher(att.url)
+      if (poolBytes + attachmentBytes + buffer.length > budgetBytes) continue
+      const relativePath = `${ASSET_DIR}/${safeFilename(att.fileName)}`
+      assets.push({
+        absoluteUrl: att.url,
+        relativePath,
+        buffer,
+        contentType: 'application/octet-stream',
+      })
+      attachments.push({ fileName: att.fileName, relativePath })
+      attachmentBytes += buffer.length
+    } catch {
+      // skip
+    }
+  }
+
+  // 6. Re-stitch the body. Prose is sanitised, block HTML is trusted (the
+  //    builder is its source). Both pass through URL rewriting.
+  const parts: string[] = []
+  for (const seg of segments) {
+    if (seg.type === 'html') {
+      const sanitised = sanitizeHtml(seg.content)
+      parts.push(rewriteUrlsInHtml(sanitised, urlToPath))
+    } else {
+      const block = blockById.get(seg.blockId)
+      if (block) parts.push(renderInteractiveBlockHtml(block, urlToPath))
+    }
+  }
+
+  return {
+    bodyHtml: parts.join('\n'),
+    assets,
+    attachments,
+    bytesUsed: poolBytes + attachmentBytes,
+  }
 }
 
 export async function buildScormExport(args: ExportModuleArgs): Promise<ExportResult> {
@@ -183,9 +290,11 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
   // Shared assets — referenced by every SCO via <dependency>.
   const cssBytes = Buffer.from(getSharedCss(), 'utf8')
   const apiJsBytes = Buffer.from(getSharedScormApiJs(), 'utf8')
+  const blocksJsBytes = Buffer.from(getSharedBlocksJs(), 'utf8')
   zip.file('shared/style.css', cssBytes)
   zip.file('shared/scorm-api.js', apiJsBytes)
-  totalBytes += cssBytes.length + apiJsBytes.length
+  zip.file('shared/scorm-blocks.js', blocksJsBytes)
+  totalBytes += cssBytes.length + apiJsBytes.length + blocksJsBytes.length
 
   const exportableLessons = lessons.filter((l) => {
     if (l.type === 'SCORM') {
@@ -211,36 +320,18 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
 
     const filesForManifest: string[] = [lessonHref]
 
-    // Download any embedded images / linked files in the prose, rewriting
-    // the HTML to reference the local asset/ paths.
     const budget = Math.max(0, maxBundleBytes - totalBytes)
-    const { rewrittenHtml, assets, totalBytes: assetBytes } =
-      await downloadAndRewriteAssets(lesson.content ?? '', fetchAsset, budget)
-    totalBytes += assetBytes
+    const { bodyHtml, assets, attachments, bytesUsed } = await renderLessonBodyAndAssets(
+      lesson,
+      fetchAsset,
+      budget,
+    )
+    totalBytes += bytesUsed
+
     for (const a of assets) {
       const path = `${lessonDir}/${a.relativePath}`
       zip.file(path, a.buffer)
-      filesForManifest.push(path.slice(`${lessonDir}/`.length))
-    }
-
-    // Lesson attachments — bundled separately from prose-embedded images so
-    // they appear in the "Resources" section regardless of whether the prose
-    // mentions them. Their fileName is preserved (made path-safe).
-    const attachmentExports: LessonAttachmentForExport[] = []
-    for (const att of lesson.attachments) {
-      if (totalBytes >= maxBundleBytes) break
-      try {
-        const { buffer } = await fetchAsset(att.url)
-        if (totalBytes + buffer.length > maxBundleBytes) continue
-        const relativePath = `${ASSET_DIR}/${safeFilename(att.fileName)}`
-        const path = `${lessonDir}/${relativePath}`
-        zip.file(path, buffer)
-        attachmentExports.push({ fileName: att.fileName, relativePath })
-        filesForManifest.push(relativePath)
-        totalBytes += buffer.length
-      } catch {
-        // Skip individual attachments that fail to fetch — best-effort.
-      }
+      filesForManifest.push(a.relativePath)
     }
 
     // Convert quiz questions into the runtime shape — options come in as a
@@ -262,19 +353,17 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
       }
     })
 
-    const hadStrippedInteractiveBlocks =
-      Array.isArray(lesson.interactiveBlocks) && lesson.interactiveBlocks.length > 0
-
     const html = renderLessonHtml({
       moduleTitle,
       lessonTitle: lesson.title,
-      contentHtml: rewrittenHtml,
+      contentHtml: '', // ignored when prerenderedBodyHtml is set
+      prerenderedBodyHtml: bodyHtml,
       videoUrl: lesson.videoUrl,
       transcript: lesson.transcript,
-      attachments: attachmentExports,
+      attachments,
       quizQuestions,
       passingScore,
-      hadStrippedInteractiveBlocks,
+      hadStrippedInteractiveBlocks: false,
     })
 
     const htmlBuf = Buffer.from(html, 'utf8')
@@ -301,7 +390,7 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
   const manifestXml = buildScorm12Manifest({
     moduleId,
     moduleTitle,
-    sharedFiles: ['shared/style.css', 'shared/scorm-api.js'],
+    sharedFiles: ['shared/style.css', 'shared/scorm-api.js', 'shared/scorm-blocks.js'],
     lessons: manifestLessons,
   })
   zip.file('imsmanifest.xml', Buffer.from(manifestXml, 'utf8'))
