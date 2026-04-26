@@ -59,6 +59,8 @@ model User {
   jobsCreated          JobOpening[]    @relation("JobOpeningCreatedBy")
   jobAssignments       JobAssignment[] @relation("JobAssignmentUser")
   jobAssignmentsGiven  JobAssignment[] @relation("JobAssignmentAssignedBy")
+  feedbackSubmissions FeedbackSubmission[] @relation("FeedbackSubmitter")
+  resolvedFeedback    FeedbackSubmission[] @relation("FeedbackResolver")
   purchases            Purchase[]
 
   @@index([organisationId])
@@ -140,6 +142,7 @@ model Organisation {
   meetingConfig OrgMeetingConfig?
   ssoConfig     OrgSsoConfig?
   surveyTargets SurveyTarget[]
+  feedback      FeedbackSubmission[] @relation("OrgFeedback")
   purchases     Purchase[]
 
   @@index([parentOrgId])
@@ -880,6 +883,19 @@ enum SubscriptionStatus {
   UNPAID
 }
 
+enum FeedbackType {
+  BUG
+  SUGGESTION
+  QUESTION
+  OTHER
+}
+
+enum FeedbackStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+}
+
 enum PurchaseStatus {
   PENDING
   PAID
@@ -933,4 +949,34 @@ model HomePage {
   updatedBy          String?
   updatedAt          DateTime @updatedAt
   createdAt          DateTime @default(now())
+}
+
+// ─── Feedback System ──────────────────────────────────────────────────────────
+
+model FeedbackSubmission {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation("FeedbackSubmitter", fields: [userId], references: [id], onDelete: Cascade)
+  organisationId String?
+  organisation   Organisation?   @relation("OrgFeedback", fields: [organisationId], references: [id], onDelete: SetNull)
+
+  type           FeedbackType
+  message        String          @db.Text
+
+  url            String
+  userAgent      String          @db.Text
+  viewport       String
+  clientLogs     Json?
+
+  status         FeedbackStatus  @default(NEW)
+  resolvedAt     DateTime?
+  resolvedById   String?
+  resolvedBy     User?           @relation("FeedbackResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  adminNotes     String?         @db.Text
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId])
 }
