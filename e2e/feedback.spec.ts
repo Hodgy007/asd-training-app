@@ -31,7 +31,7 @@ test.describe('Feedback', () => {
     await page
       .getByLabel("What's on your mind?")
       .fill('E2E test — quiz button not clickable on the demo iOS page')
-    await page.getByRole('button', { name: 'Send' }).click()
+    await page.getByRole('button', { name: 'Send', exact: true }).click()
 
     // Modal closes after the 1.5s toast — wait for the textarea to disappear.
     // (The toast text itself is too transient to catch reliably.)
