@@ -1,4 +1,4 @@
-# ASD Early Identification Training Platform
+# AAA Digital Platform
 
 A multi-tenant SaaS platform for ASD awareness training, virtual workshops, and careers support for autistic young people. Built for charities, training organisations, schools, and employers.
 
