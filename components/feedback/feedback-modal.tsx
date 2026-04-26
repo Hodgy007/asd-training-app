@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { getBufferedLogs } from '@/lib/client-log-buffer'
 
@@ -25,6 +25,11 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submittedToast, setSubmittedToast] = useState(false)
+
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+  }, [])
 
   if (!open) return null
 
@@ -69,7 +74,8 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
         return
       }
       setSubmittedToast(true)
-      setTimeout(() => {
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null
         setSubmittedToast(false)
         reset()
         onClose()
