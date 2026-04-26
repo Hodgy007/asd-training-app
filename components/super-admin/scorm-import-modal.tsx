@@ -61,13 +61,28 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
       setProgress(0)
       setStatusText('Uploading package…')
 
+      // Stall detector — if the browser can't reach Vercel Blob (CSP block,
+      // offline, DNS failure) the SDK silently sits forever with no progress.
+      // We watch for any `onUploadProgress` event within STALL_MS; if none
+      // fires we abort and show a "couldn't reach Blob storage" message.
+      const STALL_MS = 20_000
+      const abortController = new AbortController()
+      let lastProgressAt = Date.now()
+      const stallTimer = setInterval(() => {
+        if (Date.now() - lastProgressAt > STALL_MS) {
+          abortController.abort()
+        }
+      }, 2_000)
+
       try {
         // Stage 1 — upload the zip directly from the browser to Blob.
         const pathname = `scorm-imports/${Date.now()}-${file.name}`
         const blob = await upload(pathname, file, {
           access: 'public',
           handleUploadUrl: '/api/super-admin/training/scorm-import/upload-url',
+          abortSignal: abortController.signal,
           onUploadProgress: (event) => {
+            lastProgressAt = Date.now()
             // `percentage` is 0–100; fall back to computing it if older client
             // versions only surface bytes.
             const percent =
@@ -79,6 +94,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
             setProgress(Math.min(99, Math.round(percent)))
           },
         })
+        clearInterval(stallTimer)
 
         // Stage 2 — ask the server to extract and scaffold.
         setProgress(100)
@@ -98,7 +114,20 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
         }
         onCreated(data.programId)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Import failed')
+        clearInterval(stallTimer)
+        // Surface a clearer message when the browser couldn't reach Blob
+        // storage at all (typically a CSP `connect-src` block, an offline
+        // network, or a DNS failure). The raw SDK error in these cases is
+        // usually an unhelpful `AbortError` or generic `Failed to fetch`.
+        const raw = err instanceof Error ? err.message : 'Import failed'
+        const looksLikeNetworkBlock =
+          abortController.signal.aborted ||
+          /aborted|failed to fetch|network|load failed/i.test(raw)
+        setError(
+          looksLikeNetworkBlock
+            ? "Couldn't reach Vercel Blob storage. Check your network connection — if this persists, an admin may need to allow blob.vercel-storage.com in the site's Content Security Policy."
+            : raw,
+        )
         setUploading(false)
         setProgress(null)
         setStatusText(null)
