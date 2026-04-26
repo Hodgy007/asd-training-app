@@ -1,10 +1,10 @@
 # ASD Early Identification Training Platform
 
-A multi-tenant SaaS platform for ASD early identification training, child observation tracking, and careers support for autistic young people. Built for charities, training organisations, schools, and employers.
+A multi-tenant SaaS platform for ASD awareness training, virtual workshops, and careers support for autistic young people. Built for charities, training organisations, schools, and employers.
 
 **Live URL:** https://asd-training-app-v2.vercel.app
 **Repository:** https://github.com/Hodgy007/asd-training-app
-**Stack:** Next.js 14 (App Router) · TypeScript · Prisma · PostgreSQL (Neon) · NextAuth v4 · Google Gemini AI · Tailwind CSS · Vercel
+**Stack:** Next.js 14 (App Router) · TypeScript · Prisma · PostgreSQL (Neon) · NextAuth v4 · Vercel AI Gateway (Gemini / Claude / GPT) · `scorm-again` · Tailwind CSS · Vercel
 
 ---
 
@@ -14,7 +14,6 @@ A multi-tenant SaaS platform for ASD early identification training, child observ
 - [User Roles](#user-roles)
 - [Features in Detail](#features-in-detail)
   - [Training Modules](#training-modules)
-  - [Child Observations (Practitioners)](#child-observations-practitioners)
   - [CV Builder](#cv-builder)
   - [AI Careers Advisor](#ai-careers-advisor)
   - [Virtual Workshops](#virtual-workshops)
@@ -37,11 +36,11 @@ A multi-tenant SaaS platform for ASD early identification training, child observ
 
 The platform serves three distinct audiences through a single unified application:
 
-1. **Practitioners** (caregivers, nursery workers, health visitors) use the platform to complete ASD awareness training and log behavioural observations for children in their care, with AI-generated insights to support early identification.
+1. **Practitioners** (caregivers, nursery workers, health visitors) use the platform to complete ASD awareness training, attend virtual workshops, and access shared documents from their organisation's library.
 
-2. **Career-focused users** (careers professionals, students, interns, employees) use the platform to complete careers CPD training, build autism-friendly CVs with AI writing assistance, and receive personalised career guidance through the AI Careers Advisor.
+2. **Career-focused users** (careers professionals, students, interns, employees) use the platform to complete careers CPD training, build autism-friendly CVs with AI writing assistance, browse job openings, and receive personalised career guidance through the AI Careers Advisor.
 
-3. **Administrators** (charity admins, charity employees, organisation admins) manage users, organisations, training content, surveys, document libraries, virtual workshops, and platform-wide analytics.
+3. **Administrators** (charity admins, charity employees, organisation admins) manage users, organisations, training content, surveys, document libraries, virtual workshops, jobs, and platform-wide analytics.
 
 Every feature is designed with accessibility in mind. The platform uses plain language, step-by-step wizards, visible examples, and respects `prefers-reduced-motion`. Colour is never the sole indicator of status — all feedback uses icon + text combinations.
 
@@ -56,7 +55,7 @@ The platform has eight roles, each with specific access:
 | `SUPER_ADMIN` | Charity Admin | `/super-admin` | Full platform control. Manages all organisations, users, training content, surveys, document library, workshops, reports, integrations, and SSO configuration. Has all permissions implicitly. MFA (TOTP) required. |
 | `CHARITY_EMPLOYEE` | Charity Employee | `/super-admin` | Delegated charity-level access. Sees a subset of the charity admin dashboard based on individually assigned permissions (e.g. manage_training, view_reports, manage_sessions). |
 | `ORG_ADMIN` | Org Admin | `/admin` | Manages a single organisation. Creates and manages users within their org, handles org-level announcements, views org reports, configures meeting integrations (Zoom/Teams), and sets up enterprise SAML SSO. MFA (TOTP) required. |
-| `CAREGIVER` | Practitioner | `/dashboard` | Completes ASD awareness training modules and quizzes. Logs behavioural observations for children and receives AI-generated insights. Can create and manage virtual workshop sessions. |
+| `CAREGIVER` | Practitioner | `/dashboard` | Completes ASD awareness training modules and quizzes. Attends virtual workshops, accesses shared document collections, and can create workshop sessions for their organisation. |
 | `CAREER_DEV_OFFICER` | Careers Professional | `/dashboard` | Completes careers CPD training. Uses CV Builder and AI Careers Advisor. Can view student CVs and career advisor reports for users in the same organisation. Can create workshop sessions. |
 | `STUDENT` | Student | `/dashboard` | Completes assigned training. Uses CV Builder and AI Careers Advisor for personal career development. |
 | `INTERN` | Intern | `/dashboard` | Same access as Student. Completes training, builds CVs, and uses the AI Careers Advisor. |
@@ -92,7 +91,7 @@ Training is organised into **Programs**, each containing ordered **Modules** wit
 - Charity admins can preview training content as a learner by clicking "View" on any program.
 
 **AI-powered content generation:**
-- Admins can upload reference documents (PDFs, Word files) and use Gemini AI to auto-generate module outlines, lesson content, and quiz questions.
+- Admins can upload reference documents (PDFs, Word files) and use the AI Gateway to auto-generate module outlines, lesson content, and quiz questions.
 - Generated content can be reviewed, edited, and regenerated before publishing.
 
 **SCORM packages:**
@@ -106,27 +105,6 @@ The platform plays third-party e-learning courses produced by Articulate, iSprin
 - **Per-question quiz analytics:** see the Reports section.
 - **Asset hosting:** uploaded zips are extracted to Vercel Blob under `scorm/<lessonId>/`. The `/api/scorm/[lessonId]/[...path]` route serves assets with auth and an iframe-friendly CSP. Two-stage upload (browser → Blob → server-side extract) bypasses Vercel's 4.5 MB serverless body limit; packages up to 200 MB are supported.
 - **Runtime:** [`scorm-again`](https://github.com/jcputney/scorm-again) v3 provides the LMS-side API (`Scorm12API` / `Scorm2004API`). The SCO finds it on `window.API` (1.2) or `window.API_1484_11` (2004) via the standard SCORM discovery walk.
-
-### Child Observations (Practitioners)
-
-Practitioners (Caregivers) track behavioural observations for children in their care to support early ASD identification.
-
-**How it works:**
-- Practitioners add child profiles with name, date of birth, and notes.
-- For each child, they log observations across three behavioural domains:
-  - **Social Communication** — eye contact, joint attention, response to name, social smiling, pointing, language use
-  - **Behaviour and Play** — repetitive movements, play patterns, routine adherence, transitions, sensory-seeking
-  - **Sensory Responses** — sound sensitivity, texture reactions, visual stimulation, taste/smell responses
-- Each observation records the specific behaviour, frequency (Rare / Sometimes / Often), context (Home / Nursery / Outdoors / Other), and optional notes.
-- The Reports page shows charts (Recharts) with observation patterns over time, domain breakdowns, and frequency distributions.
-
-**AI insights:**
-- Practitioners can generate AI insights for any child using Google Gemini. The AI analyses all observations and produces:
-  - A summary of observed patterns
-  - Developmental guidance and suggested next steps
-  - Areas to monitor
-- All AI prompts explicitly instruct the model to **never diagnose or suggest autism**. The platform supports observation and pattern recognition only.
-- A prominent disclaimer banner reminds practitioners of this on every page.
 
 ### CV Builder
 
@@ -165,7 +143,7 @@ An 8-step autism-friendly wizard for building UK-format CVs, accessible to Caree
 
 ### AI Careers Advisor
 
-A guided questionnaire that generates personalised career guidance reports using Google Gemini AI. Accessible to the same roles as CV Builder.
+A guided questionnaire that generates personalised career guidance reports via the Vercel AI Gateway (default model: `google/gemini-2.5-flash`, swappable per-prompt). Accessible to the same roles as CV Builder.
 
 **How it works:**
 Users complete an 11-step wizard:
@@ -185,7 +163,7 @@ Users complete an 11-step wizard:
 **The pill selector component** (`pill-selector.tsx`) is a reusable multi-select input with support for `allowOther` (adds a free-text "Other" option), `maxSelect` (limits selections), and `singleSelect` mode. It uses plain language labels and clear visual feedback.
 
 **AI report generation:**
-- Answers are formatted into a structured prompt sent to `gemini-2.5-flash`
+- Answers are formatted into a structured prompt via `lib/ai-runner.ts:runPrompt()` and sent through the Vercel AI Gateway
 - The AI returns a JSON report with four sections:
   - **Strengths** — what the user is good at and how it applies to work
   - **Career Suggestions** — 3-5 specific career ideas with explanations of why they suit the user
@@ -255,7 +233,7 @@ A managed file repository for sharing documents with targeted audiences.
 - Org Admins can view and edit collection metadata (title, description) for collections visible to their organisation at `/admin/library`.
 - Library download reports with per-org and per-document breakdowns are available at `/super-admin/library/reports` and `/admin/library/reports`.
 
-**AI features:** Gemini can generate collection descriptions from uploaded documents. Imagen (via Google AI) can generate thumbnail images for collections.
+**AI features:** Collection descriptions and thumbnail prompts are generated via the Vercel AI Gateway from uploaded document text.
 
 ### Surveys
 
@@ -268,13 +246,13 @@ Targeted questionnaires with multiple question types and AI-generated insights.
 - Surveys follow a lifecycle: Draft → Published → Closed. Published surveys appear as pending items on matching users' dashboards.
 - Users respond to surveys at `/surveys/[surveyId]`. Each user can submit one response per survey.
 - Results are visualised at `/super-admin/surveys/[surveyId]/results` with response breakdowns per question, completion rates, and response timelines.
-- AI insights can be generated per survey using Gemini, producing three types:
+- AI insights can be generated per survey via the Vercel AI Gateway, producing three types:
   - **Summary** — high-level overview of findings
   - **Comparative** — comparisons across organisations or roles
   - **Recommendations** — actionable suggestions based on responses
 - Survey analytics with CSV export are available in the Reports section.
 
-**AI survey generation:** Admins can have Gemini generate survey questions from a description or uploaded reference documents, which can then be edited before publishing.
+**AI survey generation:** Admins can have the AI Gateway generate survey questions from a description or uploaded reference documents, which can then be edited before publishing.
 
 ### Announcements
 
@@ -394,27 +372,26 @@ MATs (Multi-Academy Trusts), CEC Careers Hubs, and Local Authorities can manage 
 
 ## AI Integration
 
-All AI features use Google Gemini (`gemini-2.5-flash`) via the `@google/genai` SDK. Three distinct AI modules handle different domains:
-
-### Observation Insights (`lib/gemini.ts`)
-- Analyses child behavioural observations to identify patterns and suggest next steps
-- Four output types: summary, pattern analysis, developmental guidance, and full comprehensive report
-- **Critical safety constraint:** All prompts explicitly instruct the model to never diagnose, never suggest autism, and frame all output as observational support only
+All AI features route through the **Vercel AI Gateway** using the AI SDK v6. Prompts live in the `AiPrompt` database table (managed at `/super-admin/ai-prompts`); models are addressed by provider/model strings (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`, `openai/gpt-4o-mini`) and can be switched per-prompt without redeploying. The runtime entry point is `lib/ai-runner.ts:runPrompt(key, values)` which loads the prompt row, prepends any uploaded context files, and calls `generateText` against the configured model. All prompts are strength-focused, use UK English, and explicitly instruct the model never to diagnose or reference autism.
 
 ### CV Writing Assistance (`lib/cv-ai.ts`)
 - `generatePersonalStatement()` — creates an opening statement from the user's experience and skills
 - `rephraseBulletPoint()` — improves work experience descriptions with stronger action verbs
 - `suggestSkills()` — recommends relevant skills based on the user's experience entries
 - `improveDescription()` — enhances education or experience descriptions
-- All outputs are strength-focused, UK English, and never mention disabilities
 - Rate limited: 10 AI requests per 5 minutes per user
 
 ### Careers Report Generation (`lib/careers-advisor-ai.ts`)
 - Takes structured questionnaire answers and generates a comprehensive careers report
 - Output structure: strengths analysis, 3-5 career suggestions with reasoning, actionable next steps, and workplace support strategies
 - References UK-specific resources (Access to Work, National Careers Service, Disability Confident employers)
-- Strength-focused language throughout; never mentions autism or disability
 - Rate limited: 10 report generations per 5 minutes per user
+
+### Other AI features
+- **Survey insights** (`lib/survey-ai.ts`): Summary, comparative, and recommendation insights generated from survey responses, surfaced at `/super-admin/surveys/[surveyId]/results`.
+- **Quiz generation** for training modules from existing lesson content.
+- **Library collection thumbnails and descriptions** generated from uploaded documents.
+- **Content generation from files** (`lib/content-generator.ts`): Convert PDF/DOCX/PPTX into module/lesson/quiz scaffolds for super admins to review and edit.
 
 ---
 
@@ -425,14 +402,13 @@ app/
   (auth)/                           # Public pages: login, register, password reset
   (dashboard)/                      # Leaf role pages (wrapped by sidebar layout)
     dashboard/                      #   Role-aware home page
-    training/[programId]/           #   Training modules and lessons
-    children/                       #   Child observations (practitioners only)
+    training/[programId]/           #   Training modules and lessons (incl. SCORM)
     cv-builder/                     #   CV Builder wizard, preview, student view
     careers-advisor/                #   AI Careers Advisor wizard, student view
     careers/                        #   Careers training modules
+    jobs/                           #   Job openings (learners + CDOs)
     sessions/                       #   Virtual workshops (user view)
     library/                        #   Document library
-    reports/                        #   Observation reports (practitioners only)
     settings/                       #   User account settings
     guide/                          #   How-to guide
   (super-admin)/                    # Charity admin pages
@@ -462,16 +438,17 @@ app/
   (change-password)/                # Forced password change
   api/                              # All API routes
     auth/                           #   Authentication (NextAuth, MFA, SAML, SSO)
-    training/                       #   Training progress
-    children/                       #   Children and observations
+    training/                       #   Training progress (incl. /progress/scorm)
+    scorm/[lessonId]/[...path]/     #   Auth-gated SCORM asset serving from Blob
     cv-builder/                     #   CV CRUD, AI, PDF, DOCX, students
     careers-advisor/                #   Sessions, AI report, PDF, students
+    jobs/                           #   Learner-facing job listings + assignments
     sessions/                       #   Virtual workshops
     library/                        #   Document library
     surveys/                        #   Survey responses
     announcements/                  #   Active announcements
     admin/                          #   Org admin endpoints
-    super-admin/                    #   Charity admin endpoints
+    super-admin/                    #   Charity admin endpoints incl. SCORM import
     integrations/                   #   External API access
     account/                        #   User account info
 
@@ -481,8 +458,6 @@ components/
   ui/                               # Shared UI primitives and disclaimers
   training/                         # Module cards, quiz component, video player
   lessons/                          # Lesson-time players incl. SCORM player + TOC sidebar
-  children/                         # Child forms and cards
-  observations/                     # Observation charts and tables
   cv-builder/                       # CV wizard shell, steps, AI buttons, progress bar
   careers-advisor/                  # Advisor wizard shell, steps, pill selector, progress bar
   super-admin/                      # Content generation, survey builder, file upload, SCORM import
@@ -535,7 +510,7 @@ Copy `.env.example` to `.env.local` for local development. For production (Verce
 | `DIRECT_URL` | Yes | Neon PostgreSQL **direct** URL — port **5432** (used only by Prisma for migrations) |
 | `NEXTAUTH_SECRET` | Yes | JWT signing secret (32+ random characters) |
 | `NEXTAUTH_URL` | Yes | Deployed URL (`https://asd-training-app-v2.vercel.app`) — no trailing slash |
-| `GEMINI_API_KEY` | Yes | Google Gemini API key for all AI features |
+| `GEMINI_API_KEY` | Legacy | Direct Google Gemini API key. Kept for backwards compatibility — `AI_GATEWAY_API_KEY` is the canonical path now. |
 | `RESEND_API_KEY` | Yes | Resend API key for forgot-password emails |
 | `GOOGLE_CLIENT_ID` | No | Google OAuth client ID (Google SSO disabled if absent) |
 | `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret |

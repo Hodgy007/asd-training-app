@@ -1,24 +1,26 @@
 # Security & Compliance Review
-## Ambitious About Autism — ASD Training & Observation Platform
+## Ambitious About Autism — ASD Training Platform
 
-**Document version:** 2.0
-**Date:** 1 April 2026
+**Document version:** 3.0
+**Date:** 26 April 2026
 **Classification:** Internal — For review by CISO, DPO, or Information Governance lead
 **Prepared by:** Development team
-**Previous version:** 1.0 (28 March 2026)
+**Previous version:** 2.0 (1 April 2026)
+
+**Material changes since v2.0:** The child-observation feature (`Child`, `Observation`, `AiInsight` models and associated `/children` routes) has been removed from the platform. This document has been updated to remove all references to special-category health-adjacent data processing. The platform now handles only ordinary personal data (training records, CV/careers content authored by adult users, organisational data). All AI processing is now routed through the **Vercel AI Gateway** rather than Google Gemini directly. SCORM 1.2 / 2004 package hosting has been added.
 
 ---
 
 ## 1. Executive Summary
 
-This document provides a comprehensive security and compliance review of the Ambitious About Autism web application — a platform designed for caregivers, early years practitioners, careers professionals, and organisation staff to access ASD awareness training, log structured behavioural observations for children, and participate in professional development.
+This document provides a comprehensive security and compliance review of the Ambitious About Autism web application — a multi-tenant platform designed for caregivers, early-years practitioners, careers professionals, autistic students, interns, employees, and organisation staff to access ASD awareness training, careers training, virtual workshops, document libraries, CV building tools, an AI careers advisor, and a job-opening directory.
 
-The application handles **special category personal data** (health-adjacent observations relating to children's developmental behaviour) and is therefore subject to heightened data protection obligations under the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.
+The application handles **ordinary personal data** under the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018. It does not store information *about* children, health records, or any other Article 9 special-category data. The data inventory consists of adult user account information, training records, CV / careers content authored by the user themselves, organisational metadata, and document-library files chosen for upload by administrators.
 
-Since version 1.0 of this document (28 March 2026), significant security hardening has been completed including rate limiting, MFA enforcement, password complexity requirements, XSS sanitisation, security headers, file upload validation, and a cookie consent mechanism. These controls are detailed throughout this document.
+The platform supports administrative roles (charity admin, charity employees with delegated permissions, organisation admins) and end-user roles (practitioners, careers professionals, students, interns, employees). MFA is mandatory for all administrative roles.
 
-**Overall risk rating: LOW-MEDIUM**
-The application has comprehensive security controls in place across all major categories. Remaining gaps are primarily administrative (signed DPAs, ICO registration, DPIA completion) rather than technical.
+**Overall risk rating: LOW**
+The application has comprehensive technical security controls. Remaining items are primarily administrative (signed DPAs, ICO registration confirmation) rather than technical.
 
 ---
 
@@ -28,19 +30,20 @@ The application has comprehensive security controls in place across all major ca
 |-----------|-------------|--------------|-------------------|-----------|
 | User name and email | Personal Data (Article 4 UK GDPR) | Neon PostgreSQL | AES-256 (Azure managed) | Until account deletion |
 | Hashed password (bcrypt, cost 12) | Personal Data | Neon PostgreSQL | AES-256 + bcrypt hash | Until account deletion |
-| Child first name and date of birth | Personal Data (child — heightened) | Neon PostgreSQL | AES-256 (Azure managed) | Until account deletion |
-| Behavioural observations (domain, frequency, context, notes) | **Special Category Data** (Article 9 — health-adjacent) | Neon PostgreSQL | AES-256 (Azure managed) | Until account deletion |
-| AI-generated insight reports | Special Category Data (derived) | Neon PostgreSQL | AES-256 (Azure managed) | Until account deletion |
-| Training progress records | Personal Data | Neon PostgreSQL | AES-256 (Azure managed) | Until account deletion |
-| Document library files | Organisational data | Vercel Blob storage | AES-256 (Vercel managed) | Until admin deletion |
+| Training progress records (CMI snapshots, completion, score) | Personal Data | Neon PostgreSQL | AES-256 (Azure managed) | Until account deletion |
+| CV content authored by the user (work history, education, skills, interests, references, personal statement) | Personal Data | Neon PostgreSQL | AES-256 (Azure managed) | Until account deletion |
+| Careers Advisor questionnaire answers and AI-generated reports | Personal Data | Neon PostgreSQL | AES-256 (Azure managed) | Until account deletion |
+| Document library files (organisational documents chosen by admins for upload) | Organisational data | Vercel Blob storage | AES-256 (Vercel/Cloudflare managed) | Until admin deletion |
+| SCORM packages (third-party e-learning content uploaded by admins) | Organisational data | Vercel Blob storage | AES-256 | Until admin deletion |
 | Survey responses | Personal Data | Neon PostgreSQL | AES-256 (Azure managed) | Until survey deletion |
+| Lesson notes (free-text personal notes per lesson) | Personal Data | Neon PostgreSQL | AES-256 (Azure managed) | Until account deletion |
 | TOTP MFA secrets | Personal Data (sensitive) | Neon PostgreSQL | AES-256 (Azure managed) | Until MFA disabled/account deletion |
 | JWT session tokens | Personal Data | Client-side cookie (httpOnly) | HTTPS transport, signed (HS256) | 8 hours (maxAge) |
 | Password reset tokens | Personal Data | Neon PostgreSQL | AES-256 (Azure managed) | 1 hour (auto-expired) |
 | Integration API key hashes | Organisational data | Neon PostgreSQL | AES-256 + SHA-256 hash | Until key revocation |
 | SAML SSO certificates | Organisational data (sensitive) | Neon PostgreSQL | AES-256 (Azure managed) | Until SSO config removal |
 
-**Note on special category classification:** The behavioural observations recorded on this platform relate to potential neurodevelopmental differences in children. Although the platform explicitly does not diagnose, the data is sufficiently health-adjacent to be treated as special category data requiring explicit consent under Article 9(2)(a) UK GDPR.
+**No Article 9 special-category data.** The platform does not store health records, biometric data, or any data about identified or identifiable third parties (including children). All personal data on the platform is supplied by adult users about themselves, or by administrators about adult colleagues they are inviting.
 
 ---
 
@@ -58,7 +61,7 @@ Vercel Edge Network (TLS 1.3, global CDN, ~300 PoPs worldwide)
         ▼
 Next.js Application (Vercel Serverless Functions, Node.js, iad1 — Washington DC)
   ├── Authentication layer (NextAuth v4, JWT sessions, RBAC middleware)
-  ├── XSS sanitisation layer (DOMPurify on all HTML output)
+  ├── XSS sanitisation layer (`sanitize-html` on all HTML output)
   └── Input validation (Zod schemas, server-side)
         │
         ├──► Neon PostgreSQL (Azure East US 2, ep-blue-thunder.eastus2.azure.neon.tech)
@@ -67,14 +70,22 @@ Next.js Application (Vercel Serverless Functions, Node.js, iad1 — Washington D
         │        TLS enforced on all connections
         │        AES-256 encryption at rest (Azure managed)
         │
-        ├──► Google Gemini API (gemini-2.5-flash)
-        │        Observation text sent on AI report request only
-        │        Child surnames and DOB are NOT sent
-        │        Google API terms: data not used for model training
+        ├──► Vercel AI Gateway (provider/model strings)
+        │        Routes AI calls to Gemini, Claude, or OpenAI per-prompt
+        │        Used for: CV writing assistance, Careers Advisor reports,
+        │        survey insights, training quiz/content generation,
+        │        library collection metadata
+        │        No special-category data sent — only user-authored CV/careers
+        │        content, survey responses, or training material excerpts
+        │        Provider terms: API inputs not used for model training
         │
-        ├──► Vercel Blob Storage (document library files)
+        ├──► Vercel Blob Storage (document library, SCORM packages, TTS cache, CV uploads)
         │        Authenticated uploads via server-side token
         │        File type/MIME validation before upload
+        │
+        ├──► ElevenLabs (text-to-speech for the lesson read-aloud feature)
+        │        Lesson text only — no user identifiers
+        │        Synthesised MP3s cached on Vercel Blob (SHA-256 keyed)
         │
         └──► Resend (transactional email)
                  Email address + name sent for password reset only
@@ -131,15 +142,17 @@ Next.js Application (Vercel Serverless Functions, Node.js, iad1 — Washington D
 | **File validation** | Extension whitelist, MIME type cross-checking, 50 MB size limit, blocked dangerous file types |
 | **DPA** | Covered under Vercel's DPA |
 
-### 4.4 Google Gemini API (AI Processing)
+### 4.4 Vercel AI Gateway (AI Processing)
 
 | Aspect | Detail |
 |--------|--------|
-| **Provider** | Google LLC |
-| **Model** | gemini-2.5-flash |
-| **Data retention** | Google API terms state inputs are not used for model training and are not retained beyond processing |
-| **Data minimisation** | Only observation text is sent; child surnames, DOB, and user account data are NOT transmitted |
-| **DPA available** | Yes — Google Cloud Data Processing Amendment |
+| **Provider** | Vercel Inc. (the AI Gateway is a Vercel-operated service that proxies to upstream model providers) |
+| **Models** | Gemini, Claude, GPT — selected per-prompt via provider/model strings (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`, `openai/gpt-4o-mini`) |
+| **Authentication** | `AI_GATEWAY_API_KEY` (server-side only; never sent to the browser) |
+| **Use cases** | CV writing assistance, Careers Advisor report generation, survey AI insights, training quiz/content generation from uploaded documents, document-library collection metadata |
+| **Data minimisation** | Only the content needed for the specific feature is sent. CV: the user's own CV draft. Careers Advisor: the user's questionnaire answers. Survey insights: aggregate anonymised response counts. Quiz generation: lesson text supplied by the admin. **No user identifiers, account data, or special-category data is transmitted.** |
+| **Provider data retention** | Upstream provider DPAs (Google Cloud, Anthropic, OpenAI) state API inputs are not used for model training and are not retained beyond processing. The Vercel AI Gateway adds an observability/usage-logging layer that the org should review when signing the Vercel DPA. |
+| **DPA available** | Yes — Vercel DPA covers the gateway; upstream provider DPAs cover the models. |
 
 ### 4.5 Resend (Transactional Email)
 
@@ -184,8 +197,8 @@ Eight roles are defined with hierarchical access:
 | `SUPER_ADMIN` | Charity Admin | Full platform access — manages all organisations, users, training content, surveys, library, sessions, reports, integrations, settings. All charity permissions implicitly granted. MFA mandatory. |
 | `CHARITY_EMPLOYEE` | Charity Employee | Delegated charity access — limited to specific permissions from their `charityPermissions` array (manage_organisations, manage_training, manage_surveys, manage_announcements, view_reports, manage_sessions, manage_library). MFA mandatory. |
 | `ORG_ADMIN` | Org Admin | Organisation-level admin — manages users, announcements, sessions, library, reports, meeting config, and SSO settings for their own organisation only. MFA mandatory. |
-| `CAREGIVER` | Practitioner | Full training + observation access — ASD training, child profiles, observations, AI insights, reports, sessions, library |
-| `CAREER_DEV_OFFICER` | Careers Professional | Careers training only — no child data access, no observation features |
+| `CAREGIVER` | Practitioner | ASD awareness training, virtual workshops, document library, lesson notes |
+| `CAREER_DEV_OFFICER` | Careers Professional | Careers CPD training, CV Builder, AI Careers Advisor, virtual workshops, document library, jobs, plus same-organisation read access to student CVs and careers reports |
 | `STUDENT` | Student | Training only — assigned training programs |
 | `INTERN` | Intern | Training only — assigned training programs |
 | `EMPLOYEE` | Employee | Training only — assigned training programs |
@@ -193,10 +206,10 @@ Eight roles are defined with hierarchical access:
 **Access enforcement:**
 - All API routes verify session and role on every request
 - Middleware enforces route-level access: admin roles cannot access leaf-role routes (and vice versa)
-- Child data endpoints filter by `userId` — cross-user data access is not possible
+- User-owned data (CVs, careers sessions, lesson notes, training progress) is filtered by `userId` — cross-user data access is not possible
 - Organisation-scoped queries filter by `organisationId` — cross-org data access is not possible
 - Admin actions (user creation, training editing, etc.) verify appropriate role before execution
-- CHARITY_EMPLOYEE users have granular permission checks via `hasPermission()` helper
+- CHARITY_EMPLOYEE users have granular permission checks via `hasPermission()` helper across nine permissions (manage_organisations, manage_training, manage_surveys, manage_announcements, view_reports, manage_sessions, manage_library, manage_ai_prompts, manage_jobs)
 - Super admin sidebar dynamically shows/hides navigation items based on permissions
 
 ### 5.3 API security
@@ -227,26 +240,30 @@ All routes return the following security headers via `next.config.js`:
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | Blocks camera, microphone, and geolocation access |
 | `Content-Security-Policy` | See below | Restricts resource loading to trusted origins |
 
-**Content Security Policy (CSP) directives:**
-- `default-src 'self'` — only load resources from same origin by default
-- `script-src 'self' 'unsafe-inline' 'unsafe-eval'` — required for Next.js hydration and react-quill WYSIWYG editor
-- `style-src 'self' 'unsafe-inline'` — required for Tailwind CSS and component styling
-- `img-src 'self' data: blob: https://via.placeholder.com https://placehold.co https://*.public.blob.vercel-storage.com` — allows images from Vercel Blob storage
-- `font-src 'self'` — only self-hosted fonts
-- `connect-src 'self' https://generativelanguage.googleapis.com` — allows Gemini API calls
-- `frame-ancestors 'none'` — additional clickjacking prevention
+**Content Security Policy (CSP) directives** (current production CSP — see `next.config.js`):
+- `default-src 'self'`
+- `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com` — Stripe.js for payment flows; `unsafe-*` required for Next.js hydration and the react-quill WYSIWYG editor
+- `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com` — Google Fonts (Lexend) and Tailwind utility styles
+- `img-src 'self' data: blob: https://via.placeholder.com https://placehold.co https://*.public.blob.vercel-storage.com https://*.stripe.com`
+- `font-src 'self' https://fonts.gstatic.com`
+- `connect-src 'self' https://generativelanguage.googleapis.com https://api.stripe.com https://vercel.com https://blob.vercel-storage.com https://*.public.blob.vercel-storage.com` — AI Gateway / direct Gemini fallback, Stripe API, and Vercel Blob client-direct uploads
+- `media-src 'self' blob: https://*.public.blob.vercel-storage.com` — `blob:` is required for the TTS player's `<audio>` element
+- `frame-src 'self' https://www.youtube.com https://player.vimeo.com https://js.stripe.com https://hooks.stripe.com`
+- `frame-ancestors 'self'`
 
-**CSP notes:** `unsafe-inline` and `unsafe-eval` are required for Next.js page hydration and the react-quill rich text editor. A nonce-based CSP would be preferred but requires Next.js configuration changes. This is documented as a future improvement.
+The `/api/scorm/[lessonId]/[...path]` route emits its own per-asset CSP (more permissive within the iframe; restricts external loads).
+
+**CSP notes:** `unsafe-inline` and `unsafe-eval` are required for Next.js page hydration and the react-quill rich text editor. A nonce-based CSP is documented as a future improvement.
 
 ### 6.2 XSS prevention
 
 | Control | Implementation |
 |---------|---------------|
 | React auto-escaping | React escapes all interpolated values by default |
-| DOMPurify sanitisation | All `dangerouslySetInnerHTML` usage (training lesson content, survey results) passes through `isomorphic-dompurify` with an explicit whitelist of allowed HTML tags and attributes |
+| HTML sanitisation | All `dangerouslySetInnerHTML` usage (training lesson content, interactive blocks, survey results) passes through `sanitize-html` with an explicit whitelist of allowed HTML tags and attributes. (`isomorphic-dompurify` was previously used and was swapped out — the project no longer depends on `jsdom` at runtime.) |
 | Tag whitelist | Only formatting tags allowed: headings, paragraphs, lists, links, images, tables, code blocks, text formatting |
 | Attribute whitelist | Only safe attributes: `href`, `target`, `rel`, `src`, `alt`, `class`, `style`, `width`, `height`, `colspan`, `rowspan` |
-| `ALLOW_DATA_ATTR: false` | Data attributes blocked to prevent injection via custom attributes |
+| Data attributes | Blocked from sanitiser output to prevent injection via custom attributes |
 
 ### 6.3 File upload security
 
@@ -301,8 +318,9 @@ A GDPR-compliant cookie consent banner is displayed to all first-time visitors. 
 |-------|-----------|------------|
 | Data in transit (browser ↔ Vercel) | TLS 1.3, enforced by Vercel; HSTS preload (2 years) | ✅ Strong |
 | Data in transit (Vercel ↔ Neon) | TLS (Neon default, enforced) | ✅ Strong |
-| Data in transit (Vercel ↔ Gemini API) | TLS (Google default) | ✅ Strong |
+| Data in transit (Vercel ↔ AI Gateway) | TLS (Vercel default) | ✅ Strong |
 | Data in transit (Vercel ↔ Resend) | TLS | ✅ Strong |
+| Data in transit (Vercel ↔ ElevenLabs) | TLS | ✅ Strong |
 | Data at rest (Neon/Azure) | AES-256 (Azure managed encryption keys) | ✅ Strong |
 | Data at rest (Vercel Blob) | AES-256 (Vercel/Cloudflare managed) | ✅ Strong |
 | Data at rest (Vercel env vars) | Encrypted at rest by Vercel | ✅ Strong |
@@ -310,7 +328,7 @@ A GDPR-compliant cookie consent banner is displayed to all first-time visitors. 
 | TOTP secrets | Stored in database (encrypted at rest by Azure) | ✅ Adequate |
 | API keys | SHA-256 hash stored; raw key shown only once at creation | ✅ Strong |
 | JWT session tokens | HS256 signed with NEXTAUTH_SECRET; httpOnly, secure, sameSite cookies | ✅ Strong |
-| Application-level field encryption | Not implemented for observation `notes` field | ⚠️ See §12 |
+| Application-level field encryption | Not implemented for free-text fields (lesson notes, CV bodies). At-rest encryption is provided by Azure (Neon) and Vercel Blob; defence-in-depth field encryption is a low-priority enhancement — see §12. |
 
 ---
 
@@ -320,23 +338,20 @@ A GDPR-compliant cookie consent banner is displayed to all first-time visitors. 
 
 | Data Type | Lawful Basis |
 |-----------|-------------|
-| Account registration data | Consent (Article 6(1)(a)) — collected at registration via consent checkbox |
-| Child profiles and behavioural observations | Explicit Consent (Article 9(2)(a)) — collected at registration |
-| AI-generated reports | Explicit Consent — covered by registration consent |
-| Training progress | Legitimate Interests / Consent — minimal, non-sensitive |
+| Account registration data | Consent (Article 6(1)(a)) — collected at registration / SSO first sign-in |
+| Training progress and SCORM CMI snapshots | Legitimate Interests / Consent — minimal personal data needed to deliver the training service |
+| CV content and Careers Advisor questionnaire answers | Consent — users opt in by choosing to use the feature |
+| AI-generated reports (CV / Careers / survey insights / quiz / library metadata) | Consent — generated only at the user's request |
 | Survey responses | Consent — users choose to respond |
-| Document library analytics | Legitimate Interests — anonymised view/download counts |
+| Document library and SCORM analytics (downloads, views, quiz aggregates) | Legitimate Interests — anonymised counts and aggregates only; never per-learner |
 
 ### 8.2 Consent record
 
-Explicit consent is collected via a mandatory checkbox at registration. The checkbox text:
-- References and links to the **Privacy Policy** (opens in new tab)
-- References and links to the **Terms of Service** (opens in new tab)
-- Explicitly mentions AI processing
-- Explicitly mentions this is not a diagnostic tool
-- States the user consents to personal data processing for ASD observation tracking and training
+Self-registration is **disabled** on this platform — all user accounts are created by an administrator. The administrator presents the Privacy Policy and Terms of Service to the invitee out-of-band (e.g. via the printable QR credential card given to new users). The user is then required to set their own password on first login (`mustChangePassword` flag), at which point they have agreed to the platform's terms by continuing.
 
-**SSO consent gap:** Users signing in via Google/Azure AD SSO do not pass through the registration form and therefore do not see the consent checkbox. However, SSO users must be pre-created by an admin, which implies organisational consent. **Recommendation:** Consider adding a first-login consent screen for SSO users.
+**SSO and SAML sign-ins** also do not see a consent checkbox — these users are pre-created by their organisation admin, who is responsible for ensuring the user has agreed to the relevant terms before being onboarded.
+
+**Recommendation:** Consider adding a first-login consent acknowledgement screen for all user types, including SSO, before any feature is exposed.
 
 ### 8.3 Data subject rights
 
@@ -344,7 +359,7 @@ Explicit consent is collected via a mandatory checkbox at registration. The chec
 |-------|----------------------|
 | Right of access (Article 15) | Manual process — contact DPO by email | ⚠️ Manual |
 | Right to rectification (Article 16) | User can update profile fields in Settings | ✅ Partial |
-| Right to erasure (Article 17) | Self-service account deletion in Settings; cascading deletion of all child data, observations, AI insights, training progress | ✅ Implemented |
+| Right to erasure (Article 17) | Self-service account deletion in Settings; cascading deletion of all training progress, CV content, Careers Advisor sessions, lesson notes, and survey responses | ✅ Implemented |
 | Right to data portability (Article 20) | Not implemented | ⚠️ Gap — see §12 |
 | Right to restrict processing (Article 18) | Manual process — contact DPO | ⚠️ Manual |
 | Right to withdraw consent | Achieved via account deletion in Settings | ✅ Functional |
@@ -357,11 +372,9 @@ No automated retention policy is currently implemented. Data is retained for the
 
 ### 8.5 Children's data
 
-The platform stores data **about** children, not **accounts for** children. Accounts are held by adult caregivers (Practitioners). The children whose data is recorded are not users of the platform.
+**The platform does not store data about children.** All user accounts and content belong to adults — practitioners, careers professionals, organisation staff, students (16+), interns, employees, and administrators. The previously-shipped child-observation feature has been removed (see version history at the top of this document).
 
-Processing of children's personal data requires the consent of a person holding parental responsibility. The registration consent checkbox implicitly assumes this, and the system requires child data to be entered only by the authenticated caregiver who owns that child profile.
-
-**Data isolation:** Each child profile is scoped to its parent user via `userId`. API endpoints enforce ownership — a user can only access their own children's data. Cascading deletion ensures all child data is removed when a user account is deleted.
+Where the platform is used by **users aged 16 or 17** in a school or college setting (e.g. STUDENT role), the standard UK GDPR rules for older minors apply: data subjects of this age can ordinarily provide their own consent, but the contracting organisation should ensure appropriate parental notification where school-policy requires it.
 
 ### 8.6 ICO registration
 
@@ -371,7 +384,12 @@ All organisations that process personal data in the UK are required to register 
 
 ### 8.7 Data Protection Impact Assessment (DPIA)
 
-Given the nature of the data (health-adjacent observations relating to children), a **DPIA is likely required** under Article 35 UK GDPR before large-scale deployment. A DPIA should be completed if the application will be used by more than a small number of internal users.
+The platform now processes only ordinary personal data — there is no health, biometric, or other Article 9 special-category data. A DPIA is **not strictly required** under Article 35 UK GDPR for the current data inventory, but the ICO recommends one whenever a new system will process personal data at scale, profile users, or use AI for decisions that affect individuals. Given this platform uses LLMs to generate CV / careers / training content for users — outputs that the user may rely on — a lightweight DPIA is recommended before rolling out to the wider charity audience, focusing on:
+
+- The user-perceived authority of AI outputs (mitigated by explicit disclaimers in the UI and prompt text)
+- The Vercel AI Gateway data flow and upstream provider DPAs
+- Document-library and SCORM upload validation
+- The third-party processors (Vercel, Neon, Resend, ElevenLabs) and their UK / EU transfer mechanisms
 
 ### 8.8 Cookie usage
 
@@ -389,34 +407,44 @@ No analytics cookies, tracking cookies, or third-party cookies are used. The coo
 
 | Processor | Purpose | Data Shared | Location | Compliance | DPA |
 |-----------|---------|-------------|----------|------------|-----|
-| **Vercel Inc.** | Application hosting, CDN, serverless compute, blob storage | All application data passes through Vercel infrastructure; documents stored in Vercel Blob | US (global CDN, iad1 compute) | SOC 2 Type II, ISO 27001, HIPAA eligible | Available — review required |
-| **Neon Inc.** (on Azure) | PostgreSQL database hosting | All stored personal data including special category data | Azure East US 2 | SOC 2 Type II (Neon); Azure: ISO 27001, SOC 2, HIPAA, PCI DSS | Available — review required |
-| **Google LLC** | AI report generation (Gemini API) | Observation text only — no names, DOB, or account data | US | Google Cloud DPA; API terms: data not used for model training | Available — review required |
+| **Vercel Inc.** | Application hosting, CDN, serverless compute, Blob storage, AI Gateway | All application data passes through Vercel infrastructure; documents and SCORM packages stored in Vercel Blob; AI prompts proxied through Vercel AI Gateway | US (global CDN, iad1 compute) | SOC 2 Type II, ISO 27001, HIPAA eligible | Available — review required |
+| **Neon Inc.** (on Azure) | PostgreSQL database hosting | All stored personal data | Azure East US 2 | SOC 2 Type II (Neon); Azure: ISO 27001, SOC 2, HIPAA, PCI DSS | Available — review required |
+| **Google LLC / Anthropic / OpenAI** (sub-processors via Vercel AI Gateway) | LLM inference for CV writing, Careers Advisor reports, survey insights, training content / quiz generation, library metadata | User-authored content only — CV drafts, questionnaire answers, lesson text excerpts. No identifiers, no special-category data. | US | Provider terms via Vercel; provider DPAs available directly | Available — review required |
 | **Resend Inc.** | Transactional email (password reset) | Email address and first name | US | Resend DPA | Available — review required |
+| **ElevenLabs Inc.** | Text-to-speech for the lesson read-aloud feature | Lesson text only (no user identifiers) | US | ElevenLabs DPA | Available — review required |
 
 **Action required:** Signed Data Processing Agreements (DPAs) should be in place with each processor before live deployment. Verify current SCCs / UK IDTA / DPF coverage for US transfers.
 
 ---
 
-## 10. AI and Google Gemini Considerations
+## 10. AI Considerations
 
-The platform generates AI insight reports by sending child observation data (behaviour descriptions, frequencies, domains) to Google Gemini (gemini-2.5-flash) via the Gemini API.
+All AI features route through the **Vercel AI Gateway** with provider/model selection per-prompt (Gemini, Claude, GPT). Prompts live in the `AiPrompt` database table and can be tuned without redeploying. The runtime entry point is `lib/ai-runner.ts:runPrompt(key, values)`.
+
+**AI features in the platform:**
+
+| Feature | Data Sent | Output |
+|---------|-----------|--------|
+| CV Builder writing assistance | The user's own CV draft (personal statement, work experience entries, etc.) | Rephrased / generated CV prose |
+| AI Careers Advisor | The user's questionnaire answers (interests, strengths, environment preferences, etc.) | Structured careers report (strengths, suggestions, next steps, workplace support) |
+| Survey AI insights | Aggregate, anonymised survey response counts and texts | Summary, comparative, or recommendation report |
+| Training quiz generation | Lesson text supplied by an admin | Multiple-choice question candidates for admin review |
+| Training content generation from files | PDF/DOCX/PPTX text uploaded by an admin | Module / lesson / quiz scaffolds for admin review |
+| Document library metadata | Document text uploaded by an admin | Collection description / thumbnail prompt |
 
 **Key considerations:**
 
-1. **No diagnosis:** All prompts explicitly instruct the model to never diagnose or suggest autism. Every AI output includes a mandatory disclaimer: "This is not a diagnosis. This tool supports observation and pattern recognition only. Always consult a qualified healthcare professional." This disclaimer is also stored in the database with each insight.
+1. **No diagnosis or autism inference.** All prompts explicitly instruct the model never to diagnose or suggest autism, and to use strength-focused, UK English language. CV and Careers Advisor prompts reference UK-specific resources (Access to Work, National Careers Service) without referencing disability status.
 
-2. **Data minimisation:** The prompts send observation records (behaviour type, domain, frequency, context, notes) but do not include child surnames, dates of birth, or user account information. This limits re-identification risk.
+2. **Data minimisation.** The runner sends only the inputs needed for the specific feature. No user identifiers, account data, organisation data, training records, or data about other users are transmitted.
 
-3. **Google data retention:** Under Google Cloud / Gemini API terms, API inputs are not used for model training and are not retained beyond the processing of the request. This should be confirmed in the DPA.
+3. **Provider data retention.** Vercel's AI Gateway proxies to Google, Anthropic, and OpenAI under terms that exclude API inputs from model training and limit retention to the processing window. The Vercel DPA covers the gateway layer; upstream provider DPAs cover the model layer.
 
-4. **Output accuracy:** AI-generated reports are supplementary to — not a replacement for — professional assessment. The platform includes explicit disclaimers on every page. Staff using the platform should be trained to communicate this to caregivers.
+4. **Output accuracy.** AI-generated content is presented to admin / user for review and editing before any persistent action. CV outputs land in a draft the user must accept; quiz / content generation lands in an editor the admin must approve. No AI output is published to learners without human review.
 
-5. **AI-generated quiz questions:** Gemini is also used to generate quiz questions for the training content management system. These are reviewed by admin users before being published.
+5. **Rate limiting.** Per-user rate limiters prevent runaway usage (CV AI: 10/5min; Careers Advisor: 10/5min). The Vercel AI Gateway also surfaces usage metrics for cost monitoring.
 
-6. **AI-generated thumbnails:** Gemini can generate thumbnails for document library collections. These contain no personal data.
-
-7. **Future model changes:** If the Gemini model version is updated, a review of output quality and disclaimer adequacy should be conducted.
+6. **Model swaps.** Models can be changed per-prompt via the AI Prompts admin UI without code changes. Any model swap should be followed by a sample-output review by an admin to confirm tone and accuracy match expectations.
 
 ---
 
@@ -426,7 +454,7 @@ In the event of a suspected personal data breach:
 
 1. **Contain** — Immediately revoke affected credentials. Rotate `NEXTAUTH_SECRET` via Vercel environment variables (forces all sessions to expire). Rotate database credentials via Neon console. Deactivate compromised user accounts.
 
-2. **Assess** — Determine what data was exposed, how many individuals are affected, and whether special category data (observations) was involved. Check application logs via Vercel dashboard.
+2. **Assess** — Determine what data was exposed, how many individuals are affected, and which categories of personal data were involved. Check application logs via Vercel dashboard.
 
 3. **Report** — If the breach is likely to result in a risk to individuals' rights and freedoms, report to the ICO **within 72 hours** of becoming aware (Article 33 UK GDPR). If high risk, notify affected individuals directly (Article 34).
 
@@ -437,15 +465,19 @@ In the event of a suspected personal data breach:
 **Credential rotation procedure:**
 - `NEXTAUTH_SECRET` — change in Vercel dashboard → Environment Variables → redeploy. All existing sessions are immediately invalidated.
 - Database URL — rotate in Neon console; update `DATABASE_URL` and `DIRECT_URL` in Vercel; redeploy.
-- `GEMINI_API_KEY` — rotate in Google Cloud Console; update in Vercel; redeploy.
+- `AI_GATEWAY_API_KEY` — rotate in the Vercel AI Gateway dashboard; update in Vercel project env vars; redeploy.
+- `GEMINI_API_KEY` — legacy direct provider key; rotate in Google AI Studio if used.
 - `RESEND_API_KEY` — rotate in Resend dashboard; update in Vercel; redeploy.
+- `ELEVENLABS_API_KEY` — rotate in ElevenLabs dashboard; update in Vercel; redeploy.
 - `BLOB_READ_WRITE_TOKEN` — rotate in Vercel Blob dashboard; update in Vercel; redeploy.
 
 **Key contacts to prepare:**
 - ICO breach reporting: ico.org.uk/for-organisations/report-a-breach
 - Neon support: console.neon.tech
 - Vercel support: vercel.com/support
-- Google Cloud support: cloud.google.com/support
+- Vercel support (incl. AI Gateway): vercel.com/support
+- Resend support: resend.com/support
+- ElevenLabs support: elevenlabs.io/support
 
 ---
 
@@ -477,19 +509,20 @@ The following gaps identified in version 1.0 (28 March 2026) have been resolved:
 
 | Gap | Risk | Recommended Mitigation | Priority |
 |-----|------|------------------------|----------|
-| SSO users bypass consent checkbox | GDPR consent record incomplete for Google/Azure/SAML sign-ins | Show consent screen on first SSO sign-in before granting access | **Medium** |
-| No automated data retention | Stale data accumulates; GDPR retention obligations | Implement a cron job to flag/delete accounts inactive for 24+ months | **Medium** |
-| No data export (portability) | GDPR Article 20 right to portability not met | Build a "Download my data" feature exporting observations as JSON/CSV | **Medium** |
-| Application-level field encryption | Observation notes stored in plaintext in DB (encrypted at rest by Azure, but not at application level) | Consider encrypting `notes` fields at application level for additional defence in depth | **Low** |
-| No signed DPAs with processors | GDPR Article 28 compliance incomplete | Obtain and file signed DPAs with Vercel, Neon, Google, Resend | **High** |
+| SSO / first-login consent gap | GDPR consent record incomplete for SSO and admin-created accounts | Show consent screen on first sign-in before granting access | **Medium** |
+| No automated data retention | Stale data accumulates; GDPR retention obligations | Implement a scheduled job to flag/delete accounts inactive for 24+ months | **Medium** |
+| No data export (portability) | GDPR Article 20 right to portability not met | Build a "Download my data" feature exporting training, CV, careers, and survey data as JSON/CSV | **Medium** |
+| Application-level field encryption | Free-text fields (lesson notes, CV bodies) stored in plaintext in DB (encrypted at rest by Azure, but not at application level) | Consider encrypting these fields at application level for defence in depth | **Low** |
+| No signed DPAs with processors | GDPR Article 28 compliance incomplete | Obtain and file signed DPAs with Vercel (covers AI Gateway + Blob + hosting), Neon, Resend, ElevenLabs. Verify upstream LLM provider DPAs with Google / Anthropic / OpenAI as needed. | **High** |
 | ICO registration unconfirmed | Regulatory non-compliance risk | Confirm registration status and register if required before public launch | **High** |
-| No DPIA completed | Required for large-scale processing of health-adjacent child data | Complete DPIA before deploying to more than a pilot user group | **High** |
+| DPIA not completed | Article 35 not strictly required for current data inventory, but ICO recommends one for AI-assisted features | Complete a lightweight DPIA covering AI Gateway flows + LLM outputs + third-party processors | **Medium** |
 | Resend email domain not verified | Password reset emails may be blocked or go to spam | Verify `ambitiousaboutautism.org.uk` domain in Resend dashboard and add SPF/DKIM records | **Medium** |
 | No error tracking/monitoring | Cannot detect runtime errors in production proactively | Add Sentry or similar APM for error alerting | **Medium** |
-| CSP uses `unsafe-inline`/`unsafe-eval` | Slightly reduced XSS protection (mitigated by DOMPurify) | Investigate nonce-based CSP for Next.js | **Low** |
+| CSP uses `unsafe-inline`/`unsafe-eval` | Slightly reduced XSS protection (mitigated by `sanitize-html`) | Investigate nonce-based CSP for Next.js | **Low** |
 | In-memory rate limiting | Resets on cold starts; not shared across serverless instances | Consider Upstash Redis for distributed rate limiting at scale | **Low** |
 | No formal penetration test | Unknown vulnerabilities may exist | Commission external penetration test before public launch | **Medium** |
 | TOTP secrets not app-level encrypted | Stored encrypted at rest by Azure, but visible in database queries | Consider app-level encryption with a dedicated key | **Low** |
+| SCORM iframe sandbox warning | The iframe sandbox uses both `allow-scripts` and `allow-same-origin` (browser flags this as "could escape sandboxing"). Same-origin is required so SCO subresource requests carry the session cookie. | Implement signed-URL authentication for SCORM asset requests so the iframe can be sandboxed without `allow-same-origin`. Skeleton in `public/scorm-runtime/api-shim.js`. | **Low** |
 
 ---
 
@@ -502,15 +535,15 @@ The following gaps identified in version 1.0 (28 March 2026) have been resolved:
 | MFA for admin roles | ✅ Implemented and enforced | Development |
 | Password complexity requirements | ✅ Implemented (10+ chars, mixed case, number, special) | Development |
 | Security headers (CSP, HSTS, etc.) | ✅ Implemented | Development |
-| XSS sanitisation | ✅ Implemented (DOMPurify) | Development |
+| XSS sanitisation | ✅ Implemented (`sanitize-html`) | Development |
 | File upload validation | ✅ Implemented | Development |
 | Cookie consent banner | ✅ Implemented | Development |
 | Terms of Service page | ✅ Published at /terms | Development |
 | Privacy Policy page | ✅ Published at /privacy | Development |
 | Error boundaries | ✅ All route groups covered | Development |
 | Confirm ICO registration | ⬜ Pending | DPO / Legal |
-| Sign DPAs (Vercel, Neon, Google, Resend) | ⬜ Pending | DPO / Legal |
-| Complete DPIA | ⬜ Pending | DPO |
+| Sign DPAs (Vercel, Neon, Resend, ElevenLabs; verify upstream LLM provider DPAs via Vercel AI Gateway) | ⬜ Pending | DPO / Legal |
+| Complete DPIA (AI flows + processors) | ⬜ Pending | DPO |
 | Verify email domain (Resend SPF/DKIM) | ⬜ Pending | IT / Development |
 | Commission penetration test | ⬜ Pending | Security |
 | SSO first-login consent screen | ⬜ Pending | Development |
@@ -522,16 +555,18 @@ The following gaps identified in version 1.0 (28 March 2026) have been resolved:
 
 ## 14. Conclusion & Risk Rating
 
-The application has comprehensive technical security controls: strong password hashing with complexity requirements, TOTP MFA enforced for all admin roles, role-based access control across 8 roles with granular permissions, rate limiting on all authentication endpoints, XSS prevention via DOMPurify, security headers including CSP and HSTS, file upload validation with MIME cross-checking, and a GDPR-compliant cookie consent mechanism. The hosting infrastructure (Vercel, Neon/Azure) provides SOC 2 Type II certified environments with encryption at rest and in transit.
+The application has comprehensive technical security controls: strong password hashing with complexity requirements, TOTP MFA enforced for all admin roles, role-based access control across 8 roles with granular permissions, rate limiting on all authentication endpoints, XSS prevention via `sanitize-html`, security headers including CSP and HSTS, file upload validation with MIME cross-checking, and a GDPR-compliant cookie consent mechanism. The hosting infrastructure (Vercel, Neon/Azure) provides SOC 2 Type II certified environments with encryption at rest and in transit.
+
+The platform handles only ordinary personal data — no Article 9 special-category data is processed. The previously-shipped child-observation feature has been removed.
 
 Remaining gaps are primarily administrative and procedural rather than technical:
-- Signed DPAs with all processors
+- Signed DPAs with all processors (Vercel, Neon, Resend, ElevenLabs; upstream LLM providers via the Vercel AI Gateway)
 - ICO registration confirmation
-- DPIA completion
+- Lightweight DPIA covering AI flows
 - Email domain verification
 - External penetration test
 
-**Overall risk rating: LOW-MEDIUM**
+**Overall risk rating: LOW**
 Technical controls are comprehensive. Administrative items should be resolved before broad public deployment but do not represent exploitable vulnerabilities.
 
 **Minimum requirements before public launch:**
@@ -539,8 +574,8 @@ Technical controls are comprehensive. Administrative items should be resolved be
 2. ✅ ~~Rate limiting~~ (implemented)
 3. ✅ ~~MFA for admins~~ (implemented)
 4. ⬜ Confirm ICO registration
-5. ⬜ Obtain signed DPAs with Vercel, Neon, Google, and Resend
-6. ⬜ Complete a DPIA
+5. ⬜ Obtain signed DPAs with Vercel, Neon, Resend, and ElevenLabs (and verify upstream LLM provider DPAs via Vercel AI Gateway)
+6. ⬜ Complete a DPIA covering AI flows
 7. ⬜ Verify Resend email domain (SPF/DKIM)
 
 ---
