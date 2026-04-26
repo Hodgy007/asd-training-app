@@ -95,6 +95,18 @@ Training is organised into **Programs**, each containing ordered **Modules** wit
 - Admins can upload reference documents (PDFs, Word files) and use Gemini AI to auto-generate module outlines, lesson content, and quiz questions.
 - Generated content can be reviewed, edited, and regenerated before publishing.
 
+**SCORM packages:**
+
+The platform plays third-party e-learning courses produced by Articulate, iSpring, Adobe Captivate, Storyline, and other authoring tools. Both **SCORM 1.2 and SCORM 2004** are supported (3rd Edition, 4th Edition, and CAM 1.3).
+
+- **Two import paths:** click *Import SCORM* on the Training Content page to scaffold a draft program from a `.zip`, or replace the content of an existing lesson by setting its type to *SCORM package* and uploading the zip.
+- **Multi-SCO navigation:** packages with a `<organization>` tree (multiple sections, multiple SCOs per section) render with a **Contents** sidebar driven by the manifest. Learners click between sections; the active item is highlighted.
+- **Resume:** a learner's last-viewed section is persisted alongside their CMI snapshot, so re-opening the lesson lands them on the page they were on (not back at the start of the course). Both the SCO's own state (`cmi.suspend_data`, `cmi.core.lesson_status`, etc.) and the LMS-level navigation position are restored.
+- **Progress and scoring:** SCORM completion (1.2 `cmi.core.lesson_status`, 2004 `cmi.completion_status` / `cmi.success_status`) and quiz scores feed straight into the standard `TrainingProgress` table — they appear on the Training Completion report exactly like every other lesson type.
+- **Per-question quiz analytics:** see the Reports section.
+- **Asset hosting:** uploaded zips are extracted to Vercel Blob under `scorm/<lessonId>/`. The `/api/scorm/[lessonId]/[...path]` route serves assets with auth and an iframe-friendly CSP. Two-stage upload (browser → Blob → server-side extract) bypasses Vercel's 4.5 MB serverless body limit; packages up to 200 MB are supported.
+- **Runtime:** [`scorm-again`](https://github.com/jcputney/scorm-again) v3 provides the LMS-side API (`Scorm12API` / `Scorm2004API`). The SCO finds it on `window.API` (1.2) or `window.API_1484_11` (2004) via the standard SCORM discovery walk.
+
 ### Child Observations (Practitioners)
 
 Practitioners (Caregivers) track behavioural observations for children in their care to support early ASD identification.
@@ -280,6 +292,7 @@ Both Charity Admins and Org Admins have access to comprehensive analytics dashbo
 
 **Charity Admin reports** (`/super-admin/reports`) include:
 - **Training stats** — total users, completion rates, average quiz scores, progress by module and programme
+- **SCORM Quiz Analytics** — per-question correctness rates aggregated across every learner who has attempted a SCORM lesson, sorted worst-first so material that needs revising surfaces immediately. Anonymised — no individual learner data is ever shown. Per-lesson CSV export.
 - **CV Builder stats** — total CVs, CVs by status (Draft/Complete), CVs created in the last 30 days, breakdown by template
 - **Careers Advisor stats** — total sessions, sessions by status (In Progress/Complete), sessions in the last 30 days
 - **Survey analytics** — response rates, completion stats, CSV export of responses
@@ -467,11 +480,13 @@ components/
   dashboard/                        # Dashboard widgets (announcements, sessions, surveys)
   ui/                               # Shared UI primitives and disclaimers
   training/                         # Module cards, quiz component, video player
+  lessons/                          # Lesson-time players incl. SCORM player + TOC sidebar
   children/                         # Child forms and cards
   observations/                     # Observation charts and tables
   cv-builder/                       # CV wizard shell, steps, AI buttons, progress bar
   careers-advisor/                  # Advisor wizard shell, steps, pill selector, progress bar
-  super-admin/                      # Content generation, survey builder, file upload
+  super-admin/                      # Content generation, survey builder, file upload, SCORM import
+  admin/                            # Per-lesson SCORM upload, org-admin pieces
   ai/                               # AI insight panels and buttons
   providers/                        # NextAuth session and theme providers
 
@@ -479,18 +494,20 @@ lib/
   auth.ts                           # NextAuth config, JWT callbacks, feature flag fetching
   rbac.ts                           # Role checks, permissions, display labels
   prisma.ts                         # Prisma client singleton
-  gemini.ts                         # Observation AI (Gemini)
-  cv-ai.ts                          # CV writing AI (Gemini)
-  careers-advisor-ai.ts             # Careers report AI (Gemini)
+  ai-runner.ts                      # DB-backed AI prompt runner (via Vercel AI Gateway)
+  ai-models.ts                      # Provider/model id constants
+  cv-ai.ts                          # CV writing AI helpers
+  careers-advisor-ai.ts             # Careers report AI helpers
   careers-advisor-pdf.tsx           # Careers report PDF template
   cv-templates/                     # CV PDF templates (accessible, modern, classic)
+  scorm/                            # SCORM manifest parsing, package extraction, progress
+                                    #   mapping, and quiz analytics
   org-hierarchy.ts                  # Parent/child org helpers (inheritance, authorization)
   modules.ts                        # Training program resolution
   training-db.ts                    # Training data access layer
   meetings.ts                       # Zoom/Teams API integration
   saml.ts                           # SAML SSO protocol
   sessions.ts                       # Workshop session helpers
-  observations.ts                   # Observation aggregation
   rate-limit.ts                     # Auth rate limiting
   constants.ts                      # Behaviour domain constants
   password-validation.ts            # Password strength rules
@@ -525,7 +542,9 @@ Copy `.env.example` to `.env.local` for local development. For production (Verce
 | `AZURE_AD_CLIENT_ID` | No | Azure AD app client ID (Microsoft SSO disabled if absent) |
 | `AZURE_AD_CLIENT_SECRET` | No | Azure AD client secret |
 | `AZURE_AD_TENANT_ID` | No | `common` for all account types, or a specific tenant ID |
-| `BLOB_READ_WRITE_TOKEN` | Yes | Vercel Blob storage token for document uploads and AI thumbnails |
+| `BLOB_READ_WRITE_TOKEN` | Yes | Vercel Blob storage token for document uploads, AI thumbnails, and SCORM packages |
+| `AI_GATEWAY_API_KEY` | Yes | Vercel AI Gateway key. AI features route through the gateway using provider/model strings (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`). Replaces direct provider keys at runtime. |
+| `ELEVENLABS_API_KEY` | No | ElevenLabs API key for the lesson read-aloud player (Lily voice). Synthesised MP3s are cached on Blob under `tts/<voiceId>/<sha256>.mp3`. |
 
 **Important:** `DATABASE_URL` must use the Neon connection pooler (port 6543) in production. Using the direct connection (port 5432) exhausts connection limits under serverless execution. `DIRECT_URL` is only used by Prisma CLI commands for schema changes.
 

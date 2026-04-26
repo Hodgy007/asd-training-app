@@ -23,6 +23,11 @@ export default function ReportsHowTo() {
         Drill down into individual modules and lessons to see completion counts. Reports display proper module names and training plan labels (&ldquo;ASD Awareness Training&rdquo;, &ldquo;Careers CPD Training&rdquo;) rather than raw identifiers.
       </p>
 
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">SCORM Quiz Analytics</h3>
+      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+        For SCORM-packaged lessons, the <strong>SCORM Quiz Analytics</strong> tile aggregates per-question correctness rates across every learner who has attempted the course. Each row shows attempts, correct count, percentage correct, and average response time, sorted worst-first so material that needs revising floats to the top. The data is anonymised — never any individual learner&rsquo;s answers, just aggregates per question. Click <strong>Export CSV</strong> <Download className="inline h-3.5 w-3.5 text-slate-400" /> on any lesson card to download its rollup. Empty rows mean the SCORM package itself doesn&rsquo;t emit per-question results; this is normal for tools like Articulate Rise (which only reports overall completion).
+      </p>
+
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Survey reports</h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
         The Reports page includes a survey section showing totals for published, closed, and draft surveys. Expand any survey to see per-question response breakdowns, answer distributions, rating averages, and organisation-level response rates. Click <strong>Export CSV</strong> <Download className="inline h-3.5 w-3.5 text-slate-400" /> to download survey response data.

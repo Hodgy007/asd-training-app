@@ -58,22 +58,29 @@ export default function TrainingHowTo() {
         <span className="inline-flex items-center gap-1.5"><Upload className="h-4 w-4 text-purple-500" /> Uploading SCORM packages</span>
       </h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        SCORM is an industry-standard format for self-contained e-learning packages produced by authoring tools like Articulate and Captivate. Upload a SCORM <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> to play a third-party course inline inside a lesson — no other lesson content (video, text, quiz, notes) renders when a lesson is set to SCORM.
+        SCORM is an industry-standard format for self-contained e-learning packages produced by authoring tools like Articulate, iSpring, Adobe Captivate, and Storyline. Upload a SCORM <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> to play a third-party course inline inside a lesson — no other lesson content (video, text, quiz, notes) renders when a lesson is set to SCORM.
       </p>
-      <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Edit the lesson you want to host the package on.</li>
-        <li>Set the lesson <strong>Type</strong> to <strong>SCORM package</strong>.</li>
-        <li>Drop the <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> into the uploader and wait for extraction to finish.</li>
-        <li>Use <strong>Preview</strong> to open the entry file and check it runs.</li>
-      </ol>
+      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+        Two ways to import:
+      </p>
       <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li><strong>Supported version:</strong> SCORM 1.2 only. SCORM 2004 packages are rejected at upload.</li>
+        <li><strong>Import as a new program</strong> — click <strong>Import SCORM</strong> on the Training Content page. Creates a draft program with a single module + lesson scaffolded from the package, ready to assign to organisations.</li>
+        <li><strong>Replace an existing lesson</strong> — edit a lesson, set <strong>Type</strong> to <strong>SCORM package</strong>, drop the zip into the uploader.</li>
+      </ul>
+      <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+        <li><strong>Supported versions:</strong> SCORM 1.2 and SCORM 2004 (3rd / 4th Edition / CAM 1.3). The version is detected from the manifest&rsquo;s <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">schemaversion</code>.</li>
+        <li><strong>Multi-SCO packages</strong> render with a left-rail <strong>Contents</strong> sidebar driven by the manifest&rsquo;s <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">&lt;organization&gt;</code> tree — learners can jump between sections; their last-viewed page is restored on next visit.</li>
         <li><strong>Maximum package size:</strong> 200 MB.</li>
-        <li><strong>Test packages:</strong> free SCORM 1.2 samples are available at <a href="https://scorm.com/scorm-explained/technical-scorm/golf-examples/" className="text-purple-600 dark:text-purple-400 hover:underline" target="_blank" rel="noopener noreferrer">scorm.com</a>.</li>
-        <li><strong>Progress tracking:</strong> the learner&rsquo;s completion status and quiz score are saved to their training record. On return, the package resumes from where they left off.</li>
+        <li><strong>Test packages:</strong> free SCORM samples (1.2 and 2004) are available at <a href="https://scorm.com/scorm-explained/technical-scorm/golf-examples/" className="text-purple-600 dark:text-purple-400 hover:underline" target="_blank" rel="noopener noreferrer">scorm.com</a>. Tip: <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">RuntimeBasicCalls</code> is a self-contained single-SCO course; the <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">ContentPackagingOneFilePerSCO</code> example is intentionally minimal per-page and meant to test the LMS&rsquo;s navigation tree.</li>
+        <li><strong>Progress tracking:</strong> the learner&rsquo;s completion status and quiz score are saved to their training record and feed straight into the Training Completion report. On return, the package resumes — both the SCO&rsquo;s own state and (for multi-SCO) the last-viewed section.</li>
         <li><strong>Replacing a package:</strong> upload a new <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">.zip</code> over the existing one, or use <strong>Remove package</strong> to convert the lesson back to a normal text lesson.</li>
       </ul>
-      <Tip>If a package fails to load, export it from your authoring tool as SCORM <strong>1.2</strong> (not 2004) and confirm the <code className="px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-xs">imsmanifest.xml</code> sits at the root of the zip.</Tip>
+      <Tip>If a package fails to load, confirm <code className="px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-xs">imsmanifest.xml</code> sits at the <em>root</em> of the zip (not inside a wrapping folder). If a multi-SCO package only shows one short page, look for a <strong>Contents</strong> sidebar on the left — that&rsquo;s the navigation between sections.</Tip>
+
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">SCORM quiz analytics</h3>
+      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+        Visit <strong>Reports &rarr; SCORM Quiz Analytics</strong> to see per-question correctness rates aggregated across all learners. Questions are sorted worst-first so material that needs updating surfaces immediately. Reports are anonymised — no individual learner data is shown. Empty rows mean the package doesn&rsquo;t emit per-question results (e.g. Articulate Rise reports overall completion only); use a <code className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-xs">scormtype=&quot;sco&quot;</code> package such as Storyline output to see interactions.
+      </p>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Previewing content as a learner</h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">

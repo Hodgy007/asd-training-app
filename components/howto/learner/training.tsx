@@ -18,8 +18,13 @@ export default function TrainingHowTo() {
       </ol>
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Packaged lessons (SCORM)</h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        Some lessons are self-contained courses that play in a small window inside the page. These lessons have their own navigation, quizzes, and completion inside the course — the usual notes, read-aloud, and quiz cards do not appear. Your progress is saved automatically as you go, and the lesson will pick up where you left off next time you open it.
+        Some lessons are self-contained courses that play directly in the page. These lessons have their own navigation, quizzes, and completion inside the course — the usual notes, read-aloud, and quiz cards do not appear.
       </p>
+      <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+        <li>If the course has multiple sections, a <strong>Contents</strong> sidebar appears on the left. Click any item to jump straight to that section.</li>
+        <li>Your progress saves automatically as you move through the lesson, and the next time you open it you&rsquo;ll come back to the section you were last viewing.</li>
+        <li>Both the SCO&rsquo;s own quiz score and your completion status feed into your training record — the same place all other lesson progress is tracked.</li>
+      </ul>
       <Tip>You can revisit completed lessons at any time to refresh your knowledge, and jot down personal notes from the lesson page.</Tip>
     </>
   )
