@@ -14,30 +14,8 @@ function sanitiseSegments(segments: string[]): string | null {
   return segments.join('/')
 }
 
-/**
- * Inject the SCORM API postMessage shim into the `<head>` of every served
- * HTML asset. The iframe is sandboxed without `allow-same-origin`, so the
- * SCO can't reach `window.parent.API` directly — the shim sets up
- * `window.API` / `window.API_1484_11` itself and relays calls to the parent
- * via postMessage.
- *
- * Rewriting is best-effort: if no `<head>` is present we fall back to
- * prepending the script tag, which still puts it ahead of any SCO scripts.
- */
-function injectShim(html: string): string {
-  const shimTag =
-    '<script src="/scorm-runtime/api-shim.js"></script>'
-  const headOpen = html.match(/<head[^>]*>/i)
-  if (headOpen) {
-    const idx = (headOpen.index ?? 0) + headOpen[0].length
-    return html.slice(0, idx) + shimTag + html.slice(idx)
-  }
-  // No <head> at all (raw HTML fragment, etc.) — prepend.
-  return shimTag + html
-}
-
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { lessonId: string; path: string[] } },
 ) {
   const session = await getServerSession(authOptions)
@@ -71,41 +49,23 @@ export async function GET(
     return new NextResponse('Blob fetch failed', { status: 502 })
   }
 
-  const contentType = upstream.headers.get('content-type') ?? 'application/octet-stream'
-  const isHtml = /^text\/html\b/i.test(contentType)
-
-  const headers = new Headers()
-  headers.set('content-type', contentType)
-  headers.set('cache-control', 'private, max-age=3600')
-
-  // CSP for SCORM content. Note that with `allow-same-origin` removed from
-  // the iframe sandbox, the document is treated as having an *opaque*
-  // origin, which means `'self'` does NOT match subresources hosted on the
-  // parent's actual domain. We therefore explicitly allow the parent's
-  // origin (read from the request) for default-src/img-src/etc.
-  const host = req.headers.get('host')
-  const parentOrigin = host ? `https://${host}` : ''
-  const allowSelf = `'self' ${parentOrigin}`.trim()
-  headers.set(
-    'content-security-policy',
-    `default-src ${allowSelf} 'unsafe-inline' 'unsafe-eval' data: blob:; ` +
-      `img-src ${allowSelf} data: blob:; ` +
-      `media-src ${allowSelf} blob:; ` +
-      `connect-src ${allowSelf}; ` +
-      `frame-ancestors 'self'`,
-  )
-
-  if (isHtml) {
-    // Read as text, inject the shim script, return rewritten HTML.
-    const html = await upstream.text()
-    const rewritten = injectShim(html)
-    return new NextResponse(rewritten, { status: 200, headers })
-  }
-
   // Buffer the full body before returning. Streaming upstream.body through
   // Next.js/Vercel's response pipeline is known to corrupt binary media —
   // see the comment in app/api/tts/route.ts. SCORM packages ship binary
   // assets (images, fonts, videos), so we match the TTS pattern.
   const bytes = new Uint8Array(await upstream.arrayBuffer())
+
+  const headers = new Headers()
+  const contentType = upstream.headers.get('content-type') ?? 'application/octet-stream'
+  headers.set('content-type', contentType)
+  headers.set('cache-control', 'private, max-age=3600')
+  // Restrictive CSP for SCORM content: no external scripts.
+  headers.set(
+    'content-security-policy',
+    "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+      "img-src 'self' data: blob:; media-src 'self' blob:; " +
+      "connect-src 'self'; frame-ancestors 'self'",
+  )
+
   return new NextResponse(bytes, { status: 200, headers })
 }
