@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
@@ -14,6 +15,7 @@ import {
   Package,
   Home,
   CreditCard,
+  MessageSquare,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CHARITY_PERMISSIONS } from '@/lib/rbac'
@@ -35,6 +37,7 @@ interface NavItem {
 // Overview stays first. Everything else is sorted alphabetically by label.
 const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
+  { href: '/super-admin/feedback', label: 'Feedback', icon: MessageSquare, charityAdminOnly: true },
   // Points at the published page (what learners see) rather than the editor.
   // Super admins reach the editor via the "Edit" button on the page itself.
   { href: '/home', label: 'Home Page', icon: Home, charityAdminOnly: true },
@@ -60,6 +63,17 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
   const role = session?.user?.role
   const isCharityAdmin = role === 'SUPER_ADMIN'
   const charityPermissions: string[] = session?.user?.charityPermissions ?? []
+
+  const [newFeedbackCount, setNewFeedbackCount] = useState(0)
+  useEffect(() => {
+    if (role !== 'SUPER_ADMIN') return
+    fetch('/api/super-admin/feedback?status=NEW&pageSize=1')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (j?.statusCounts) setNewFeedbackCount(j.statusCounts.NEW || 0)
+      })
+      .catch(() => {})
+  }, [role])
 
   /** Check if the user can see a given nav item */
   function canSee(item: NavItem): boolean {
@@ -155,7 +169,12 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
               <Icon
                 className={clsx('h-5 w-5 flex-shrink-0', isActive ? chrome.iconActive : chrome.iconInactive)}
               />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.href === '/super-admin/feedback' && newFeedbackCount > 0 && (
+                <span className="ml-auto inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-bold">
+                  {newFeedbackCount}
+                </span>
+              )}
             </Link>
           )
         })}
