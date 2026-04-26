@@ -505,24 +505,261 @@ The following gaps identified in version 1.0 (28 March 2026) have been resolved:
 | SSO password nullable issue | ✅ `password` field made nullable in schema; bcrypt.compare guard added | 29 March 2026 |
 | SAML session too long (30 days) | ✅ Reduced to 8 hours to match NextAuth session maxAge | 29 March 2026 |
 
-### 12.2 Remaining gaps
+### 12.2 Remaining gaps — at-a-glance table
 
-| Gap | Risk | Recommended Mitigation | Priority |
-|-----|------|------------------------|----------|
-| SSO / first-login consent gap | GDPR consent record incomplete for SSO and admin-created accounts | Show consent screen on first sign-in before granting access | **Medium** |
-| No automated data retention | Stale data accumulates; GDPR retention obligations | Implement a scheduled job to flag/delete accounts inactive for 24+ months | **Medium** |
-| No data export (portability) | GDPR Article 20 right to portability not met | Build a "Download my data" feature exporting training, CV, careers, and survey data as JSON/CSV | **Medium** |
-| Application-level field encryption | Free-text fields (lesson notes, CV bodies) stored in plaintext in DB (encrypted at rest by Azure, but not at application level) | Consider encrypting these fields at application level for defence in depth | **Low** |
-| No signed DPAs with processors | GDPR Article 28 compliance incomplete | Obtain and file signed DPAs with Vercel (covers AI Gateway + Blob + hosting), Neon, Resend, ElevenLabs. Verify upstream LLM provider DPAs with Google / Anthropic / OpenAI as needed. | **High** |
-| ICO registration unconfirmed | Regulatory non-compliance risk | Confirm registration status and register if required before public launch | **High** |
-| DPIA not completed | Article 35 not strictly required for current data inventory, but ICO recommends one for AI-assisted features | Complete a lightweight DPIA covering AI Gateway flows + LLM outputs + third-party processors | **Medium** |
-| Resend email domain not verified | Password reset emails may be blocked or go to spam | Verify `ambitiousaboutautism.org.uk` domain in Resend dashboard and add SPF/DKIM records | **Medium** |
-| No error tracking/monitoring | Cannot detect runtime errors in production proactively | Add Sentry or similar APM for error alerting | **Medium** |
-| CSP uses `unsafe-inline`/`unsafe-eval` | Slightly reduced XSS protection (mitigated by `sanitize-html`) | Investigate nonce-based CSP for Next.js | **Low** |
-| In-memory rate limiting | Resets on cold starts; not shared across serverless instances | Consider Upstash Redis for distributed rate limiting at scale | **Low** |
-| No formal penetration test | Unknown vulnerabilities may exist | Commission external penetration test before public launch | **Medium** |
-| TOTP secrets not app-level encrypted | Stored encrypted at rest by Azure, but visible in database queries | Consider app-level encryption with a dedicated key | **Low** |
-| SCORM iframe sandbox warning | The iframe sandbox uses both `allow-scripts` and `allow-same-origin` (browser flags this as "could escape sandboxing"). Same-origin is required so SCO subresource requests carry the session cookie. | Implement signed-URL authentication for SCORM asset requests so the iframe can be sandboxed without `allow-same-origin`. Skeleton in `public/scorm-runtime/api-shim.js`. | **Low** |
+| Gap | Risk | Recommended Mitigation | Priority | Detail |
+|-----|------|------------------------|----------|--------|
+| No signed DPAs with processors | GDPR Article 28 compliance incomplete | Sign DPAs with Vercel, Neon, Resend, ElevenLabs; verify upstream LLM DPAs via Vercel | **High** | §12.3.1 |
+| ICO registration unconfirmed | Regulatory non-compliance risk | Run ICO self-assessment; register if required | **High** | §12.3.2 |
+| SSO / first-login consent gap | Consent record incomplete for SSO / admin-created accounts | First-login consent acknowledgement screen | **Medium** | §12.3.3 |
+| No automated data retention | Stale data accumulates indefinitely | Scheduled job to flag/delete accounts inactive for 24+ months | **Medium** | §12.3.4 |
+| No data export (portability) | GDPR Article 20 right not met | Build a "Download my data" feature | **Medium** | §12.3.5 |
+| DPIA not completed | Recommended for AI-assisted features | Lightweight DPIA covering AI Gateway flows | **Medium** | §12.3.6 |
+| Resend email domain not verified | Reset emails may go to spam | Verify domain + add SPF/DKIM records | **Medium** | §12.3.7 |
+| No error tracking | Cannot detect runtime errors proactively | Add Sentry or similar APM | **Medium** | §12.3.8 |
+| No formal penetration test | Unknown vulnerabilities may exist | Commission external pen test | **Medium** | §12.3.9 |
+| Application-level field encryption | Free-text fields plaintext in DB (at-rest encrypted by Azure) | Encrypt sensitive free-text fields at app level | **Low** | §12.3.10 |
+| CSP `unsafe-inline` / `unsafe-eval` | Reduced XSS protection (mitigated by sanitize-html) | Nonce-based CSP for Next.js | **Low** | §12.3.11 |
+| In-memory rate limiting | Resets on cold starts; not shared across instances | Distributed limiter (Upstash Redis) | **Low** | §12.3.12 |
+| TOTP secrets not app-level encrypted | At-rest encrypted by Azure; visible in raw DB queries | App-level encryption with dedicated key | **Low** | §12.3.13 |
+| SCORM iframe sandbox warning | `allow-scripts` + `allow-same-origin` flagged by browsers | Signed-URL auth for SCORM assets so `allow-same-origin` can be dropped | **Low** | §12.3.14 |
+
+### 12.3 Remaining gaps — detailed walkthrough
+
+Each subsection below explains what the gap is, why it matters, and exactly what to do about it. Items §12.3.1 (DPAs) and §12.3.2 (ICO registration) are the two **launch blockers** — see also the standalone playbook at [`docs/compliance/PRE_LAUNCH_ACTIONS.md`](../docs/compliance/PRE_LAUNCH_ACTIONS.md).
+
+#### 12.3.1 Sign Data Processing Agreements with all processors (HIGH)
+
+**What it is.** A **Data Processing Agreement** (DPA) is a contract between you (the *Data Controller* — the charity, who decides what to do with the personal data) and each company you pay to process that data on your behalf (a *Data Processor*). It is required by **Article 28 of UK GDPR**. The DPA spells out what data is being processed, why, how long it's kept, what security controls the processor must apply, what happens on a data breach, what sub-processors they're allowed to use, and what happens at the end of the contract.
+
+**Why it matters.** The platform sends personal data to several US-based third parties as part of normal operation (see §9). Without signed DPAs in place, the charity is technically in breach of UK GDPR Article 28 — even though every one of these providers offers a DPA, you have to actively accept / counter-sign / file a copy. The ICO can fine for Article 28 non-compliance even without a data breach, and the missing DPA chain is the first thing that gets queried in audit / due-diligence by funders, partners, and DBS-related work.
+
+**What to do.** Sign DPAs with the five processors listed below. Every provider offers their DPA at no charge — total effort is a few hours of admin work plus a few days waiting on Neon's email response.
+
+| # | Processor | How to sign | Typical time |
+|---|-----------|-------------|--------------|
+| 1 | **Vercel** (covers hosting, Blob, AI Gateway) | Self-serve in Vercel dashboard → Settings → Legal → Data Processing Agreement | 15 mins |
+| 2 | **Neon** (Postgres database) | Email `support@neon.tech` requesting their DPA — see [`docs/compliance/DPA_REQUEST_EMAIL_TEMPLATE.md`](../docs/compliance/DPA_REQUEST_EMAIL_TEMPLATE.md) | 10 mins admin + 3–5 business days response |
+| 3 | **Resend** (password reset emails) | Self-serve in Resend dashboard → Settings → Compliance | 10 mins |
+| 4 | **ElevenLabs** (TTS) | Self-serve in ElevenLabs dashboard → Settings → Compliance | 10 mins |
+| 5 | **Upstream LLM providers** (Google / Anthropic / OpenAI) | Verify they appear in the Vercel DPA's sub-processor appendix. If missing, sign individual DPAs via [Google Cloud DPA](https://cloud.google.com/terms/data-processing-addendum) / [Anthropic DPA](https://www.anthropic.com/legal/dpa) / [OpenAI DPA](https://openai.com/policies/data-processing-addendum/) | 15 mins |
+
+When each DPA is executed, file the PDF in the charity's compliance folder along with the date it was signed. The standalone playbook at [`docs/compliance/PRE_LAUNCH_ACTIONS.md`](../docs/compliance/PRE_LAUNCH_ACTIONS.md) has step-by-step instructions for each provider.
+
+---
+
+#### 12.3.2 Confirm ICO registration (HIGH)
+
+**What it is.** Under the **Data Protection (Charges and Information) Regulations 2018**, any UK organisation that processes personal data must pay an annual **data protection fee** to the **Information Commissioner's Office (ICO)** unless they qualify for an exemption. The fee is tiered: **£52** (micro), **£78** (small/medium), or **£3,763** (large) per year.
+
+**Why it matters.** It's statutory. Non-payment is a fixed regulatory offence — the ICO can issue penalties up to **£4,350** for failure to register / pay. Once registered, the charity's registration number must appear in privacy notices (we'd need to add it to the platform's `/privacy` page). The number is also a routine due-diligence check from partner organisations, large funders, schools, and DBS-related work. **Charity exemption is narrow:** charities only qualify if they process personal data *solely* for their charitable purpose. Running an interactive web platform with user accounts, training analytics, third-party SSO, and AI features goes beyond what the ICO accepts as solely charitable — most charities running a system like this do need to register.
+
+**What to do.**
+
+1. Run the **ICO self-assessment** (15 minutes): <https://ico.org.uk/for-organisations/data-protection-fee/self-assessment/> — answers ~15 multiple-choice questions about staff size, turnover, and processing activities; tells you which tier you're in (or that you're exempt).
+2. If a fee is due, **register and pay**: <https://ico.org.uk/for-organisations/data-protection-fee/pay-fee/> (direct debit gives a £5 discount). Registration is issued immediately.
+3. Save the certificate in the compliance folder and diary the renewal date (annual).
+4. Pass the registration number to the development team so it can be added to the Privacy Policy at `/privacy`.
+
+Total effort: 30 minutes today, ~10 minutes per year for renewal.
+
+---
+
+#### 12.3.3 First-login consent acknowledgement (MEDIUM)
+
+**What it is.** Self-registration is disabled on this platform — all user accounts are created by an administrator. SSO and SAML sign-ins also do not see a consent checkbox. The administrator is expected to present the Privacy Policy and Terms of Service to the invitee out-of-band before onboarding them. **Recommendation:** show a one-time consent acknowledgement screen on first login before any feature is exposed, so the consent record is captured in the platform itself rather than relying on the admin's process.
+
+**Why it matters.** UK GDPR Article 6(1)(a) and the ePrivacy Directive both require demonstrable consent. Out-of-band consent (e.g. an admin verbally explaining the terms) is harder to evidence at audit time than a clicked checkbox tied to a user record.
+
+**What to do.**
+
+1. Add a `consentAcceptedAt` timestamp column to the `User` model.
+2. On first login (when `consentAcceptedAt` is null), redirect the user to a `/consent` page that displays the Privacy Policy + Terms summary with links to the full versions, and a single "I've read and agree" button.
+3. Set `consentAcceptedAt = now()` on click and let them through to the rest of the app.
+4. Block access to all other routes while `consentAcceptedAt` is null (analogous to how `mustChangePassword` is currently enforced in middleware).
+
+Effort: ~half a day of development. Sequence behind `mustChangePassword` and `mfa-setup` in middleware.
+
+---
+
+#### 12.3.4 Automated data retention (MEDIUM)
+
+**What it is.** UK GDPR requires personal data not to be kept longer than necessary (storage limitation principle, Article 5(1)(e)). Right now the platform retains data for the lifetime of the user account with no automated review.
+
+**Why it matters.** Stale data accumulates — accounts that have been inactive for years still hold full personal data. If a breach occurred, the blast radius would be larger than necessary. ICO guidance recommends a defined retention schedule plus an automated mechanism to enforce it.
+
+**What to do.**
+
+1. Define the charity's retention schedule (e.g. *"User accounts inactive for 24 months are flagged; if no activity in a further 30 days, the account is deleted along with its training records, CV, and careers sessions"*). DPO sign-off needed.
+2. Implement a Vercel cron job (`/api/cron/retention`) that runs nightly, finds users whose `lastSignInAt` is older than the threshold, emails them a 30-day warning (via Resend), and deletes them after the grace period if they haven't returned.
+3. Add a "Last sign-in" timestamp to the user model and update it on each authenticated request.
+4. Document the policy in the privacy notice at `/privacy`.
+
+Effort: ~1–2 days of development plus DPO time to set the policy.
+
+---
+
+#### 12.3.5 Data export (Article 20 portability) (MEDIUM)
+
+**What it is.** UK GDPR Article 20 gives data subjects the right to receive their personal data in a structured, commonly-used, machine-readable format (e.g. JSON or CSV). The platform currently has no self-service "Download my data" feature — a request would have to be handled manually by the DPO.
+
+**Why it matters.** Article 20 requests are time-bound (1 month to fulfil, extendable by 2 more in complex cases). Manual handling is error-prone and doesn't scale. A self-serve endpoint also reduces DPO workload and improves user trust.
+
+**What to do.**
+
+1. Add a `/account/export` page in user settings with a single "Download my data (JSON)" button.
+2. Implement `GET /api/account/export` that gathers the user's data across `User`, `TrainingProgress`, `CV` and its sub-tables, `CareerAdvisorSession`, `LessonNote`, `SurveyResponse`, and any `LibraryDocumentEvent` rows, and returns a single JSON file.
+3. Include a top-level summary (`{ exportedAt, generatedFor: { id, email, name } }`) and clear section headers.
+4. Don't include passwords, MFA secrets, or session tokens.
+5. Rate-limit the endpoint (e.g. 1 export per 24 hours) to prevent abuse.
+
+Effort: ~1 day of development.
+
+---
+
+#### 12.3.6 Lightweight DPIA covering AI flows (MEDIUM)
+
+**What it is.** A **Data Protection Impact Assessment** (DPIA) is a structured analysis of how a new system uses personal data and what risks it creates. Article 35 UK GDPR requires one whenever processing is "likely to result in high risk to the rights and freedoms of natural persons."
+
+**Why it matters.** The platform now processes only ordinary personal data (no special-category data after the child-observation feature was removed), so the strict Article 35 trigger is not met. However, the ICO recommends a DPIA whenever a system uses **AI to generate content that affects individuals** — and this platform uses LLMs to generate CV drafts, careers reports, training quizzes, and survey insights. A lightweight DPIA documents the risks and the mitigations and is good evidence at audit time.
+
+**What to do.**
+
+1. Use an existing DPIA template at [`docs/compliance/DPIA.md`](../docs/compliance/DPIA.md) as the starting point.
+2. Cover at minimum:
+   - Scope of processing (what features, what data, what AI flows)
+   - The Vercel AI Gateway architecture (gateway + upstream model providers)
+   - Data minimisation (what's sent vs. what's withheld) — see §10
+   - User-perceived authority of AI outputs (mitigated by disclaimers in UI + prompts)
+   - Third-party processors and DPA status
+   - International transfer mechanisms
+   - Risk register with mitigations and residual risk ratings
+3. Have the DPO sign and date it.
+4. Re-review when a major change happens (new AI feature, new processor, model swap with significantly different behaviour).
+
+Effort: ~1 day of DPO time to draft + sign-off cycle.
+
+---
+
+#### 12.3.7 Verify Resend email domain (MEDIUM)
+
+**What it is.** Resend is the transactional email provider for password-reset emails. By default emails are sent from `noreply@send.resend.com`. To send from `noreply@ambitiousaboutautism.org.uk` (which is what users expect), the domain must be verified and SPF / DKIM / DMARC DNS records must be added.
+
+**Why it matters.** Unverified domains hit recipients' spam folders far more often. A user who can't find the password-reset email will think the platform is broken. Domain verification also lets you put **DMARC** in place, which prevents spoofing of the charity's domain.
+
+**What to do.**
+
+1. Log into <https://resend.com>.
+2. Go to **Domains** → **Add Domain** → enter `ambitiousaboutautism.org.uk`.
+3. Resend gives you ~3 DNS records to add (SPF / DKIM / optionally DMARC). Pass them to the charity's IT / domain administrator to add to the DNS zone.
+4. Once DNS propagates (5–60 minutes), click **Verify** in Resend.
+5. Update the `from:` address in the password-reset email code to `noreply@ambitiousaboutautism.org.uk`.
+
+Effort: 30 mins admin + DNS turnaround.
+
+---
+
+#### 12.3.8 Error tracking / monitoring (MEDIUM)
+
+**What it is.** Currently runtime errors in production are visible only via Vercel's runtime logs (which require a developer to actively check). There's no proactive alerting when something breaks.
+
+**Why it matters.** Silent errors degrade user experience without anyone knowing — a learner whose progress fails to save, a caregiver who can't reset their password, etc. From a compliance angle, the principle of **integrity and confidentiality** (Article 5(1)(f)) implies you should know when your systems are misbehaving.
+
+**What to do.**
+
+1. Sign up for **Sentry** (free tier covers ~5K events/month, plenty for this platform's scale).
+2. Add `@sentry/nextjs` to the project.
+3. Configure source maps so server stack traces are useful.
+4. Pipe alerts to a charity Slack / email distribution.
+5. Add a few targeted breadcrumbs around payment, AI calls, SCORM commits, and password reset.
+
+Effort: half a day of development. Free / cheap.
+
+---
+
+#### 12.3.9 External penetration test (MEDIUM)
+
+**What it is.** A controlled, authorised attempt by an external security firm to find vulnerabilities in the live platform. Standard practice before launching to a wider user base.
+
+**Why it matters.** Code review and automated scanning catch a class of bugs but miss things that need human creativity (chained vulnerabilities, business-logic flaws, role-confusion attacks, etc.). A pen test gives a credible third-party assurance for funders / partners / safeguarding teams.
+
+**What to do.**
+
+1. Scope a **black-box web application pen test** — the testers attempt to access data they shouldn't, escalate roles, abuse multi-tenancy, etc.
+2. Get quotes from 2–3 UK-based CREST or CHECK certified firms. Typical cost £3K–£8K depending on scope.
+3. Run the test against a staging environment with realistic data (or against production with a tight time window, prior notice to all stakeholders, and rate-limit / WAF rules relaxed for the testing IP only).
+4. Triage the report by severity. Fix anything Critical or High before launch.
+
+Effort: project budget + 2–3 weeks elapsed.
+
+---
+
+#### 12.3.10 Application-level field encryption (LOW)
+
+**What it is.** Free-text fields like `LessonNote.content` and `CV.personalStatement` are stored in plaintext in the PostgreSQL database. The database itself is encrypted at rest by Azure (AES-256), and connections are TLS, so an external attacker would not see the plaintext. But anyone with access to the raw database (developer, ops, breach scenario) would.
+
+**Why it matters.** Defence-in-depth. Field encryption means even a database compromise doesn't expose the contents of these fields.
+
+**What to do.** Two options:
+
+1. **Application-level encryption** with a key stored separately from the DB (e.g. in Vercel env vars, ideally rotated periodically). Encrypt before write; decrypt on read. Use AES-GCM via a vetted library like `node:crypto`.
+2. **Postgres `pgcrypto`** with the key passed in by the application at query time.
+
+Either is fine. Application-level is simpler to roll out incrementally. Cost: extra latency per read/write (~2 ms), and key-rotation operationally complex.
+
+Skip if not strictly required by funders / partners — the risk is genuinely low given the existing controls.
+
+---
+
+#### 12.3.11 Nonce-based CSP (LOW)
+
+**What it is.** The current CSP allows `'unsafe-inline'` and `'unsafe-eval'` for `script-src` and `style-src` because Next.js's hydration mechanism and the React-Quill rich text editor both require them. This widens the XSS attack surface slightly.
+
+**Why it matters.** Pure defence-in-depth. The platform's actual XSS risk is mitigated by `sanitize-html` on all user HTML and React's auto-escaping elsewhere — but a nonce-based CSP would close the gap.
+
+**What to do.** Migrate to Next.js's nonce-based CSP support. This involves:
+- Adding a nonce-generating middleware
+- Threading the nonce through to each `<script>` tag
+- Confirming React-Quill works with nonces (or replacing it)
+
+Non-trivial; only worth doing if the charity faces stricter compliance requirements (e.g. handling NHS data, CE+ certification).
+
+---
+
+#### 12.3.12 Distributed rate limiting (LOW)
+
+**What it is.** The current rate limiter (`lib/rate-limit.ts`) uses in-process state — a `Map` keyed by IP+path. On Vercel serverless, each function instance has its own memory, so under enough load the limit can be bypassed by spreading requests across instances.
+
+**Why it matters.** Practically, this is fine at the platform's current scale (the throughput required to evade the limit is well above what an attacker would casually generate). It's listed for completeness — once traffic grows, switch to a distributed limiter.
+
+**What to do.** Add Upstash Redis (free tier) and switch the rate-limit module to use `@upstash/ratelimit`. ~half a day of work.
+
+---
+
+#### 12.3.13 TOTP secrets app-level encryption (LOW)
+
+**What it is.** TOTP MFA secrets are stored in the `User.totpSecret` column. They're encrypted at rest by Azure but visible in plaintext in any raw `SELECT` query.
+
+**Why it matters.** If a developer or ops engineer queries the DB they could see the secret. Since TOTP MFA is mainly used to protect admin accounts, leakage of an admin's secret would let an attacker bypass MFA.
+
+**What to do.** Encrypt the field at the application layer with a dedicated key (separate from `NEXTAUTH_SECRET`), so reading the column requires both the DB and the key to be compromised. Same pattern as §12.3.10. ~half a day of work.
+
+---
+
+#### 12.3.14 SCORM iframe sandbox warning (LOW)
+
+**What it is.** The SCORM player iframe uses `sandbox="allow-scripts allow-same-origin allow-forms allow-popups"`. Modern browsers warn that the combination of `allow-scripts` AND `allow-same-origin` lets the iframe "escape its sandboxing" — i.e. a hostile SCO could call into the parent window's APIs. Same-origin is currently required so the SCO's subresource requests (CSS / JS / images) carry the session cookie and pass auth.
+
+**Why it matters.** SCORM uploads are gated to charity admins / super admins (trusted users), so the practical risk is low. The browser warning is informational, not a security failure. Listed because long-term we want a genuinely sandboxed iframe.
+
+**What to do.** Implement **signed-URL authentication** for SCORM asset requests:
+
+1. At iframe-load time, the player generates a short-lived HMAC token bound to `lessonId + userId`.
+2. The asset route at `/api/scorm/[lessonId]/[...path]` accepts either the session cookie OR a valid signed token.
+3. Embed the token in the iframe `src` (and propagate to subresource paths via a base href / URL rewriter).
+4. Once token-auth works, drop `allow-same-origin` from the sandbox.
+
+Skeleton of the postMessage shim is in [`public/scorm-runtime/api-shim.js`](../public/scorm-runtime/api-shim.js) — left in place from an earlier abortive attempt. ~1 day of work.
 
 ---
 
