@@ -227,6 +227,7 @@ model Lesson {
   scormBlobPrefix  String?
   scormEntryPath   String?
   scormVersion     String?
+  scormToc         Json?
   module        Module             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   quizQuestions QuizQuestion[]
   attachments   LessonAttachment[]

@@ -22,6 +22,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { put, del } from '@vercel/blob'
+import { Prisma } from '@prisma/client'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import prisma from '@/lib/prisma'
@@ -147,6 +148,7 @@ export async function POST(req: NextRequest) {
         scormBlobPrefix: result.blobPrefix,
         scormEntryPath: result.entryPath,
         scormVersion: result.version,
+        scormToc: result.toc as unknown as Prisma.InputJsonValue,
       },
     })
 

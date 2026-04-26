@@ -32,6 +32,7 @@ interface LessonData {
   scormEntryPath?: string | null
   scormVersion?: string | null
   scormBlobPrefix?: string | null
+  scormToc?: unknown
   quizQuestions: {
     id: string
     question: string
@@ -345,6 +346,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
             moduleId={lesson.module.id}
             entryPath={lesson.scormEntryPath}
             version={lesson.scormVersion === '2004' ? '2004' : '1.2'}
+            toc={Array.isArray(lesson.scormToc) ? (lesson.scormToc as any) : null}
             initialCmi={initialScormCmi}
           />
         </div>

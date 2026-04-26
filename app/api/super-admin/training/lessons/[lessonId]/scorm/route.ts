@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { put, list, del } from '@vercel/blob'
+import { Prisma } from '@prisma/client'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isSuperAdmin } from '@/lib/rbac'
@@ -81,6 +82,7 @@ export async function POST(
         scormBlobPrefix: result.blobPrefix,
         scormEntryPath: result.entryPath,
         scormVersion: result.version,
+        scormToc: result.toc as unknown as Prisma.InputJsonValue,
       },
     })
 
@@ -118,6 +120,7 @@ export async function DELETE(
       scormBlobPrefix: null,
       scormEntryPath: null,
       scormVersion: null,
+      scormToc: Prisma.DbNull,
     },
   })
 

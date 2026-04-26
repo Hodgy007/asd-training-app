@@ -1,5 +1,9 @@
 import JSZip from 'jszip'
-import { parseScormManifest, type ScormVersion } from './manifest'
+import {
+  parseScormManifest,
+  type ScormVersion,
+  type ScormTocItem,
+} from './manifest'
 
 export type BlobUploader = (
   path: string,
@@ -17,6 +21,7 @@ export interface ExtractResult {
   blobPrefix: string
   entryPath: string
   version: ScormVersion
+  toc: ScormTocItem[]
 }
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -163,7 +168,7 @@ export async function extractScormPackage({
   }
 
   const manifestXml = await manifestFile.async('string')
-  const { entryPath, version } = parseScormManifest(manifestXml)
+  const { entryPath, version, toc } = parseScormManifest(manifestXml)
 
   const blobPrefix = `scorm/${lessonId}`
   const entries = Object.values(zip.files)
@@ -182,5 +187,5 @@ export async function extractScormPackage({
 
   await uploadAllInParallel(uploadTasks)
 
-  return { blobPrefix, entryPath, version }
+  return { blobPrefix, entryPath, version, toc }
 }
