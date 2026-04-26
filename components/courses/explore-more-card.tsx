@@ -28,7 +28,7 @@ export function ExploreMoreCard({ session, variant = 'stacked' }: ExploreMoreCar
             Browse our course catalogue
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
-            Subscribe or buy individually.
+            Subscribe for unlimited access.
           </p>
         </div>
         <ArrowRight className="h-4 w-4 text-warm-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
