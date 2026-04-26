@@ -52,15 +52,18 @@ export default function FeedbackInboxPage() {
 
   const [data, setData] = useState<ListResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
+    setError(null)
     const qs = new URLSearchParams()
     if (status) qs.set('status', status)
     if (type) qs.set('type', type)
     fetch(`/api/super-admin/feedback?${qs.toString()}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
       .then((json: ListResponse) => setData(json))
+      .catch(() => setError('Failed to load feedback. Please refresh.'))
       .finally(() => setLoading(false))
   }, [status, type])
 
@@ -111,6 +114,8 @@ export default function FeedbackInboxPage() {
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
         {loading ? (
           <p className="p-6 text-slate-500 dark:text-slate-400">Loading...</p>
+        ) : error ? (
+          <p role="alert" className="p-6 text-red-600 dark:text-red-400">{error}</p>
         ) : !data || data.items.length === 0 ? (
           <p className="p-6 text-slate-500 dark:text-slate-400">No feedback yet.</p>
         ) : (
