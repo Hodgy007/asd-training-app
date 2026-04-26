@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import {
   isPaymentsEnabled,
@@ -8,6 +10,12 @@ import {
 } from '@/lib/stripe'
 import { ProgramCard } from '@/components/courses/program-card'
 import { SubscriptionCard } from '@/components/courses/subscription-card'
+
+function homePathForRole(role: string | undefined): string {
+  if (role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE') return '/super-admin'
+  if (role === 'ORG_ADMIN') return '/admin'
+  return '/dashboard'
+}
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -93,6 +101,9 @@ export default async function CoursesPage() {
     notFound()
   }
 
+  const session = await getServerSession(authOptions)
+  const homePath = homePathForRole(session?.user?.role)
+
   const programs = await prisma.trainingProgram.findMany({
     where: {
       status: 'APPROVED',
@@ -163,12 +174,21 @@ export default async function CoursesPage() {
             >
               Courses
             </a>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center rounded-full bg-[#001522] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0a2a3d]"
-            >
-              Sign in
-            </Link>
+            {session ? (
+              <Link
+                href={homePath}
+                className="inline-flex items-center justify-center rounded-full bg-[#001522] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0a2a3d]"
+              >
+                My dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center rounded-full bg-[#001522] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0a2a3d]"
+              >
+                Sign in
+              </Link>
+            )}
           </nav>
         </div>
       </header>
@@ -347,9 +367,18 @@ export default async function CoursesPage() {
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm">
               <li>
-                <Link href="/login" className="text-slate-300 transition hover:text-white">
-                  Sign in
-                </Link>
+                {session ? (
+                  <Link
+                    href={homePath}
+                    className="text-slate-300 transition hover:text-white"
+                  >
+                    My dashboard
+                  </Link>
+                ) : (
+                  <Link href="/login" className="text-slate-300 transition hover:text-white">
+                    Sign in
+                  </Link>
+                )}
               </li>
               <li>
                 <Link
