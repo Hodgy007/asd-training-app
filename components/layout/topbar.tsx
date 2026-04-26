@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { getRoleLabel } from '@/lib/rbac'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
 import { NotificationsBell } from './notifications-bell'
+import { LogBufferMount } from '@/components/providers/log-buffer-mount'
 import { clsx } from 'clsx'
 
 interface TopbarProps {
@@ -41,6 +42,7 @@ export function Topbar({ onMenuClick, title }: TopbarProps) {
 
   return (
     <header className={clsx('h-20 flex items-center justify-between px-4 md:px-6 flex-shrink-0', headerBg)}>
+      <LogBufferMount />
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuClick}
