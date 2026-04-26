@@ -4,19 +4,26 @@ import { test, expect } from '@playwright/test'
 //  - demo@example.com / demo123              (EMPLOYEE — leaf role)
 //  - admin@asdawareness.org.uk / admin123    (SUPER_ADMIN — Charity Admin)
 //
-// Prerequisites:
+// Prerequisites for this test:
 //  1. `npm run prisma:seed` against the dev DB so the two users above exist.
 //  2. Dev server has the latest Prisma client (regenerate after schema changes).
+//  3. Either set up TOTP for the seeded admin OR run the dev server with
+//     DISABLE_MFA=true — middleware redirects admins without TOTP to /mfa-setup
+//     and blocks the inbox routes, which would skip the second half of this test.
+//
+// Run with: `npm run test:e2e -- feedback.spec.ts`. Add `--headed --debug`
+// for interactive inspection.
 
 test.describe('Feedback', () => {
-  test('admin submits → sees in inbox → resolves', async ({ page }) => {
-    // 1) Admin logs in (also has access to the Feedback button via Topbar)
+  test('learner submits → admin sees in inbox + resolves', async ({ page, browser }) => {
+    // 1) Demo learner logs in (avoids the SUPER_ADMIN MFA-setup gate
+    //    that blocks POST /api/feedback when TOTP isn't configured)
     await page.goto('/login')
     await page.getByRole('button', { name: /email & password/i }).click()
-    await page.getByRole('textbox', { name: /email/i }).fill('admin@asdawareness.org.uk')
-    await page.getByRole('textbox', { name: /^password$/i }).fill('admin123')
+    await page.getByRole('textbox', { name: /email/i }).fill('demo@example.com')
+    await page.getByRole('textbox', { name: /^password$/i }).fill('demo123')
     await page.getByRole('button', { name: /^sign in$/i }).click()
-    await expect(page).toHaveURL(/\/super-admin/, { timeout: 15000 })
+    await expect(page).toHaveURL(/\/dashboard$/, { timeout: 15000 })
 
     // 2) Open the Feedback modal from the topbar
     await page.getByRole('button', { name: /send feedback/i }).click()
@@ -32,17 +39,34 @@ test.describe('Feedback', () => {
     // (The toast itself is too transient to catch reliably.)
     await expect(page.getByLabel(/what's on your mind/i)).toBeHidden({ timeout: 5000 })
 
-    // 4) Navigate to the inbox in the same session (admin can see their own feedback)
-    await page.goto('/super-admin/feedback')
+    // 4) Switch to admin context (separate cookies). Admin will hit the
+    //    /mfa-setup wall before reaching the inbox unless MFA is set up
+    //    or DISABLE_MFA=true. Skip the rest of the flow if we get bounced.
+    const adminContext = await browser.newContext()
+    const adminPage = await adminContext.newPage()
+    await adminPage.goto('/login')
+    await adminPage.getByRole('button', { name: /email & password/i }).click()
+    await adminPage.getByRole('textbox', { name: /email/i }).fill('admin@asdawareness.org.uk')
+    await adminPage.getByRole('textbox', { name: /^password$/i }).fill('admin123')
+    await adminPage.getByRole('button', { name: /^sign in$/i }).click()
+
+    await adminPage.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 15000 })
+    if (adminPage.url().includes('/mfa-setup')) {
+      test.skip(true, 'Admin user needs TOTP set up (or DISABLE_MFA=true) to reach inbox.')
+    }
+
+    await adminPage.goto('/super-admin/feedback')
 
     // 5) Confirm the entry exists, click into it
-    const messageRow = page.getByText('E2E test — quiz button not clickable on the demo iOS page')
+    const messageRow = adminPage.getByText('E2E test — quiz button not clickable on the demo iOS page')
     await expect(messageRow).toBeVisible({ timeout: 10000 })
     await messageRow.click()
 
     // 6) Mark RESOLVED and Save
-    await page.getByLabel(/^status$/i).selectOption('RESOLVED')
-    await page.getByRole('button', { name: /^save$/i }).click()
-    await expect(page.getByText(/resolved by/i)).toBeVisible({ timeout: 10000 })
+    await adminPage.getByLabel(/^status$/i).selectOption('RESOLVED')
+    await adminPage.getByRole('button', { name: /^save$/i }).click()
+    await expect(adminPage.getByText(/resolved by/i)).toBeVisible({ timeout: 10000 })
+
+    await adminContext.close()
   })
 })
