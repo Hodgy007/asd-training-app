@@ -317,7 +317,13 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
         <span className="text-slate-700 font-medium truncate">{lesson.title}</span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
+      <div
+        className={
+          lesson.type === 'SCORM'
+            ? ''
+            : 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6'
+        }
+      >
         <div className="min-w-0 space-y-6">
       {/* Header */}
       <div className="card">
@@ -627,14 +633,19 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
       </>}
         </div>
 
-        {/* Right rail — lesson outline. Stacks below on < lg. */}
-        <LessonOutlineRail
-          programId={params.programId}
-          moduleId={params.moduleId}
-          lessons={lesson.module.lessons}
-          currentLessonId={lesson.id}
-          completedLessonIds={completedLessonIds}
-        />
+        {/* Right rail — lesson outline. Hidden for SCORM since SCORM imports
+            scaffold a single-lesson module (the rail would just show one
+            entry pointing at the current lesson) and the SCORM player has
+            its own TOC sidebar for in-package navigation. */}
+        {lesson.type !== 'SCORM' && (
+          <LessonOutlineRail
+            programId={params.programId}
+            moduleId={params.moduleId}
+            lessons={lesson.module.lessons}
+            currentLessonId={lesson.id}
+            completedLessonIds={completedLessonIds}
+          />
+        )}
       </div>
     </div>
   )
