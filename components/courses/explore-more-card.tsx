@@ -12,28 +12,28 @@ export function ExploreMoreCard({ session }: { session: Session }) {
   return (
     <Link
       href="/courses"
-      className="group block overflow-hidden rounded-2xl bg-[#001522] p-5 text-white shadow-sm ring-1 ring-white/10 transition hover:shadow-lg"
+      className="card group block transition-colors hover:border-warm-300"
     >
       <div className="flex items-center gap-3">
         <span
-          className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-aaa-orange text-white"
+          className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-warm-100 text-warm-600"
           aria-hidden="true"
         >
-          <Sparkles className="h-5 w-5" />
+          <Sparkles className="h-4 w-4" />
         </span>
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-aaa-orange-light">
+          <p className="text-sm font-semibold text-slate-900">
             More training
           </p>
-          <p className="mt-0.5 text-sm font-semibold text-white">
+          <p className="mt-0.5 text-xs text-slate-500">
             Browse our course catalogue
           </p>
         </div>
       </div>
-      <p className="mt-3 text-xs leading-relaxed text-slate-300">
-        Buy a single course or subscribe for unlimited access to every programme.
+      <p className="mt-3 text-xs leading-relaxed text-slate-600">
+        Buy a single course or subscribe for unlimited access.
       </p>
-      <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-aaa-orange-light transition group-hover:gap-2">
+      <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-warm-600 transition group-hover:gap-1.5 group-hover:text-warm-700">
         Browse courses
         <ArrowRight className="h-3.5 w-3.5" />
       </span>
