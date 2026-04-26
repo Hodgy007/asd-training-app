@@ -8,6 +8,7 @@ import { OrgAdminSidebar } from '@/components/layout/org-admin-sidebar'
 import { Topbar } from '@/components/layout/topbar'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
+import { LogBufferMount } from '@/components/providers/log-buffer-mount'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -51,6 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900">
+      <LogBufferMount />
       <div className="hidden md:flex w-64 flex-shrink-0 flex-col">
         <Suspense><SidebarComponent /></Suspense>
       </div>
