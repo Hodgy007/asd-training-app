@@ -12,6 +12,7 @@ import { LearningJourney } from '@/components/training/learning-journey'
 import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
 import { PendingSurveys } from '@/components/dashboard/pending-surveys'
+import { ExploreMoreCard } from '@/components/courses/explore-more-card'
 import { isCharityLevel } from '@/lib/rbac'
 import { HowToPanel } from '@/components/howto/panel'
 import DashboardHowTo from '@/components/howto/learner/dashboard'
@@ -156,6 +157,7 @@ export default async function DashboardPage() {
               </Link>
             </div>
           </div>
+          <ExploreMoreCard session={session} />
         </div>
       </div>
 
