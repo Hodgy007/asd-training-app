@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import {
@@ -86,6 +86,26 @@ export default function TrainingContentPage() {
   const [generationModalOpen, setGenerationModalOpen] = useState(false)
   const [generationMode, setGenerationMode] = useState<GenerationMode>('structure')
   const [scormImportOpen, setScormImportOpen] = useState(false)
+  const [createMenuOpen, setCreateMenuOpen] = useState(false)
+  const createMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!createMenuOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (createMenuRef.current && !createMenuRef.current.contains(e.target as Node)) {
+        setCreateMenuOpen(false)
+      }
+    }
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setCreateMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleEsc)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleEsc)
+    }
+  }, [createMenuOpen])
 
   // Track expanded programs (shows modules) and programs being edited
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -270,34 +290,91 @@ export default function TrainingContentPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => { setGenerationMode('structure'); setGenerationModalOpen(true) }}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
-          >
-            <Upload className="h-4 w-4" />
-            Import from Files
-          </button>
-          <button
-            onClick={() => { setGenerationMode('generate'); setGenerationModalOpen(true) }}
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
-          >
-            <Sparkles className="h-4 w-4" />
-            Generate from Files
-          </button>
-          <button
-            onClick={() => setScormImportOpen(true)}
-            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
-          >
-            <Package className="h-4 w-4" />
-            Import SCORM
-          </button>
-          <button
-            onClick={() => setShowNewProgram(!showNewProgram)}
-            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            New Program
-          </button>
+          <div className="relative" ref={createMenuRef}>
+            <button
+              onClick={() => setCreateMenuOpen(!createMenuOpen)}
+              aria-haspopup="menu"
+              aria-expanded={createMenuOpen}
+              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              New Program
+              <ChevronDown className={clsx('h-4 w-4 transition-transform', createMenuOpen && 'rotate-180')} />
+            </button>
+            {createMenuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 shadow-lg z-20 overflow-hidden"
+              >
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setShowNewProgram(true)
+                    setCreateMenuOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3 border-b border-calm-100 dark:border-slate-700"
+                >
+                  <Plus className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                  <div>
+                    <p className="font-bold text-sm text-slate-900 dark:text-white">Blank program</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Start with an empty program and add modules manually.
+                    </p>
+                  </div>
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setGenerationMode('structure')
+                    setGenerationModalOpen(true)
+                    setCreateMenuOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3 border-b border-calm-100 dark:border-slate-700"
+                >
+                  <Upload className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                  <div>
+                    <p className="font-bold text-sm text-slate-900 dark:text-white">Import from files</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Build a program structure from uploaded documents.
+                    </p>
+                  </div>
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setGenerationMode('generate')
+                    setGenerationModalOpen(true)
+                    setCreateMenuOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3 border-b border-calm-100 dark:border-slate-700"
+                >
+                  <Sparkles className="h-4 w-4 mt-0.5 text-emerald-600 flex-shrink-0" />
+                  <div>
+                    <p className="font-bold text-sm text-slate-900 dark:text-white">Generate from files</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      AI generates full lesson content from your source material.
+                    </p>
+                  </div>
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setScormImportOpen(true)
+                    setCreateMenuOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3"
+                >
+                  <Package className="h-4 w-4 mt-0.5 text-indigo-600 flex-shrink-0" />
+                  <div>
+                    <p className="font-bold text-sm text-slate-900 dark:text-white">Import SCORM</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Upload a SCORM 1.2 or 2004 .zip from another LMS.
+                    </p>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
