@@ -1,15 +1,16 @@
 /**
  * Shared HTML wrapper for all transactional emails.
  *
- * The header pulls the Ambitious about Autism logo from /logo-aaa.svg via an
+ * The header pulls the Ambitious about Autism logo from /logo-aaa.png via an
  * absolute URL — required because email clients can't resolve relative paths.
- * Apple Mail, Gmail (web/iOS/Android), Outlook 365 web all render SVG; older
- * Outlook desktop falls back to the alt text. If we ever ship a PNG fallback,
- * point LOGO_URL at it without changing call sites.
+ * PNG is used (not SVG) because new Outlook on Windows and older Outlook
+ * desktop both strip <img src="…svg">. The PNG is regenerated from
+ * public/logo-aaa.svg by scripts/render-logo-png.mjs whenever the source SVG
+ * changes.
  */
 
 const BASE_URL = process.env.NEXTAUTH_URL ?? 'https://asd-training-app-v2.vercel.app'
-const LOGO_URL = `${BASE_URL}/logo-aaa.svg`
+const LOGO_URL = `${BASE_URL}/logo-aaa.png`
 
 export interface WrapEmailOptions {
   /** Plain-text alternative to put after the body content if you have one. */
