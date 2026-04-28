@@ -176,7 +176,6 @@ export function ProgramCard({
       {freeModalOpen ? (
         <FreeClaimModal
           programName={name}
-          accentHex={accentHex}
           onClose={() => setFreeModalOpen(false)}
           onSuccess={(message) => {
             setSuccessMessage(message)
@@ -192,13 +191,11 @@ export function ProgramCard({
 function FreeClaimModal({
   programId,
   programName,
-  accentHex,
   onClose,
   onSuccess,
 }: {
   programId: string
   programName: string
-  accentHex: string
   onClose: () => void
   onSuccess: (message: string) => void
 }) {
@@ -237,24 +234,37 @@ function FreeClaimModal({
     }
   }
 
+  // NOTE: every colour below is an arbitrary hex, NOT a Tailwind keyword
+  // (`bg-white`, `text-slate-900`, etc). globals.css auto-inverts those
+  // keywords when `.dark` is on <html>, which made the previous modal render
+  // navy-on-navy when the user's OS was in dark mode. Arbitrary values bypass
+  // that rule and keep the modal consistently light to match the rest of the
+  // public /courses page.
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#001522]/70 px-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="free-claim-title"
+      onClick={onClose}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <h2 id="free-claim-title" className="text-lg font-bold text-[#001522]">
+      <div
+        className="w-full max-w-md rounded-2xl bg-[#ffffff] p-7 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="free-claim-title" className="text-xl font-bold leading-tight text-[#001522]">
           Get free access to {programName}
         </h2>
-        <p className="mt-1 text-sm text-[#475569]">
-          Enter your email and we&rsquo;ll send your sign-in details so you can start training.
+        <p className="mt-2 text-sm leading-relaxed text-[#475569]">
+          Enter your email and we&rsquo;ll send your sign-in details so you can start training right away.
         </p>
-        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div>
-            <label htmlFor="free-claim-email" className="block text-xs font-semibold text-[#001522] mb-1">
-              Email <span className="text-red-600">*</span>
+            <label
+              htmlFor="free-claim-email"
+              className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#334155]"
+            >
+              Email <span className="text-[#dc2626]">*</span>
             </label>
             <input
               id="free-claim-email"
@@ -263,13 +273,16 @@ function FreeClaimModal({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-[#001522] focus:outline-none focus:ring-2 focus:ring-offset-1"
-              style={{ borderColor: '#cbd5e1' }}
+              placeholder="you@example.com"
+              className="w-full rounded-xl border border-[#cbd5e1] bg-[#ffffff] px-3.5 py-2.5 text-sm text-[#001522] placeholder:text-[#94a3b8] focus:border-[#f5821f] focus:outline-none focus:ring-2 focus:ring-[#f5821f]/30"
             />
           </div>
           <div>
-            <label htmlFor="free-claim-name" className="block text-xs font-semibold text-[#001522] mb-1">
-              Your name (optional)
+            <label
+              htmlFor="free-claim-name"
+              className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#334155]"
+            >
+              Your name <span className="font-normal normal-case text-[#94a3b8]">(optional)</span>
             </label>
             <input
               id="free-claim-name"
@@ -277,28 +290,27 @@ function FreeClaimModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-[#001522] focus:outline-none focus:ring-2 focus:ring-offset-1"
+              className="w-full rounded-xl border border-[#cbd5e1] bg-[#ffffff] px-3.5 py-2.5 text-sm text-[#001522] placeholder:text-[#94a3b8] focus:border-[#f5821f] focus:outline-none focus:ring-2 focus:ring-[#f5821f]/30"
             />
           </div>
           {error ? (
-            <p role="alert" className="text-sm font-medium text-red-600">
+            <p role="alert" className="rounded-lg bg-[#fef2f2] px-3 py-2 text-sm font-medium text-[#b91c1c]">
               {error}
             </p>
           ) : null}
-          <div className="flex items-center justify-end gap-2 pt-2">
+          <div className="flex items-center justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="inline-flex items-center justify-center rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-[#001522] hover:bg-slate-50 disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-full border border-[#cbd5e1] bg-[#ffffff] px-5 py-2.5 text-sm font-semibold text-[#001522] transition hover:bg-[#f8fafc] disabled:opacity-60"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 disabled:opacity-60"
-              style={{ backgroundColor: accentHex }}
+              className="inline-flex items-center justify-center rounded-full bg-[#f5821f] px-5 py-2.5 text-sm font-semibold text-[#ffffff] shadow-sm transition hover:brightness-110 disabled:opacity-60"
             >
               {submitting ? 'Sending…' : 'Send sign-in details'}
             </button>
