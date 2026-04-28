@@ -162,16 +162,15 @@ export default function SuperAdminHomePage() {
   }
 
   async function makeDefault() {
-    // Captures whatever's currently SAVED as the default. We require that the
-    // editor first saved any in-progress edits — otherwise the user might
-    // expect the inline tweaks to be captured but they wouldn't be.
-    const previewHtml = previewRef.current?.innerHTML ?? html
-    const savedHtml = html
-    if (previewHtml !== savedHtml) {
-      showToast('Save your current edits first, then make them the default.', 'error')
-      return
-    }
-    if (!savedHtml.trim()) {
+    // Capture whatever's currently in the preview (including any inline edits)
+    // as the default. We deliberately don't try to compare innerHTML to the
+    // saved html string to detect unsaved edits — the browser normalises
+    // innerHTML (attribute order, quoting, whitespace), so they almost never
+    // match byte-for-byte even when nothing changed, and the old comparison
+    // made the button silently bail. Instead we save first, then snapshot.
+    commitPreviewEdit()
+    const toCapture = previewRef.current?.innerHTML ?? html
+    if (!toCapture.trim()) {
       showToast('There is no content to save as the default yet.', 'error')
       return
     }
@@ -180,14 +179,29 @@ export default function SuperAdminHomePage() {
     }
     setSettingDefault(true)
     try {
+      // Persist the live page first so the snapshot the API copies matches
+      // what's on screen.
+      const saveRes = await fetch('/api/super-admin/home', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ htmlContent: toCapture, brief }),
+      })
+      const saveData = await saveRes.json().catch(() => null)
+      if (!saveRes.ok) {
+        showToast(saveData?.error ?? 'Could not save before snapshotting default.', 'error')
+        return
+      }
+      if (saveData?.htmlContent) setHtml(saveData.htmlContent)
+      if (saveData?.updatedAt) setUpdatedAt(saveData.updatedAt)
+
       const res = await fetch('/api/super-admin/home/set-default', { method: 'POST' })
-      const data = await res.json()
+      const data = await res.json().catch(() => null)
       if (!res.ok) {
-        showToast(data.error ?? 'Could not save default.', 'error')
+        showToast(data?.error ?? 'Could not save default.', 'error')
         return
       }
       setHasDefault(true)
-      setDefaultSetAt(data.defaultSetAt ?? new Date().toISOString())
+      setDefaultSetAt(data?.defaultSetAt ?? new Date().toISOString())
       showToast('Saved as the default. You can roll back to this any time.', 'success')
     } catch {
       showToast('Could not save default.', 'error')
