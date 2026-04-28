@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { name, description, version, status } = body
+  const { name, description, version, status, audience } = body
 
   if (!name) {
     return NextResponse.json({ error: 'Missing required field: name' }, { status: 400 })
@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       order,
       version: version ?? '1.0',
       status: status ?? 'DRAFT',
+      audience: audience === 'EMPLOYER' ? 'EMPLOYER' : 'EDUCATION',
     },
   })
 

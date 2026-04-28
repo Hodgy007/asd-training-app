@@ -278,13 +278,14 @@ model LessonNote {
 }
 
 model TrainingProgram {
-  id              String        @id @default(cuid())
+  id              String           @id @default(cuid())
   name            String
-  description     String?       @db.Text
+  description     String?          @db.Text
   order           Int
-  active          Boolean       @default(true)
-  version         String        @default("1.0")
-  status          ProgramStatus @default(DRAFT)
+  active          Boolean          @default(true)
+  version         String           @default("1.0")
+  status          ProgramStatus    @default(DRAFT)
+  audience        ProgramAudience  @default(EDUCATION)
   reviewedAt      DateTime?
   reviewedBy      String?
   reviewNotes     String?       @db.Text
@@ -497,6 +498,11 @@ enum ProgramStatus {
   UNDER_REVIEW
   APPROVED
   ARCHIVED
+}
+
+enum ProgramAudience {
+  EDUCATION
+  EMPLOYER
 }
 
 enum OrganisationType {

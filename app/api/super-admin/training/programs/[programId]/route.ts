@@ -52,7 +52,7 @@ export async function PATCH(
   const allowedFields = [
     'name', 'description', 'order', 'active', 'version',
     'status', 'reviewedAt', 'reviewedBy', 'reviewNotes',
-    'priceAmount', 'currency', 'purchasable',
+    'priceAmount', 'currency', 'purchasable', 'audience',
   ]
 
   const data: Record<string, unknown> = {}
@@ -60,6 +60,10 @@ export async function PATCH(
     if (body[field] !== undefined) {
       data[field] = body[field]
     }
+  }
+
+  if (data.audience !== undefined && data.audience !== 'EDUCATION' && data.audience !== 'EMPLOYER') {
+    return NextResponse.json({ error: 'Invalid audience' }, { status: 400 })
   }
 
   const program = await prisma.trainingProgram.update({
