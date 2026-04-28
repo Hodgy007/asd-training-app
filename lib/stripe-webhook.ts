@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs'
 import { Resend } from 'resend'
 import { prisma } from './prisma'
 import { requireStripe } from './stripe'
+import { wrapEmailHtml } from './email-templates/layout'
 
 const STRIPE_STATUS_MAP: Record<Stripe.Subscription.Status, SubscriptionStatus> = {
   active: 'ACTIVE',
@@ -145,29 +146,22 @@ async function sendCredentialsEmail(
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const loginUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/login?email=${encodeURIComponent(email)}`
+    const innerHtml = `
+      <h2 style="color: #f5821f; margin-top: 0;">Welcome${name ? ', ' + name : ''}!</h2>
+      <p>Thank you for your purchase. Your training account is ready.</p>
+      <p>Sign in with:</p>
+      <ul>
+        <li><strong>Email:</strong> ${email}</li>
+        <li><strong>Temporary password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${tempPassword}</code></li>
+      </ul>
+      <p><a class="btn" href="${loginUrl}">Sign in</a></p>
+      <p class="footer">You'll be asked to change your password on first sign-in.</p>
+    `
     await resend.emails.send({
       from: 'Ambitious About Autism <onboarding@resend.dev>',
       to: email,
       subject: 'Welcome — your training account is ready',
-      html: `
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2 style="color: #f5821f;">Welcome${name ? ', ' + name : ''}!</h2>
-          <p>Thank you for your purchase. Your training account is ready.</p>
-          <p>Sign in with:</p>
-          <ul>
-            <li><strong>Email:</strong> ${email}</li>
-            <li><strong>Temporary password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${tempPassword}</code></li>
-          </ul>
-          <p>
-            <a href="${loginUrl}" style="display:inline-block;background:#f5821f;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">
-              Sign in
-            </a>
-          </p>
-          <p style="color:#6b7280;font-size:14px;">You'll be asked to change your password on first sign-in.</p>
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
-          <p style="color:#9ca3af;font-size:12px;">Ambitious About Autism — Not a diagnostic tool</p>
-        </div>
-      `,
+      html: wrapEmailHtml(innerHtml),
     })
   } catch (error) {
     console.error('[stripe-webhook] Failed to send credentials email:', error)

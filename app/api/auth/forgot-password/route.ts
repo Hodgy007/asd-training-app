@@ -4,6 +4,7 @@ import { Resend } from 'resend'
 import crypto from 'crypto'
 import { z } from 'zod'
 import { forgotPasswordLimiter, getClientIp } from '@/lib/rate-limit'
+import { wrapEmailHtml } from '@/lib/email-templates/layout'
 
 const schema = z.object({ email: z.string().email() })
 
@@ -48,25 +49,18 @@ export async function POST(req: NextRequest) {
 
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
+    const innerHtml = `
+      <h2 style="color: #f5821f; margin-top: 0;">Password Reset</h2>
+      <p>Hi ${user.name || 'there'},</p>
+      <p>You requested a password reset for your Ambitious About Autism account.</p>
+      <p><a class="btn" href="${resetUrl}">Reset my password</a></p>
+      <p class="footer">This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>
+    `
     await resend.emails.send({
       from: 'Ambitious About Autism <onboarding@resend.dev>',
       to: email,
       subject: 'Reset your password',
-      html: `
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2 style="color: #f5821f;">Password Reset</h2>
-          <p>Hi ${user.name || 'there'},</p>
-          <p>You requested a password reset for your Ambitious About Autism account.</p>
-          <p>
-            <a href="${resetUrl}" style="display:inline-block;background:#f5821f;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">
-              Reset my password
-            </a>
-          </p>
-          <p style="color:#6b7280;font-size:14px;">This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
-          <p style="color:#9ca3af;font-size:12px;">Ambitious About Autism — Not a diagnostic tool</p>
-        </div>
-      `,
+      html: wrapEmailHtml(innerHtml),
     })
   } catch (error) {
     console.error('Failed to send password reset email:', error)
