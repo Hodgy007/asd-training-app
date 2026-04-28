@@ -9,8 +9,22 @@
  * changes.
  */
 
-const BASE_URL = process.env.NEXTAUTH_URL ?? 'https://asd-training-app-v2.vercel.app'
-const LOGO_URL = `${BASE_URL}/logo-aaa.png`
+const PUBLIC_LOGO_URL = 'https://asd-training-app-v2.vercel.app/logo-aaa.png'
+
+/**
+ * Resolve the logo URL at send-time (not at module load), so:
+ * - Local dev / one-off scripts still embed a reachable image.
+ * - Tests that override NEXTAUTH_URL after import still see the new value.
+ * - Localhost values are rejected — inboxes can't reach them — and we fall
+ *   back to the canonical prod URL for the logo asset specifically.
+ */
+function resolveLogoUrl(): string {
+  const base = process.env.NEXTAUTH_URL
+  if (!base || base.includes('localhost') || base.includes('127.0.0.1')) {
+    return PUBLIC_LOGO_URL
+  }
+  return `${base.replace(/\/$/, '')}/logo-aaa.png`
+}
 
 export interface WrapEmailOptions {
   /** Plain-text alternative to put after the body content if you have one. */
@@ -18,6 +32,7 @@ export interface WrapEmailOptions {
 }
 
 export function wrapEmailHtml(innerHtml: string, options: WrapEmailOptions = {}): string {
+  const logoUrl = resolveLogoUrl()
   const footer = options.hideFooter
     ? ''
     : `<p class="smallprint">Ambitious about Autism &mdash; Not a diagnostic tool</p>`
@@ -45,7 +60,7 @@ export function wrapEmailHtml(innerHtml: string, options: WrapEmailOptions = {})
   <div class="wrap">
     <div class="card">
       <div class="header">
-        <img src="${LOGO_URL}" alt="Ambitious about Autism" width="220" />
+        <img src="${logoUrl}" alt="Ambitious about Autism" width="220" />
       </div>
       <div class="body">
 ${innerHtml}
