@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { prisma } from '@/lib/prisma'
+import { wrapEmailHtml } from '@/lib/email-templates/layout'
 
 export interface FeedbackEmailInput {
   id: string
@@ -51,34 +52,33 @@ export function buildFeedbackEmail(submission: FeedbackEmailInput, baseUrl: stri
   const orgName = submission.organisation?.name ?? '(no org)'
   const submitterName = submission.user.name ?? '(unnamed)'
 
-  const html = `
-    <div style="font-family: sans-serif; max-width: 640px; margin: 0 auto; color: #1f2937;">
-      <h2 style="color: #f5821f; margin-bottom: 4px;">${escapeHtml(typeLabel)} feedback</h2>
-      <p style="color: #6b7280; margin-top: 0;">Submitted ${escapeHtml(submission.createdAt.toISOString())}</p>
+  const innerHtml = `
+    <h2 style="color: #f5821f; margin-bottom: 4px; margin-top: 0;">${escapeHtml(typeLabel)} feedback</h2>
+    <p style="color: #6b7280; margin-top: 0;">Submitted ${escapeHtml(submission.createdAt.toISOString())}</p>
 
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
-        <tr><td style="padding: 4px 8px; color:#6b7280;">From</td><td style="padding: 4px 8px;">${escapeHtml(submitterName)} &lt;${escapeHtml(submission.user.email)}&gt;</td></tr>
-        <tr><td style="padding: 4px 8px; color:#6b7280;">Role</td><td style="padding: 4px 8px;">${escapeHtml(submission.user.role)}</td></tr>
-        <tr><td style="padding: 4px 8px; color:#6b7280;">Organisation</td><td style="padding: 4px 8px;">${escapeHtml(orgName)}</td></tr>
-        <tr><td style="padding: 4px 8px; color:#6b7280;">Page</td><td style="padding: 4px 8px;"><a href="${escapeHtml(submission.url)}">${escapeHtml(submission.url)}</a></td></tr>
-        <tr><td style="padding: 4px 8px; color:#6b7280;">Viewport</td><td style="padding: 4px 8px;">${escapeHtml(submission.viewport)}</td></tr>
-        <tr><td style="padding: 4px 8px; color:#6b7280;">User agent</td><td style="padding: 4px 8px; font-size: 12px; color: #6b7280;">${escapeHtml(submission.userAgent)}</td></tr>
-      </table>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+      <tr><td style="padding: 4px 8px; color:#6b7280;">From</td><td style="padding: 4px 8px;">${escapeHtml(submitterName)} &lt;${escapeHtml(submission.user.email)}&gt;</td></tr>
+      <tr><td style="padding: 4px 8px; color:#6b7280;">Role</td><td style="padding: 4px 8px;">${escapeHtml(submission.user.role)}</td></tr>
+      <tr><td style="padding: 4px 8px; color:#6b7280;">Organisation</td><td style="padding: 4px 8px;">${escapeHtml(orgName)}</td></tr>
+      <tr><td style="padding: 4px 8px; color:#6b7280;">Page</td><td style="padding: 4px 8px;"><a href="${escapeHtml(submission.url)}">${escapeHtml(submission.url)}</a></td></tr>
+      <tr><td style="padding: 4px 8px; color:#6b7280;">Viewport</td><td style="padding: 4px 8px;">${escapeHtml(submission.viewport)}</td></tr>
+      <tr><td style="padding: 4px 8px; color:#6b7280;">User agent</td><td style="padding: 4px 8px; font-size: 12px; color: #6b7280;">${escapeHtml(submission.userAgent)}</td></tr>
+    </table>
 
-      <h3 style="margin-bottom: 4px;">Message</h3>
-      <pre style="white-space: pre-wrap; background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px; border-radius: 8px; font-family: inherit; margin-top: 0;">${escapeHtml(submission.message)}</pre>
+    <h3 style="margin-bottom: 4px;">Message</h3>
+    <pre style="white-space: pre-wrap; background: #f9fafb; border: 1px solid #e5e7eb; padding: 12px; border-radius: 8px; font-family: inherit; margin-top: 0;">${escapeHtml(submission.message)}</pre>
 
-      ${logs.length > 0 ? `
-      <details style="margin-top: 16px;">
-        <summary style="cursor: pointer; color: #6b7280;">Recent client logs (${logs.length})</summary>
-        <pre style="white-space: pre-wrap; background: #f3f4f6; border: 1px solid #e5e7eb; padding: 12px; border-radius: 8px; font-size: 12px; font-family: monospace;">${logsHtml}</pre>
-      </details>` : ''}
+    ${logs.length > 0 ? `
+    <details style="margin-top: 16px;">
+      <summary style="cursor: pointer; color: #6b7280;">Recent client logs (${logs.length})</summary>
+      <pre style="white-space: pre-wrap; background: #f3f4f6; border: 1px solid #e5e7eb; padding: 12px; border-radius: 8px; font-size: 12px; font-family: monospace;">${logsHtml}</pre>
+    </details>` : ''}
 
-      <p style="margin-top: 24px;">
-        <a href="${escapeHtml(adminLink)}" style="display:inline-block;background:#f5821f;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold;">View in admin</a>
-      </p>
-    </div>
+    <p style="margin-top: 24px;">
+      <a class="btn" href="${escapeHtml(adminLink)}">View in admin</a>
+    </p>
   `
+  const html = wrapEmailHtml(innerHtml)
 
   const text = [
     `${typeLabel} feedback`,

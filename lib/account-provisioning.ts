@@ -10,6 +10,7 @@ import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import { Resend } from 'resend'
 import { prisma } from './prisma'
+import { wrapEmailHtml } from './email-templates/layout'
 
 const FROM_ADDRESS = 'Ambitious About Autism <onboarding@resend.dev>'
 
@@ -40,29 +41,22 @@ export async function sendCredentialsEmail(args: {
 
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
+    const innerHtml = `
+      <h2 style="color: #f5821f; margin-top: 0;">Welcome${args.name ? ', ' + escapeHtml(args.name) : ''}!</h2>
+      ${programLine}
+      <p>Sign in with:</p>
+      <ul>
+        <li><strong>Email:</strong> ${escapeHtml(args.email)}</li>
+        <li><strong>Temporary password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${escapeHtml(args.tempPassword)}</code></li>
+      </ul>
+      <p><a class="btn" href="${loginUrl(args.email)}">Sign in</a></p>
+      <p class="footer">You'll be asked to change your password on first sign-in.</p>
+    `
     await resend.emails.send({
       from: FROM_ADDRESS,
       to: args.email,
       subject: 'Welcome — your training account is ready',
-      html: `
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2 style="color: #f5821f;">Welcome${args.name ? ', ' + escapeHtml(args.name) : ''}!</h2>
-          ${programLine}
-          <p>Sign in with:</p>
-          <ul>
-            <li><strong>Email:</strong> ${escapeHtml(args.email)}</li>
-            <li><strong>Temporary password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${escapeHtml(args.tempPassword)}</code></li>
-          </ul>
-          <p>
-            <a href="${loginUrl(args.email)}" style="display:inline-block;background:#f5821f;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">
-              Sign in
-            </a>
-          </p>
-          <p style="color:#6b7280;font-size:14px;">You'll be asked to change your password on first sign-in.</p>
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
-          <p style="color:#9ca3af;font-size:12px;">Ambitious About Autism — Not a diagnostic tool</p>
-        </div>
-      `,
+      html: wrapEmailHtml(innerHtml),
     })
   } catch (error) {
     console.error('[account-provisioning] Failed to send credentials email:', error)
@@ -86,25 +80,18 @@ export async function sendAccessGrantedEmail(args: {
   }
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
+    const innerHtml = `
+      <h2 style="color: #f5821f; margin-top: 0;">Hello${args.name ? ', ' + escapeHtml(args.name) : ''}!</h2>
+      <p>You've been granted free access to <strong>${escapeHtml(args.programName)}</strong>.</p>
+      <p>Sign in with your existing account to start training:</p>
+      <p><a class="btn" href="${loginUrl(args.email)}">Sign in</a></p>
+      <p class="footer">If you've forgotten your password, use the "Forgot password" link on the sign-in page.</p>
+    `
     await resend.emails.send({
       from: FROM_ADDRESS,
       to: args.email,
       subject: `You now have access to ${args.programName}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2 style="color: #f5821f;">Hello${args.name ? ', ' + escapeHtml(args.name) : ''}!</h2>
-          <p>You've been granted free access to <strong>${escapeHtml(args.programName)}</strong>.</p>
-          <p>Sign in with your existing account to start training:</p>
-          <p>
-            <a href="${loginUrl(args.email)}" style="display:inline-block;background:#f5821f;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">
-              Sign in
-            </a>
-          </p>
-          <p style="color:#6b7280;font-size:14px;">If you've forgotten your password, use the "Forgot password" link on the sign-in page.</p>
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
-          <p style="color:#9ca3af;font-size:12px;">Ambitious About Autism — Not a diagnostic tool</p>
-        </div>
-      `,
+      html: wrapEmailHtml(innerHtml),
     })
   } catch (error) {
     console.error('[account-provisioning] Failed to send access-granted email:', error)
