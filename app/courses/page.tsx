@@ -88,16 +88,31 @@ function SectionHeader({
   )
 }
 
-export default async function CoursesPage() {
+export default async function CoursesPage({
+  searchParams,
+}: {
+  searchParams?: { audience?: string | string[] }
+}) {
   if (!isPaymentsEnabled) {
     notFound()
   }
+
+  const rawAudience = Array.isArray(searchParams?.audience)
+    ? searchParams?.audience[0]
+    : searchParams?.audience
+  const audienceFilter =
+    rawAudience?.toUpperCase() === 'EDUCATION'
+      ? 'EDUCATION'
+      : rawAudience?.toUpperCase() === 'EMPLOYER'
+        ? 'EMPLOYER'
+        : null
 
   const programs = await prisma.trainingProgram.findMany({
     where: {
       status: 'APPROVED',
       active: true,
       purchasable: true,
+      ...(audienceFilter ? { audience: audienceFilter } : {}),
     },
     select: {
       id: true,

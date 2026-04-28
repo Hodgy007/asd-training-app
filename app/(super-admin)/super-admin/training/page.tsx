@@ -48,6 +48,7 @@ interface Program {
   active: boolean
   version: string
   status: 'DRAFT' | 'UNDER_REVIEW' | 'APPROVED' | 'ARCHIVED'
+  audience: 'EDUCATION' | 'EMPLOYER'
   reviewedAt: string | null
   reviewedBy: string | null
   reviewNotes: string | null
@@ -697,6 +698,7 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
   const [description, setDescription] = useState('')
   const [version, setVersion] = useState('1.0')
   const [status, setStatus] = useState<string>('DRAFT')
+  const [audience, setAudience] = useState<'EDUCATION' | 'EMPLOYER'>('EDUCATION')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -714,6 +716,7 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
           description: normaliseHtml(description) || undefined,
           version: version.trim() || '1.0',
           status,
+          audience,
         }),
       })
       if (res.ok) {
@@ -787,6 +790,37 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
       </div>
       <div>
         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+          Audience
+        </label>
+        <div className="inline-flex rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-1">
+          <button
+            type="button"
+            onClick={() => setAudience('EDUCATION')}
+            className={clsx(
+              'px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors',
+              audience === 'EDUCATION'
+                ? 'bg-purple-600 text-white'
+                : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600'
+            )}
+          >
+            Education
+          </button>
+          <button
+            type="button"
+            onClick={() => setAudience('EMPLOYER')}
+            className={clsx(
+              'px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors',
+              audience === 'EMPLOYER'
+                ? 'bg-purple-600 text-white'
+                : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600'
+            )}
+          >
+            Employer
+          </button>
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
           Description
         </label>
         <RichDescriptionEditor
@@ -836,6 +870,7 @@ function EditProgramForm({
   const [description, setDescription] = useState(program.description ?? '')
   const [version, setVersion] = useState(program.version)
   const [status, setStatus] = useState(program.status)
+  const [audience, setAudience] = useState<'EDUCATION' | 'EMPLOYER'>(program.audience ?? 'EDUCATION')
   const [active, setActive] = useState(program.active)
   const [reviewedBy, setReviewedBy] = useState(program.reviewedBy ?? '')
   const [reviewedAt, setReviewedAt] = useState(
@@ -881,6 +916,7 @@ function EditProgramForm({
         description: normaliseHtml(description) || null,
         version: version.trim() || '1.0',
         status,
+        audience,
         active,
         reviewedBy: effectiveReviewedBy || null,
         reviewedAt: effectiveReviewedAt ? new Date(effectiveReviewedAt).toISOString() : null,
@@ -984,6 +1020,36 @@ function EditProgramForm({
               />
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Active</span>
             </label>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Audience</label>
+          <div className="inline-flex rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 p-1">
+            <button
+              type="button"
+              onClick={() => setAudience('EDUCATION')}
+              className={clsx(
+                'px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors',
+                audience === 'EDUCATION'
+                  ? 'bg-purple-600 text-white'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600'
+              )}
+            >
+              Education
+            </button>
+            <button
+              type="button"
+              onClick={() => setAudience('EMPLOYER')}
+              className={clsx(
+                'px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors',
+                audience === 'EMPLOYER'
+                  ? 'bg-purple-600 text-white'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600'
+              )}
+            >
+              Employer
+            </button>
           </div>
         </div>
 
