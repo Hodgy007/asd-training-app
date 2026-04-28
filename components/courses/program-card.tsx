@@ -83,21 +83,27 @@ export function ProgramCard({
           <div className="flex items-end justify-between gap-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-[#64748b]">
-                One-off purchase
+                {priceAmount === 0 ? 'Included' : 'One-off purchase'}
               </p>
               <p className="mt-1 text-2xl font-bold text-[#001522]">
-                {priceAmount ? formatPrice(priceAmount, currency) : 'Contact us'}
+                {priceAmount === null
+                  ? 'Contact us'
+                  : priceAmount === 0
+                  ? 'Free'
+                  : formatPrice(priceAmount, currency)}
               </p>
             </div>
             <button
               type="button"
               onClick={handleBuy}
-              disabled={loading || !priceAmount}
+              disabled={loading || priceAmount === null || priceAmount === 0}
               className="inline-flex items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               style={{ backgroundColor: accentHex }}
             >
               {loading ? (
                 'Loading…'
+              ) : priceAmount === 0 ? (
+                'Free'
               ) : (
                 <>
                   Buy now

@@ -115,3 +115,66 @@ export async function POST(
     )
   }
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { programId: string } }
+) {
+  if (!isPaymentsEnabled) {
+    return NextResponse.json({ error: 'Payments are not enabled' }, { status: 404 })
+  }
+
+  const session = await getServerSession(authOptions)
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const { programId } = params
+
+  const program = await prisma.trainingProgram.findUnique({
+    where: { id: programId },
+    select: {
+      id: true,
+      stripeProductId: true,
+      stripePriceId: true,
+    },
+  })
+
+  if (!program) {
+    return NextResponse.json({ error: 'Program not found' }, { status: 404 })
+  }
+
+  if (!program.stripePriceId && !program.stripeProductId) {
+    return NextResponse.json({ error: 'Program is not published to Stripe' }, { status: 400 })
+  }
+
+  const stripe = requireStripe()
+
+  // Archive on Stripe (best-effort — Stripe never deletes prices/products, only archives)
+  if (program.stripePriceId) {
+    try {
+      await stripe.prices.update(program.stripePriceId, { active: false })
+    } catch (error) {
+      console.error('[stripe-publish] Failed to archive price', program.stripePriceId, error)
+    }
+  }
+  if (program.stripeProductId) {
+    try {
+      await stripe.products.update(program.stripeProductId, { active: false })
+    } catch (error) {
+      console.error('[stripe-publish] Failed to archive product', program.stripeProductId, error)
+    }
+  }
+
+  // Clear refs on our side and unpublish from /courses so the program can't be checked out
+  await prisma.trainingProgram.update({
+    where: { id: program.id },
+    data: {
+      stripeProductId: null,
+      stripePriceId: null,
+      purchasable: false,
+    },
+  })
+
+  return NextResponse.json({ ok: true })
+}

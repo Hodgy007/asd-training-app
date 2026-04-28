@@ -878,7 +878,7 @@ function EditProgramForm({
   )
   const [reviewNotes, setReviewNotes] = useState(program.reviewNotes ?? '')
   const [priceGbp, setPriceGbp] = useState(
-    program.priceAmount ? (program.priceAmount / 100).toFixed(2) : ''
+    program.priceAmount !== null ? (program.priceAmount / 100).toFixed(2) : ''
   )
   const [currency, setCurrency] = useState(program.currency || 'gbp')
   const [purchasable, setPurchasable] = useState(program.purchasable)
@@ -906,7 +906,7 @@ function EditProgramForm({
 
     const priceNumber = priceGbp.trim() ? Number(priceGbp) : null
     const priceAmountPence =
-      priceNumber !== null && Number.isFinite(priceNumber) && priceNumber > 0
+      priceNumber !== null && Number.isFinite(priceNumber) && priceNumber >= 0
         ? Math.round(priceNumber * 100)
         : null
 
@@ -957,6 +957,33 @@ function EditProgramForm({
         setStripeProductId(data.stripeProductId ?? '')
         setStripePriceId(data.stripePriceId ?? '')
         setPublishMessage({ type: 'success', text: 'Published to Stripe.' })
+      }
+    } catch {
+      setPublishMessage({ type: 'error', text: 'Network error' })
+    } finally {
+      setPublishing(false)
+    }
+  }
+
+  const handleUnpublishFromStripe = async () => {
+    const ok = window.confirm(
+      'Unpublish from Stripe? The Stripe price + product will be archived and the program will be removed from the /courses catalogue. You can re-publish later.'
+    )
+    if (!ok) return
+    setPublishing(true)
+    setPublishMessage(null)
+    try {
+      const res = await fetch(`/api/super-admin/training/programs/${program.id}/stripe-publish`, {
+        method: 'DELETE',
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setPublishMessage({ type: 'error', text: data.error || 'Failed to unpublish' })
+      } else {
+        setStripeProductId('')
+        setStripePriceId('')
+        setPurchasable(false)
+        setPublishMessage({ type: 'success', text: 'Unpublished from Stripe.' })
       }
     } catch {
       setPublishMessage({ type: 'error', text: 'Network error' })
@@ -1121,8 +1148,18 @@ function EditProgramForm({
               className="inline-flex items-center gap-2 border border-purple-600 text-purple-700 dark:text-purple-300 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors disabled:opacity-50"
             >
               {publishing && <Loader2 className="h-4 w-4 animate-spin" />}
-              Publish to Stripe
+              {stripePriceId ? 'Re-publish to Stripe' : 'Publish to Stripe'}
             </button>
+            {stripePriceId || stripeProductId ? (
+              <button
+                type="button"
+                onClick={handleUnpublishFromStripe}
+                disabled={publishing}
+                className="inline-flex items-center gap-2 border border-red-300 text-red-700 dark:text-red-300 dark:border-red-700/60 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+              >
+                Unpublish from Stripe
+              </button>
+            ) : null}
             {stripePriceId ? (
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 Product: <code>{stripeProductId}</code> · Price: <code>{stripePriceId}</code>
