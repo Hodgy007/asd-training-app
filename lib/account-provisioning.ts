@@ -65,12 +65,14 @@ export async function sendCredentialsEmail(args: {
 
 /**
  * Email an existing user that they've been granted access to a new program.
- * (No password is sent — they sign in with their existing credentials.)
+ * Includes a one-click password-reset link so they can set a new password
+ * without having to navigate through forgot-password manually.
  */
 export async function sendAccessGrantedEmail(args: {
   email: string
   name: string | null
   programName: string
+  resetUrl: string
 }): Promise<void> {
   if (!process.env.RESEND_API_KEY) {
     console.error(
@@ -83,9 +85,9 @@ export async function sendAccessGrantedEmail(args: {
     const innerHtml = `
       <h2 style="color: #f5821f; margin-top: 0;">Hello${args.name ? ', ' + escapeHtml(args.name) : ''}!</h2>
       <p>You've been granted free access to <strong>${escapeHtml(args.programName)}</strong>.</p>
-      <p>Sign in with your existing account to start training:</p>
-      <p><a class="btn" href="${loginUrl(args.email)}">Sign in</a></p>
-      <p class="footer">If you've forgotten your password, use the "Forgot password" link on the sign-in page.</p>
+      <p>You already have an account with this email. Set a fresh password to sign in:</p>
+      <p><a class="btn" href="${args.resetUrl}">Set my password</a></p>
+      <p class="footer">This link expires in 1 hour. If you remember your existing password you can ignore it and <a href="${loginUrl(args.email)}">sign in here</a> instead.</p>
     `
     await resend.emails.send({
       from: FROM_ADDRESS,
@@ -159,7 +161,23 @@ export async function grantFreeAccess(args: {
       programAttached = true
     }
 
-    await sendAccessGrantedEmail({ email, name, programName })
+    // Mint a fresh single-use reset token so the email can include a one-click
+    // "Set my password" CTA. Same envelope as forgot-password (1-hour expiry,
+    // 32-byte random token). Old tokens for this email are cleared so the
+    // freshest link is always the one that wins.
+    await prisma.passwordResetToken.deleteMany({ where: { email } })
+    const resetToken = crypto.randomBytes(32).toString('hex')
+    await prisma.passwordResetToken.create({
+      data: {
+        email,
+        token: resetToken,
+        expires: new Date(Date.now() + 1000 * 60 * 60),
+      },
+    })
+    const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`
+
+    await sendAccessGrantedEmail({ email, name, programName, resetUrl })
   } else {
     const tempPassword = crypto.randomBytes(9).toString('base64url')
     const passwordHash = await bcrypt.hash(tempPassword, 10)
