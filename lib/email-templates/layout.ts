@@ -9,21 +9,42 @@
  * changes.
  */
 
-const PUBLIC_LOGO_URL = 'https://asd-training-app-v2.vercel.app/logo-aaa.png'
-
 /**
  * Resolve the logo URL at send-time (not at module load), so:
  * - Local dev / one-off scripts still embed a reachable image.
  * - Tests that override NEXTAUTH_URL after import still see the new value.
- * - Localhost values are rejected — inboxes can't reach them — and we fall
- *   back to the canonical prod URL for the logo asset specifically.
+ * - The repo is portable across Vercel projects, custom domains, and CDNs
+ *   without code changes — set one of the env vars below.
+ *
+ * Resolution order:
+ *   1. EMAIL_LOGO_URL                     — full image URL, takes precedence
+ *      (set this if you host the logo on a separate CDN).
+ *   2. NEXTAUTH_URL                       — already set per environment for auth.
+ *   3. VERCEL_PROJECT_PRODUCTION_URL      — Vercel auto-injects; always the
+ *      project's *production* domain, even when running on a preview deploy.
+ *      Best fallback for transactional emails (links should always go to prod).
+ *   4. VERCEL_URL                         — current deployment's URL.
+ *   5. localhost + console.warn           — surfaces misconfiguration loudly.
  */
 function resolveLogoUrl(): string {
-  const base = process.env.NEXTAUTH_URL
-  if (!base || base.includes('localhost') || base.includes('127.0.0.1')) {
-    return PUBLIC_LOGO_URL
+  if (process.env.EMAIL_LOGO_URL) return process.env.EMAIL_LOGO_URL
+
+  const candidates = [
+    process.env.NEXTAUTH_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+  ].filter((v): v is string => Boolean(v))
+
+  for (const raw of candidates) {
+    if (raw.includes('localhost') || raw.includes('127.0.0.1')) continue
+    const base = raw.startsWith('http') ? raw : `https://${raw}`
+    return `${base.replace(/\/$/, '')}/logo-aaa.png`
   }
-  return `${base.replace(/\/$/, '')}/logo-aaa.png`
+
+  console.warn(
+    '[email-templates] No public URL configured for logo. Set EMAIL_LOGO_URL, NEXTAUTH_URL, or deploy on Vercel.'
+  )
+  return 'http://localhost:3000/logo-aaa.png'
 }
 
 export interface WrapEmailOptions {

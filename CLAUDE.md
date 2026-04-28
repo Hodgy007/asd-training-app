@@ -31,6 +31,7 @@ Copy `.env.example` to `.env.local` for local dev. For production (Vercel), the 
 | `NEXTAUTH_URL` | `https://asd-training-app-v2.vercel.app` -- no trailing slash |
 | `GEMINI_API_KEY` | Google Gemini API key (used for AI insights + quiz generation) |
 | `RESEND_API_KEY` | Resend API key (used for forgot-password emails) |
+| `EMAIL_LOGO_URL` | Optional. Overrides the AAA logo URL embedded in transactional emails. Resolver in `lib/email-templates/layout.ts` falls through `EMAIL_LOGO_URL` → `NEXTAUTH_URL` → `VERCEL_PROJECT_PRODUCTION_URL` → `VERCEL_URL` (any non-localhost wins) and appends `/logo-aaa.png`. Set this only if you host the logo on a separate CDN. |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID (optional -- disables Google SSO if absent) |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 | `AZURE_AD_CLIENT_ID` | Azure AD app client ID (optional -- disables Microsoft SSO if absent) |
