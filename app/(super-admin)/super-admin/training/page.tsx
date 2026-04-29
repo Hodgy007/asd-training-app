@@ -40,6 +40,16 @@ interface Module {
   _count: { lessons: number }
 }
 
+type LeafRole = 'CAREGIVER' | 'CAREER_DEV_OFFICER' | 'STUDENT' | 'INTERN' | 'EMPLOYEE'
+
+const LEAF_ROLE_LABELS: Record<LeafRole, string> = {
+  CAREGIVER: 'Practitioner (Caregiver)',
+  CAREER_DEV_OFFICER: 'Careers Professional',
+  STUDENT: 'Student',
+  INTERN: 'Intern',
+  EMPLOYEE: 'Employee',
+}
+
 interface Program {
   id: string
   name: string
@@ -55,6 +65,7 @@ interface Program {
   priceAmount: number | null
   currency: string
   purchasable: boolean
+  defaultLeafRole: LeafRole | null
   stripeProductId: string | null
   stripePriceId: string | null
   _count: { modules: number }
@@ -882,6 +893,9 @@ function EditProgramForm({
   )
   const [currency, setCurrency] = useState(program.currency || 'gbp')
   const [purchasable, setPurchasable] = useState(program.purchasable)
+  const [defaultLeafRole, setDefaultLeafRole] = useState<LeafRole | ''>(
+    program.defaultLeafRole ?? ''
+  )
   const [stripeProductId, setStripeProductId] = useState(program.stripeProductId ?? '')
   const [stripePriceId, setStripePriceId] = useState(program.stripePriceId ?? '')
   const [publishing, setPublishing] = useState(false)
@@ -924,6 +938,7 @@ function EditProgramForm({
         priceAmount: priceAmountPence,
         currency: currency.toLowerCase() || 'gbp',
         purchasable,
+        defaultLeafRole: defaultLeafRole === '' ? null : defaultLeafRole,
       }
       const res = await fetch(`/api/super-admin/training/programs/${program.id}`, {
         method: 'PATCH',
@@ -1139,6 +1154,32 @@ function EditProgramForm({
                 </span>
               </label>
             </div>
+          </div>
+          <div className="mt-4">
+            <label
+              htmlFor={`default-leaf-role-${program.id}`}
+              className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+            >
+              Default role for self-claim users
+            </label>
+            <select
+              id={`default-leaf-role-${program.id}`}
+              value={defaultLeafRole}
+              onChange={(e) => setDefaultLeafRole(e.target.value as LeafRole | '')}
+              className="w-full sm:max-w-xs rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white"
+            >
+              <option value="">(unset — fall back to Practitioner)</option>
+              {(Object.keys(LEAF_ROLE_LABELS) as LeafRole[]).map((r) => (
+                <option key={r} value={r}>
+                  {LEAF_ROLE_LABELS[r]}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Used when someone provisions their own account via the public /courses
+              free-claim modal or anonymous Stripe checkout. Admin-created users
+              still pick a role per-user.
+            </p>
           </div>
           <div className="mt-3 flex items-center gap-3 flex-wrap">
             <button

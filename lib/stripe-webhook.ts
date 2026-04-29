@@ -96,14 +96,32 @@ async function resolveOwnerFromSession(session: Stripe.Checkout.Session): Promis
   }
 
   // 3. Brand-new individual subscriber — provision a User (no org).
-  return provisionIndividualUser(email, name, programId, customerId)
+  // Look up the program's per-program default role so the new account lands
+  // with the right sidebar/access (CAREER_DEV_OFFICER for careers programs,
+  // EMPLOYEE for workplace ones, etc). Falls back to CAREGIVER when unset.
+  let programDefaultLeafRole: 'CAREGIVER' | 'CAREER_DEV_OFFICER' | 'STUDENT' | 'INTERN' | 'EMPLOYEE' | null = null
+  if (programId) {
+    const program = await prisma.trainingProgram.findUnique({
+      where: { id: programId },
+      select: { defaultLeafRole: true },
+    })
+    programDefaultLeafRole = (program?.defaultLeafRole ?? null) as typeof programDefaultLeafRole
+  }
+  return provisionIndividualUser(email, name, programId, customerId, programDefaultLeafRole)
 }
 
 async function provisionIndividualUser(
   email: string,
   name: string | null,
   initialProgramId: string | null,
-  stripeCustomerId: string | null
+  stripeCustomerId: string | null,
+  programDefaultLeafRole:
+    | 'CAREGIVER'
+    | 'CAREER_DEV_OFFICER'
+    | 'STUDENT'
+    | 'INTERN'
+    | 'EMPLOYEE'
+    | null
 ): Promise<Owner | null> {
   const tempPassword = crypto.randomBytes(9).toString('base64url')
   const passwordHash = await bcrypt.hash(tempPassword, 10)
@@ -117,7 +135,7 @@ async function provisionIndividualUser(
         email,
         name: name ?? emailLocal,
         password: passwordHash,
-        role: 'CAREGIVER',
+        role: programDefaultLeafRole ?? 'CAREGIVER',
         organisationId: null,
         mustChangePassword: true,
         active: true,

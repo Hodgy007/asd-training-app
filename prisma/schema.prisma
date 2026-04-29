@@ -294,6 +294,12 @@ model TrainingProgram {
   stripeProductId String?
   stripePriceId   String?
   purchasable     Boolean       @default(false)
+  // Default role assigned to users who self-provision themselves into this
+  // program — currently the free-claim flow on /courses and the anonymous
+  // Stripe checkout webhook. Admin-created users are unaffected.
+  // Should always be a leaf role (CAREGIVER / CAREER_DEV_OFFICER / STUDENT
+  // / INTERN / EMPLOYEE); the admin form enforces that.
+  defaultLeafRole Role?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
