@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { sanitizeHtml } from '@/lib/sanitize'
 import Link from 'next/link'
-import { ArrowLeft, ChevronRight, ChevronDown, BookOpen, Video, CheckCircle, Loader2, FileText, Download, StickyNote } from 'lucide-react'
+import { ArrowLeft, ChevronRight, ChevronDown, BookOpen, Video, CheckCircle, Loader2, FileText, Download, StickyNote, ClipboardList } from 'lucide-react'
 import { VideoPlayer } from '@/components/training/video-player'
 import { QuizComponent } from '@/components/training/quiz-component'
 import { InteractiveBlockRenderer } from '@/components/training/interactive/interactive-block-renderer'
@@ -16,6 +16,7 @@ import { htmlToPlainText } from '@/lib/html-to-text'
 import { extractLessonProseTtsText } from '@/lib/tts-extract'
 import { LessonOutlineRail } from '@/components/training/lesson-outline-rail'
 import { ScormPlayer } from '@/components/lessons/scorm-player'
+import { SurveyLesson } from '@/components/training/survey-lesson'
 import { clsx } from 'clsx'
 
 interface LessonPageProps {
@@ -25,7 +26,7 @@ interface LessonPageProps {
 interface LessonData {
   id: string
   title: string
-  type: 'VIDEO' | 'TEXT' | 'SCORM'
+  type: 'VIDEO' | 'TEXT' | 'SCORM' | 'SURVEY'
   content: string
   videoUrl?: string | null
   order: number
@@ -44,6 +45,22 @@ interface LessonData {
   interactiveBlocks?: unknown
   transcript?: string | null
   attachments?: { id: string; fileName: string; fileSize: number; url: string }[]
+  survey?: {
+    id: string
+    title: string
+    description: string | null
+    status: string
+    closesAt: string | null
+    questions: {
+      id: string
+      type: 'MULTIPLE_CHOICE' | 'YES_NO' | 'FREE_TEXT' | 'RATING_SCALE' | 'MULTI_SELECT'
+      question: string
+      options: string | null
+      required: boolean
+      order: number
+    }[]
+    responses?: { id: string; completedAt: string | null }[]
+  } | null
   module: {
     id: string
     title: string
@@ -109,7 +126,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
       })
       .then((data) => {
         setLesson(data)
-        setShowContent(data.type !== 'VIDEO')
+        setShowContent(data.type !== 'VIDEO' && data.type !== 'SURVEY')
         setLoading(false)
         // Fetch interaction data for interactive blocks
         if (data.interactiveBlocks && Array.isArray(data.interactiveBlocks) && data.interactiveBlocks.length > 0) {
@@ -186,6 +203,11 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
     }, 500)
     return () => clearTimeout(timer)
   }, [noteContent, params.lessonId])
+
+  const completeCurrentLesson = useCallback(() => {
+    setCompleted(true)
+    setCompletedLessonIds((prev) => new Set(prev).add(params.lessonId))
+  }, [params.lessonId])
 
   if (loading) {
     return (
@@ -269,8 +291,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           score,
         }),
       })
-      setCompleted(true)
-      setCompletedLessonIds((prev) => new Set(prev).add(params.lessonId))
+      completeCurrentLesson()
     } catch (err) {
       console.error('Failed to save progress', err)
     } finally {
@@ -290,8 +311,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           completed: true,
         }),
       })
-      setCompleted(true)
-      setCompletedLessonIds((prev) => new Set(prev).add(params.lessonId))
+      completeCurrentLesson()
     } catch (err) {
       console.error('Failed to save progress', err)
     } finally {
@@ -331,11 +351,17 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
           <div
             className={clsx(
               'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0',
-              lesson.type === 'VIDEO' ? 'bg-primary-100' : 'bg-sage-100'
+              lesson.type === 'VIDEO'
+                ? 'bg-primary-100'
+                : lesson.type === 'SURVEY'
+                  ? 'bg-amber-100'
+                  : 'bg-sage-100'
             )}
           >
             {lesson.type === 'VIDEO' ? (
               <Video className="h-5 w-5 text-primary-600" />
+            ) : lesson.type === 'SURVEY' ? (
+              <ClipboardList className="h-5 w-5 text-amber-600" />
             ) : (
               <BookOpen className="h-5 w-5 text-sage-600" />
             )}
@@ -366,9 +392,16 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
         </div>
       )}
 
-      {/* Everything below is hidden for SCORM lessons — the SCORM package
-          owns its own narration, quizzes, notes, and completion handling. */}
-      {lesson.type !== 'SCORM' && <>
+      {/* Survey lessons are completed by submitting the linked survey. */}
+      {lesson.type === 'SURVEY' && (
+        <SurveyLesson
+          lessonId={lesson.id}
+          survey={lesson.survey ?? null}
+          onComplete={completeCurrentLesson}
+        />
+      )}
+
+      {lesson.type !== 'SCORM' && lesson.type !== 'SURVEY' && <>
 
       {/* Video (if applicable) */}
       {lesson.type === 'VIDEO' && (

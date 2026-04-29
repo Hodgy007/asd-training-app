@@ -4,7 +4,10 @@ import type { Module, Lesson, QuizQuestion } from '@prisma/client'
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type ModuleWithLessons = Module & {
-  lessons: (Lesson & { _count: { quizQuestions: number } })[]
+  lessons: (Lesson & {
+    _count: { quizQuestions: number }
+    survey?: { id: string; title: string } | null
+  })[]
 }
 
 export type LessonWithQuiz = Lesson & { quizQuestions: QuizQuestion[] }
@@ -26,7 +29,10 @@ export async function getModuleById(moduleId: string): Promise<ModuleWithLessons
     include: {
       lessons: {
         orderBy: { order: 'asc' },
-        include: { _count: { select: { quizQuestions: true } } },
+        include: {
+          _count: { select: { quizQuestions: true } },
+          survey: { select: { id: true, title: true } },
+        },
       },
     },
   })
@@ -60,7 +66,10 @@ export async function getModuleByIdActive(moduleId: string): Promise<ModuleWithL
       lessons: {
         where: { active: true },
         orderBy: { order: 'asc' },
-        include: { _count: { select: { quizQuestions: true } } },
+        include: {
+          _count: { select: { quizQuestions: true } },
+          survey: { select: { id: true, title: true } },
+        },
       },
     },
   })

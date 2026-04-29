@@ -21,6 +21,7 @@ import {
   Paperclip,
   Video,
   HelpCircle,
+  ClipboardList,
 } from 'lucide-react'
 import { VideoPlayer } from '@/components/training/video-player'
 import { clsx } from 'clsx'
@@ -96,6 +97,16 @@ interface LessonData {
   scormBlobPrefix?: string | null
   scormEntryPath?: string | null
   scormVersion?: string | null
+  surveyId?: string | null
+  survey?: { id: string; title: string; description: string | null; status: string; closesAt: string | null; _count: { questions: number } } | null
+}
+
+interface PublishedSurvey {
+  id: string
+  title: string
+  description: string | null
+  closesAt: string | null
+  _count: { questions: number }
 }
 
 interface GeneratedQuestion {
@@ -137,6 +148,8 @@ export default function LessonEditorPage() {
   const [editContent, setEditContent] = useState('')
   const [editVideoUrl, setEditVideoUrl] = useState('')
   const [editTranscript, setEditTranscript] = useState('')
+  const [editSurveyId, setEditSurveyId] = useState('')
+  const [publishedSurveys, setPublishedSurveys] = useState<PublishedSurvey[]>([])
 
   // Quiz state
   const [questions, setQuestions] = useState<ParsedQuestion[]>([])
@@ -303,6 +316,7 @@ export default function LessonEditorPage() {
         setEditContent(normaliseBlockPlaceholderAlignment(data.content || ''))
         setEditVideoUrl(data.videoUrl || '')
         setEditTranscript(data.transcript || '')
+        setEditSurveyId(data.surveyId || '')
         const parsed = data.quizQuestions.map(parseQuestion)
         setQuestions(parsed)
         setQuizVisible(parsed.length > 0)
@@ -317,6 +331,15 @@ export default function LessonEditorPage() {
   useEffect(() => {
     fetchLesson()
   }, [fetchLesson])
+
+  useEffect(() => {
+    fetch('/api/super-admin/training/surveys')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setPublishedSurveys(data)
+      })
+      .catch(() => {})
+  }, [])
 
   // Attach click listener to the editor so clicking an image shows a size picker.
   // Re-runs when the editor DOM is (re)created: loading -> false.
@@ -394,6 +417,14 @@ export default function LessonEditorPage() {
       if (editType === 'VIDEO') {
         body.videoUrl = editVideoUrl.trim()
         body.transcript = editTranscript.trim() || null
+      }
+      if (editType === 'SURVEY') {
+        if (!editSurveyId) {
+          setToast({ message: 'Choose a published survey for this lesson', type: 'error' })
+          setSaving(false)
+          return
+        }
+        body.surveyId = editSurveyId
       }
       const res = await fetch(`/api/super-admin/training/lessons/${lessonId}`, {
         method: 'PATCH',
@@ -484,9 +515,43 @@ export default function LessonEditorPage() {
               <option value="TEXT">Text</option>
               <option value="VIDEO">Video</option>
               <option value="SCORM">SCORM package</option>
+              <option value="SURVEY">Survey</option>
             </select>
           </div>
         </div>
+
+        {editType === 'SURVEY' && (
+          <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-900/20 p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <ClipboardList className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">
+                  Linked published survey
+                </label>
+                <select
+                  value={editSurveyId}
+                  onChange={(e) => setEditSurveyId(e.target.value)}
+                  className="w-full rounded-xl border border-amber-200 dark:border-amber-800 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white"
+                >
+                  <option value="">Choose a survey...</option>
+                  {publishedSurveys.map((survey) => (
+                    <option key={survey.id} value={survey.id}>
+                      {survey.title} ({survey._count.questions} question{survey._count.questions !== 1 ? 's' : ''})
+                    </option>
+                  ))}
+                </select>
+                {publishedSurveys.length === 0 && (
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-2">
+                    No published open surveys found. Create and publish a survey first, then link it here.
+                  </p>
+                )}
+                <p className="text-xs text-amber-800 dark:text-amber-200 mt-2">
+                  Learners must submit this survey before the lesson is marked complete and the next lesson unlocks.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {editType === 'VIDEO' && (
           <div className="space-y-3">
