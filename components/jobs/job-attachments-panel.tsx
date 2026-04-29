@@ -38,7 +38,7 @@ export function JobAttachmentsPanel({ jobId, initial }: { jobId: string; initial
       <ul className="space-y-1">
         {items.map((a) => (
           <li key={a.id} className="flex items-center justify-between border rounded p-2">
-            <a href={a.url} target="_blank" rel="noopener noreferrer" className="text-indigo-700">{a.filename}</a>
+            <a href={a.url} target="_blank" rel="noopener noreferrer" className="text-primary-700">{a.filename}</a>
             <button type="button" className="text-rose-700 text-sm" onClick={() => remove(a.id)}>Remove</button>
           </li>
         ))}

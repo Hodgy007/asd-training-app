@@ -31,8 +31,8 @@ const TILES: Tile[] = [
     title: 'Training Completion',
     description: 'Module completion rates by organisation.',
     icon: BarChart3,
-    iconColor: 'text-purple-600 dark:text-purple-400',
-    iconBg: 'bg-purple-100 dark:bg-purple-900/40',
+    iconColor: 'text-primary-600 dark:text-primary-400',
+    iconBg: 'bg-primary-100 dark:bg-primary-900/40',
   },
   {
     href: '/super-admin/reports/scorm-quizzes',
@@ -63,8 +63,8 @@ const TILES: Tile[] = [
     title: 'Surveys',
     description: 'Response rates and answer breakdowns.',
     icon: ClipboardList,
-    iconColor: 'text-purple-600 dark:text-purple-400',
-    iconBg: 'bg-purple-100 dark:bg-purple-900/40',
+    iconColor: 'text-primary-600 dark:text-primary-400',
+    iconBg: 'bg-primary-100 dark:bg-primary-900/40',
   },
   {
     href: '/super-admin/reports/cv-builder',
@@ -79,8 +79,8 @@ const TILES: Tile[] = [
     title: 'Careers Advisor',
     description: 'AI careers advisor session activity.',
     icon: Users,
-    iconColor: 'text-indigo-600 dark:text-indigo-400',
-    iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
+    iconColor: 'text-primary-600 dark:text-primary-400',
+    iconBg: 'bg-primary-100 dark:bg-primary-900/40',
   },
   {
     href: '/super-admin/reports/jobs',
@@ -113,7 +113,7 @@ export default function SuperAdminReportsIndexPage() {
     <div className="max-w-full space-y-6 animate-page-enter">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+          <BarChart3 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
           Reports
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">

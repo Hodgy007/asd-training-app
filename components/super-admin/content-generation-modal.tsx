@@ -368,8 +368,8 @@ export function ContentGenerationModal({
       <div className="relative z-10 flex w-full max-w-3xl flex-col rounded-2xl bg-white shadow-2xl dark:bg-slate-900 max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-            <HeaderIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
+            <HeaderIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           </div>
           <h2
             id="modal-title"
@@ -407,7 +407,7 @@ export function ContentGenerationModal({
                   type="text"
                   value={programName}
                   onChange={(e) => setProgramName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 placeholder:text-slate-400"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 placeholder:text-slate-400"
                   placeholder="e.g. ASD Awareness Module 3"
                 />
               </div>
@@ -425,7 +425,7 @@ export function ContentGenerationModal({
                       className={clsx(
                         'flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors',
                         lens === 'autism'
-                          ? 'border-purple-500 bg-purple-50 text-purple-700 dark:border-purple-500 dark:bg-purple-900/20 dark:text-purple-300'
+                          ? 'border-primary-500 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/20 dark:text-primary-300'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500'
                       )}
                     >
@@ -437,7 +437,7 @@ export function ContentGenerationModal({
                       className={clsx(
                         'flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors',
                         lens === 'practitioner'
-                          ? 'border-purple-500 bg-purple-50 text-purple-700 dark:border-purple-500 dark:bg-purple-900/20 dark:text-purple-300'
+                          ? 'border-primary-500 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/20 dark:text-primary-300'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500'
                       )}
                     >
@@ -520,7 +520,7 @@ export function ContentGenerationModal({
                 type="button"
                 onClick={processFiles}
                 disabled={files.length === 0 || !programName.trim()}
-                className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+                className="rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
               >
                 Process Files
               </button>
@@ -555,7 +555,7 @@ export function ContentGenerationModal({
                   setUploadError(uploadError)
                   setProgressPhase('parsing')
                 }}
-                className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+                className="rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
               >
                 Try Again
               </button>
@@ -602,7 +602,7 @@ export function ContentGenerationModal({
                 onComplete()
                 handleClose()
               }}
-              className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+              className="rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
             >
               Done
             </button>

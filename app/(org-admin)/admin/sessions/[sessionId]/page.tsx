@@ -80,11 +80,11 @@ const STATUS_LABELS: Record<SessionStatus, string> = {
 }
 
 const ROLE_STYLES: Record<string, string> = {
-  CAREGIVER: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
+  CAREGIVER: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
   CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
   INTERN: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-  EMPLOYEE: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  EMPLOYEE: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
   ORG_ADMIN: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
 }
 

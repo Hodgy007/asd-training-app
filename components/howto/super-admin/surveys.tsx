@@ -25,7 +25,7 @@ export default function SurveysHowTo() {
       </ol>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-        <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-purple-500" /> AI Survey Generation</span>
+        <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-primary-500" /> AI Survey Generation</span>
       </h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
         Generate complete surveys automatically by providing a topic description or uploading files. AI will create relevant questions using an appropriate mix of question types.
@@ -54,7 +54,7 @@ export default function SurveysHowTo() {
       </ol>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-        <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-purple-500" /> Generating AI Insights</span>
+        <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-primary-500" /> Generating AI Insights</span>
       </h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
         From the results page, generate AI-powered insights to help interpret the data:

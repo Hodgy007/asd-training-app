@@ -583,7 +583,7 @@ export default function OrgReportsPage() {
       {/* ── Careers Advisor Reports ── */}
       <div className="pt-4">
         <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <BarChart3 className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           Careers Advisor Reports
         </h2>
         <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
@@ -599,7 +599,7 @@ export default function OrgReportsPage() {
       ) : data?.advisorStats ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-stagger">
           <div className="card text-center">
-            <BarChart3 className="h-5 w-5 text-indigo-500 mx-auto mb-1" />
+            <BarChart3 className="h-5 w-5 text-primary-500 mx-auto mb-1" />
             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{data.advisorStats.total}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">Total Sessions</p>
           </div>

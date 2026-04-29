@@ -23,7 +23,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const ROLE_BADGE_STYLES: Record<string, string> = {
   STUDENT: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  INTERN: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  INTERN: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
   EMPLOYEE: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
 }
 

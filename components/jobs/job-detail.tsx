@@ -131,7 +131,7 @@ export function JobDetail({ job }: { job: JobDetailData | null }) {
             <ul className="space-y-1">
               {job.attachments.map((a) => (
                 <li key={a.id}>
-                  <a href={a.url} target="_blank" rel="noopener noreferrer" className="text-indigo-700 text-sm">
+                  <a href={a.url} target="_blank" rel="noopener noreferrer" className="text-primary-700 text-sm">
                     {a.filename} · {formatSize(a.sizeBytes)}
                   </a>
                 </li>

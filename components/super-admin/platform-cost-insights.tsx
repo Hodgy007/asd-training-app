@@ -192,7 +192,7 @@ export function PlatformCostInsights() {
           <p className="text-xs text-slate-500 dark:text-slate-400">Total downloads</p>
         </div>
         <div className="card text-center">
-          <Cloud className="h-5 w-5 text-purple-500 mx-auto mb-1" />
+          <Cloud className="h-5 w-5 text-primary-500 mx-auto mb-1" />
           <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{current.bandwidthGb.toFixed(1)} GB</p>
           <p className="text-xs text-slate-500 dark:text-slate-400">Est. bandwidth used</p>
         </div>
@@ -264,7 +264,7 @@ export function PlatformCostInsights() {
               </tr>
               <tr>
                 <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300 font-medium">
-                  <span className="flex items-center gap-1.5"><HardDrive className="h-3.5 w-3.5 text-purple-500" /> Vercel Functions</span>
+                  <span className="flex items-center gap-1.5"><HardDrive className="h-3.5 w-3.5 text-primary-500" /> Vercel Functions</span>
                 </td>
                 <td className="px-4 py-2.5 text-slate-600 dark:text-slate-400">Invocations</td>
                 <td className="px-4 py-2.5 text-right text-slate-700 dark:text-slate-300 font-mono text-xs">{formatCost(current.functionCost)}</td>

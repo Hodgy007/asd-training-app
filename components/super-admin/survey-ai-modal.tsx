@@ -158,8 +158,8 @@ export function SurveyAiModal({ isOpen, onClose, onGenerated }: SurveyAiModalPro
       <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white shadow-2xl dark:bg-slate-800">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-            <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
+            <Sparkles className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           </div>
           <h2
             id="survey-ai-modal-title"

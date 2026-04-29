@@ -215,8 +215,8 @@ export default function MeetingsSettingsPage() {
               className={clsx(
                 'flex-1 px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all text-center',
                 platform === 'TEAMS'
-                  ? 'border-purple-400 bg-purple-50 text-purple-700 dark:border-purple-500 dark:bg-purple-900/30 dark:text-purple-300'
-                  : 'border-calm-200 text-slate-500 hover:border-purple-300 dark:border-slate-600 dark:text-slate-400 dark:hover:border-purple-600',
+                  ? 'border-primary-400 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/30 dark:text-primary-300'
+                  : 'border-calm-200 text-slate-500 hover:border-primary-300 dark:border-slate-600 dark:text-slate-400 dark:hover:border-primary-600',
               )}
             >
               Microsoft Teams

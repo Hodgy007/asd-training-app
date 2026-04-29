@@ -40,7 +40,7 @@ export default function CareersAdvisorReportPage() {
       <BackToReports />
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+          <BarChart3 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
           Careers Advisor Reports
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -56,7 +56,7 @@ export default function CareersAdvisorReportPage() {
       ) : advisorStats ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="card text-center">
-            <BarChart3 className="h-5 w-5 text-indigo-500 mx-auto mb-1" />
+            <BarChart3 className="h-5 w-5 text-primary-500 mx-auto mb-1" />
             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{advisorStats.total}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">Total Sessions</p>
           </div>

@@ -30,10 +30,10 @@ const CATEGORY_COLOURS: Record<string, { bg: string; text: string; darkBg: strin
     darkText: 'dark:text-blue-300',
   },
   Communication: {
-    bg: 'bg-purple-100',
-    text: 'text-purple-700',
-    darkBg: 'dark:bg-purple-900/30',
-    darkText: 'dark:text-purple-300',
+    bg: 'bg-primary-100',
+    text: 'text-primary-700',
+    darkBg: 'dark:bg-primary-900/30',
+    darkText: 'dark:text-primary-300',
   },
   Teamwork: {
     bg: 'bg-green-100',

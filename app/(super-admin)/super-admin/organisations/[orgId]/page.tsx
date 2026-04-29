@@ -118,7 +118,7 @@ const ROLE_COLORS: Record<string, string> = {
   CAREGIVER: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
-  INTERN: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
+  INTERN: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
   EMPLOYEE: 'bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200',
 }
 
@@ -444,7 +444,7 @@ export default function OrgDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Building2 className="h-6 w-6 text-purple-600" />
+              <Building2 className="h-6 w-6 text-primary-600" />
               {org.name}
             </h1>
             <p className="text-slate-500 mt-1 font-mono text-sm">{org.slug}</p>
@@ -478,7 +478,7 @@ export default function OrgDetailPage() {
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl border border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl border border-primary-200 text-primary-700 bg-primary-50 hover:bg-primary-100 transition-colors"
             >
               <Pencil className="h-3.5 w-3.5" />
               Edit
@@ -798,7 +798,7 @@ export default function OrgDetailPage() {
       {(org.parentOrg || (org.isParentOrg && org.childOrgs.length > 0)) && (
         <div className="card space-y-3">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-purple-600" />
+            <Building2 className="h-5 w-5 text-primary-600" />
             Hierarchy
           </h2>
 
@@ -852,7 +852,7 @@ export default function OrgDetailPage() {
       <div className="card overflow-hidden p-0">
         <div className="flex items-center justify-between px-4 py-3 border-b border-calm-200">
           <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-            <Users className="h-4 w-4 text-purple-600" />
+            <Users className="h-4 w-4 text-primary-600" />
             Users
             <span className="text-xs font-normal text-slate-400 ml-1">({org._count.users})</span>
           </h2>
@@ -862,7 +862,7 @@ export default function OrgDetailPage() {
               'inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl border transition-colors',
               showAdminForm
                 ? 'border-calm-200 text-slate-600 bg-calm-50 hover:bg-calm-100'
-                : 'border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100'
+                : 'border-primary-200 text-primary-700 bg-primary-50 hover:bg-primary-100'
             )}
           >
             <Plus className="h-3.5 w-3.5" />
@@ -872,8 +872,8 @@ export default function OrgDetailPage() {
 
         {/* Add admin inline form */}
         {showAdminForm && (
-          <div className="px-4 py-4 border-b border-calm-200 bg-purple-50">
-            <p className="text-sm font-medium text-purple-800 mb-3">New Org Admin</p>
+          <div className="px-4 py-4 border-b border-calm-200 bg-primary-50">
+            <p className="text-sm font-medium text-primary-800 mb-3">New Org Admin</p>
             <form onSubmit={handleAddAdmin} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="label text-xs">Name</label>
@@ -920,7 +920,7 @@ export default function OrgDetailPage() {
                 <button
                   type="submit"
                   disabled={adminSubmitting}
-                  className="px-3 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                  className="px-3 py-1.5 rounded-xl bg-primary-600 text-white text-xs font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
                 >
                   {adminSubmitting ? 'Creating...' : 'Create Admin'}
                 </button>
@@ -957,7 +957,7 @@ export default function OrgDetailPage() {
                       <span className="inline-flex items-center gap-1.5">
                         {user.name ?? <span className="text-slate-400 italic">--</span>}
                         {user.ssoOnly && (
-                          <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400 flex-shrink-0" /></span>
+                          <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-primary-500 dark:text-primary-400 flex-shrink-0" /></span>
                         )}
                       </span>
                     </td>
@@ -1136,12 +1136,12 @@ function OrgDetailsView({
     )
   }
 
-  function Chip({ children, tone = 'slate' }: { children: React.ReactNode; tone?: 'slate' | 'emerald' | 'blue' | 'purple' }) {
+  function Chip({ children, tone = 'slate' }: { children: React.ReactNode; tone?: 'slate' | 'emerald' | 'blue' | 'primary' }) {
     const tones: Record<string, string> = {
       slate: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
       emerald: 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800',
       blue: 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800',
-      purple: 'bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800',
+      primary: 'bg-primary-50 text-primary-700 border border-primary-200 dark:bg-primary-900/20 dark:text-primary-300 dark:border-primary-800',
     }
     return (
       <span className={clsx('inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium', tones[tone])}>
@@ -1179,7 +1179,7 @@ function OrgDetailsView({
                 <><XCircle className="h-3.5 w-3.5 text-red-600" /> Inactive</>
               )}
               {org.isParentOrg && (
-                <span className="ml-2"><Chip tone="purple">Parent Organisation</Chip></span>
+                <span className="ml-2"><Chip tone="primary">Parent Organisation</Chip></span>
               )}
             </span>
           }

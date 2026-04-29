@@ -30,7 +30,7 @@ export function JobCard({ job, selected, onSelect }: { job: JobCardData; selecte
       onClick={onSelect}
       className={`w-full text-left p-4 transition ${
         selected
-          ? 'bg-indigo-50 border-l-4 border-indigo-600'
+          ? 'bg-primary-50 border-l-4 border-primary-600'
           : 'hover:bg-slate-50 border-l-4 border-transparent'
       }`}
     >

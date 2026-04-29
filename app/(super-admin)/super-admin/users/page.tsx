@@ -184,7 +184,7 @@ export default function CharityUsersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-            <Users className="h-7 w-7 text-purple-500" />
+            <Users className="h-7 w-7 text-primary-500" />
             Charity Users
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Manage Charity Admin and Charity Employee accounts.</p>
@@ -192,7 +192,7 @@ export default function CharityUsersPage() {
         {formMode === 'closed' && (
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             Add User
@@ -209,7 +209,7 @@ export default function CharityUsersPage() {
 
       {/* Create / Edit Form */}
       {formMode !== 'closed' && (
-        <div className="card p-6 space-y-4 border-2 border-purple-200 dark:border-purple-800">
+        <div className="card p-6 space-y-4 border-2 border-primary-200 dark:border-primary-800">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
               {formMode === 'create' ? 'Add Charity User' : 'Edit Charity User'}
@@ -274,7 +274,7 @@ export default function CharityUsersPage() {
                 className={clsx(
                   'inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium transition-colors',
                   formRole === 'SUPER_ADMIN'
-                    ? 'border-purple-400 bg-purple-50 text-purple-700 dark:border-purple-500 dark:bg-purple-900/30 dark:text-purple-400'
+                    ? 'border-primary-400 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/30 dark:text-primary-400'
                     : 'border-calm-200 bg-calm-50 text-slate-600 hover:border-calm-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300'
                 )}
               >
@@ -308,7 +308,7 @@ export default function CharityUsersPage() {
                       type="checkbox"
                       checked={formPermissions.includes(perm)}
                       onChange={() => togglePermission(perm)}
-                      className="h-4 w-4 rounded border-calm-300 text-purple-600 focus:ring-purple-500 dark:border-slate-500 dark:bg-slate-700"
+                      className="h-4 w-4 rounded border-calm-300 text-primary-600 focus:ring-primary-500 dark:border-slate-500 dark:bg-slate-700"
                     />
                     <span className="text-sm text-slate-700 dark:text-slate-300">{PERMISSION_LABELS[perm]}</span>
                   </label>
@@ -371,7 +371,7 @@ export default function CharityUsersPage() {
               type="button"
               onClick={handleSubmit}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               {formMode === 'create' ? 'Create User' : 'Save Changes'}
@@ -383,7 +383,7 @@ export default function CharityUsersPage() {
       {/* Users List */}
       {loading ? (
         <div className="card p-8 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-500 mx-auto" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary-500 mx-auto" />
           <p className="text-sm text-slate-400 mt-2">Loading users...</p>
         </div>
       ) : users.length === 0 ? (
@@ -461,7 +461,7 @@ export default function CharityUsersPage() {
                         className={clsx(
                           'inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
                           user.role === 'SUPER_ADMIN'
-                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+                            ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
                             : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
                         )}
                       >

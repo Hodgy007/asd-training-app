@@ -167,7 +167,7 @@ export default function ModuleEditorPage() {
             lessonTitle: string
           }>
           setToast({
-            message: `Exported. Skipped ${skipped.length} SCORM-typed lesson${skipped.length === 1 ? '' : 's'}.`,
+            message: `Exported. Skipped ${skipped.length} non-exportable lesson${skipped.length === 1 ? '' : 's'} such as imported SCORM packages or unlinked surveys.`,
             type: 'success',
           })
         } catch {
@@ -213,7 +213,7 @@ export default function ModuleEditorPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
       </div>
     )
   }
@@ -222,7 +222,7 @@ export default function ModuleEditorPage() {
     return (
       <div className="text-center py-20">
         <p className="text-slate-500 dark:text-slate-400">Module not found.</p>
-        <Link href="/super-admin/training" className="text-purple-600 hover:underline text-sm mt-2 inline-block">
+        <Link href="/super-admin/training" className="text-primary-600 hover:underline text-sm mt-2 inline-block">
           Back to Training Content
         </Link>
       </div>
@@ -232,7 +232,7 @@ export default function ModuleEditorPage() {
   const typeBadgeClass =
     mod.type === 'ASD'
       ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300'
-      : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
+      : 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
 
   return (
     <div className="space-y-8 animate-page-enter">
@@ -252,7 +252,7 @@ export default function ModuleEditorPage() {
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
-        <Link href="/super-admin/training" className="text-purple-600 hover:underline flex items-center gap-1">
+        <Link href="/super-admin/training" className="text-primary-600 hover:underline flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" />
           Training Content
         </Link>
@@ -313,7 +313,7 @@ export default function ModuleEditorPage() {
                             : prev.filter((c) => c !== code)
                         )
                       }
-                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                     />
                     <span className="text-sm text-slate-700 dark:text-slate-300">
                       <span className="font-semibold">{code}</span> — {GATSBY_BENCHMARKS[code].full}
@@ -326,7 +326,7 @@ export default function ModuleEditorPage() {
           <button
             onClick={saveModule}
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save
@@ -344,7 +344,7 @@ export default function ModuleEditorPage() {
             <button
               onClick={handleExportScorm}
               disabled={exporting || mod.lessons.length === 0}
-              className="inline-flex items-center gap-2 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 border border-primary-200 dark:border-primary-700 text-primary-700 dark:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Download this module as a SCORM 1.2 .zip package"
             >
               {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
@@ -352,7 +352,7 @@ export default function ModuleEditorPage() {
             </button>
             <button
               onClick={() => setShowLessonForm(!showLessonForm)}
-              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+              className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
             >
               <Plus className="h-4 w-4" />
               Add Lesson
@@ -414,7 +414,7 @@ export default function ModuleEditorPage() {
                         ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
                         : lesson.type === 'SURVEY'
                           ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                        : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+                        : 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
                     )}
                   >
                     {lesson.type}
@@ -459,7 +459,7 @@ export default function ModuleEditorPage() {
                 </button>
                 <Link
                   href={`/super-admin/training/${moduleId}/${lesson.id}`}
-                  className="inline-flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+                  className="inline-flex items-center gap-1 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
                 >
                   Edit
                 </Link>
@@ -625,7 +625,7 @@ function AddLessonForm({ moduleId, nextOrder, onCreated, onCancel }: AddLessonFo
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
           Create Lesson

@@ -26,7 +26,7 @@ interface ClassSession {
 function PlatformBadge({ platform }: { platform: ClassSession['platform'] }) {
   const styles = {
     ZOOM: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-    TEAMS: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+    TEAMS: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
     CUSTOM: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
   }
   const labels = { ZOOM: 'Zoom', TEAMS: 'Teams', CUSTOM: 'Custom' }

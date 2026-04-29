@@ -445,7 +445,7 @@ export default function LessonEditorPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
       </div>
     )
   }
@@ -454,7 +454,7 @@ export default function LessonEditorPage() {
     return (
       <div className="text-center py-20">
         <p className="text-slate-500 dark:text-slate-400">Lesson not found.</p>
-        <Link href={`/super-admin/training/${moduleId}`} className="text-purple-600 hover:underline text-sm mt-2 inline-block">
+        <Link href={`/super-admin/training/${moduleId}`} className="text-primary-600 hover:underline text-sm mt-2 inline-block">
           Back to Module
         </Link>
       </div>
@@ -479,12 +479,12 @@ export default function LessonEditorPage() {
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm flex-wrap">
-        <Link href="/super-admin/training" className="text-purple-600 hover:underline flex items-center gap-1">
+        <Link href="/super-admin/training" className="text-primary-600 hover:underline flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" />
           Training Content
         </Link>
         <span className="text-slate-400">/</span>
-        <Link href={`/super-admin/training/${moduleId}`} className="text-purple-600 hover:underline">
+        <Link href={`/super-admin/training/${moduleId}`} className="text-primary-600 hover:underline">
           {lesson.module.title}
         </Link>
         <span className="text-slate-400">/</span>
@@ -636,7 +636,7 @@ export default function LessonEditorPage() {
         </div>
 
         {uploadingImage && (
-          <div className="flex items-center gap-2 text-sm text-purple-600">
+          <div className="flex items-center gap-2 text-sm text-primary-600">
             <Loader2 className="h-4 w-4 animate-spin" />
             Uploading image...
           </div>
@@ -788,7 +788,7 @@ export default function LessonEditorPage() {
           <button
             onClick={saveLesson}
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Lesson
@@ -986,7 +986,7 @@ function QuizSection({
           </button>
           <button
             onClick={() => { setShowAiPanel(!showAiPanel); setShowAddForm(false); setAiPreview(null) }}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
           >
             <Sparkles className="h-4 w-4" />
             Generate Quiz with AI
@@ -1010,30 +1010,30 @@ function QuizSection({
 
       {/* AI Generation Panel */}
       {showAiPanel && !aiPreview && (
-        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800 p-4 space-y-3">
+        <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-200 dark:border-primary-800 p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <Wand2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-            <h3 className="font-bold text-purple-900 dark:text-purple-200">AI Quiz Generator</h3>
+            <Wand2 className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+            <h3 className="font-bold text-primary-900 dark:text-primary-200">AI Quiz Generator</h3>
           </div>
           {aiGenerating ? (
             <div className="flex items-center gap-3 py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
-              <span className="text-sm text-purple-700 dark:text-purple-300 font-semibold">Generating quiz questions...</span>
+              <Loader2 className="h-5 w-5 animate-spin text-primary-600" />
+              <span className="text-sm text-primary-700 dark:text-primary-300 font-semibold">Generating quiz questions...</span>
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <label className="text-sm font-semibold text-purple-800 dark:text-purple-300">Number of questions</label>
+              <label className="text-sm font-semibold text-primary-800 dark:text-primary-300">Number of questions</label>
               <input
                 type="number"
                 min={3}
                 max={10}
                 value={aiCount}
                 onChange={(e) => setAiCount(Math.min(10, Math.max(3, parseInt(e.target.value) || 3)))}
-                className="w-20 rounded-lg border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-700 px-2 py-1 text-sm text-slate-900 dark:text-white text-center"
+                className="w-20 rounded-lg border border-primary-300 dark:border-primary-700 bg-white dark:bg-slate-700 px-2 py-1 text-sm text-slate-900 dark:text-white text-center"
               />
               <button
                 onClick={generateQuiz}
-                className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+                className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
               >
                 <Sparkles className="h-4 w-4" />
                 Generate
@@ -1131,7 +1131,7 @@ function QuizSection({
                     <div className="flex items-center gap-2 pt-1">
                       <button
                         onClick={() => setEditingId(q.id)}
-                        className="text-sm font-bold text-purple-600 hover:text-purple-700 dark:text-purple-400"
+                        className="text-sm font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400"
                       >
                         Edit
                       </button>
@@ -1197,9 +1197,9 @@ function AiPreviewPanel({ questions, setQuestions, onSave, onCancel }: AiPreview
   }
 
   return (
-    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800 p-4 space-y-4">
+    <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-200 dark:border-primary-800 p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-bold text-purple-900 dark:text-purple-200 flex items-center gap-2">
+        <h3 className="font-bold text-primary-900 dark:text-primary-200 flex items-center gap-2">
           <Sparkles className="h-5 w-5" />
           Generated Questions Preview ({questions.length})
         </h3>
@@ -1260,7 +1260,7 @@ function AiPreviewPanel({ questions, setQuestions, onSave, onCancel }: AiPreview
       <div className="flex items-center gap-3">
         <button
           onClick={onSave}
-          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+          className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
         >
           <Save className="h-4 w-4" />
           Save All Questions
@@ -1388,7 +1388,7 @@ function AddQuestionForm({ lessonId, onCreated, onCancel }: AddQuestionFormProps
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
           Add Question
@@ -1501,7 +1501,7 @@ function EditQuestionForm({ question: q, onSaved, onCancel }: EditQuestionFormPr
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
         >
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save

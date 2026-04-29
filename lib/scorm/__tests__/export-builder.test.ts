@@ -61,12 +61,72 @@ describe('buildScormExport', () => {
     expect(zip.file('lessons/scorm-l/index.html')).toBeNull()
   })
 
+  it('exports linked SURVEY lessons as survey SCOs without narrating placeholder copy', async () => {
+    const ttsCalls: string[] = []
+    const result = await buildScormExport({
+      moduleId: 'm1',
+      moduleTitle: 'M',
+      lessons: [
+        lesson({ id: 'text-l', title: 'What is autism?', type: 'TEXT', content: '<p>Actual training lesson.</p>' }),
+        lesson({
+          id: 'survey-l',
+          title: 'Pre-training survey',
+          type: 'SURVEY',
+          content: '<p>Please carry out our survey.</p>',
+          survey: {
+            id: 'survey-1',
+            title: 'Learner confidence',
+            description: 'Tell us how confident you feel before training.',
+            questions: [
+              {
+                id: 'sq-1',
+                type: 'MULTIPLE_CHOICE',
+                question: 'How confident are you?',
+                options: JSON.stringify(['Not confident', 'Quite confident']),
+                required: true,
+              },
+              {
+                id: 'sq-2',
+                type: 'FREE_TEXT',
+                question: 'Anything else?',
+                options: null,
+                required: false,
+              },
+            ],
+          },
+        }),
+      ],
+      fetchAsset: async () => ({ buffer: Buffer.alloc(0), contentType: 'application/octet-stream' }),
+      resolveTts: async (text) => {
+        ttsCalls.push(text)
+        return Buffer.from([0xff, 0xfb, 0x90, 0x44])
+      },
+    })
+
+    expect(result.skipped).toEqual([])
+    expect(ttsCalls.join(' ')).not.toContain('Please carry out our survey')
+    const zip = await JSZip.loadAsync(result.zip)
+    expect(zip.file('lessons/text-l/index.html')).not.toBeNull()
+    expect(zip.file('lessons/survey-l/index.html')).not.toBeNull()
+    const surveyHtml = await zip.file('lessons/survey-l/index.html')!.async('string')
+    expect(surveyHtml).toContain('Tell us how confident you feel before training.')
+    expect(surveyHtml).toContain('How confident are you?')
+    expect(surveyHtml).toContain('Not confident')
+    expect(surveyHtml).toContain('id="survey-data"')
+    expect(surveyHtml).toContain('cmi.core.lesson_status')
+    expect(surveyHtml).toContain('cmi.suspend_data')
+    expect(surveyHtml).not.toContain('Please carry out our survey')
+    const manifestXml = await zip.file('imsmanifest.xml')!.async('string')
+    expect(manifestXml).toContain('What is autism?')
+    expect(manifestXml).toContain('Pre-training survey')
+  })
+
   it('throws when no lessons are exportable', async () => {
     await expect(
       buildScormExport({
         moduleId: 'm1',
         moduleTitle: 'M',
-        lessons: [lesson({ type: 'SCORM' })],
+        lessons: [lesson({ type: 'SCORM' }), lesson({ id: 'survey-l', type: 'SURVEY' })],
         fetchAsset: async () => ({ buffer: Buffer.alloc(0), contentType: '' }),
       }),
     ).rejects.toThrow(/no exportable lessons/i)

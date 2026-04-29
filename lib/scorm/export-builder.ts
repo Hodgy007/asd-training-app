@@ -37,6 +37,7 @@ import {
   getSharedBlocksJs,
   type LessonAttachmentForExport,
   type QuizQuestionForExport,
+  type SurveyForExport,
 } from './export-templates'
 import {
   extractInteractiveBlockUrls,
@@ -61,12 +62,13 @@ export type TtsResolver = (text: string) => Promise<Buffer | null>
 export interface ExportLesson {
   id: string
   title: string
-  type: 'TEXT' | 'VIDEO' | 'SCORM'
+  type: 'TEXT' | 'VIDEO' | 'SCORM' | 'SURVEY'
   content: string
   videoUrl?: string | null
   transcript?: string | null
   interactiveBlocks?: unknown
   attachments: Array<{ id: string; fileName: string; url: string }>
+  survey?: SurveyForExport | null
   quizQuestions: Array<{
     id: string
     question: string
@@ -97,7 +99,7 @@ export interface ExportModuleArgs {
 
 export interface ExportResult {
   zip: Buffer
-  /** Lessons that were skipped (e.g. SCORM-typed) and why. */
+  /** Lessons that were skipped (e.g. SCORM-typed packages or malformed survey lessons) and why. */
   skipped: Array<{ lessonId: string; lessonTitle: string; reason: string }>
 }
 
@@ -393,11 +395,19 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
       })
       return false
     }
+    if (l.type === 'SURVEY' && !l.survey) {
+      skipped.push({
+        lessonId: l.id,
+        lessonTitle: l.title,
+        reason: 'Survey lesson has no linked survey to package.',
+      })
+      return false
+    }
     return true
   })
 
   if (exportableLessons.length === 0) {
-    throw new Error('Module has no exportable lessons (TEXT or VIDEO).')
+    throw new Error('Module has no exportable lessons (TEXT, VIDEO, or linked SURVEY).')
   }
 
   const manifestLessons: ExportLessonItem[] = []
@@ -416,7 +426,16 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
       audioFiles,
       attachments,
       bytesUsed,
-    } = await renderLessonBodyAndAssets(lesson, fetchAsset, resolveTts, budget)
+    } = lesson.type === 'SURVEY'
+      ? {
+          bodyHtml: '',
+          proseAudioPath: null,
+          assets: [],
+          audioFiles: [],
+          attachments: [],
+          bytesUsed: 0,
+        }
+      : await renderLessonBodyAndAssets(lesson, fetchAsset, resolveTts, budget)
     totalBytes += bytesUsed
 
     for (const a of assets) {
@@ -458,6 +477,7 @@ export async function buildScormExport(args: ExportModuleArgs): Promise<ExportRe
       videoUrl: lesson.videoUrl,
       transcript: lesson.transcript,
       attachments,
+      survey: lesson.type === 'SURVEY' ? lesson.survey ?? null : null,
       quizQuestions,
       passingScore,
       hadStrippedInteractiveBlocks: false,
