@@ -6,6 +6,19 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    // Home page HTML is AI-generated and stored in the database, so Tailwind
+    // cannot discover these utility classes during build.
+    {
+      pattern:
+        /^(bg|text|border|ring)-(primary|warm|sage|orange|amber|yellow|emerald|green|blue|sky|purple|pink|red|slate|gray)-(50|100|200|300|400|500|600|700|800|900)$/,
+      variants: ['hover', 'focus', 'dark', 'dark:hover', 'dark:focus'],
+    },
+    {
+      pattern: /^(bg|text|border)-(white|black|transparent)$/,
+      variants: ['hover', 'focus', 'dark', 'dark:hover', 'dark:focus'],
+    },
+  ],
   theme: {
     extend: {
       colors: {

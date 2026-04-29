@@ -1,10 +1,14 @@
 import { prisma } from '../lib/prisma'
 import { DEFAULT_MODEL_ID } from '../lib/ai-models'
 
+const HOME_PAGE_STYLE_REQUIREMENT =
+  'Use only CSS classes that are guaranteed to be built by the app. For orange buttons, use bg-primary-500 text-white hover:bg-primary-600 or bg-warm-500 text-white hover:bg-warm-600. Do not invent arbitrary colour classes.'
+
 const SHARED_REQUIREMENTS = [
   'Return a self-contained HTML fragment. Do NOT include <html>, <head>, <body>, <script>, or <style> tags.',
   'Use semantic elements (section, h1, h2, h3, p, ul, li, a, img).',
   'Use Tailwind-friendly utility classes on wrappers (e.g. max-w-5xl mx-auto, grid, gap-6, rounded-2xl, bg-white, shadow, p-6).',
+  HOME_PAGE_STYLE_REQUIREMENT,
   'Write for a mixed audience of charity staff, school staff, students, and practitioners. Never diagnose or mention autism as a condition to be fixed.',
   'Use UK English spelling throughout (e.g. organisation, recognised, specialised).',
   'Keep copy concise. No marketing superlatives. No emojis.',
@@ -53,7 +57,19 @@ async function main() {
   for (const seed of PROMPTS) {
     const existing = await prisma.aiPrompt.findUnique({ where: { key: seed.key } })
     if (existing) {
-      console.log(`Prompt "${seed.key}" already exists — skipping.`)
+      const missingRequirements = seed.requirements.filter(
+        (requirement) => !existing.requirements.includes(requirement),
+      )
+
+      if (missingRequirements.length > 0) {
+        await prisma.aiPrompt.update({
+          where: { key: seed.key },
+          data: { requirements: [...existing.requirements, ...missingRequirements] },
+        })
+        console.log(`Prompt "${seed.key}" already exists; added missing home styling requirements.`)
+      } else {
+        console.log(`Prompt "${seed.key}" already exists; no changes needed.`)
+      }
       continue
     }
 
