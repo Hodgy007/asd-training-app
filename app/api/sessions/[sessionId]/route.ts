@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getSessionById, canManageSession } from '@/lib/sessions'
+import { canManageSession, getSessionById, isActiveOrgUser } from '@/lib/sessions'
 import type { Role } from '@prisma/client'
+
+const PLATFORMS = ['ZOOM', 'TEAMS', 'CUSTOM', 'IN_PERSON'] as const
 
 export async function GET(
   _req: NextRequest,
@@ -73,6 +75,16 @@ export async function PATCH(
   } = body
 
   const STATUS_VALUES = ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
+
+  if (platform !== undefined && !PLATFORMS.includes(platform)) {
+    return NextResponse.json({ error: 'Invalid platform' }, { status: 400 })
+  }
+
+  if (hostId !== undefined) {
+    if (!classSession.organisationId || !(await isActiveOrgUser(classSession.organisationId, hostId))) {
+      return NextResponse.json({ error: 'Host must be an active user in the session organisation' }, { status: 400 })
+    }
+  }
 
   const updated = await prisma.classSession.update({
     where: { id: params.sessionId },

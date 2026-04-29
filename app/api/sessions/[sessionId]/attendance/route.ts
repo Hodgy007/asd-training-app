@@ -38,8 +38,8 @@ export async function PATCH(
 
   await Promise.all(
     attendance.map((a) =>
-      prisma.sessionAttendee.update({
-        where: { id: a.attendeeId },
+      prisma.sessionAttendee.updateMany({
+        where: { id: a.attendeeId, sessionId: params.sessionId },
         data: { attended: a.attended },
       })
     )

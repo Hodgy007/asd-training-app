@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -39,8 +39,11 @@ const ROLE_LABELS: Record<string, string> = {
 export default function CreateSessionPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const targetOrgId = searchParams.get('orgId') ?? ''
 
   const [orgRoles, setOrgRoles] = useState<string[]>([])
+  const [orgName, setOrgName] = useState('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
@@ -73,11 +76,16 @@ export default function CreateSessionPage() {
   useEffect(() => {
     if (status !== 'authenticated') return
 
-    fetch('/api/admin/org')
-      .then((r) => r.json())
-      .then((org) => { if (org?.allowedRoles) setOrgRoles(org.allowedRoles) })
+    const orgQuery = targetOrgId ? `?orgId=${encodeURIComponent(targetOrgId)}` : ''
 
-    fetch('/api/admin/users')
+    fetch(`/api/admin/org${orgQuery}`)
+      .then((r) => r.json())
+      .then((org) => {
+        if (org?.allowedRoles) setOrgRoles(org.allowedRoles)
+        if (org?.name) setOrgName(org.name)
+      })
+
+    fetch(`/api/admin/users${orgQuery}`)
       .then((r) => r.json())
       .then((data) => {
         const userList = data.users ?? data
@@ -93,7 +101,7 @@ export default function CreateSessionPage() {
       .then((data) => {
         if (data) setMeetingConfig(data)
       })
-  }, [status, session])
+  }, [status, session, targetOrgId])
 
   // Search users for individual attendee selection
   const searchUsers = useCallback(async (query: string) => {
@@ -102,7 +110,9 @@ export default function CreateSessionPage() {
       return
     }
     try {
-      const res = await fetch(`/api/admin/users?search=${encodeURIComponent(query)}`)
+      const params = new URLSearchParams({ search: query })
+      if (targetOrgId) params.set('orgId', targetOrgId)
+      const res = await fetch(`/api/admin/users?${params}`)
       if (res.ok) {
         const data = await res.json()
         const results = (data.users ?? data) as OrgUser[]
@@ -113,7 +123,7 @@ export default function CreateSessionPage() {
     } catch {
       // ignore
     }
-  }, [selectedUsers])
+  }, [selectedUsers, targetOrgId])
 
   useEffect(() => {
     const timer = setTimeout(() => searchUsers(userSearch), 300)
@@ -168,6 +178,7 @@ export default function CreateSessionPage() {
           meetingUrl: meetingUrl.trim() || undefined,
           hostId,
           attendees,
+          targetOrgId: targetOrgId || undefined,
         }),
       })
 
@@ -215,7 +226,7 @@ export default function CreateSessionPage() {
           Create Session
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
-          Schedule a new virtual classroom session.
+          Schedule a new virtual classroom session{orgName ? ` for ${orgName}` : ''}.
         </p>
       </div>
 

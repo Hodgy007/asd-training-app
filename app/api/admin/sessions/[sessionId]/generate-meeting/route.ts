@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getSessionById, canManageSession } from '@/lib/sessions'
+import { canManageSessionWithChildren, getSessionById } from '@/lib/sessions'
 import { generateMeetingLink } from '@/lib/meetings'
+import { canManageChildOrg } from '@/lib/org-hierarchy'
+import type { Role } from '@prisma/client'
 
 export async function POST(
   _req: NextRequest,
@@ -21,11 +23,11 @@ export async function POST(
 
   const user = {
     id: session.user.id,
-    role: session.user.role as import('@prisma/client').Role,
+    role: session.user.role as Role,
     organisationId: session.user.organisationId,
   }
 
-  if (!canManageSession(classSession, user)) {
+  if (!(await canManageSessionWithChildren(classSession, user, (orgId) => canManageChildOrg(session, orgId)))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

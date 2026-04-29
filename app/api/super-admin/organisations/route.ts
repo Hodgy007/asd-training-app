@@ -30,8 +30,22 @@ const createSchema = z.object({
 
 export async function GET() {
   const session = await getServerSession(authOptions)
-  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
+  const canManageOrganisations = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)
+  const canManageSessions = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SESSIONS)
+  if (
+    !session ||
+    (!canManageOrganisations && !canManageSessions)
+  ) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  if (!canManageOrganisations && canManageSessions) {
+    const orgs = await prisma.organisation.findMany({
+      where: { pendingApproval: false, orgType: 'ORGANISATION' },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, name: true, slug: true, active: true },
+    })
+    return NextResponse.json(orgs)
   }
 
   const orgs = await prisma.organisation.findMany({

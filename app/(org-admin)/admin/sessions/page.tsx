@@ -159,7 +159,7 @@ export default function SessionListPage() {
             <RefreshCw className={clsx('h-4 w-4', loading && 'animate-spin')} />
           </button>
           <Link
-            href="/admin/sessions/new"
+            href={selectedOrgId ? `/admin/sessions/new?orgId=${encodeURIComponent(selectedOrgId)}` : '/admin/sessions/new'}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors"
           >
             <Plus className="h-4 w-4" />
