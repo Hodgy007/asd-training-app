@@ -71,7 +71,7 @@ export default async function JobsListPage() {
                 </td>
                 <td className="p-3">{j._count.assignments}</td>
                 <td className="p-3">
-                  <Link href={`/super-admin/jobs/${j.id}`} className="text-indigo-600">
+                  <Link href={`/super-admin/jobs/${j.id}`} className="text-primary-600">
                     Edit
                   </Link>
                 </td>

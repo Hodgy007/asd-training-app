@@ -146,12 +146,12 @@ export default function StudentAdvisorPage() {
                   </section>
 
                   {/* Workplace Support */}
-                  <section className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-2xl p-5">
+                  <section className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-2xl p-5">
                     <div className="flex items-center gap-2 mb-2">
-                      <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                      <h3 className="font-bold text-purple-800 dark:text-purple-300">Workplace Support</h3>
+                      <Shield className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                      <h3 className="font-bold text-primary-800 dark:text-primary-300">Workplace Support</h3>
                     </div>
-                    <p className="text-sm text-purple-700 dark:text-purple-300 leading-relaxed">{s.report.workplaceSupport}</p>
+                    <p className="text-sm text-primary-700 dark:text-primary-300 leading-relaxed">{s.report.workplaceSupport}</p>
                   </section>
                 </div>
               )}

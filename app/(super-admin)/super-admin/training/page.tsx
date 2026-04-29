@@ -307,7 +307,7 @@ export default function TrainingContentPage() {
               onClick={() => setCreateMenuOpen(!createMenuOpen)}
               aria-haspopup="menu"
               aria-expanded={createMenuOpen}
-              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+              className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
             >
               <Plus className="h-4 w-4" />
               New Program
@@ -326,7 +326,7 @@ export default function TrainingContentPage() {
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3 border-b border-calm-100 dark:border-slate-700"
                 >
-                  <Plus className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                  <Plus className="h-4 w-4 mt-0.5 text-primary-600 flex-shrink-0" />
                   <div>
                     <p className="font-bold text-sm text-slate-900 dark:text-white">Blank program</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -376,7 +376,7 @@ export default function TrainingContentPage() {
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3"
                 >
-                  <Package className="h-4 w-4 mt-0.5 text-indigo-600 flex-shrink-0" />
+                  <Package className="h-4 w-4 mt-0.5 text-primary-600 flex-shrink-0" />
                   <div>
                     <p className="font-bold text-sm text-slate-900 dark:text-white">Import SCORM</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -404,7 +404,7 @@ export default function TrainingContentPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
         </div>
       ) : programs.length === 0 && !showNewProgram ? (
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-8 text-center">
@@ -447,7 +447,7 @@ export default function TrainingContentPage() {
                       <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate">
                         {program.name}
                       </h2>
-                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">
                         v{program.version}
                       </span>
                       <span className={clsx('px-2 py-0.5 rounded-full text-xs font-semibold', STATUS_BADGE[program.status])}>
@@ -497,7 +497,7 @@ export default function TrainingContentPage() {
                       onClick={() => toggleExpand(program.id)}
                       className={clsx(
                         'p-2 rounded-xl border border-calm-200 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-700 transition-all',
-                        expandedIds.has(program.id) && 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700'
+                        expandedIds.has(program.id) && 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-700'
                       )}
                       title={expandedIds.has(program.id) ? 'Collapse modules' : 'Expand modules'}
                     >
@@ -539,7 +539,7 @@ export default function TrainingContentPage() {
                     </h3>
                     <button
                       onClick={() => setShowModuleFormFor(showModuleFormFor === program.id ? null : program.id)}
-                      className="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-3 py-1.5 text-xs font-bold transition-colors"
+                      className="inline-flex items-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-3 py-1.5 text-xs font-bold transition-colors"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Add Module
@@ -659,7 +659,7 @@ export default function TrainingContentPage() {
                           </Link>
                           <Link
                             href={`/super-admin/training/${mod.id}`}
-                            className="inline-flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-2.5 py-1 text-xs font-bold transition-colors"
+                            className="inline-flex items-center gap-1 bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-2.5 py-1 text-xs font-bold transition-colors"
                           >
                             Edit
                           </Link>
@@ -746,7 +746,7 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white dark:bg-slate-800 rounded-2xl border border-purple-200 dark:border-purple-700 p-6 shadow-sm space-y-4"
+      className="bg-white dark:bg-slate-800 rounded-2xl border border-primary-200 dark:border-primary-700 p-6 shadow-sm space-y-4"
     >
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-slate-900 dark:text-white">New Training Program</h3>
@@ -810,7 +810,7 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
             className={clsx(
               'px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors',
               audience === 'EDUCATION'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-primary-600 text-white'
                 : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600'
             )}
           >
@@ -822,7 +822,7 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
             className={clsx(
               'px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors',
               audience === 'EMPLOYER'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-primary-600 text-white'
                 : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600'
             )}
           >
@@ -846,7 +846,7 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
           Create Program
@@ -1031,7 +1031,7 @@ function EditProgramForm({
   }
 
   return (
-    <div className="border-t border-calm-200 dark:border-slate-700 bg-purple-50/50 dark:bg-purple-900/10 p-6">
+    <div className="border-t border-calm-200 dark:border-slate-700 bg-primary-50/50 dark:bg-primary-900/10 p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-slate-900 dark:text-white text-sm">Edit Program</h3>
@@ -1058,7 +1058,7 @@ function EditProgramForm({
                 type="checkbox"
                 checked={active}
                 onChange={(e) => setActive(e.target.checked)}
-                className="rounded border-calm-300 text-purple-600 focus:ring-purple-500"
+                className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Active</span>
             </label>
@@ -1074,7 +1074,7 @@ function EditProgramForm({
               className={clsx(
                 'px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors',
                 audience === 'EDUCATION'
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-primary-600 text-white'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600'
               )}
             >
@@ -1086,7 +1086,7 @@ function EditProgramForm({
               className={clsx(
                 'px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors',
                 audience === 'EMPLOYER'
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-primary-600 text-white'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600'
               )}
             >
@@ -1147,7 +1147,7 @@ function EditProgramForm({
                   type="checkbox"
                   checked={purchasable}
                   onChange={(e) => setPurchasable(e.target.checked)}
-                  className="rounded border-calm-300 text-purple-600 focus:ring-purple-500"
+                  className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Listed on /courses
@@ -1186,7 +1186,7 @@ function EditProgramForm({
               type="button"
               onClick={handlePublishToStripe}
               disabled={publishing}
-              className="inline-flex items-center gap-2 border border-purple-600 text-purple-700 dark:text-purple-300 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 border border-primary-600 text-primary-700 dark:text-primary-300 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
             >
               {publishing && <Loader2 className="h-4 w-4 animate-spin" />}
               {stripePriceId ? 'Re-publish to Stripe' : 'Publish to Stripe'}
@@ -1292,7 +1292,7 @@ function EditProgramForm({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               Save Changes
@@ -1415,7 +1415,7 @@ function AddModuleForm({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50"
         >
           {submitting && <Loader2 className="h-3 w-3 animate-spin" />}
           Create Module

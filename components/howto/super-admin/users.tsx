@@ -38,7 +38,7 @@ export default function UsersHowTo() {
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Roles explained</h3>
       <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li><strong>Charity Admin</strong> <Crown className="inline h-3.5 w-3.5 text-purple-500" /> &mdash; full platform access including user management. Manages organisations, training content, surveys, announcements, and reports across the entire platform.</li>
+        <li><strong>Charity Admin</strong> <Crown className="inline h-3.5 w-3.5 text-primary-500" /> &mdash; full platform access including user management. Manages organisations, training content, surveys, announcements, and reports across the entire platform.</li>
         <li><strong>Charity Employee</strong> <Shield className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; delegated platform access with specific permissions granted by a Charity Admin. Can manage organisations, training, surveys, announcements, and/or reports depending on assigned permissions.</li>
         <li><strong>Org Admin</strong> <Users className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; manages users, announcements, sessions, and reports within their own organisation.</li>
         <li><strong>Practitioner</strong> (Caregiver) &mdash; accesses ASD training modules and training reports.</li>

@@ -49,7 +49,7 @@ const STATUS_LABELS: Record<SessionStatus, string> = {
 
 const PLATFORM_STYLES: Record<Platform, string> = {
   ZOOM: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  TEAMS: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  TEAMS: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
   CUSTOM: 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-300',
   IN_PERSON: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
 }

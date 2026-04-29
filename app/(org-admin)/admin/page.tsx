@@ -39,7 +39,7 @@ const ROLE_COLORS: Record<string, string> = {
   CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
   INTERN: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-  EMPLOYEE: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  EMPLOYEE: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
 }
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
@@ -695,7 +695,7 @@ export default function OrgAdminUsersPage() {
                         <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                           {user.name ?? '--'}
                           {user.ssoOnly && (
-                            <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400 flex-shrink-0" /></span>
+                            <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-primary-500 dark:text-primary-400 flex-shrink-0" /></span>
                           )}
                           {isSelf && (
                             <span className="ml-1 text-xs text-emerald-600 font-normal">(you)</span>

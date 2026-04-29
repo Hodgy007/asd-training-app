@@ -71,7 +71,7 @@ export default function CharitySettingsIndexPage() {
     <div className="max-w-full space-y-6 animate-page-enter">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <SettingsIcon className="h-6 w-6 text-purple-500" />
+          <SettingsIcon className="h-6 w-6 text-primary-500" />
           Settings
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">

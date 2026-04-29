@@ -343,7 +343,7 @@ export default function SurveysPage() {
                 setEditingSurvey(null)
                 setAiGeneratedData(null)
               }}
-              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+              className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
             >
               <Plus className="h-4 w-4" />
               New Survey
@@ -363,7 +363,7 @@ export default function SurveysPage() {
       ) : loading ? (
         /* Loading state */
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
         </div>
       ) : surveys.length === 0 ? (
         /* Empty state */

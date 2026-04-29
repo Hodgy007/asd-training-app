@@ -104,7 +104,7 @@ export default function TrainingReportPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <BarChart3 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
             Training Reports
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -128,7 +128,7 @@ export default function TrainingReportPage() {
               <span className="font-semibold text-slate-600">{modules[0]?.programName}:</span>
               {modules.map((m) => (
                 <span key={m.id}>
-                  <span className="font-mono font-semibold text-purple-700">{shortLabels.get(m.id)}</span>
+                  <span className="font-mono font-semibold text-primary-700">{shortLabels.get(m.id)}</span>
                   {' = '}
                   {m.title}
                 </span>
@@ -170,7 +170,7 @@ export default function TrainingReportPage() {
                 {allModuleIds.map((id) => (
                   <th
                     key={id}
-                    className="px-3 py-3 font-semibold text-purple-700 text-center whitespace-nowrap"
+                    className="px-3 py-3 font-semibold text-primary-700 text-center whitespace-nowrap"
                     title={moduleMeta.find((m) => m.id === id)?.title ?? id}
                   >
                     {shortLabels.get(id) ?? id}

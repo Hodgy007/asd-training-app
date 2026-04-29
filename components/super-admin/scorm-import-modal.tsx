@@ -148,7 +148,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-800">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-900/40 dark:text-primary-300">
               <Package className="h-5 w-5" />
             </div>
             <div>
@@ -189,7 +189,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
               accept=".zip,application/zip"
               disabled={uploading}
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-xs file:font-bold file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/40 dark:file:text-indigo-300"
+              className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-xs file:font-bold file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/40 dark:file:text-primary-300"
               required
             />
             {file && (
@@ -213,7 +213,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
               disabled={uploading}
               placeholder="Derived from the zip filename if blank"
               onChange={(e) => setName(e.target.value)}
-              className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
             />
           </div>
 
@@ -231,7 +231,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
                 className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
               >
                 <div
-                  className="h-full bg-indigo-500 transition-all"
+                  className="h-full bg-primary-500 transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -265,7 +265,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
             <button
               type="submit"
               disabled={!file || uploading}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-bold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {uploading ? (
                 <>

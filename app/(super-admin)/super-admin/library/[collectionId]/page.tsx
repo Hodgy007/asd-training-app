@@ -430,14 +430,14 @@ export default function CollectionDetailPage() {
 
             {/* AI generate buttons — only show when file is selected */}
             {formFile && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-                <Sparkles className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                <span className="text-sm text-purple-700 dark:text-purple-300 font-medium mr-2">AI Assist:</span>
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                <Sparkles className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                <span className="text-sm text-primary-700 dark:text-primary-300 font-medium mr-2">AI Assist:</span>
                 <button
                   type="button"
                   disabled={aiGenerating}
                   onClick={() => handleAiGenerate(false)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg bg-purple-100 dark:bg-purple-800/40 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/60 transition-colors disabled:opacity-40"
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-800/60 transition-colors disabled:opacity-40"
                 >
                   {aiGenerating ? 'Generating…' : 'Generate Title & Description'}
                 </button>
@@ -445,7 +445,7 @@ export default function CollectionDetailPage() {
                   type="button"
                   disabled={aiGenerating}
                   onClick={() => handleAiGenerate(true)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg bg-purple-100 dark:bg-purple-800/40 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/60 transition-colors disabled:opacity-40"
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-800/60 transition-colors disabled:opacity-40"
                 >
                   <ImageIcon className="h-3 w-3 inline mr-1" />
                   {aiGenerating ? 'Generating…' : 'Generate AI Image'}

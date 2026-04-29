@@ -82,8 +82,8 @@ const TILES: Tile[] = [
     title: 'Cohorts',
     description: 'Manage learner cohorts across organisations.',
     icon: UsersRound,
-    iconColor: 'text-indigo-600 dark:text-indigo-400',
-    iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
+    iconColor: 'text-primary-600 dark:text-primary-400',
+    iconBg: 'bg-primary-100 dark:bg-primary-900/40',
     permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS,
   },
   {
@@ -126,8 +126,8 @@ const TILES: Tile[] = [
     title: 'Surveys',
     description: 'Targeted surveys with AI-generated insights.',
     icon: ClipboardList,
-    iconColor: 'text-purple-600 dark:text-purple-400',
-    iconBg: 'bg-purple-100 dark:bg-purple-900/40',
+    iconColor: 'text-primary-600 dark:text-primary-400',
+    iconBg: 'bg-primary-100 dark:bg-primary-900/40',
     permission: CHARITY_PERMISSIONS.MANAGE_SURVEYS,
   },
   {

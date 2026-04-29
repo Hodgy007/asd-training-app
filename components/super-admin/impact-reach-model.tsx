@@ -309,7 +309,7 @@ export function ImpactReachModel({ orgId }: ImpactReachModelProps) {
         </div>
 
         {/* Impact statement */}
-        <div className="rounded-lg px-4 py-3 bg-purple-50 dark:bg-purple-950/30 text-purple-800 dark:text-purple-200 text-sm mb-3">
+        <div className="rounded-lg px-4 py-3 bg-primary-50 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200 text-sm mb-3">
           <strong>{fmt(Math.round(projections.caAnnual))}</strong> autistic young people receiving AI-powered careers guidance annually — equivalent to ~<strong>{fmt(Math.round(projections.caAnnual / 250))}</strong> full-time careers advisers in output.
         </div>
 

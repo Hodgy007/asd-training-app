@@ -20,7 +20,7 @@ const ROLE_LABELS: Record<string, string> = {
 const ROLE_COLORS: Record<string, string> = {
   STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
   INTERN: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-  EMPLOYEE: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  EMPLOYEE: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
 }
 
 const ROLE_ICONS: Record<string, React.ElementType> = {

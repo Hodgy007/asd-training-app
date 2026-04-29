@@ -44,6 +44,11 @@ export async function GET(
         include: {
           quizQuestions: { orderBy: { order: 'asc' } },
           attachments: true,
+          survey: {
+            include: {
+              questions: { orderBy: { order: 'asc' } },
+            },
+          },
         },
       },
     },
@@ -66,6 +71,20 @@ export async function GET(
     transcript: l.transcript,
     interactiveBlocks: l.interactiveBlocks,
     attachments: l.attachments.map((a) => ({ id: a.id, fileName: a.fileName, url: a.url })),
+    survey: l.survey
+      ? {
+          id: l.survey.id,
+          title: l.survey.title,
+          description: l.survey.description,
+          questions: l.survey.questions.map((q) => ({
+            id: q.id,
+            type: q.type,
+            question: q.question,
+            options: q.options,
+            required: q.required,
+          })),
+        }
+      : null,
     quizQuestions: l.quizQuestions.map((q) => ({
       id: q.id,
       question: q.question,

@@ -37,7 +37,7 @@ const TYPE_LABELS: Record<string, string> = {
 const TYPE_BADGE: Record<string, string> = {
   MULTIPLE_CHOICE: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   YES_NO: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-  FREE_TEXT: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  FREE_TEXT: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
   RATING_SCALE: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   MULTI_SELECT: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300',
 }

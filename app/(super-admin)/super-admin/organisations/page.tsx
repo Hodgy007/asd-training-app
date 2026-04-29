@@ -666,7 +666,7 @@ function OrganisationsContent() {
                           {org.name}
                         </Link>
                         {org.isParentOrg && (
-                          <span className="ml-2 inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+                          <span className="ml-2 inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">
                             Parent
                           </span>
                         )}
@@ -675,7 +675,7 @@ function OrganisationsContent() {
                       <td className="px-4 py-3 text-slate-700">
                         {org._count.users}
                         {org._count.childOrgs > 0 && (
-                          <span className="ml-1.5 text-xs text-purple-600 dark:text-purple-400" title={`${org._count.childOrgs} child organisation${org._count.childOrgs !== 1 ? 's' : ''}`}>
+                          <span className="ml-1.5 text-xs text-primary-600 dark:text-primary-400" title={`${org._count.childOrgs} child organisation${org._count.childOrgs !== 1 ? 's' : ''}`}>
                             +{org._count.childOrgs} sub
                           </span>
                         )}

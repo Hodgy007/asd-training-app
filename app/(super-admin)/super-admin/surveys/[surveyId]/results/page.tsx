@@ -213,7 +213,7 @@ export default function SurveyResultsPage() {
         </Link>
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-purple-600" />
+            <BarChart3 className="h-6 w-6 text-primary-600" />
             {survey.title}
           </h1>
           <span
@@ -247,7 +247,7 @@ export default function SurveyResultsPage() {
         </div>
         <div className="w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-purple-500 rounded-full transition-all duration-500"
+            className="h-full bg-primary-500 rounded-full transition-all duration-500"
             style={{ width: `${Math.min(responseRate, 100)}%` }}
           />
         </div>
@@ -305,7 +305,7 @@ export default function SurveyResultsPage() {
 
         {generatingInsights && (
           <div className="card text-center py-10">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-500 mx-auto mb-3" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary-500 mx-auto mb-3" />
             <p className="text-slate-500 dark:text-slate-400 text-sm">
               Analysing responses and generating insights... This may take a moment.
             </p>

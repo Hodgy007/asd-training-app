@@ -91,7 +91,7 @@ export function SuperAdminSidebar({ onClose, mobile }: SuperAdminSidebarProps) {
 
   const badgeLabel = isCharityAdmin ? 'Charity Admin' : 'Charity Employee'
   const badgeStyle = isCharityAdmin
-    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+    ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
     : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
 
   const chrome = isClassic ? {

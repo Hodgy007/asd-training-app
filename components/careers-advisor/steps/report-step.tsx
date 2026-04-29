@@ -180,12 +180,12 @@ export function ReportStep({ sessionId, report, onReportGenerated }: Props) {
       </section>
 
       {/* Workplace Support */}
-      <section className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-2xl p-6">
+      <section className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-3">
-          <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-          <h3 className="text-lg font-bold text-purple-800 dark:text-purple-300">Workplace Support</h3>
+          <Shield className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+          <h3 className="text-lg font-bold text-primary-800 dark:text-primary-300">Workplace Support</h3>
         </div>
-        <p className="text-sm text-purple-700 dark:text-purple-300 leading-relaxed">
+        <p className="text-sm text-primary-700 dark:text-primary-300 leading-relaxed">
           {report.workplaceSupport}
         </p>
       </section>

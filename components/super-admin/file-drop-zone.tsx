@@ -99,8 +99,8 @@ export function FileDropZone({ files, onFilesChange, disabled = false }: FileDro
         className={clsx(
           'relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors',
           isDragOver && !disabled
-            ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/20'
-            : 'border-slate-300 dark:border-slate-600 hover:border-purple-400 dark:hover:border-purple-500 bg-slate-50 dark:bg-slate-800/50',
+            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+            : 'border-slate-300 dark:border-slate-600 hover:border-primary-400 dark:hover:border-primary-500 bg-slate-50 dark:bg-slate-800/50',
           disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
         )}
       >
@@ -108,7 +108,7 @@ export function FileDropZone({ files, onFilesChange, disabled = false }: FileDro
         <div>
           <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
             Drop files here or{' '}
-            <span className="text-purple-600 dark:text-purple-400">click to browse</span>
+            <span className="text-primary-600 dark:text-primary-400">click to browse</span>
           </p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             PDF, DOCX, and PPTX files supported

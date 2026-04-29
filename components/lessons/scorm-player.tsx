@@ -282,7 +282,7 @@ function TocNode({ item, depth, activeId, onSelect }: TocNodeProps) {
           style={indent}
           className={`block w-full rounded px-2 py-1.5 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-700 ${
             isActive
-              ? 'bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
+              ? 'bg-primary-50 font-bold text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
               : 'text-slate-700 dark:text-slate-200'
           }`}
         >

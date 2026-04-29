@@ -156,7 +156,7 @@ function SurveyReportRow({ survey, isExpanded, onToggle }: { survey: SurveyRepor
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); exportQuestionStatsCsv() }}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors"
               >
                 <FileDown className="h-3.5 w-3.5" />
                 Export Question Stats CSV
@@ -170,7 +170,7 @@ function SurveyReportRow({ survey, isExpanded, onToggle }: { survey: SurveyRepor
                   {survey.orgBreakdown.map((ob, idx) => (
                     <div key={idx} className="flex items-center justify-between bg-white dark:bg-slate-700 rounded-lg px-3 py-2 border border-calm-200 dark:border-slate-600">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate mr-3">{ob.orgName}</span>
-                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 flex-shrink-0">{ob.responses}</span>
+                      <span className="text-xs font-semibold text-primary-600 dark:text-primary-400 flex-shrink-0">{ob.responses}</span>
                     </div>
                   ))}
                 </div>
@@ -203,7 +203,7 @@ function SurveyReportRow({ survey, isExpanded, onToggle }: { survey: SurveyRepor
                                     <span className="text-slate-400 dark:text-slate-500 ml-2 flex-shrink-0">{count} ({pct}%)</span>
                                   </div>
                                   <div className="h-1.5 bg-calm-100 dark:bg-slate-600 rounded-full overflow-hidden">
-                                    <div className="h-full bg-purple-500 dark:bg-purple-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                                    <div className="h-full bg-primary-500 dark:bg-primary-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
                                   </div>
                                 </div>
                               </div>
@@ -214,7 +214,7 @@ function SurveyReportRow({ survey, isExpanded, onToggle }: { survey: SurveyRepor
 
                       {qs.average !== undefined && qs.distribution && (
                         <div className="space-y-1">
-                          <p className="text-sm font-semibold text-purple-600 dark:text-purple-400">Average: {qs.average}/5</p>
+                          <p className="text-sm font-semibold text-primary-600 dark:text-primary-400">Average: {qs.average}/5</p>
                           <div className="flex items-end gap-1">
                             {Object.entries(qs.distribution).map(([rating, count]) => {
                               const pct = qs.totalAnswers > 0 ? Math.round((count / qs.totalAnswers) * 100) : 0
@@ -222,7 +222,7 @@ function SurveyReportRow({ survey, isExpanded, onToggle }: { survey: SurveyRepor
                                 <div key={rating} className="flex-1 text-center">
                                   <div className="h-12 flex items-end justify-center">
                                     <div
-                                      className="w-full max-w-[24px] bg-purple-400 dark:bg-purple-500 rounded-t transition-all"
+                                      className="w-full max-w-[24px] bg-primary-400 dark:bg-primary-500 rounded-t transition-all"
                                       style={{ height: `${Math.max(pct, 4)}%` }}
                                     />
                                   </div>
@@ -288,7 +288,7 @@ export default function SurveysReportPage() {
       <BackToReports />
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <ClipboardList className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+          <ClipboardList className="h-6 w-6 text-primary-600 dark:text-primary-400" />
           Survey Reports
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -306,7 +306,7 @@ export default function SurveysReportPage() {
           {surveyTotals && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="card text-center">
-                <ClipboardList className="h-5 w-5 text-purple-500 mx-auto mb-1" />
+                <ClipboardList className="h-5 w-5 text-primary-500 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{surveyTotals.totalSurveys}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">Total Surveys</p>
               </div>

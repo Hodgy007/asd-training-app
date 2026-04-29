@@ -95,7 +95,7 @@ export function GenerationProgress({
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
           <div
-            className="h-full rounded-full bg-purple-600 transition-all duration-500"
+            className="h-full rounded-full bg-primary-600 transition-all duration-500"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -113,7 +113,7 @@ export function GenerationProgress({
                 <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-500" />
               )}
               {status === 'current' && (
-                <Loader2 className="h-5 w-5 flex-shrink-0 animate-spin text-purple-600" />
+                <Loader2 className="h-5 w-5 flex-shrink-0 animate-spin text-primary-600" />
               )}
               {status === 'pending' && (
                 <Circle className="h-5 w-5 flex-shrink-0 text-slate-300 dark:text-slate-600" />

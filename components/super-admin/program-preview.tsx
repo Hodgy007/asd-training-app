@@ -71,7 +71,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
         value={question.question}
         onChange={(e) => onChange({ ...question, question: e.target.value })}
         rows={2}
-        className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         placeholder="Question text..."
       />
 
@@ -98,7 +98,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
                   })
                 }}
                 className={clsx(
-                  'flex-1 rounded-lg border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500',
+                  'flex-1 rounded-lg border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500',
                   isCorrect
                     ? 'border-green-400 bg-green-50 text-green-800 dark:border-green-600 dark:bg-green-900/20 dark:text-green-300'
                     : 'border-slate-200 bg-white text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100'
@@ -119,7 +119,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
         <select
           value={question.correctAnswer}
           onChange={(e) => onChange({ ...question, correctAnswer: e.target.value })}
-          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           {question.options.map((opt, i) => (
             <option key={i} value={opt}>
@@ -134,7 +134,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
         value={question.explanation}
         onChange={(e) => onChange({ ...question, explanation: e.target.value })}
         rows={2}
-        className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
         placeholder="Explanation (shown after answer)..."
       />
     </div>
@@ -228,7 +228,7 @@ function LessonEditor({
           type="text"
           value={lesson.title}
           onChange={(e) => onChange({ ...lesson, title: e.target.value })}
-          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-medium text-slate-800 dark:text-slate-100 hover:border-slate-200 dark:hover:border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-0"
+          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-medium text-slate-800 dark:text-slate-100 hover:border-slate-200 dark:hover:border-slate-600 focus:border-primary-400 focus:outline-none focus:ring-0"
           placeholder="Lesson title..."
         />
 
@@ -283,7 +283,7 @@ function LessonEditor({
                 <Suspense
                   fallback={
                     <div className="flex h-32 items-center justify-center">
-                      <Loader2 className="h-5 w-5 animate-spin text-purple-500" />
+                      <Loader2 className="h-5 w-5 animate-spin text-primary-500" />
                     </div>
                   }
                 >
@@ -428,7 +428,7 @@ function ModuleCard({
           type="text"
           value={mod.title}
           onChange={(e) => onChange({ ...mod, title: e.target.value })}
-          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:border-slate-200 dark:hover:border-slate-600 focus:border-purple-400 focus:outline-none"
+          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:border-slate-200 dark:hover:border-slate-600 focus:border-primary-400 focus:outline-none"
           placeholder="Module title..."
         />
 
@@ -456,7 +456,7 @@ function ModuleCard({
             value={mod.description}
             onChange={(e) => onChange({ ...mod, description: e.target.value })}
             rows={2}
-            className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 focus:border-purple-400 focus:outline-none focus:ring-0 placeholder:text-slate-400"
+            className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 focus:border-primary-400 focus:outline-none focus:ring-0 placeholder:text-slate-400"
             placeholder="Module description..."
           />
 
@@ -531,7 +531,7 @@ export function ProgramPreview({
           type="text"
           value={program.programName}
           onChange={(e) => onProgramChange({ ...program, programName: e.target.value })}
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-base font-semibold text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-base font-semibold text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           placeholder="Program name..."
         />
       </div>

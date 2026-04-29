@@ -178,8 +178,8 @@ function LoginForm() {
           {ssoOrg?.sso === true && (ssoOrg.type !== 'charity' || ssoOrg.enforced) ? (
             /* Full-screen SSO button (org SSO or enforced charity SSO) */
             <div className="space-y-4 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl mx-auto">
-                <Building2 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl mx-auto">
+                <Building2 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
                 <p className="text-sm text-slate-500 mb-4">
@@ -214,7 +214,7 @@ function LoginForm() {
                     type="button"
                     onClick={handleEnterpriseSso}
                     disabled={loading}
-                    className="flex items-center justify-center gap-3 w-full py-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20 text-sm font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+                    className="flex items-center justify-center gap-3 w-full py-2.5 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-sm font-bold text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
                   >
                     <Building2 className="h-4 w-4" />
                     Sign in with {ssoOrg.displayName}
