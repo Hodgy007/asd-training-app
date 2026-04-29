@@ -53,6 +53,7 @@ export async function PATCH(
     'name', 'description', 'order', 'active', 'version',
     'status', 'reviewedAt', 'reviewedBy', 'reviewNotes',
     'priceAmount', 'currency', 'purchasable', 'audience',
+    'defaultLeafRole',
   ]
 
   const data: Record<string, unknown> = {}
@@ -64,6 +65,17 @@ export async function PATCH(
 
   if (data.audience !== undefined && data.audience !== 'EDUCATION' && data.audience !== 'EMPLOYER') {
     return NextResponse.json({ error: 'Invalid audience' }, { status: 400 })
+  }
+
+  // Self-claim default role must be a leaf role; admin-side roles would let
+  // an anonymous Stripe purchase mint a SUPER_ADMIN account.
+  const ALLOWED_LEAF_ROLES = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']
+  if (
+    data.defaultLeafRole !== undefined &&
+    data.defaultLeafRole !== null &&
+    !ALLOWED_LEAF_ROLES.includes(data.defaultLeafRole as string)
+  ) {
+    return NextResponse.json({ error: 'Invalid defaultLeafRole' }, { status: 400 })
   }
 
   const program = await prisma.trainingProgram.update({
