@@ -198,6 +198,7 @@ enum LessonType {
   TEXT
   VIDEO
   SCORM
+  SURVEY
 }
 
 model Module {
@@ -231,10 +232,14 @@ model Lesson {
   scormEntryPath   String?
   scormVersion     String?
   scormToc         Json?
+  surveyId         String?
   module        Module             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  survey        Survey?            @relation(fields: [surveyId], references: [id], onDelete: SetNull)
   quizQuestions QuizQuestion[]
   attachments   LessonAttachment[]
   notes         LessonNote[]
+
+  @@index([surveyId])
 }
 
 model QuizQuestion {
@@ -415,6 +420,7 @@ model Survey {
   targets   SurveyTarget[]
   responses SurveyResponse[]
   insights  SurveyInsight[]
+  lessons   Lesson[]
 }
 
 model SurveyQuestion {

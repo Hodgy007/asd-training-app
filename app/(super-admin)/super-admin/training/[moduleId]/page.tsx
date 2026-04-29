@@ -13,6 +13,7 @@ import {
   XCircle,
   Save,
   Download,
+  ClipboardList,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { GATSBY_BENCHMARK_CODES, GATSBY_BENCHMARKS } from '@/lib/gatsby-benchmarks'
@@ -26,6 +27,15 @@ interface Lesson {
   order: number
   active: boolean
   _count: { quizQuestions: number }
+  survey?: { id: string; title: string } | null
+}
+
+interface PublishedSurvey {
+  id: string
+  title: string
+  description: string | null
+  closesAt: string | null
+  _count: { questions: number }
 }
 
 interface Module {
@@ -402,6 +412,8 @@ export default function ModuleEditorPage() {
                       'px-2 py-0.5 rounded-full text-xs font-semibold',
                       lesson.type === 'TEXT'
                         ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                        : lesson.type === 'SURVEY'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
                         : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
                     )}
                   >
@@ -423,6 +435,12 @@ export default function ModuleEditorPage() {
                     </span>
                   )}
                 </div>
+                {lesson.type === 'SURVEY' && lesson.survey && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                    <ClipboardList className="h-3.5 w-3.5" />
+                    Linked survey: {lesson.survey.title}
+                  </p>
+                )}
               </div>
 
               {/* Actions */}
@@ -468,12 +486,27 @@ function AddLessonForm({ moduleId, nextOrder, onCreated, onCancel }: AddLessonFo
   const [title, setTitle] = useState('')
   const [type, setType] = useState('TEXT')
   const [content, setContent] = useState('')
+  const [surveyId, setSurveyId] = useState('')
+  const [surveys, setSurveys] = useState<PublishedSurvey[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetch('/api/super-admin/training/surveys')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setSurveys(data)
+      })
+      .catch(() => {})
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!id.trim() || !title.trim()) return
+    if (type === 'SURVEY' && !surveyId) {
+      setError('Choose a published survey for this lesson.')
+      return
+    }
     setSubmitting(true)
     setError('')
     try {
@@ -484,8 +517,9 @@ function AddLessonForm({ moduleId, nextOrder, onCreated, onCancel }: AddLessonFo
           id: id.trim(),
           title: title.trim(),
           type,
-          content: content.trim(),
+          content: content.trim() || (type === 'SURVEY' ? 'Complete the linked survey before continuing.' : ''),
           order: nextOrder,
+          ...(type === 'SURVEY' && { surveyId }),
         }),
       })
       if (res.ok) {
@@ -546,18 +580,44 @@ function AddLessonForm({ moduleId, nextOrder, onCreated, onCancel }: AddLessonFo
           >
             <option value="TEXT">Text</option>
             <option value="VIDEO">Video</option>
+            <option value="SURVEY">Survey</option>
           </select>
         </div>
       </div>
+      {type === 'SURVEY' && (
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Published survey
+          </label>
+          <select
+            value={surveyId}
+            onChange={(e) => setSurveyId(e.target.value)}
+            required
+            className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white"
+          >
+            <option value="">Choose a survey...</option>
+            {surveys.map((survey) => (
+              <option key={survey.id} value={survey.id}>
+                {survey.title} ({survey._count.questions} question{survey._count.questions !== 1 ? 's' : ''})
+              </option>
+            ))}
+          </select>
+          {surveys.length === 0 && (
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+              No published open surveys found. Create and publish a survey first.
+            </p>
+          )}
+        </div>
+      )}
       <div>
         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
-          Content
+          {type === 'SURVEY' ? 'Intro text' : 'Content'}
         </label>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={4}
-          placeholder="Initial lesson content (you can use the full editor later)"
+          placeholder={type === 'SURVEY' ? 'Optional short introduction shown in the lesson editor.' : 'Initial lesson content (you can use the full editor later)'}
           className="w-full rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400"
         />
       </div>

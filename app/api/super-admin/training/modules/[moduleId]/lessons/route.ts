@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json()
-  const { id, title, type, content, videoUrl, order } = body
+  const { id, title, type, content, videoUrl, order, surveyId } = body
 
   if (!id || !title || !type || content == null || order == null) {
     return NextResponse.json({ error: 'Missing required fields: id, title, type, content, order' }, { status: 400 })
@@ -39,6 +39,26 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: `Invalid type. Must be one of: ${Object.values(LessonType).join(', ')}` }, { status: 400 })
   }
 
+  if (type === LessonType.SURVEY) {
+    if (!surveyId || typeof surveyId !== 'string') {
+      return NextResponse.json({ error: 'Survey lessons must be linked to a published survey.' }, { status: 400 })
+    }
+    const survey = await prisma.survey.findFirst({
+      where: {
+        id: surveyId,
+        status: 'PUBLISHED',
+        OR: [
+          { closesAt: null },
+          { closesAt: { gt: new Date() } },
+        ],
+      },
+      select: { id: true },
+    })
+    if (!survey) {
+      return NextResponse.json({ error: 'Linked survey must be published and open.' }, { status: 400 })
+    }
+  }
+
   const existing = await prisma.lesson.findUnique({ where: { id } })
   if (existing) {
     return NextResponse.json({ error: 'A lesson with that id already exists.' }, { status: 409 })
@@ -53,6 +73,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       content,
       order,
       ...(videoUrl !== undefined && { videoUrl }),
+      ...(type === LessonType.SURVEY && { surveyId }),
     },
   })
 

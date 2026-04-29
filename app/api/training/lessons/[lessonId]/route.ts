@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isCharityLevel } from '@/lib/rbac'
 
 export async function GET(
   _req: Request,
@@ -37,11 +38,34 @@ export async function GET(
           },
         },
       },
+      survey: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          status: true,
+          closesAt: true,
+          questions: { orderBy: { order: 'asc' } },
+          responses: {
+            where: { userId: session.user.id, completedAt: { not: null } },
+            select: { id: true, completedAt: true },
+            take: 1,
+          },
+        },
+      },
     },
   })
 
   if (!lesson) {
     return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
+  }
+
+  const hasProgramAccess =
+    isCharityLevel(session) ||
+    (session.user.effectivePrograms ?? []).some((program) => program.id === lesson.module.programId)
+
+  if (!hasProgramAccess) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   return NextResponse.json(lesson)

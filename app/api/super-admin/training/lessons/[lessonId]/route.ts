@@ -36,6 +36,16 @@ export async function GET(_req: NextRequest, { params }: Params) {
       module: true,
       quizQuestions: { orderBy: { order: 'asc' } },
       attachments: { orderBy: { createdAt: 'asc' } },
+      survey: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          status: true,
+          closesAt: true,
+          _count: { select: { questions: true } },
+        },
+      },
     },
   })
 
@@ -54,10 +64,32 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json()
-  const { title, type, content, videoUrl, transcript, order, active, interactiveBlocks } = body
+  const { title, type, content, videoUrl, transcript, order, active, interactiveBlocks, surveyId } = body
 
   if (type !== undefined && !Object.values(LessonType).includes(type)) {
     return NextResponse.json({ error: `Invalid type. Must be one of: ${Object.values(LessonType).join(', ')}` }, { status: 400 })
+  }
+
+  if (type === LessonType.SURVEY || (type === undefined && existing.type === LessonType.SURVEY && surveyId !== undefined)) {
+    const linkedSurveyId = surveyId === undefined ? existing.surveyId : surveyId
+    if (!linkedSurveyId || typeof linkedSurveyId !== 'string') {
+      return NextResponse.json({ error: 'Survey lessons must be linked to a published survey.' }, { status: 400 })
+    }
+
+    const survey = await prisma.survey.findFirst({
+      where: {
+        id: linkedSurveyId,
+        status: 'PUBLISHED',
+        OR: [
+          { closesAt: null },
+          { closesAt: { gt: new Date() } },
+        ],
+      },
+      select: { id: true },
+    })
+    if (!survey) {
+      return NextResponse.json({ error: 'Linked survey must be published and open.' }, { status: 400 })
+    }
   }
 
   const updated = await prisma.lesson.update({
@@ -71,6 +103,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(active !== undefined && { active }),
       ...(transcript !== undefined && { transcript }),
       ...(interactiveBlocks !== undefined && { interactiveBlocks }),
+      ...(surveyId !== undefined && { surveyId: surveyId || null }),
+      ...(type !== undefined && type !== LessonType.SURVEY && { surveyId: null }),
     },
   })
 
