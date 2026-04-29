@@ -3,8 +3,11 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
-import { getSessionById, canManageSession } from '@/lib/sessions'
-import type { SessionStatus } from '@prisma/client'
+import { canManageSessionWithChildren, getSessionById, isActiveOrgUser } from '@/lib/sessions'
+import { canManageChildOrg } from '@/lib/org-hierarchy'
+import type { Role, SessionStatus } from '@prisma/client'
+
+const PLATFORMS = ['ZOOM', 'TEAMS', 'CUSTOM', 'IN_PERSON'] as const
 
 export async function GET(
   _req: NextRequest,
@@ -22,11 +25,11 @@ export async function GET(
 
   const user = {
     id: session.user.id,
-    role: session.user.role as import('@prisma/client').Role,
+    role: session.user.role as Role,
     organisationId: session.user.organisationId,
   }
 
-  if (!canManageSession(classSession, user)) {
+  if (!(await canManageSessionWithChildren(classSession, user, (orgId) => canManageChildOrg(session, orgId)))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -49,11 +52,11 @@ export async function PATCH(
 
   const user = {
     id: session.user.id,
-    role: session.user.role as import('@prisma/client').Role,
+    role: session.user.role as Role,
     organisationId: session.user.organisationId,
   }
 
-  if (!canManageSession(classSession, user)) {
+  if (!(await canManageSessionWithChildren(classSession, user, (orgId) => canManageChildOrg(session, orgId)))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -71,6 +74,16 @@ export async function PATCH(
   } = body
 
   const STATUS_VALUES: SessionStatus[] = ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
+
+  if (platform !== undefined && !PLATFORMS.includes(platform)) {
+    return NextResponse.json({ error: 'Invalid platform' }, { status: 400 })
+  }
+
+  if (hostId !== undefined) {
+    if (!classSession.organisationId || !(await isActiveOrgUser(classSession.organisationId, hostId))) {
+      return NextResponse.json({ error: 'Host must be an active user in the session organisation' }, { status: 400 })
+    }
+  }
 
   const updated = await prisma.classSession.update({
     where: { id: params.sessionId },
@@ -110,8 +123,13 @@ export async function DELETE(
     return NextResponse.json({ error: 'Session not found' }, { status: 404 })
   }
 
-  // Ensure the session belongs to the admin's org
-  if (classSession.organisationId !== session.user.organisationId) {
+  const user = {
+    id: session.user.id,
+    role: session.user.role as Role,
+    organisationId: session.user.organisationId,
+  }
+
+  if (!(await canManageSessionWithChildren(classSession, user, (orgId) => canManageChildOrg(session, orgId)))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

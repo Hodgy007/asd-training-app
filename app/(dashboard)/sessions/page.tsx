@@ -12,6 +12,7 @@ import {
   Loader2,
   Settings,
   Plus,
+  MapPin,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { HowToPanel } from '@/components/howto/panel'
@@ -38,7 +39,7 @@ interface ClassSession {
   duration: number
   meetingUrl: string | null
   recordingUrl: string | null
-  platform: 'ZOOM' | 'TEAMS' | 'CUSTOM'
+  platform: 'ZOOM' | 'TEAMS' | 'CUSTOM' | 'IN_PERSON'
   status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   hostId: string
   host: SessionHost
@@ -51,11 +52,13 @@ function PlatformBadge({ platform }: { platform: ClassSession['platform'] }) {
     ZOOM: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
     TEAMS: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
     CUSTOM: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+    IN_PERSON: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
   }
-  const labels = { ZOOM: 'Zoom', TEAMS: 'Teams', CUSTOM: 'Custom' }
+  const labels = { ZOOM: 'Zoom', TEAMS: 'Teams', CUSTOM: 'Custom', IN_PERSON: 'In Person' }
+  const Icon = platform === 'IN_PERSON' ? MapPin : Video
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${styles[platform]}`}>
-      <Video className="h-3 w-3" />
+      <Icon className="h-3 w-3" />
       {labels[platform]}
     </span>
   )

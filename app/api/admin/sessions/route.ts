@@ -3,9 +3,11 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
-import { getOrgSessions, resolveAttendees } from '@/lib/sessions'
+import { getOrgSessions, isActiveOrgUser, resolveAttendees } from '@/lib/sessions'
 import { canManageChildOrg } from '@/lib/org-hierarchy'
 import type { SessionStatus } from '@prisma/client'
+
+const PLATFORMS = ['ZOOM', 'TEAMS', 'CUSTOM', 'IN_PERSON'] as const
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -20,10 +22,12 @@ export async function GET(req: NextRequest) {
 
   const targetOrgId = searchParams.get('orgId')
   let orgId = sessionOrgId
-  if (targetOrgId && session.user.isParentOrg) {
+  if (targetOrgId && targetOrgId !== sessionOrgId && session.user.isParentOrg) {
     const canManage = await canManageChildOrg(session, targetOrgId)
     if (!canManage) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     orgId = targetOrgId
+  } else if (targetOrgId && targetOrgId !== sessionOrgId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const statusParam = searchParams.get('status')
@@ -64,6 +68,14 @@ export async function POST(req: NextRequest) {
       { error: 'Missing required fields: title, scheduledAt, duration, hostId' },
       { status: 400 }
     )
+  }
+
+  if (!(await isActiveOrgUser(orgId, hostId))) {
+    return NextResponse.json({ error: 'Host must be an active user in the selected organisation' }, { status: 400 })
+  }
+
+  if (platform && !PLATFORMS.includes(platform)) {
+    return NextResponse.json({ error: 'Invalid platform' }, { status: 400 })
   }
 
   // Resolve attendee user IDs

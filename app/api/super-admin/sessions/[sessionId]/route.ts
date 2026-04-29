@@ -3,7 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
-import { getSessionById } from '@/lib/sessions'
+import { getSessionById, isActiveUser } from '@/lib/sessions'
+
+const PLATFORMS = ['ZOOM', 'TEAMS', 'CUSTOM', 'IN_PERSON'] as const
 
 export async function GET(
   _req: NextRequest,
@@ -50,6 +52,16 @@ export async function PATCH(
         const validStatuses = ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']
         if (!validStatuses.includes(body[field])) {
           return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+        }
+        data[field] = body[field]
+      } else if (field === 'platform') {
+        if (!PLATFORMS.includes(body[field])) {
+          return NextResponse.json({ error: 'Invalid platform' }, { status: 400 })
+        }
+        data[field] = body[field]
+      } else if (field === 'hostId') {
+        if (!(await isActiveUser(body[field]))) {
+          return NextResponse.json({ error: 'Host must be an active user' }, { status: 400 })
         }
         data[field] = body[field]
       } else {

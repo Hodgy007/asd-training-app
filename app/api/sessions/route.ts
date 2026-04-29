@@ -3,7 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { canCreateSessions } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
-import { resolveAttendees } from '@/lib/sessions'
+import { isActiveOrgUser, resolveAttendees } from '@/lib/sessions'
+
+const PLATFORMS = ['ZOOM', 'TEAMS', 'CUSTOM', 'IN_PERSON'] as const
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -26,6 +28,13 @@ export async function POST(req: NextRequest) {
 
   // Default host to the creator if not specified
   const finalHostId = hostId || session.user.id
+  if (!(await isActiveOrgUser(orgId, finalHostId))) {
+    return NextResponse.json({ error: 'Host must be an active user in your organisation' }, { status: 400 })
+  }
+
+  if (platform && !PLATFORMS.includes(platform)) {
+    return NextResponse.json({ error: 'Invalid platform' }, { status: 400 })
+  }
 
   const attendeeSelection = attendees ?? {}
   const userIds = await resolveAttendees(orgId, attendeeSelection)

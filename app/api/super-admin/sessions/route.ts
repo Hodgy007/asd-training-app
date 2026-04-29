@@ -3,8 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
-import { getCharitySessions, resolveCharitySessionAttendees } from '@/lib/sessions'
+import { getCharitySessions, isActiveUser, resolveCharitySessionAttendees } from '@/lib/sessions'
 import type { SessionStatus } from '@prisma/client'
+
+const PLATFORMS = ['ZOOM', 'TEAMS', 'CUSTOM', 'IN_PERSON'] as const
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -42,6 +44,13 @@ export async function POST(req: NextRequest) {
   }
 
   const effectiveHostId = hostId || session.user.id
+  if (!(await isActiveUser(effectiveHostId))) {
+    return NextResponse.json({ error: 'Host must be an active user' }, { status: 400 })
+  }
+
+  if (platform && !PLATFORMS.includes(platform)) {
+    return NextResponse.json({ error: 'Invalid platform' }, { status: 400 })
+  }
 
   const attendeeSelection = attendees ?? {}
   const userIds = await resolveCharitySessionAttendees(attendeeSelection)
