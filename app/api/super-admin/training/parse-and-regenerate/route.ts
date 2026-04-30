@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 })
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    return new Response(JSON.stringify({ error: 'GEMINI_API_KEY is not configured' }), { status: 500 })
+  if (!process.env.AI_GATEWAY_API_KEY) {
+    return new Response(JSON.stringify({ error: 'AI_GATEWAY_API_KEY is not configured' }), { status: 500 })
   }
 
   let formData: FormData
