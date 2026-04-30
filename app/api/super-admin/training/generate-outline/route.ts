@@ -5,7 +5,7 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { generateOutline, withRetry } from '@/lib/content-generator'
 import type { ParsedFile, GenerationMode, GenerationLens } from '@/lib/content-generator-types'
 
-export const maxDuration = 60
+export const maxDuration = 300
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
