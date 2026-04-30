@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { clsx } from 'clsx'
 import Link from 'next/link'
+import { upload } from '@vercel/blob/client'
 import {
   ArrowLeft,
   FolderOpen,
@@ -182,11 +183,18 @@ export default function CollectionDetailPage() {
     setZipResults(null)
     setZipErrorsExpanded(false)
     try {
-      const fd = new FormData()
-      fd.append('file', zipFile)
+      // Stage 1 — upload zip directly to Vercel Blob (bypasses 4.5 MB serverless body limit).
+      const pathname = `library/zip-uploads/${Date.now()}-${zipFile.name}`
+      const blob = await upload(pathname, zipFile, {
+        access: 'public',
+        handleUploadUrl: `/api/super-admin/library/${collectionId}/documents/zip-upload/upload-url`,
+      })
+
+      // Stage 2 — ask the server to extract the zip and create LibraryDocuments.
       const res = await fetch(`/api/super-admin/library/${collectionId}/documents/zip-upload`, {
         method: 'POST',
-        body: fd,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blobUrl: blob.url, filename: zipFile.name }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -195,8 +203,9 @@ export default function CollectionDetailPage() {
       }
       setZipResults({ created: data.created.length, errors: data.errors, total: data.total })
       if (data.created.length > 0) fetchCollection()
-    } catch {
-      showToast('ZIP upload failed. Please try again.', 'error')
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : 'ZIP upload failed.'
+      showToast(raw, 'error')
     } finally {
       setZipUploading(false)
     }

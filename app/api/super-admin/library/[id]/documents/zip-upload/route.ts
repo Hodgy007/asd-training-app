@@ -1,11 +1,27 @@
+/**
+ * Extract a ZIP archive into individual LibraryDocument records.
+ *
+ * The browser uploads the .zip directly to Vercel Blob via a token from
+ * `./upload-url/route.ts` (bypassing the 4.5 MB serverless body limit), then
+ * POSTs JSON here:
+ *
+ *   { blobUrl: string, filename: string }
+ *
+ * We fetch the zip back from Blob, walk its entries, validate each file's
+ * extension, upload each to Blob under `library/documents/`, and create a
+ * LibraryDocument row. The temporary upload blob is deleted after extraction.
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 import JSZip from 'jszip'
 import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
+
+export const runtime = 'nodejs'
+export const maxDuration = 300
 
 const MAX_ZIP_SIZE = 200 * 1024 * 1024 // 200 MB
 
@@ -50,24 +66,50 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Collection not found' }, { status: 404 })
   }
 
-  const formData = await req.formData()
-  const file = formData.get('file') as File | null
-  if (!file) {
-    return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+  let body: { blobUrl?: unknown; filename?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Expected JSON body' }, { status: 400 })
   }
 
-  if (getExtension(file.name) !== 'zip') {
-    return NextResponse.json({ error: 'Please upload a .zip file.' }, { status: 400 })
+  const blobUrl = typeof body.blobUrl === 'string' ? body.blobUrl : ''
+  const filename = typeof body.filename === 'string' ? body.filename : ''
+
+  if (!blobUrl) {
+    return NextResponse.json({ error: 'Missing blobUrl' }, { status: 400 })
+  }
+  if (!filename || !filename.toLowerCase().endsWith('.zip')) {
+    return NextResponse.json({ error: 'Expected a .zip filename' }, { status: 400 })
   }
 
-  if (file.size > MAX_ZIP_SIZE) {
+  // Pull the zip back from Blob — the browser uploaded it there via a signed
+  // token, so this is an internal fetch over HTTPS.
+  const zipResponse = await fetch(blobUrl)
+  if (!zipResponse.ok) {
+    return NextResponse.json(
+      { error: `Could not fetch uploaded zip (${zipResponse.status})` },
+      { status: 400 },
+    )
+  }
+
+  const contentLength = Number(zipResponse.headers.get('content-length') ?? '0')
+  if (contentLength > MAX_ZIP_SIZE) {
+    await del(blobUrl).catch(() => {})
+    return NextResponse.json({ error: 'ZIP file exceeds the 200 MB limit.' }, { status: 413 })
+  }
+
+  const arrayBuffer = await zipResponse.arrayBuffer()
+  if (arrayBuffer.byteLength > MAX_ZIP_SIZE) {
+    await del(blobUrl).catch(() => {})
     return NextResponse.json({ error: 'ZIP file exceeds the 200 MB limit.' }, { status: 413 })
   }
 
   let zip: JSZip
   try {
-    zip = await JSZip.loadAsync(await file.arrayBuffer())
+    zip = await JSZip.loadAsync(arrayBuffer)
   } catch {
+    await del(blobUrl).catch(() => {})
     return NextResponse.json({ error: 'Failed to read ZIP file. Make sure it is a valid ZIP archive.' }, { status: 400 })
   }
 
@@ -109,14 +151,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       continue
     }
 
-    let blobUrl: string
+    let extractedUrl: string
     try {
       const { url } = await put(`library/documents/${base}`, Buffer.from(content), {
         access: 'public',
         addRandomSuffix: true,
         contentType: MIME_MAP[ext] ?? 'application/octet-stream',
       })
-      blobUrl = url
+      extractedUrl = url
     } catch {
       errors.push({ fileName: base, error: 'Storage upload failed.' })
       continue
@@ -128,7 +170,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
           collectionId: params.id,
           title: fileNameToTitle(base),
           description: 'Uploaded from ZIP.',
-          fileUrl: blobUrl,
+          fileUrl: extractedUrl,
           fileName: base,
           fileSize: content.byteLength,
           fileType: MIME_MAP[ext] ?? 'application/octet-stream',
@@ -140,6 +182,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       errors.push({ fileName: base, error: 'Failed to save document record.' })
     }
   }
+
+  // Best-effort cleanup of the temp upload blob now that we've extracted it.
+  await del(blobUrl).catch(() => {})
 
   return NextResponse.json({ created, errors, total: entries.length }, { status: 201 })
 }
