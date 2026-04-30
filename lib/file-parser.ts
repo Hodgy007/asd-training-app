@@ -1,8 +1,6 @@
 // lib/file-parser.ts
 // Server-side file parser for PDF, DOCX, and PPTX files.
 
-import { PDFParse } from 'pdf-parse'
-import mammoth from 'mammoth'
 import AdmZip from 'adm-zip'
 import { parseStringPromise } from 'xml2js'
 import type { ParsedFile, ParsedSection } from './content-generator-types'
@@ -27,9 +25,10 @@ function isHeadingLine(line: string): boolean {
 }
 
 async function parsePdf(buffer: Buffer): Promise<ParsedSection[]> {
-  const parser = new PDFParse({ data: buffer })
-  const result = await parser.getText({ pageJoiner: '\n\n' })
-  await parser.destroy()
+  const pdfParseModule = await import('pdf-parse')
+  const pdfParse = (pdfParseModule as unknown as { default: (b: Buffer) => Promise<{ text: string }> }).default
+    ?? (pdfParseModule as unknown as (b: Buffer) => Promise<{ text: string }>)
+  const result = await pdfParse(buffer)
 
   const fullText = result.text
   const rawSections = fullText.split(/\n\n+/)
@@ -69,6 +68,7 @@ async function parsePdf(buffer: Buffer): Promise<ParsedSection[]> {
 // ─── DOCX Parsing ────────────────────────────────────────────────────────────
 
 async function parseDocx(buffer: Buffer): Promise<ParsedSection[]> {
+  const mammoth = await import('mammoth')
   const result = await mammoth.convertToHtml({ buffer })
   const html = result.value
 
