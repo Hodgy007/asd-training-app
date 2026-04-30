@@ -1,7 +1,7 @@
 // lib/content-generator.ts
 // AI Gateway orchestration layer for AI content generation
 
-import { runPrompt } from '@/lib/ai-runner'
+import { runPrompt, AI_FEATURE_UNAVAILABLE } from '@/lib/ai-runner'
 import type {
   ParsedFile,
   GenerationMode,
@@ -100,6 +100,7 @@ export async function generateOutline(
   const formattedContent = formatParsedContentForPrompt(files)
   const key = mode === 'structure' ? 'training.outlineStructure' : 'training.outlineGenerate'
   const text = await runPrompt(key, { programName, formattedContent })
+  if (text === AI_FEATURE_UNAVAILABLE) throw new Error(AI_FEATURE_UNAVAILABLE)
   const jsonString = extractJson(text)
   return JSON.parse(jsonString) as GeneratedOutline
 }
@@ -127,11 +128,13 @@ export async function generateLessonContent(
       'PRACTITIONER LENS: Professional but accessible. Include practical strategies, case examples, and reflection prompts (<blockquote>) to encourage deeper thinking.'
   }
 
-  return runPrompt('training.lessonContent', {
+  const text = await runPrompt('training.lessonContent', {
     lessonTitle,
     sourceText,
     modeGuidance,
   })
+  if (text === AI_FEATURE_UNAVAILABLE) throw new Error(AI_FEATURE_UNAVAILABLE)
+  return text
 }
 
 // ─── Quiz Generation ──────────────────────────────────────────────────────────
@@ -153,6 +156,7 @@ export async function generateQuizForLesson(
     count: String(count),
     plainText,
   })
+  if (text === AI_FEATURE_UNAVAILABLE) throw new Error(AI_FEATURE_UNAVAILABLE)
   const jsonString = extractJson(text)
   return JSON.parse(jsonString) as GeneratedQuizQuestion[]
 }

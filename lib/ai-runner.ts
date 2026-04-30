@@ -1,9 +1,18 @@
 import { generateText } from 'ai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { prisma } from '@/lib/prisma'
 import { assemblePrompt } from '@/lib/ai-runner-assemble'
 
 export const AI_FEATURE_UNAVAILABLE =
   'This AI feature is temporarily unavailable. Please try again later.'
+
+// Vercel AI Gateway is OpenAI-compatible. Wrap model strings like
+// "google/gemini-2.5-flash" through this client so generateText receives
+// a proper LanguageModel object instead of a raw string.
+const gateway = createOpenAI({
+  baseURL: 'https://ai-gateway.vercel.sh/v1',
+  apiKey: process.env.AI_GATEWAY_API_KEY ?? process.env.VERCEL_OIDC_TOKEN ?? '',
+})
 
 /**
  * Load an AI prompt from the DB, assemble it with the provided values,
@@ -49,7 +58,7 @@ export async function runPrompt(
 
   try {
     const { text } = await generateText({
-      model: row.model,
+      model: gateway(row.model),
       prompt,
       maxRetries: 3,
     })
