@@ -52,7 +52,7 @@ export default async function ProgramModulePage({
   const completedLessonIds = progressRecords.filter((p) => p.completed).map((p) => p.lessonId)
   const completedCount = completedLessonIds.length
   const totalCount = module.lessons.length
-  const isComplete = completedCount === totalCount
+  const isComplete = totalCount > 0 && completedCount === totalCount
 
   // Find the next incomplete lesson
   const nextLesson = module.lessons.find((l) => !completedLessonIds.includes(l.id))

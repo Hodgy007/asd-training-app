@@ -29,8 +29,8 @@ export function ModuleCard({ module, completedLessons, locked, programId }: Modu
   const { colorTheme } = useColorTheme()
   const isBlue = colorTheme === 'blue'
   const totalLessons = module.lessons.length
-  const isComplete = completedLessons === totalLessons
-  const progressPct = Math.round((completedLessons / totalLessons) * 100)
+  const isComplete = totalLessons > 0 && completedLessons === totalLessons
+  const progressPct = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
   const hasStarted = completedLessons > 0
 
   const videoCount = module.lessons.filter((l) => l.type === 'VIDEO').length
