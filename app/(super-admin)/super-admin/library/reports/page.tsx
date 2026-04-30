@@ -12,6 +12,8 @@ import {
   ChevronRight,
   ArrowLeft,
   Building2,
+  Eye,
+  Users,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -24,6 +26,7 @@ interface DocumentStat {
   id: string
   title: string
   fileName: string
+  views: number
   downloads: number
 }
 
@@ -46,11 +49,28 @@ interface Totals {
   activeCollections: number
   totalDocuments: number
   totalDownloads: number
+  toolkitViews: number
+  toolkitDownloads: number
+  anonymousToolkitViews: number
+  anonymousToolkitDownloads: number
 }
 
 interface Organisation {
   id: string
   name: string
+}
+
+interface TopToolkitDocument {
+  id: string
+  title: string
+  fileName: string
+  collectionId: string
+  collectionTitle: string
+  views: number
+  downloads: number
+  anonymousViews: number
+  anonymousDownloads: number
+  totalEvents: number
 }
 
 export default function LibraryReportsPage() {
@@ -60,21 +80,24 @@ export default function LibraryReportsPage() {
   const [loading, setLoading] = useState(true)
   const [expandedCollection, setExpandedCollection] = useState<string | null>(null)
   const [filterOrg, setFilterOrg] = useState<string>('')
+  const [range, setRange] = useState<'7' | '30' | 'all'>('30')
+  const [topToolkitDocuments, setTopToolkitDocuments] = useState<TopToolkitDocument[]>([])
 
   const fetchReports = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/super-admin/library/reports')
+      const res = await fetch(`/api/super-admin/library/reports?range=${range}`)
       if (res.ok) {
         const data = await res.json()
         setTotals(data.totals)
         setCollections(data.collections)
         setOrgs(data.organisations)
+        setTopToolkitDocuments(data.topToolkitDocuments ?? [])
       }
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [range])
 
   useEffect(() => {
     fetchReports()
@@ -105,13 +128,24 @@ export default function LibraryReportsPage() {
             Track document downloads across collections and organisations.
           </p>
         </div>
-        <button
-          onClick={fetchReports}
-          className="p-2 rounded-xl border border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors text-slate-500"
-          title="Refresh"
-        >
-          <RefreshCw className={clsx('h-4 w-4', loading && 'animate-spin')} />
-        </button>
+        <div className="flex items-center gap-2">
+          <select
+            className="input text-sm"
+            value={range}
+            onChange={(e) => setRange(e.target.value as '7' | '30' | 'all')}
+          >
+            <option value="7">7 days</option>
+            <option value="30">30 days</option>
+            <option value="all">All time</option>
+          </select>
+          <button
+            onClick={fetchReports}
+            className="p-2 rounded-xl border border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors text-slate-500"
+            title="Refresh"
+          >
+            <RefreshCw className={clsx('h-4 w-4', loading && 'animate-spin')} />
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -146,6 +180,73 @@ export default function LibraryReportsPage() {
               </div>
             </div>
           )}
+
+          {totals && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-stagger">
+              <div className="card text-center">
+                <Eye className="h-6 w-6 text-blue-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totals.toolkitViews}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Toolkit views</p>
+              </div>
+              <div className="card text-center">
+                <Download className="h-6 w-6 text-primary-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totals.toolkitDownloads}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Toolkit downloads</p>
+              </div>
+              <div className="card text-center">
+                <Users className="h-6 w-6 text-blue-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totals.anonymousToolkitViews}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Anonymous views</p>
+              </div>
+              <div className="card text-center">
+                <Users className="h-6 w-6 text-emerald-500 mx-auto mb-1" />
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{totals.anonymousToolkitDownloads}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Anonymous downloads</p>
+              </div>
+            </div>
+          )}
+
+          <div className="card overflow-hidden p-0">
+            <div className="px-4 py-3 border-b border-calm-200 dark:border-slate-700">
+              <h2 className="font-semibold text-slate-900 dark:text-slate-100">Top Toolkit Documents</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Public Toolkit views and downloads for the selected range.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Document title</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Toolkit</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Views</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Downloads</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Anonymous downloads</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topToolkitDocuments.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">
+                        No Toolkit activity recorded for this range.
+                      </td>
+                    </tr>
+                  ) : (
+                    topToolkitDocuments.map((doc) => (
+                      <tr key={doc.id} className="border-b border-calm-100 dark:border-slate-700">
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-slate-800 dark:text-slate-200">{doc.title}</p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500">{doc.fileName}</p>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{doc.collectionTitle}</td>
+                        <td className="px-4 py-3 text-center font-semibold text-blue-600 dark:text-blue-300">{doc.views + doc.anonymousViews}</td>
+                        <td className="px-4 py-3 text-center font-semibold text-emerald-600 dark:text-emerald-300">{doc.downloads + doc.anonymousDownloads}</td>
+                        <td className="px-4 py-3 text-center font-semibold text-slate-700 dark:text-slate-200">{doc.anonymousDownloads}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
           {/* Filter */}
           <div className="flex items-center gap-3">

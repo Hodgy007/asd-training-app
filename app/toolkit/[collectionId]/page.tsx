@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { ToolkitDocumentActions } from '@/components/toolkit/toolkit-document-actions'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -9,24 +10,6 @@ function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function fileLabel(fileType: string, fileName: string): string {
-  if (fileType) return fileType.split('/').pop()?.toUpperCase() || fileType
-  const ext = fileName.split('.').pop()
-  return ext ? ext.toUpperCase() : 'FILE'
-}
-
-async function trackEvent(documentId: string, action: 'view' | 'download') {
-  try {
-    await fetch(`/api/toolkit/documents/${documentId}/event`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action }),
-    })
-  } catch {
-    // non-blocking
-  }
 }
 
 export default async function ToolkitCollectionPage({
@@ -91,25 +74,12 @@ export default async function ToolkitCollectionPage({
             <article key={doc.id} className="bg-white p-6 rounded-xl">
               <h3 className="text-xl font-bold">{doc.title}</h3>
               <p className="text-sm text-slate-500">{doc.description}</p>
+              <p className="mt-2 text-xs font-medium text-slate-500">
+                {doc.fileName} - {formatFileSize(doc.fileSize)}
+              </p>
 
               <div className="mt-4 flex gap-3">
-                <a
-                  href={doc.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackEvent(doc.id, 'view')}
-                  className="bg-orange-500 text-white px-4 py-2 rounded"
-                >
-                  Open
-                </a>
-                <a
-                  href={doc.fileUrl}
-                  download
-                  onClick={() => trackEvent(doc.id, 'download')}
-                  className="border px-4 py-2 rounded"
-                >
-                  Download
-                </a>
+                <ToolkitDocumentActions documentId={doc.id} fileUrl={doc.fileUrl} fileName={doc.fileName} />
               </div>
             </article>
           ))}
