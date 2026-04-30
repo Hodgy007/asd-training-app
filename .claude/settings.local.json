@@ -14,7 +14,8 @@
       "Bash(node -e \"require\\('ai'\\)\")",
       "Bash(wc -l docs/guides/*.md README.md)",
       "Bash(node -e \"const p=require\\('./package.json'\\); const d={...p.dependencies,...p.devDependencies}; console.log\\('cross-env:', d['cross-env'] || 'MISSING'\\)\")",
-      "Bash(npx cross-env *)"
+      "Bash(npx cross-env *)",
+      "mcp__48a55db9-0ce7-44a1-b718-12b38ff3fe45__deploy_to_vercel"
     ]
   }
 }
