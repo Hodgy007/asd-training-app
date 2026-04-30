@@ -61,7 +61,8 @@ describe('runPrompt', () => {
     expect(result).toBe('I play golf.')
 
     const callArgs = vi.mocked(generateText).mock.calls[0]![0]
-    expect(callArgs.model).toBe('google/gemini-2.5-flash')
+    // model is now a wrapped LanguageModel object, not a raw string
+    expect((callArgs.model as { modelId: string }).modelId).toBe('google/gemini-2.5-flash')
     expect(callArgs.prompt).toContain('golf')
   })
 
