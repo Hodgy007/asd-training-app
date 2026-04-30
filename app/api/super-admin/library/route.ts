@@ -12,6 +12,7 @@ const createSchema = z.object({
   targetOrgIds: z.array(z.string()).default([]),
   targetRoles: z.array(z.string()).default([]),
   active: z.boolean().default(true),
+  publishedToToolkit: z.boolean().default(false),
 })
 
 // GET — list all collections
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
       targetOrgIds: parsed.data.targetOrgIds,
       targetRoles: parsed.data.targetRoles,
       active: parsed.data.active,
+      publishedToToolkit: parsed.data.publishedToToolkit,
       createdById: session.user.id,
     },
   })

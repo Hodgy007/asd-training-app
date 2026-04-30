@@ -598,6 +598,7 @@ model LibraryCollection {
   targetOrgIds String[]
   targetRoles  String[]
   active       Boolean  @default(true)
+  publishedToToolkit Boolean @default(false)
   createdById  String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -624,6 +625,7 @@ model LibraryDocument {
   collection LibraryCollection      @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   uploadedBy User                   @relation("UploadedDocuments", fields: [uploadedById], references: [id])
   events     LibraryDocumentEvent[]
+  anonymousEvents ToolkitAnonymousDocumentEvent[]
 }
 
 model LibraryDocumentEvent {
@@ -639,6 +641,19 @@ model LibraryDocumentEvent {
 
   @@index([documentId, action])
   @@index([organisationId])
+  @@index([createdAt])
+}
+
+model ToolkitAnonymousDocumentEvent {
+  id         String   @id @default(cuid())
+  documentId String
+  action     String
+  createdAt  DateTime @default(now())
+
+  document LibraryDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId, action])
+  @@index([createdAt])
 }
 
 model IntegrationApiKey {

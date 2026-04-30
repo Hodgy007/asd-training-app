@@ -12,6 +12,7 @@ const updateSchema = z.object({
   targetOrgIds: z.array(z.string()).optional(),
   targetRoles: z.array(z.string()).optional(),
   active: z.boolean().optional(),
+  publishedToToolkit: z.boolean().optional(),
 })
 
 // GET — single collection with its documents
