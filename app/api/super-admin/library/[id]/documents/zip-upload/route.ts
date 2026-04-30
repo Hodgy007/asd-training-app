@@ -111,7 +111,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     let blobUrl: string
     try {
-      const { url } = await put(`library/documents/${base}`, content, {
+      const { url } = await put(`library/documents/${base}`, Buffer.from(content), {
         access: 'public',
         addRandomSuffix: true,
         contentType: MIME_MAP[ext] ?? 'application/octet-stream',
