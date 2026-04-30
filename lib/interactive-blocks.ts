@@ -1,4 +1,4 @@
-import { InteractiveBlock, interactiveBlocksSchema } from '@/types/interactive'
+import { InteractiveBlock, interactiveBlockSchema, interactiveBlocksSchema } from '@/types/interactive'
 
 // Content segment types for splitting lesson HTML at interactive block markers
 
@@ -69,14 +69,25 @@ export function splitContentAtBlocks(
 
 /**
  * Validate and parse interactive blocks from unknown JSON data (e.g. from DB).
- * Returns a typed array or null if invalid.
+ * Returns a typed array or null if the input isn't an array at all.
+ * If the whole array parse fails, falls back to per-block parsing so one
+ * malformed block never hides all the others.
  */
 export function validateInteractiveBlocks(
   data: unknown
 ): InteractiveBlock[] | null {
   if (!data || !Array.isArray(data)) return null
   const result = interactiveBlocksSchema.safeParse(data)
-  return result.success ? result.data : null
+  if (result.success) return result.data
+  // One block failed — try each individually and keep the valid ones.
+  const valid: InteractiveBlock[] = []
+  for (const item of data) {
+    const blockResult = interactiveBlockSchema.safeParse(item)
+    if (blockResult.success) {
+      valid.push(blockResult.data)
+    }
+  }
+  return valid.length > 0 ? valid : null
 }
 
 /**
