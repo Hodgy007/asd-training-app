@@ -21,6 +21,9 @@ import {
   Image as ImageIcon,
   Eye,
   EyeOff,
+  Archive,
+  AlertTriangle,
+  ChevronDown,
   ExternalLink,
 } from 'lucide-react'
 
@@ -79,6 +82,15 @@ export default function CollectionDetailPage() {
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [editSaving, setEditSaving] = useState(false)
+
+  // ZIP upload state
+  const [zipUploading, setZipUploading] = useState(false)
+  const [zipResults, setZipResults] = useState<{
+    created: number
+    errors: { fileName: string; error: string }[]
+    total: number
+  } | null>(null)
+  const [zipErrorsExpanded, setZipErrorsExpanded] = useState(false)
 
   // Edit state (collection)
   const [editingCollection, setEditingCollection] = useState(false)
@@ -160,6 +172,34 @@ export default function CollectionDetailPage() {
     setFormDescription('')
     setFormFile(null)
     setFormThumbnailUrl(null)
+  }
+
+  async function handleZipUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const zipFile = e.target.files?.[0]
+    e.target.value = ''
+    if (!zipFile) return
+    setZipUploading(true)
+    setZipResults(null)
+    setZipErrorsExpanded(false)
+    try {
+      const fd = new FormData()
+      fd.append('file', zipFile)
+      const res = await fetch(`/api/super-admin/library/${collectionId}/documents/zip-upload`, {
+        method: 'POST',
+        body: fd,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        showToast(data.error || 'ZIP upload failed.', 'error')
+        return
+      }
+      setZipResults({ created: data.created.length, errors: data.errors, total: data.total })
+      if (data.created.length > 0) fetchCollection()
+    } catch {
+      showToast('ZIP upload failed. Please try again.', 'error')
+    } finally {
+      setZipUploading(false)
+    }
   }
 
   // AI generate title, description, and optionally thumbnail from filename
@@ -437,6 +477,22 @@ export default function CollectionDetailPage() {
                 <ExternalLink className="h-4 w-4" />
               </Link>
             )}
+            <label className={clsx(
+              'inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors cursor-pointer',
+              zipUploading
+                ? 'opacity-50 cursor-not-allowed border-calm-200 dark:border-slate-600 text-slate-400'
+                : 'border-calm-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-calm-50 dark:hover:bg-slate-700'
+            )}>
+              <Archive className="h-4 w-4" />
+              {zipUploading ? 'Uploading ZIP…' : 'Upload ZIP'}
+              <input
+                type="file"
+                accept=".zip,application/zip,application/x-zip-compressed"
+                className="hidden"
+                disabled={zipUploading}
+                onChange={handleZipUpload}
+              />
+            </label>
             <button
               onClick={() => { setShowForm((v) => !v); if (showForm) resetForm() }}
               className="btn-primary flex items-center gap-2"
@@ -447,6 +503,65 @@ export default function CollectionDetailPage() {
           </div>
         )}
       </div>
+
+      {/* ZIP upload results */}
+      {zipResults && (
+        <div className={clsx(
+          'rounded-xl border p-4 space-y-2',
+          zipResults.created > 0
+            ? 'bg-sage-50 dark:bg-sage-900/20 border-sage-200 dark:border-sage-800'
+            : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+        )}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              {zipResults.created > 0
+                ? <CheckCircle className="h-4 w-4 text-sage-600 dark:text-sage-400 flex-shrink-0" />
+                : <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              }
+              <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                {zipResults.created > 0
+                  ? `${zipResults.created} document${zipResults.created !== 1 ? 's' : ''} added from ZIP`
+                  : 'No documents were added from ZIP'
+                }
+                {zipResults.errors.length > 0 && (
+                  <span className="text-slate-500 dark:text-slate-400 font-normal">
+                    {' '}· {zipResults.errors.length} file{zipResults.errors.length !== 1 ? 's' : ''} skipped
+                  </span>
+                )}
+              </span>
+            </div>
+            <button
+              onClick={() => setZipResults(null)}
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 flex-shrink-0"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          {zipResults.errors.length > 0 && (
+            <div>
+              <button
+                type="button"
+                onClick={() => setZipErrorsExpanded((v) => !v)}
+                className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+              >
+                <ChevronDown className={clsx('h-3 w-3 transition-transform', zipErrorsExpanded && 'rotate-180')} />
+                {zipErrorsExpanded ? 'Hide' : 'Show'} skipped files
+              </button>
+              {zipErrorsExpanded && (
+                <ul className="mt-2 space-y-1">
+                  {zipResults.errors.map((e, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                      <XCircle className="h-3.5 w-3.5 text-red-400 flex-shrink-0 mt-0.5" />
+                      <span><span className="font-medium">{e.fileName}</span> — {e.error}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Add document form */}
       {showForm && (
