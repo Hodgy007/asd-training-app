@@ -24,9 +24,6 @@ model User {
   notificationsLastOpenedAt DateTime?
   invitedAt          DateTime?
   invitedBy          String?
-  // Individual-subscriber fields. Only used when organisationId is null —
-  // i.e. the user purchased on their own and isn't part of a shared org.
-  // Resolved alongside org-level fields by lib/subscription.ts.
   stripeCustomerId             String?            @unique
   stripeSubscriptionId         String?
   subscriptionStatus           SubscriptionStatus @default(NONE)
@@ -299,11 +296,6 @@ model TrainingProgram {
   stripeProductId String?
   stripePriceId   String?
   purchasable     Boolean       @default(false)
-  // Default role assigned to users who self-provision themselves into this
-  // program — currently the free-claim flow on /courses and the anonymous
-  // Stripe checkout webhook. Admin-created users are unaffected.
-  // Should always be a leaf role (CAREGIVER / CAREER_DEV_OFFICER / STUDENT
-  // / INTERN / EMPLOYEE); the admin form enforces that.
   defaultLeafRole Role?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -485,110 +477,21 @@ model SurveyInsight {
   @@unique([surveyId, type])
 }
 
-enum MeetingPlatform {
-  ZOOM
-  TEAMS
-  CUSTOM
-  IN_PERSON
-}
-
-enum OrgType {
-  ORGANISATION
-  COHORT
-  PERSONAL
-}
-
-enum SessionStatus {
-  SCHEDULED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum ProgramStatus {
-  DRAFT
-  UNDER_REVIEW
-  APPROVED
-  ARCHIVED
-}
-
-enum ProgramAudience {
-  EDUCATION
-  EMPLOYER
-}
-
-enum OrganisationType {
-  SCHOOL
-  COLLEGE
-  ACADEMY
-  UNIVERSITY
-  EMPLOYER
-  EDUCATION   // legacy — kept for existing rows
-  BUSINESS    // legacy — kept for existing rows
-}
-
-enum Role {
-  SUPER_ADMIN
-  CHARITY_EMPLOYEE
-  ORG_ADMIN
-  CAREGIVER
-  CAREER_DEV_OFFICER
-  STUDENT
-  INTERN
-  EMPLOYEE
-}
-
-enum SurveyStatus {
-  DRAFT
-  PUBLISHED
-  CLOSED
-}
-
-enum JobStatus {
-  DRAFT
-  PUBLISHED
-  CLOSED
-  ARCHIVED
-}
-
-enum JobLocationType {
-  ONSITE
-  HYBRID
-  REMOTE
-}
-
-enum JobEmploymentType {
-  INTERNSHIP
-  APPRENTICESHIP
-  PART_TIME
-  FULL_TIME
-  VOLUNTEER
-}
-
-enum QuestionType {
-  MULTIPLE_CHOICE
-  YES_NO
-  FREE_TEXT
-  RATING_SCALE
-  MULTI_SELECT
-}
-
-enum InsightType {
-  SUMMARY
-  COMPARATIVE
-  RECOMMENDATIONS
-}
-
-enum CVTemplate {
-  CLASSIC
-  MODERN
-  ACCESSIBLE
-}
-
-enum CVStatus {
-  DRAFT
-  COMPLETE
-}
+enum MeetingPlatform { ZOOM TEAMS CUSTOM IN_PERSON }
+enum OrgType { ORGANISATION COHORT PERSONAL }
+enum SessionStatus { SCHEDULED IN_PROGRESS COMPLETED CANCELLED }
+enum ProgramStatus { DRAFT UNDER_REVIEW APPROVED ARCHIVED }
+enum ProgramAudience { EDUCATION EMPLOYER }
+enum OrganisationType { SCHOOL COLLEGE ACADEMY UNIVERSITY EMPLOYER EDUCATION BUSINESS }
+enum Role { SUPER_ADMIN CHARITY_EMPLOYEE ORG_ADMIN CAREGIVER CAREER_DEV_OFFICER STUDENT INTERN EMPLOYEE }
+enum SurveyStatus { DRAFT PUBLISHED CLOSED }
+enum JobStatus { DRAFT PUBLISHED CLOSED ARCHIVED }
+enum JobLocationType { ONSITE HYBRID REMOTE }
+enum JobEmploymentType { INTERNSHIP APPRENTICESHIP PART_TIME FULL_TIME VOLUNTEER }
+enum QuestionType { MULTIPLE_CHOICE YES_NO FREE_TEXT RATING_SCALE MULTI_SELECT }
+enum InsightType { SUMMARY COMPARATIVE RECOMMENDATIONS }
+enum CVTemplate { CLASSIC MODERN ACCESSIBLE }
+enum CVStatus { DRAFT COMPLETE }
 
 model LibraryCollection {
   id           String   @id @default(cuid())
@@ -625,6 +528,7 @@ model LibraryDocument {
   collection LibraryCollection      @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   uploadedBy User                   @relation("UploadedDocuments", fields: [uploadedById], references: [id])
   events     LibraryDocumentEvent[]
+  anonymousEvents ToolkitAnonymousDocumentEvent[]
 }
 
 model LibraryDocumentEvent {
@@ -632,7 +536,7 @@ model LibraryDocumentEvent {
   documentId     String
   userId         String
   organisationId String?
-  action         String // "view" or "download"
+  action         String
   createdAt      DateTime @default(now())
 
   document LibraryDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
@@ -640,13 +544,26 @@ model LibraryDocumentEvent {
 
   @@index([documentId, action])
   @@index([organisationId])
+  @@index([createdAt])
+}
+
+model ToolkitAnonymousDocumentEvent {
+  id         String   @id @default(cuid())
+  documentId String
+  action     String
+  createdAt  DateTime @default(now())
+
+  document LibraryDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId, action])
+  @@index([createdAt])
 }
 
 model IntegrationApiKey {
   id          String    @id @default(cuid())
   name        String
   keyHash     String    @unique
-  keyPrefix   String // first 8 chars for display (e.g. "int_abc1...")
+  keyPrefix   String
   createdById String
   lastUsedAt  DateTime?
   expiresAt   DateTime?
@@ -657,345 +574,48 @@ model IntegrationApiKey {
 }
 
 model CV {
-  id                    String       @id @default(cuid())
-  userId                String
-  title                 String       @default("My CV")
-  template              CVTemplate   @default(ACCESSIBLE)
-  status                CVStatus     @default(DRAFT)
-  currentStep           Int          @default(0)
-  fullName              String?
-  email                 String?
-  phone                 String?
-  city                  String?
-  postcode              String?
-  linkedIn              String?
-  personalStatement     String?      @db.Text
-  interests             String?      @db.Text
-  refsAvailableOnRequest Boolean     @default(true)
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
-
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
+  userId String
+  title String @default("My CV")
+  template CVTemplate @default(ACCESSIBLE)
+  status CVStatus @default(DRAFT)
+  currentStep Int @default(0)
+  fullName String?
+  email String?
+  phone String?
+  city String?
+  postcode String?
+  linkedIn String?
+  personalStatement String? @db.Text
+  interests String? @db.Text
+  refsAvailableOnRequest Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   workExperiences CVWorkExperience[]
   educationEntries CVEducation[]
-  skills          CVSkill[]
-  references      CVReference[]
-
+  skills CVSkill[]
+  references CVReference[]
   @@index([userId])
 }
 
-model CVWorkExperience {
-  id          String   @id @default(cuid())
-  cvId        String
-  jobTitle    String
-  employer    String
-  startDate   String
-  endDate     String?
-  isCurrent   Boolean  @default(false)
-  description String?  @db.Text
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model CVWorkExperience { id String @id @default(cuid()) cvId String jobTitle String employer String startDate String endDate String? isCurrent Boolean @default(false) description String? @db.Text order Int @default(0) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade) @@index([cvId]) }
+model CVEducation { id String @id @default(cuid()) cvId String institution String qualification String grade String? startDate String endDate String? description String? @db.Text order Int @default(0) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade) @@index([cvId]) }
+model CVSkill { id String @id @default(cuid()) cvId String name String category String? order Int @default(0) cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade) @@index([cvId]) }
+model CVReference { id String @id @default(cuid()) cvId String name String jobTitle String? organisation String? email String? phone String? relationship String? order Int @default(0) cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade) @@index([cvId]) }
 
-  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  @@index([cvId])
-}
-
-model CVEducation {
-  id            String   @id @default(cuid())
-  cvId          String
-  institution   String
-  qualification String
-  grade         String?
-  startDate     String
-  endDate       String?
-  description   String?  @db.Text
-  order         Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  @@index([cvId])
-}
-
-model CVSkill {
-  id       String   @id @default(cuid())
-  cvId     String
-  name     String
-  category String?
-  order    Int      @default(0)
-
-  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  @@index([cvId])
-}
-
-model CVReference {
-  id           String   @id @default(cuid())
-  cvId         String
-  name         String
-  jobTitle     String?
-  organisation String?
-  email        String?
-  phone        String?
-  relationship String?
-  order        Int      @default(0)
-
-  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  @@index([cvId])
-}
-
-// ─── Careers Advisor ─────────────────────────────────────────────────────────
-
-enum AdvisorSessionStatus {
-  IN_PROGRESS
-  COMPLETE
-}
-
-model CareerAdvisorSession {
-  id          String               @id @default(cuid())
-  userId      String
-  status      AdvisorSessionStatus @default(IN_PROGRESS)
-  currentStep Int                  @default(0)
-  answers     Json?
-  report      Json?
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model AiPrompt {
-  id               String   @id @default(cuid())
-  key              String   @unique
-  name             String
-  purpose          String
-  category         String
-
-  tone             String
-  requirements     String[]
-  exampleOutput    String?
-
-  inputVariables   String[]
-  responseFormat   String
-
-  model            String
-  enabled          Boolean  @default(true)
-
-  previousFields   Json?
-  defaultFields    Json
-
-  updatedBy        String?
-  updatedByUser    User?    @relation("AiPromptEditor", fields: [updatedBy], references: [id])
-  updatedAt        DateTime @updatedAt
-  createdAt        DateTime @default(now())
-
-  contextFiles     AiPromptContextFile[]
-
-  @@index([category])
-}
-
-model AiPromptContextFile {
-  id          String   @id @default(cuid())
-  promptId    String
-  prompt      AiPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
-
-  fileName    String
-  fileSize    Int
-  mimeType    String
-  blobUrl     String
-  parsedText  String
-  uploadedBy  String?
-  uploadedAt  DateTime @default(now())
-
-  @@index([promptId])
-}
-
-// ─── Job Openings ─────────────────────────────────────────────────────────────
-
-model JobOpening {
-  id                  String             @id @default(cuid())
-  title               String
-  employer            String
-  employerLogoUrl     String?
-  location            String
-  locationType        JobLocationType    @default(ONSITE)
-  employmentType      JobEmploymentType
-
-  summary             String
-  description         String
-  skills              String[]
-  autismFriendlyNotes String?
-
-  salary              String?
-  hoursPerWeek        String?
-  startDate           String?
-  duration            String?
-
-  applyUrl            String?
-  applyEmail          String?
-  contactName         String?
-  contactEmail        String?
-
-  closingDate         DateTime
-  status              JobStatus          @default(DRAFT)
-
-  targetOrgIds        String[]
-  targetRoles         String[]
-
-  createdById         String
-  createdBy           User               @relation("JobOpeningCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
-
-  attachments         JobAttachment[]
-  assignments         JobAssignment[]
-
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-
-  @@index([status, closingDate])
-  @@index([createdById])
-}
-
-model JobAttachment {
-  id          String      @id @default(cuid())
-  jobId       String
-  job         JobOpening  @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  filename    String
-  url         String
-  sizeBytes   Int
-  createdAt   DateTime    @default(now())
-
-  @@index([jobId])
-}
-
-model JobAssignment {
-  id            String      @id @default(cuid())
-  jobId         String
-  userId        String
-  assignedById  String
-  note          String?
-
-  job           JobOpening  @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  user          User        @relation("JobAssignmentUser", fields: [userId], references: [id], onDelete: Cascade)
-  assignedBy    User        @relation("JobAssignmentAssignedBy", fields: [assignedById], references: [id], onDelete: Restrict)
-
-  createdAt     DateTime    @default(now())
-
-  @@unique([jobId, userId])
-  @@index([userId])
-  @@index([jobId])
-}
-
-// ─── Stripe Payments ──────────────────────────────────────────────────────────
-
-enum SubscriptionStatus {
-  NONE
-  ACTIVE
-  TRIALING
-  PAST_DUE
-  CANCELED
-  UNPAID
-}
-
-enum FeedbackType {
-  BUG
-  SUGGESTION
-  QUESTION
-  OTHER
-}
-
-enum FeedbackStatus {
-  NEW
-  IN_PROGRESS
-  RESOLVED
-}
-
-enum PurchaseStatus {
-  PENDING
-  PAID
-  REFUNDED
-  FAILED
-}
-
-model Purchase {
-  id                      String         @id @default(cuid())
-  userId                  String?
-  // Nullable: individual subscribers (no org) own the purchase via userId only.
-  organisationId          String?
-  programId               String
-  stripeCheckoutSessionId String         @unique
-  stripePaymentIntentId   String?
-  amount                  Int
-  currency                String         @default("gbp")
-  status                  PurchaseStatus @default(PENDING)
-  createdAt               DateTime       @default(now())
-  updatedAt               DateTime       @updatedAt
-
-  user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  organisation Organisation?   @relation(fields: [organisationId], references: [id], onDelete: SetNull)
-  program      TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
-
-  @@index([organisationId])
-  @@index([programId])
-  @@index([userId])
-  @@index([status])
-}
-
-model StripeEvent {
-  id        String   @id
-  type      String
-  createdAt DateTime @default(now())
-
-  @@index([type])
-}
-
-model HomePage {
-  id                 String   @id @default("singleton")
-  htmlContent        String   @db.Text
-  brief              String?  @db.Text
-  // The "default" snapshot — captured by the super admin via "Make default"
-  // and restored via "Reset to default". Independent of the live content so
-  // editors can experiment freely and roll back to a known-good baseline.
-  defaultHtmlContent String?  @db.Text
-  defaultBrief       String?  @db.Text
-  defaultSetAt       DateTime?
-  defaultSetBy       String?
-  updatedBy          String?
-  updatedAt          DateTime @updatedAt
-  createdAt          DateTime @default(now())
-}
-
-// ─── Feedback System ──────────────────────────────────────────────────────────
-
-model FeedbackSubmission {
-  id             String          @id @default(cuid())
-  userId         String
-  user           User            @relation("FeedbackSubmitter", fields: [userId], references: [id], onDelete: Cascade)
-  organisationId String?
-  organisation   Organisation?   @relation("OrgFeedback", fields: [organisationId], references: [id], onDelete: SetNull)
-
-  type           FeedbackType
-  message        String          @db.Text
-
-  url            String
-  userAgent      String          @db.Text
-  viewport       String
-  clientLogs     Json?
-
-  status         FeedbackStatus  @default(NEW)
-  resolvedAt     DateTime?
-  resolvedById   String?
-  resolvedBy     User?           @relation("FeedbackResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
-  adminNotes     String?         @db.Text
-
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-
-  @@index([status, createdAt])
-  @@index([userId])
-}
+enum AdvisorSessionStatus { IN_PROGRESS COMPLETE }
+model CareerAdvisorSession { id String @id @default(cuid()) userId String status AdvisorSessionStatus @default(IN_PROGRESS) currentStep Int @default(0) answers Json? report Json? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt user User @relation(fields: [userId], references: [id], onDelete: Cascade) @@index([userId]) }
+model AiPrompt { id String @id @default(cuid()) key String @unique name String purpose String category String tone String requirements String[] exampleOutput String? inputVariables String[] responseFormat String model String enabled Boolean @default(true) previousFields Json? defaultFields Json updatedBy String? updatedByUser User? @relation("AiPromptEditor", fields: [updatedBy], references: [id]) updatedAt DateTime @updatedAt createdAt DateTime @default(now()) contextFiles AiPromptContextFile[] @@index([category]) }
+model AiPromptContextFile { id String @id @default(cuid()) promptId String prompt AiPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade) fileName String fileSize Int mimeType String blobUrl String parsedText String uploadedBy String? uploadedAt DateTime @default(now()) @@index([promptId]) }
+model JobOpening { id String @id @default(cuid()) title String employer String employerLogoUrl String? location String locationType JobLocationType @default(ONSITE) employmentType JobEmploymentType summary String description String skills String[] autismFriendlyNotes String? salary String? hoursPerWeek String? startDate String? duration String? applyUrl String? applyEmail String? contactName String? contactEmail String? closingDate DateTime status JobStatus @default(DRAFT) targetOrgIds String[] targetRoles String[] createdById String createdBy User @relation("JobOpeningCreatedBy", fields: [createdById], references: [id], onDelete: Restrict) attachments JobAttachment[] assignments JobAssignment[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt @@index([status, closingDate]) @@index([createdById]) }
+model JobAttachment { id String @id @default(cuid()) jobId String job JobOpening @relation(fields: [jobId], references: [id], onDelete: Cascade) filename String url String sizeBytes Int createdAt DateTime @default(now()) @@index([jobId]) }
+model JobAssignment { id String @id @default(cuid()) jobId String userId String assignedById String note String? job JobOpening @relation(fields: [jobId], references: [id], onDelete: Cascade) user User @relation("JobAssignmentUser", fields: [userId], references: [id], onDelete: Cascade) assignedBy User @relation("JobAssignmentAssignedBy", fields: [assignedById], references: [id], onDelete: Restrict) createdAt DateTime @default(now()) @@unique([jobId, userId]) @@index([userId]) @@index([jobId]) }
+enum SubscriptionStatus { NONE ACTIVE TRIALING PAST_DUE CANCELED UNPAID }
+enum FeedbackType { BUG SUGGESTION QUESTION OTHER }
+enum FeedbackStatus { NEW IN_PROGRESS RESOLVED }
+enum PurchaseStatus { PENDING PAID REFUNDED FAILED }
+model Purchase { id String @id @default(cuid()) userId String? organisationId String? programId String stripeCheckoutSessionId String @unique stripePaymentIntentId String? amount Int currency String @default("gbp") status PurchaseStatus @default(PENDING) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt user User? @relation(fields: [userId], references: [id], onDelete: SetNull) organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: SetNull) program TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade) @@index([organisationId]) @@index([programId]) @@index([userId]) @@index([status]) }
+model StripeEvent { id String @id type String createdAt DateTime @default(now()) @@index([type]) }
+model HomePage { id String @id @default("singleton") htmlContent String @db.Text brief String? @db.Text defaultHtmlContent String? @db.Text defaultBrief String? @db.Text defaultSetAt DateTime? defaultSetBy String? updatedBy String? updatedAt DateTime @updatedAt createdAt DateTime @default(now()) }
+model FeedbackSubmission { id String @id @default(cuid()) userId String user User @relation("FeedbackSubmitter", fields: [userId], references: [id], onDelete: Cascade) organisationId String? organisation Organisation? @relation("OrgFeedback", fields: [organisationId], references: [id], onDelete: SetNull) type FeedbackType message String @db.Text url String userAgent String @db.Text viewport String clientLogs Json? status FeedbackStatus @default(NEW) resolvedAt DateTime? resolvedById String? resolvedBy User? @relation("FeedbackResolver", fields: [resolvedById], references: [id], onDelete: SetNull) adminNotes String? @db.Text createdAt DateTime @default(now()) updatedAt DateTime @updatedAt @@index([status, createdAt]) @@index([userId]) }
