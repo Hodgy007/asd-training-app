@@ -21,6 +21,7 @@ import {
   Image as ImageIcon,
   Eye,
   EyeOff,
+  ExternalLink,
 } from 'lucide-react'
 
 interface LibraryDoc {
@@ -46,6 +47,7 @@ interface Collection {
   targetOrgIds: string[]
   targetRoles: string[]
   active: boolean
+  publishedToToolkit: boolean
   documents: LibraryDoc[]
 }
 
@@ -128,6 +130,28 @@ export default function CollectionDetailPage() {
       }
     } finally {
       setColEditSaving(false)
+    }
+  }
+
+  async function handleToggleToolkitPublishing() {
+    if (!collection) return
+    setActionLoading(collection.id + '-publish')
+    try {
+      const res = await fetch(`/api/super-admin/library/${collectionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publishedToToolkit: !collection.publishedToToolkit }),
+      })
+      if (res.ok) {
+        showToast(`Collection ${!collection.publishedToToolkit ? 'published to' : 'removed from'} Toolkit.`, 'success')
+        fetchCollection()
+      } else {
+        showToast('Publishing update failed.', 'error')
+      }
+    } catch {
+      showToast('Publishing update failed.', 'error')
+    } finally {
+      setActionLoading(null)
     }
   }
 
@@ -390,13 +414,37 @@ export default function CollectionDetailPage() {
           </div>
         </div>
         {!editingCollection && (
-          <button
-            onClick={() => { setShowForm((v) => !v); if (showForm) resetForm() }}
-            className="btn-primary flex items-center gap-2 flex-shrink-0"
-          >
-            {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            {showForm ? 'Cancel' : 'Add Document'}
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={handleToggleToolkitPublishing}
+              disabled={actionLoading === collection.id + '-publish'}
+              className={clsx(
+                'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors disabled:opacity-50',
+                collection.publishedToToolkit
+                  ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+                  : 'border-calm-200 bg-white text-slate-600 hover:bg-calm-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              )}
+            >
+              {collection.publishedToToolkit ? 'Live on Toolkit' : 'Publish to Toolkit'}
+            </button>
+            {collection.publishedToToolkit && (
+              <Link
+                href={`/toolkit/${collection.id}`}
+                target="_blank"
+                className="p-2 rounded-xl border border-calm-200 dark:border-slate-600 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                title="Preview Toolkit"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Link>
+            )}
+            <button
+              onClick={() => { setShowForm((v) => !v); if (showForm) resetForm() }}
+              className="btn-primary flex items-center gap-2"
+            >
+              {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {showForm ? 'Cancel' : 'Add Document'}
+            </button>
+          </div>
         )}
       </div>
 
