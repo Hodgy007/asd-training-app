@@ -11,14 +11,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  let body: GeneratedProgram
+  let body: GeneratedProgram & { publish?: boolean }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { programName, modules } = body
+  const { programName, modules, publish } = body
 
   if (!programName || typeof programName !== 'string' || !programName.trim()) {
     return NextResponse.json({ error: 'programName is required' }, { status: 400 })
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
             title: mod.title,
             description: mod.description ?? '',
             order: modOrder,
-            active: false,
+            active: publish === true,
             programId,
           },
         })
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
               type: 'TEXT',
               content: lesson.content ?? '',
               order: lesOrder,
-              active: false,
+              active: publish === true,
             },
           })
 

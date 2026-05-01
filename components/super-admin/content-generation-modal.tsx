@@ -38,6 +38,18 @@ async function readSSEStream(
   const decoder = new TextDecoder()
   let buffer = ''
 
+  function processLine(line: string) {
+    const trimmed = line.trim()
+    if (!trimmed.startsWith('data: ')) return
+    let json: SSEEvent
+    try {
+      json = JSON.parse(trimmed.slice(6)) as SSEEvent
+    } catch {
+      return // ignore malformed JSON lines only
+    }
+    onEvent(json) // errors from onEvent propagate to the caller
+  }
+
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
@@ -47,27 +59,12 @@ async function readSSEStream(
     buffer = lines.pop() ?? ''
 
     for (const line of lines) {
-      const trimmed = line.trim()
-      if (trimmed.startsWith('data: ')) {
-        try {
-          const json = JSON.parse(trimmed.slice(6))
-          onEvent(json as SSEEvent)
-        } catch {
-          // ignore malformed lines
-        }
-      }
+      processLine(line)
     }
   }
 
   // Process any remaining buffered data
-  if (buffer.trim().startsWith('data: ')) {
-    try {
-      const json = JSON.parse(buffer.trim().slice(6))
-      onEvent(json as SSEEvent)
-    } catch {
-      // ignore
-    }
-  }
+  if (buffer.trim()) processLine(buffer)
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
@@ -103,6 +100,9 @@ export function ContentGenerationModal({
   // Save error
   const [saveError, setSaveError] = useState<string | null>(null)
 
+  // Whether the program was published (active: true) vs saved as draft
+  const [published, setPublished] = useState(false)
+
   // ─── Reset ──────────────────────────────────────────────────────────────────
 
   const reset = useCallback(() => {
@@ -119,6 +119,7 @@ export function ContentGenerationModal({
     setProgram(null)
     setParsedContent([])
     setSaveError(null)
+    setPublished(false)
   }, [])
 
   const handleClose = () => {
@@ -313,16 +314,17 @@ export function ContentGenerationModal({
 
   // ─── Save Program ────────────────────────────────────────────────────────────
 
-  const saveProgram = useCallback(async () => {
+  const saveProgram = useCallback(async (publish = false) => {
     if (!program) return
     setSaveError(null)
+    setPublished(publish)
     setStep('saving')
 
     try {
       const res = await fetch('/api/super-admin/training/save-program', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(program),
+        body: JSON.stringify({ ...program, publish }),
       })
 
       if (!res.ok) {
@@ -500,7 +502,9 @@ export function ContentGenerationModal({
                   Program Created!
                 </h3>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Your training program has been saved as a draft.
+                  {published
+                    ? 'Your training program has been published and is now live for learners.'
+                    : 'Your training program has been saved as a draft. Activate modules and lessons when ready.'}
                 </p>
               </div>
             </div>
@@ -577,10 +581,17 @@ export function ContentGenerationModal({
               </button>
               <button
                 type="button"
-                onClick={saveProgram}
+                onClick={() => saveProgram(false)}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                Save as Draft
+              </button>
+              <button
+                type="button"
+                onClick={() => saveProgram(true)}
                 className="rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors"
               >
-                Save Program
+                Save &amp; Publish
               </button>
             </>
           )}
