@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation'
 import { clsx } from 'clsx'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
+import JSZip from 'jszip'
+import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
 import {
   ArrowLeft,
   FolderOpen,
@@ -184,66 +186,109 @@ export default function CollectionDetailPage() {
     if (!zipFile) return
     setZipUploading(true)
     setZipProgress(0)
-    setZipStatusText('Uploading ZIP…')
+    setZipStatusText('Reading ZIP…')
     setZipResults(null)
     setZipErrorsExpanded(false)
 
-    // Stall detector — if the browser can't reach Blob storage (CSP block,
-    // offline, DNS failure) the SDK silently waits forever with no progress.
-    const STALL_MS = 20_000
-    const abortController = new AbortController()
-    let lastProgressAt = Date.now()
-    const stallTimer = setInterval(() => {
-      if (Date.now() - lastProgressAt > STALL_MS) abortController.abort()
-    }, 2_000)
+    const errors: { fileName: string; error: string }[] = []
+    let createdCount = 0
 
     try {
-      // Stage 1 — upload zip directly to Vercel Blob (bypasses 4.5 MB serverless body limit).
-      const pathname = `library/zip-uploads/${Date.now()}-${zipFile.name}`
-      const blob = await upload(pathname, zipFile, {
-        access: 'public',
-        handleUploadUrl: `/api/super-admin/library/${collectionId}/documents/zip-upload/upload-url`,
-        abortSignal: abortController.signal,
-        onUploadProgress: (event) => {
-          lastProgressAt = Date.now()
-          const percent =
-            typeof event.percentage === 'number'
-              ? event.percentage
-              : event.total > 0
-                ? (event.loaded / event.total) * 100
-                : 0
-          setZipProgress(Math.min(99, Math.round(percent)))
-        },
-      })
-      clearInterval(stallTimer)
+      // Browser-side extraction. Avoids the 300s serverless function timeout
+      // we hit when extracting hundreds of entries in a single Vercel call.
+      const zip = await JSZip.loadAsync(zipFile)
 
-      // Stage 2 — ask the server to extract the zip and create LibraryDocuments.
-      setZipProgress(100)
-      setZipStatusText('Extracting documents…')
-      const res = await fetch(`/api/super-admin/library/${collectionId}/documents/zip-upload`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blobUrl: blob.url, filename: zipFile.name }),
+      const entries = Object.values(zip.files).filter((entry) => {
+        if (entry.dir) return false
+        const name = entry.name
+        if (name.startsWith('__MACOSX/') || name.includes('/__MACOSX/')) return false
+        const base = name.split('/').pop() || ''
+        if (base.startsWith('.')) return false
+        return true
       })
-      const data = await res.json()
-      if (!res.ok) {
-        showToast(data.error || 'ZIP upload failed.', 'error')
+
+      if (entries.length === 0) {
+        showToast('ZIP contained no usable files.', 'error')
         return
       }
-      setZipResults({ created: data.created.length, errors: data.errors, total: data.total })
-      if (data.created.length > 0) fetchCollection()
+
+      const total = entries.length
+
+      // Bounded concurrency — browser-driven so timeouts aren't an issue, but
+      // we don't want to swamp the network or the Blob API.
+      const CONCURRENCY = 4
+      let cursor = 0
+      let done = 0
+
+      async function processOne(entry: JSZip.JSZipObject) {
+        const base = (entry.name.split('/').pop() || entry.name).trim()
+        const lastDot = base.lastIndexOf('.')
+        const ext = lastDot === -1 || lastDot === base.length - 1 ? '' : base.slice(lastDot + 1).toLowerCase()
+
+        try {
+          if (!ext) {
+            errors.push({ fileName: base, error: 'No file extension — skipped.' })
+            return
+          }
+          if ((BLOCKED_EXTENSIONS as readonly string[]).includes(ext)) {
+            errors.push({ fileName: base, error: `".${ext}" files are not allowed for security reasons.` })
+            return
+          }
+          if (!(ALLOWED_EXTENSIONS as readonly string[]).includes(ext)) {
+            errors.push({ fileName: base, error: `".${ext}" is not a supported file type.` })
+            return
+          }
+
+          const fileBlob = await entry.async('blob')
+
+          const uploaded = await upload(`library/documents/${base}`, fileBlob, {
+            access: 'public',
+            handleUploadUrl: '/api/super-admin/library/upload/upload-url',
+          })
+
+          const titleBase = base.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim() || base
+          const res = await fetch(`/api/super-admin/library/${collectionId}/documents`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: titleBase,
+              description: 'Uploaded from ZIP.',
+              fileUrl: uploaded.url,
+              fileName: base,
+              fileSize: fileBlob.size,
+              fileType: fileBlob.type || 'application/octet-stream',
+            }),
+          })
+
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}))
+            errors.push({ fileName: base, error: data.error || 'Failed to save document record.' })
+            return
+          }
+          createdCount++
+        } catch (err) {
+          errors.push({ fileName: base, error: err instanceof Error ? err.message : 'Upload failed.' })
+        } finally {
+          done++
+          setZipProgress(Math.round((done / total) * 100))
+          setZipStatusText(`Processing ${done} of ${total}…`)
+        }
+      }
+
+      async function worker() {
+        while (cursor < entries.length) {
+          const idx = cursor++
+          await processOne(entries[idx])
+        }
+      }
+
+      await Promise.all(Array.from({ length: Math.min(CONCURRENCY, entries.length) }, () => worker()))
+
+      setZipResults({ created: createdCount, errors, total })
+      if (createdCount > 0) fetchCollection()
     } catch (err) {
-      clearInterval(stallTimer)
       const raw = err instanceof Error ? err.message : 'ZIP upload failed.'
-      const looksLikeNetworkBlock =
-        abortController.signal.aborted ||
-        /aborted|failed to fetch|network|load failed/i.test(raw)
-      showToast(
-        looksLikeNetworkBlock
-          ? "Couldn't reach Vercel Blob storage. Check your network connection or CSP settings."
-          : raw,
-        'error',
-      )
+      showToast(raw, 'error')
     } finally {
       setZipUploading(false)
       setZipProgress(null)
