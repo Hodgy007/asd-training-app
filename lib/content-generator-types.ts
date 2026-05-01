@@ -78,3 +78,4 @@ export type SSEEvent =
   | { type: 'quiz-complete'; moduleIndex: number; lessonIndex: number; questions: GeneratedQuizQuestion[] }
   | { type: 'lesson-error'; moduleIndex: number; lessonIndex: number; error: string }
   | { type: 'complete'; program: GeneratedProgram }
+  | { type: 'error'; error: string }
