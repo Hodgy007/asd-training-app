@@ -219,6 +219,9 @@ export function ContentGenerationModal({
             setProgressErrors([...errors])
             break
 
+          case 'error':
+            throw new Error(event.error)
+
           case 'complete':
             finalProgram = event.program
             setProgressPhase('complete')

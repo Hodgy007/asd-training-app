@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
-import { generateLessonContent, generateQuizForLesson, withRetry } from '@/lib/content-generator'
+import { generateLessonContent, generateQuizForLesson } from '@/lib/content-generator'
 import type {
   ParsedFile,
   GenerationMode,
@@ -61,110 +61,111 @@ export async function POST(req: NextRequest) {
         controller.enqueue(new TextEncoder().encode(data))
       }
 
-      const generatedModules: GeneratedModule[] = []
-      let lessonCounter = 0
+      try {
+        const generatedModules: GeneratedModule[] = []
+        let lessonCounter = 0
 
-      for (let modIndex = 0; modIndex < outline.modules.length; modIndex++) {
-        const outlineModule = outline.modules[modIndex]
-        const generatedLessons: GeneratedLesson[] = []
+        for (let modIndex = 0; modIndex < outline.modules.length; modIndex++) {
+          const outlineModule = outline.modules[modIndex]
+          const generatedLessons: GeneratedLesson[] = []
 
-        for (let lesIndex = 0; lesIndex < (outlineModule.lessons?.length ?? 0); lesIndex++) {
-          const outlineLesson = outlineModule.lessons[lesIndex]
-          lessonCounter++
+          for (let lesIndex = 0; lesIndex < (outlineModule.lessons?.length ?? 0); lesIndex++) {
+            const outlineLesson = outlineModule.lessons[lesIndex]
+            lessonCounter++
 
-          // Send content-phase progress event
-          sendEvent({
-            type: 'progress',
-            lesson: lessonCounter,
-            total: totalLessons,
-            phase: 'content',
-          })
+            sendEvent({
+              type: 'progress',
+              lesson: lessonCounter,
+              total: totalLessons,
+              phase: 'content',
+            })
 
-          let lessonContent: string
-          let lessonError: string | undefined
+            let lessonContent: string
+            let lessonError: string | undefined
 
-          try {
-            lessonContent = await withRetry(() =>
-              generateLessonContent(
+            try {
+              lessonContent = await generateLessonContent(
                 parsedContent,
                 outlineLesson.title,
                 outlineLesson.sourceRefs,
                 mode,
                 lens
               )
-            )
-            sendEvent({
-              type: 'lesson-complete',
-              moduleIndex: modIndex,
-              lessonIndex: lesIndex,
-              content: lessonContent,
-            })
-          } catch (err) {
-            lessonError = err instanceof Error ? err.message : 'Failed to generate lesson content'
-            lessonContent = ''
-            sendEvent({
-              type: 'lesson-error',
-              moduleIndex: modIndex,
-              lessonIndex: lesIndex,
-              error: lessonError,
-            })
-          }
-
-          // Attempt quiz generation (non-fatal)
-          let quizQuestions: GeneratedLesson['quizQuestions'] = []
-          if (lessonContent) {
-            sendEvent({
-              type: 'progress',
-              lesson: lessonCounter,
-              total: totalLessons,
-              phase: 'quiz',
-            })
-            try {
-              quizQuestions = await withRetry(() =>
-                generateQuizForLesson(lessonContent, mode, lens)
-              )
               sendEvent({
-                type: 'quiz-complete',
+                type: 'lesson-complete',
                 moduleIndex: modIndex,
                 lessonIndex: lesIndex,
-                questions: quizQuestions,
+                content: lessonContent,
               })
             } catch (err) {
-              const quizError = err instanceof Error ? err.message : 'Failed to generate quiz'
-              // Quiz failure is non-fatal — report as lesson-error for quiz phase only
+              lessonError = err instanceof Error ? err.message : 'Failed to generate lesson content'
+              lessonContent = ''
               sendEvent({
                 type: 'lesson-error',
                 moduleIndex: modIndex,
                 lessonIndex: lesIndex,
-                error: `Quiz generation failed: ${quizError}`,
+                error: lessonError,
               })
             }
+
+            // Attempt quiz generation (non-fatal)
+            let quizQuestions: GeneratedLesson['quizQuestions'] = []
+            if (lessonContent) {
+              sendEvent({
+                type: 'progress',
+                lesson: lessonCounter,
+                total: totalLessons,
+                phase: 'quiz',
+              })
+              try {
+                quizQuestions = await generateQuizForLesson(lessonContent, mode, lens)
+                sendEvent({
+                  type: 'quiz-complete',
+                  moduleIndex: modIndex,
+                  lessonIndex: lesIndex,
+                  questions: quizQuestions,
+                })
+              } catch (err) {
+                const quizError = err instanceof Error ? err.message : 'Failed to generate quiz'
+                sendEvent({
+                  type: 'lesson-error',
+                  moduleIndex: modIndex,
+                  lessonIndex: lesIndex,
+                  error: `Quiz generation failed: ${quizError}`,
+                })
+              }
+            }
+
+            generatedLessons.push({
+              title: outlineLesson.title,
+              content: lessonContent,
+              order: lesIndex + 1,
+              quizQuestions,
+              ...(lessonError ? { error: lessonError } : {}),
+            })
           }
 
-          generatedLessons.push({
-            title: outlineLesson.title,
-            content: lessonContent,
-            order: lesIndex + 1,
-            quizQuestions,
-            ...(lessonError ? { error: lessonError } : {}),
+          generatedModules.push({
+            title: outlineModule.title,
+            description: outlineModule.description,
+            order: modIndex + 1,
+            lessons: generatedLessons,
           })
         }
 
-        generatedModules.push({
-          title: outlineModule.title,
-          description: outlineModule.description,
-          order: modIndex + 1,
-          lessons: generatedLessons,
-        })
-      }
+        const program: GeneratedProgram = {
+          programName: outline.programName,
+          modules: generatedModules,
+        }
 
-      const program: GeneratedProgram = {
-        programName: outline.programName,
-        modules: generatedModules,
+        sendEvent({ type: 'complete', program })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Generation failed unexpectedly'
+        console.error('generate-content stream error:', err)
+        sendEvent({ type: 'error', error: message })
+      } finally {
+        controller.close()
       }
-
-      sendEvent({ type: 'complete', program })
-      controller.close()
     },
   })
 
