@@ -23,7 +23,7 @@ import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
 export const runtime = 'nodejs'
 export const maxDuration = 300
 
-const MAX_ZIP_SIZE = 200 * 1024 * 1024 // 200 MB
+const MAX_ZIP_SIZE = 500 * 1024 * 1024 // 500 MB
 
 const MIME_MAP: Record<string, string> = {
   pdf: 'application/pdf',
@@ -56,6 +56,23 @@ function fileNameToTitle(base: string): string {
 }
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    return await handleZipUpload(req, params)
+  } catch (err) {
+    // Surface the underlying message instead of letting Next.js return an
+    // opaque 500. Common causes here: out-of-memory while extracting a large
+    // ZIP, Prisma connection error, Blob put() failure outside the per-entry
+    // try/catch.
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    console.error('[zip-upload] route failed:', err)
+    return NextResponse.json(
+      { error: `ZIP extraction failed: ${message}` },
+      { status: 500 },
+    )
+  }
+}
+
+async function handleZipUpload(req: NextRequest, params: { id: string }) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -96,13 +113,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const contentLength = Number(zipResponse.headers.get('content-length') ?? '0')
   if (contentLength > MAX_ZIP_SIZE) {
     await del(blobUrl).catch(() => {})
-    return NextResponse.json({ error: 'ZIP file exceeds the 200 MB limit.' }, { status: 413 })
+    return NextResponse.json({ error: 'ZIP file exceeds the 500 MB limit.' }, { status: 413 })
   }
 
   const arrayBuffer = await zipResponse.arrayBuffer()
   if (arrayBuffer.byteLength > MAX_ZIP_SIZE) {
     await del(blobUrl).catch(() => {})
-    return NextResponse.json({ error: 'ZIP file exceeds the 200 MB limit.' }, { status: 413 })
+    return NextResponse.json({ error: 'ZIP file exceeds the 500 MB limit.' }, { status: 413 })
   }
 
   let zip: JSZip
