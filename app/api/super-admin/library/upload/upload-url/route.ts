@@ -1,14 +1,14 @@
 /**
- * Signs a client-direct upload URL for ZIP uploads to a library collection.
+ * Signs a client-direct upload URL for single library document uploads.
  *
- * Vercel serverless functions cap inbound bodies at 4.5 MB, so any ZIP larger
- * than that can't be sent as multipart/form-data to the extraction endpoint.
- * The browser instead PUTs the zip directly to Vercel Blob using a short-lived
- * token minted here, then POSTs the resulting Blob URL to the sibling
- * `zip-upload` route for extraction.
+ * Vercel serverless functions cap inbound bodies at 4.5 MB, so files over that
+ * size can't be uploaded via multipart/form-data. The browser instead PUTs the
+ * file directly to Vercel Blob using a token minted here, then POSTs JSON
+ * metadata (the resulting Blob URL plus title/description) to the document
+ * creation endpoint.
  *
  * Token issuance is gated by MANAGE_LIBRARY and restricted to the
- * `library/zip-uploads/` prefix so a leaked token can't write arbitrary blobs.
+ * `library/documents/` prefix so a leaked token can't write arbitrary blobs.
  */
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
 import { NextResponse, type NextRequest } from 'next/server'
@@ -31,23 +31,21 @@ export async function POST(request: NextRequest) {
           throw new Error('Forbidden')
         }
 
-        if (!pathname.startsWith('library/zip-uploads/')) {
+        if (
+          !pathname.startsWith('library/documents/') &&
+          !pathname.startsWith('library/thumbnails/')
+        ) {
           throw new Error('Invalid upload path')
         }
 
         return {
-          allowedContentTypes: [
-            'application/zip',
-            'application/x-zip-compressed',
-            'application/octet-stream',
-          ],
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ userId: session.user.id }),
         }
       },
       onUploadCompleted: async () => {
-        // No-op. The extraction endpoint handles processing once the browser
-        // POSTs the resulting blob URL.
+        // No-op. The caller POSTs the resulting blob URL to the document
+        // creation endpoint to record the LibraryDocument row.
       },
     })
 

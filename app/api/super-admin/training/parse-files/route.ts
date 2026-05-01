@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { parseFiles, getSupportedExtensions } from '@/lib/file-parser'
 
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {

@@ -13,6 +13,12 @@ import type {
 
 // ─── Private Helpers ─────────────────────────────────────────────────────────
 
+// Hard caps to keep prompts within the AI model's practical latency budget.
+// Gemini 2.5 Flash has a 1M token window; these limits prevent multi-minute
+// completions that exhaust Vercel's 300 s serverless ceiling.
+const MAX_OUTLINE_CHARS = 200_000
+const MAX_LESSON_SOURCE_CHARS = 30_000
+
 function extractJson(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (fenced) return fenced[1].trim()
@@ -33,7 +39,7 @@ function stripHtml(html: string): string {
 }
 
 function formatParsedContentForPrompt(files: ParsedFile[]): string {
-  return files
+  const full = files
     .map((file, fileIndex) => {
       const sections = file.sections
         .map((section, sectionIndex) => {
@@ -46,6 +52,9 @@ function formatParsedContentForPrompt(files: ParsedFile[]): string {
       return `=== FILE ${fileIndex}: ${file.filename} ===\n${sections}`
     })
     .join('\n\n')
+
+  if (full.length <= MAX_OUTLINE_CHARS) return full
+  return full.slice(0, MAX_OUTLINE_CHARS) + '\n\n[Content truncated — document exceeds size limit]'
 }
 
 function extractSourceSections(files: ParsedFile[], sourceRefs: SourceRef[]): string {
@@ -67,7 +76,9 @@ function extractSourceSections(files: ParsedFile[], sourceRefs: SourceRef[]): st
     }
   }
 
-  return parts.join('\n\n')
+  const joined = parts.join('\n\n')
+  if (joined.length <= MAX_LESSON_SOURCE_CHARS) return joined
+  return joined.slice(0, MAX_LESSON_SOURCE_CHARS) + '\n\n[Content truncated]'
 }
 
 export async function withRetry<T>(
