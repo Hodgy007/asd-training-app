@@ -23,6 +23,7 @@ import {
   HelpCircle,
   ClipboardList,
 } from 'lucide-react'
+import { upload } from '@vercel/blob/client'
 import { VideoPlayer } from '@/components/training/video-player'
 import { clsx } from 'clsx'
 import { InteractiveBlock } from '@/types/interactive'
@@ -126,8 +127,8 @@ function parseQuestion(q: QuizQuestion): ParsedQuestion {
   return { id: q.id, question: q.question, options, correctAnswer: q.correctAnswer, explanation: q.explanation, order: q.order }
 }
 
-/** 500 MB — video uploads bypass the global 50 MB cap (enforced client-side here) */
-const VIDEO_MAX_BYTES = 500 * 1024 * 1024
+/** 5 GB — Vercel Blob's per-file ceiling; client-direct upload bypasses function body limits */
+const VIDEO_MAX_BYTES = 5 * 1024 * 1024 * 1024
 
 /* ──────────────────────────── Main Page ──────────────────────────── */
 
@@ -259,27 +260,21 @@ export default function LessonEditorPage() {
     const file = e.target.files?.[0]
     if (!file) return
     if (file.size > VIDEO_MAX_BYTES) {
-      setVideoUploadError('File too large — maximum 500 MB.')
+      setVideoUploadError('File too large — maximum 5 GB.')
       e.target.value = ''
       return
     }
     setVideoUploading(true)
     setVideoUploadError('')
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'training-videos')
-      formData.append('skipSizeCheck', 'true')
-      const res = await fetch('/api/super-admin/training/upload', { method: 'POST', body: formData })
-      if (!res.ok) {
-        const d = await res.json()
-        throw new Error(d.error || 'Upload failed')
-      }
-      const { url } = await res.json()
-      setEditVideoUrl(url)
+      const blob = await upload(`training-videos/${file.name}`, file, {
+        access: 'public',
+        handleUploadUrl: '/api/super-admin/training/upload-url',
+      })
+      setEditVideoUrl(blob.url)
       setEditType('VIDEO')
     } catch (err) {
-      setVideoUploadError(err instanceof Error ? err.message : 'Upload failed. MP4 or WebM only, max 500 MB.')
+      setVideoUploadError(err instanceof Error ? err.message : 'Upload failed. MP4 or WebM only.')
     } finally {
       setVideoUploading(false)
       e.target.value = ''
@@ -573,7 +568,7 @@ export default function LessonEditorPage() {
                 videoUploading && 'opacity-50 pointer-events-none'
               )}>
                 {videoUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Video className="h-3.5 w-3.5" />}
-                {videoUploading ? 'Uploading…' : 'Upload video file (MP4 / WebM, max 500 MB)'}
+                {videoUploading ? 'Uploading…' : 'Upload video file (MP4 / WebM, up to 5 GB)'}
                 <input
                   type="file"
                   accept="video/mp4,video/webm,.mp4,.webm"
