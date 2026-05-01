@@ -55,7 +55,14 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'mode is required and must be "structure" or "generate"' }), { status: 400 })
   }
 
-  const totalLessons = outline.modules.reduce((sum, mod) => sum + (mod.lessons?.length ?? 0), 0)
+  // Capture into typed locals — TS narrowing does not propagate into the
+  // nested worker() closure inside the ReadableStream below.
+  const validatedOutline: GeneratedOutline = outline
+  const validatedParsedContent: ParsedFile[] = parsedContent
+  const validatedMode: GenerationMode = mode
+  const validatedLens: GenerationLens | undefined = lens
+
+  const totalLessons = validatedOutline.modules.reduce((sum, mod) => sum + (mod.lessons?.length ?? 0), 0)
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -76,8 +83,8 @@ export async function POST(req: NextRequest) {
 
         const tasks: LessonTask[] = []
         let lessonNumber = 0
-        for (let modIndex = 0; modIndex < outline.modules.length; modIndex++) {
-          const mod = outline.modules[modIndex]
+        for (let modIndex = 0; modIndex < validatedOutline.modules.length; modIndex++) {
+          const mod = validatedOutline.modules[modIndex]
           for (let lesIndex = 0; lesIndex < (mod.lessons?.length ?? 0); lesIndex++) {
             tasks.push({ modIndex, lesIndex, outlineLesson: mod.lessons[lesIndex], lessonNumber: ++lessonNumber })
           }
@@ -85,7 +92,7 @@ export async function POST(req: NextRequest) {
 
         // Pre-allocate result arrays so index-addressed writes from concurrent
         // workers land in the correct positions regardless of completion order.
-        const generatedModules: GeneratedModule[] = outline.modules.map((mod, modIndex) => ({
+        const generatedModules: GeneratedModule[] = validatedOutline.modules.map((mod, modIndex) => ({
           title: mod.title,
           description: mod.description,
           order: modIndex + 1,
@@ -108,11 +115,11 @@ export async function POST(req: NextRequest) {
 
             try {
               lessonContent = await generateLessonContent(
-                parsedContent,
+                validatedParsedContent,
                 outlineLesson.title,
                 outlineLesson.sourceRefs,
-                mode,
-                lens,
+                validatedMode,
+                validatedLens,
               )
               sendEvent({ type: 'lesson-complete', moduleIndex: modIndex, lessonIndex: lesIndex, content: lessonContent })
             } catch (err) {
@@ -124,7 +131,7 @@ export async function POST(req: NextRequest) {
             if (lessonContent) {
               sendEvent({ type: 'progress', lesson: lesNum, total: totalLessons, phase: 'quiz' })
               try {
-                quizQuestions = await generateQuizForLesson(lessonContent, mode, lens)
+                quizQuestions = await generateQuizForLesson(lessonContent, validatedMode, validatedLens)
                 sendEvent({ type: 'quiz-complete', moduleIndex: modIndex, lessonIndex: lesIndex, questions: quizQuestions })
               } catch (err) {
                 const quizError = err instanceof Error ? err.message : 'Failed to generate quiz'
@@ -148,7 +155,7 @@ export async function POST(req: NextRequest) {
         )
 
         const program: GeneratedProgram = {
-          programName: outline.programName,
+          programName: validatedOutline.programName,
           modules: generatedModules,
         }
 
