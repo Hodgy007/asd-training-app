@@ -143,21 +143,28 @@ async function handleZipUpload(req: NextRequest, params: { id: string }) {
   const created: object[] = []
   const errors: { fileName: string; error: string }[] = []
 
-  for (const entry of entries) {
+  // Process entries with bounded concurrency. Sequential was hitting Vercel's
+  // 300 s function timeout for archives with > ~150 entries (decompress +
+  // Blob put + Prisma insert ≈ 1.5 s per entry). 6 concurrent slots gives
+  // ~5x throughput without overwhelming the Blob storage rate limit.
+  const CONCURRENCY = 6
+  let cursor = 0
+
+  async function processOne(entry: JSZip.JSZipObject) {
     const base = (entry.name.split('/').pop() || entry.name).trim()
     const ext = getExtension(base)
 
     if (!ext) {
       errors.push({ fileName: base, error: 'No file extension — skipped.' })
-      continue
+      return
     }
     if ((BLOCKED_EXTENSIONS as readonly string[]).includes(ext)) {
       errors.push({ fileName: base, error: `".${ext}" files are not allowed for security reasons.` })
-      continue
+      return
     }
     if (!(ALLOWED_EXTENSIONS as readonly string[]).includes(ext)) {
       errors.push({ fileName: base, error: `".${ext}" is not a supported file type.` })
-      continue
+      return
     }
 
     let content: Uint8Array
@@ -165,7 +172,7 @@ async function handleZipUpload(req: NextRequest, params: { id: string }) {
       content = await entry.async('uint8array')
     } catch {
       errors.push({ fileName: base, error: 'Failed to extract file from ZIP.' })
-      continue
+      return
     }
 
     let extractedUrl: string
@@ -178,7 +185,7 @@ async function handleZipUpload(req: NextRequest, params: { id: string }) {
       extractedUrl = url
     } catch {
       errors.push({ fileName: base, error: 'Storage upload failed.' })
-      continue
+      return
     }
 
     try {
@@ -199,6 +206,15 @@ async function handleZipUpload(req: NextRequest, params: { id: string }) {
       errors.push({ fileName: base, error: 'Failed to save document record.' })
     }
   }
+
+  async function worker() {
+    while (cursor < entries.length) {
+      const idx = cursor++
+      await processOne(entries[idx])
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, entries.length) }, () => worker()))
 
   // Best-effort cleanup of the temp upload blob now that we've extracted it.
   await del(blobUrl).catch(() => {})
