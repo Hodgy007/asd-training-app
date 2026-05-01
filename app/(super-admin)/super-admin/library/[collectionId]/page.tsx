@@ -259,13 +259,11 @@ export default function CollectionDetailPage() {
     }
     setFormSubmitting(true)
     try {
-      // Upload file
-      const fd = new FormData()
-      fd.append('file', formFile)
-      fd.append('folder', 'library/documents')
-      const uploadRes = await fetch('/api/super-admin/library/upload', { method: 'POST', body: fd })
-      if (!uploadRes.ok) throw new Error('Upload failed')
-      const fileData = await uploadRes.json()
+      // Client-direct upload to Vercel Blob (bypasses 4.5 MB serverless body limit).
+      const blob = await upload(`library/documents/${formFile.name}`, formFile, {
+        access: 'public',
+        handleUploadUrl: '/api/super-admin/library/upload/upload-url',
+      })
 
       // Create document record
       const res = await fetch(`/api/super-admin/library/${collectionId}/documents`, {
@@ -274,9 +272,9 @@ export default function CollectionDetailPage() {
         body: JSON.stringify({
           title: formTitle,
           description: formDescription,
-          fileUrl: fileData.url,
-          fileName: fileData.fileName,
-          fileSize: fileData.size,
+          fileUrl: blob.url,
+          fileName: formFile.name,
+          fileSize: formFile.size,
           fileType: formFile.type,
           thumbnailUrl: formThumbnailUrl,
         }),
@@ -681,16 +679,11 @@ export default function CollectionDetailPage() {
                         const imgFile = e.target.files?.[0]
                         if (!imgFile) return
                         try {
-                          const fd = new FormData()
-                          fd.append('file', imgFile)
-                          fd.append('folder', 'library/thumbnails')
-                          const res = await fetch('/api/super-admin/library/upload', { method: 'POST', body: fd })
-                          if (res.ok) {
-                            const data = await res.json()
-                            setFormThumbnailUrl(data.url)
-                          } else {
-                            showToast('Thumbnail upload failed.', 'error')
-                          }
+                          const blob = await upload(`library/thumbnails/${imgFile.name}`, imgFile, {
+                            access: 'public',
+                            handleUploadUrl: '/api/super-admin/library/upload/upload-url',
+                          })
+                          setFormThumbnailUrl(blob.url)
                         } catch {
                           showToast('Thumbnail upload failed.', 'error')
                         }

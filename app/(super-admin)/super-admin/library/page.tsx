@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { clsx } from 'clsx'
+import { upload } from '@vercel/blob/client'
 import {
   FolderOpen,
   Plus,
@@ -141,11 +142,11 @@ export default function LibraryPage() {
     try {
       let thumbnailUrl: string | null = null
       if (formThumbnail) {
-        const fd = new FormData()
-        fd.append('file', formThumbnail)
-        fd.append('folder', 'library/thumbnails')
-        const uploadRes = await fetch('/api/super-admin/library/upload', { method: 'POST', body: fd })
-        if (uploadRes.ok) thumbnailUrl = (await uploadRes.json()).url
+        const blob = await upload(`library/thumbnails/${formThumbnail.name}`, formThumbnail, {
+          access: 'public',
+          handleUploadUrl: '/api/super-admin/library/upload/upload-url',
+        })
+        thumbnailUrl = blob.url
       }
       const res = await fetch('/api/super-admin/library', {
         method: 'POST',
