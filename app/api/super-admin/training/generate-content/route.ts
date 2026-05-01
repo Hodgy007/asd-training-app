@@ -12,10 +12,14 @@ import type {
   GeneratedModule,
   GeneratedLesson,
   SSEEvent,
+  OutlineLesson,
 } from '@/lib/content-generator-types'
 
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
+
+// Max parallel lesson generations. Higher = faster but more gateway pressure.
+const CONCURRENCY = 3
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -51,7 +55,6 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'mode is required and must be "structure" or "generate"' }), { status: 400 })
   }
 
-  // Count total lessons for progress reporting
   const totalLessons = outline.modules.reduce((sum, mod) => sum + (mod.lessons?.length ?? 0), 0)
 
   const stream = new ReadableStream({
@@ -62,25 +65,45 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        const generatedModules: GeneratedModule[] = []
-        let lessonCounter = 0
+        // Flatten all lessons into tasks with pre-assigned lesson numbers so
+        // progress events are meaningful even when processed concurrently.
+        interface LessonTask {
+          modIndex: number
+          lesIndex: number
+          outlineLesson: OutlineLesson
+          lessonNumber: number
+        }
 
+        const tasks: LessonTask[] = []
+        let lessonNumber = 0
         for (let modIndex = 0; modIndex < outline.modules.length; modIndex++) {
-          const outlineModule = outline.modules[modIndex]
-          const generatedLessons: GeneratedLesson[] = []
+          const mod = outline.modules[modIndex]
+          for (let lesIndex = 0; lesIndex < (mod.lessons?.length ?? 0); lesIndex++) {
+            tasks.push({ modIndex, lesIndex, outlineLesson: mod.lessons[lesIndex], lessonNumber: ++lessonNumber })
+          }
+        }
 
-          for (let lesIndex = 0; lesIndex < (outlineModule.lessons?.length ?? 0); lesIndex++) {
-            const outlineLesson = outlineModule.lessons[lesIndex]
-            lessonCounter++
+        // Pre-allocate result arrays so index-addressed writes from concurrent
+        // workers land in the correct positions regardless of completion order.
+        const generatedModules: GeneratedModule[] = outline.modules.map((mod, modIndex) => ({
+          title: mod.title,
+          description: mod.description,
+          order: modIndex + 1,
+          lessons: new Array<GeneratedLesson>(mod.lessons?.length ?? 0),
+        }))
 
-            sendEvent({
-              type: 'progress',
-              lesson: lessonCounter,
-              total: totalLessons,
-              phase: 'content',
-            })
+        // Concurrency-limited worker: each worker pulls the next task from the
+        // shared queue until it is empty, then terminates.
+        const queue = [...tasks]
+        async function worker(): Promise<void> {
+          while (true) {
+            const task = queue.shift()
+            if (!task) break
+            const { modIndex, lesIndex, outlineLesson, lessonNumber: lesNum } = task
 
-            let lessonContent: string
+            sendEvent({ type: 'progress', lesson: lesNum, total: totalLessons, phase: 'content' })
+
+            let lessonContent = ''
             let lessonError: string | undefined
 
             try {
@@ -89,69 +112,40 @@ export async function POST(req: NextRequest) {
                 outlineLesson.title,
                 outlineLesson.sourceRefs,
                 mode,
-                lens
+                lens,
               )
-              sendEvent({
-                type: 'lesson-complete',
-                moduleIndex: modIndex,
-                lessonIndex: lesIndex,
-                content: lessonContent,
-              })
+              sendEvent({ type: 'lesson-complete', moduleIndex: modIndex, lessonIndex: lesIndex, content: lessonContent })
             } catch (err) {
               lessonError = err instanceof Error ? err.message : 'Failed to generate lesson content'
-              lessonContent = ''
-              sendEvent({
-                type: 'lesson-error',
-                moduleIndex: modIndex,
-                lessonIndex: lesIndex,
-                error: lessonError,
-              })
+              sendEvent({ type: 'lesson-error', moduleIndex: modIndex, lessonIndex: lesIndex, error: lessonError })
             }
 
-            // Attempt quiz generation (non-fatal)
             let quizQuestions: GeneratedLesson['quizQuestions'] = []
             if (lessonContent) {
-              sendEvent({
-                type: 'progress',
-                lesson: lessonCounter,
-                total: totalLessons,
-                phase: 'quiz',
-              })
+              sendEvent({ type: 'progress', lesson: lesNum, total: totalLessons, phase: 'quiz' })
               try {
                 quizQuestions = await generateQuizForLesson(lessonContent, mode, lens)
-                sendEvent({
-                  type: 'quiz-complete',
-                  moduleIndex: modIndex,
-                  lessonIndex: lesIndex,
-                  questions: quizQuestions,
-                })
+                sendEvent({ type: 'quiz-complete', moduleIndex: modIndex, lessonIndex: lesIndex, questions: quizQuestions })
               } catch (err) {
                 const quizError = err instanceof Error ? err.message : 'Failed to generate quiz'
-                sendEvent({
-                  type: 'lesson-error',
-                  moduleIndex: modIndex,
-                  lessonIndex: lesIndex,
-                  error: `Quiz generation failed: ${quizError}`,
-                })
+                sendEvent({ type: 'lesson-error', moduleIndex: modIndex, lessonIndex: lesIndex, error: `Quiz generation failed: ${quizError}` })
               }
             }
 
-            generatedLessons.push({
+            generatedModules[modIndex].lessons[lesIndex] = {
               title: outlineLesson.title,
               content: lessonContent,
               order: lesIndex + 1,
               quizQuestions,
               ...(lessonError ? { error: lessonError } : {}),
-            })
+            }
           }
-
-          generatedModules.push({
-            title: outlineModule.title,
-            description: outlineModule.description,
-            order: modIndex + 1,
-            lessons: generatedLessons,
-          })
         }
+
+        // Spawn CONCURRENCY workers; they drain the shared queue cooperatively.
+        await Promise.all(
+          Array.from({ length: Math.min(CONCURRENCY, tasks.length) }, () => worker()),
+        )
 
         const program: GeneratedProgram = {
           programName: outline.programName,
