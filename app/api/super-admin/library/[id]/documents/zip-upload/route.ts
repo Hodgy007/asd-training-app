@@ -23,7 +23,7 @@ import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
 export const runtime = 'nodejs'
 export const maxDuration = 300
 
-const MAX_ZIP_SIZE = 200 * 1024 * 1024 // 200 MB
+const MAX_ZIP_SIZE = 500 * 1024 * 1024 // 500 MB
 
 const MIME_MAP: Record<string, string> = {
   pdf: 'application/pdf',
@@ -96,13 +96,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const contentLength = Number(zipResponse.headers.get('content-length') ?? '0')
   if (contentLength > MAX_ZIP_SIZE) {
     await del(blobUrl).catch(() => {})
-    return NextResponse.json({ error: 'ZIP file exceeds the 200 MB limit.' }, { status: 413 })
+    return NextResponse.json({ error: 'ZIP file exceeds the 500 MB limit.' }, { status: 413 })
   }
 
   const arrayBuffer = await zipResponse.arrayBuffer()
   if (arrayBuffer.byteLength > MAX_ZIP_SIZE) {
     await del(blobUrl).catch(() => {})
-    return NextResponse.json({ error: 'ZIP file exceeds the 200 MB limit.' }, { status: 413 })
+    return NextResponse.json({ error: 'ZIP file exceeds the 500 MB limit.' }, { status: 413 })
   }
 
   let zip: JSZip

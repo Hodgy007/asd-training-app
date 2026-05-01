@@ -86,6 +86,8 @@ export default function CollectionDetailPage() {
 
   // ZIP upload state
   const [zipUploading, setZipUploading] = useState(false)
+  const [zipProgress, setZipProgress] = useState<number | null>(null)
+  const [zipStatusText, setZipStatusText] = useState<string | null>(null)
   const [zipResults, setZipResults] = useState<{
     created: number
     errors: { fileName: string; error: string }[]
@@ -180,17 +182,43 @@ export default function CollectionDetailPage() {
     e.target.value = ''
     if (!zipFile) return
     setZipUploading(true)
+    setZipProgress(0)
+    setZipStatusText('Uploading ZIP…')
     setZipResults(null)
     setZipErrorsExpanded(false)
+
+    // Stall detector — if the browser can't reach Blob storage (CSP block,
+    // offline, DNS failure) the SDK silently waits forever with no progress.
+    const STALL_MS = 20_000
+    const abortController = new AbortController()
+    let lastProgressAt = Date.now()
+    const stallTimer = setInterval(() => {
+      if (Date.now() - lastProgressAt > STALL_MS) abortController.abort()
+    }, 2_000)
+
     try {
       // Stage 1 — upload zip directly to Vercel Blob (bypasses 4.5 MB serverless body limit).
       const pathname = `library/zip-uploads/${Date.now()}-${zipFile.name}`
       const blob = await upload(pathname, zipFile, {
         access: 'public',
         handleUploadUrl: `/api/super-admin/library/${collectionId}/documents/zip-upload/upload-url`,
+        abortSignal: abortController.signal,
+        onUploadProgress: (event) => {
+          lastProgressAt = Date.now()
+          const percent =
+            typeof event.percentage === 'number'
+              ? event.percentage
+              : event.total > 0
+                ? (event.loaded / event.total) * 100
+                : 0
+          setZipProgress(Math.min(99, Math.round(percent)))
+        },
       })
+      clearInterval(stallTimer)
 
       // Stage 2 — ask the server to extract the zip and create LibraryDocuments.
+      setZipProgress(100)
+      setZipStatusText('Extracting documents…')
       const res = await fetch(`/api/super-admin/library/${collectionId}/documents/zip-upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -204,10 +232,21 @@ export default function CollectionDetailPage() {
       setZipResults({ created: data.created.length, errors: data.errors, total: data.total })
       if (data.created.length > 0) fetchCollection()
     } catch (err) {
+      clearInterval(stallTimer)
       const raw = err instanceof Error ? err.message : 'ZIP upload failed.'
-      showToast(raw, 'error')
+      const looksLikeNetworkBlock =
+        abortController.signal.aborted ||
+        /aborted|failed to fetch|network|load failed/i.test(raw)
+      showToast(
+        looksLikeNetworkBlock
+          ? "Couldn't reach Vercel Blob storage. Check your network connection or CSP settings."
+          : raw,
+        'error',
+      )
     } finally {
       setZipUploading(false)
+      setZipProgress(null)
+      setZipStatusText(null)
     }
   }
 
@@ -510,6 +549,26 @@ export default function CollectionDetailPage() {
           </div>
         )}
       </div>
+
+      {/* ZIP upload progress */}
+      {zipUploading && (
+        <div className="rounded-xl border border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-slate-700 dark:text-slate-200">
+              {zipStatusText ?? 'Uploading…'}
+            </span>
+            <span className="font-mono text-slate-500 dark:text-slate-400">
+              {zipProgress ?? 0}%
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-calm-100 dark:bg-slate-700">
+            <div
+              className="h-full bg-blue-500 transition-all duration-200"
+              style={{ width: `${zipProgress ?? 0}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* ZIP upload results */}
       {zipResults && (
