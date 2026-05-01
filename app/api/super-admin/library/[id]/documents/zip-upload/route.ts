@@ -77,6 +77,9 @@ async function handleZipUpload(req: NextRequest, params: { id: string }) {
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+  // Capture into a const so the worker closures don't have to re-narrow
+  // `session` past an awaited boundary (TS loses the narrow there).
+  const uploadedById = session.user.id
 
   const collection = await prisma.libraryCollection.findUnique({ where: { id: params.id } })
   if (!collection) {
@@ -198,7 +201,7 @@ async function handleZipUpload(req: NextRequest, params: { id: string }) {
           fileName: base,
           fileSize: content.byteLength,
           fileType: MIME_MAP[ext] ?? 'application/octet-stream',
-          uploadedById: session.user.id,
+          uploadedById,
         },
       })
       created.push(doc)
