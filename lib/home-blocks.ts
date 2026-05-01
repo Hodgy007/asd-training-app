@@ -50,7 +50,7 @@ const richTextBlockSchema = z.object({
 const imageBlockSchema = z.object({
   id: z.string().min(1),
   kind: z.literal('image'),
-  src: z.string().url(),
+  src: z.string().url().or(z.literal('')).default(''),
   alt: z.string().max(300).default(''),
   href: z.string().max(2000).default(''),
 })
@@ -58,7 +58,7 @@ const imageBlockSchema = z.object({
 const videoBlockSchema = z.object({
   id: z.string().min(1),
   kind: z.literal('video'),
-  src: z.string().url(),
+  src: z.string().url().or(z.literal('')).default(''),
   poster: z.string().url().or(z.literal('')).default(''),
 })
 

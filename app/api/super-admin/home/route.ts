@@ -3,24 +3,33 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isSuperAdmin } from '@/lib/rbac'
-import { sanitizeHtml } from '@/lib/sanitize'
+import {
+  EDITABLE_HOMEPAGE_ROLES,
+  homeBlocksSchema,
+  isEditableHomepageRole,
+  type EditableHomepageRole,
+} from '@/lib/home-blocks'
 
-const SINGLETON_ID = 'singleton'
+function parseRoleParam(req: NextRequest): EditableHomepageRole | null {
+  const role = req.nextUrl.searchParams.get('role')
+  return role && isEditableHomepageRole(role) ? role : null
+}
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (!isSuperAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const row = await prisma.homePage.findUnique({ where: { id: SINGLETON_ID } })
+  const role = parseRoleParam(req)
+  if (!role) {
+    return NextResponse.json({ error: 'Invalid role', validRoles: EDITABLE_HOMEPAGE_ROLES }, { status: 400 })
+  }
+
+  const row = await prisma.homePage.findUnique({ where: { role } })
   return NextResponse.json({
-    htmlContent: row?.htmlContent ?? '',
-    brief: row?.brief ?? '',
+    role,
+    blocks: row?.blocks ?? [],
     updatedAt: row?.updatedAt ?? null,
-    // The editor UI uses these to decide whether the "Reset to default" button
-    // should be enabled and to show when the default was last captured.
-    hasDefault: !!row?.defaultHtmlContent,
-    defaultSetAt: row?.defaultSetAt ?? null,
   })
 }
 
@@ -29,23 +38,29 @@ export async function PUT(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (!isSuperAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const body = await req.json().catch(() => null)
-  if (!body || typeof body.htmlContent !== 'string') {
-    return NextResponse.json({ error: 'htmlContent is required' }, { status: 400 })
+  const role = parseRoleParam(req)
+  if (!role) {
+    return NextResponse.json({ error: 'Invalid role', validRoles: EDITABLE_HOMEPAGE_ROLES }, { status: 400 })
   }
 
-  const cleanHtml = sanitizeHtml(body.htmlContent)
-  const brief = typeof body.brief === 'string' ? body.brief : null
+  const body = await req.json().catch(() => null)
+  const parsed = homeBlocksSchema.safeParse(body?.blocks)
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Invalid blocks', issues: parsed.error.flatten() },
+      { status: 400 },
+    )
+  }
 
   const row = await prisma.homePage.upsert({
-    where: { id: SINGLETON_ID },
-    update: { htmlContent: cleanHtml, brief, updatedBy: session.user.id },
-    create: { id: SINGLETON_ID, htmlContent: cleanHtml, brief, updatedBy: session.user.id },
+    where: { role },
+    update: { blocks: parsed.data, updatedBy: session.user.id },
+    create: { role, blocks: parsed.data, updatedBy: session.user.id },
   })
 
   return NextResponse.json({
-    htmlContent: row.htmlContent,
-    brief: row.brief,
+    role: row.role,
+    blocks: row.blocks,
     updatedAt: row.updatedAt,
   })
 }

@@ -4,66 +4,43 @@ export default function HomePageBuilderHowTo() {
   return (
     <>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        The Home Page Builder is the editor for the platform&apos;s landing page &mdash; the page
-        every authenticated user lands on when they click <strong>Home Page</strong> in the
-        sidebar. You write a short brief, the AI builds an accessible HTML layout, and you can
-        then tweak it inline, with media buttons, or by editing the raw HTML.
+        The Home Page Builder lets you compose a different landing page for each end-user role
+        &mdash; Student, Intern, Employee, Practitioner, Careers Professional. Each role&apos;s
+        page is built from <strong>blocks</strong>: hero banners, tile grids, rich text, images,
+        and videos. Pick a role tab, add and arrange blocks, hit Save.
       </p>
 
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Generating from a brief</h3>
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Picking a role</h3>
+      <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+        <li>Each role tab is independent &mdash; saving one role doesn&apos;t affect the others.</li>
+        <li>Switching tabs reloads that role&apos;s saved blocks. Unsaved edits on the previous tab are lost &mdash; save before switching.</li>
+        <li>Charity Admin, Charity Employee, and Org Admin don&apos;t have a configurable home page; they see their admin dashboards instead.</li>
+      </ul>
+
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Block types</h3>
+      <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+        <li><strong>Hero</strong> &mdash; large title + subtitle + optional image + call-to-action button. Use this once at the top.</li>
+        <li><strong>Tiles</strong> &mdash; a responsive grid of clickable cards (2, 3, or 4 columns). Each tile has a title, description, optional thumbnail, and optional link.</li>
+        <li><strong>Text</strong> &mdash; rich HTML content. Sanitised on save; scripts and event handlers stripped.</li>
+        <li><strong>Image</strong> &mdash; a single image with alt text and optional link wrap.</li>
+        <li><strong>Video</strong> &mdash; an uploaded MP4/WebM with optional poster image. Use the YouTube/Vimeo embed inside a Text block if you need an embed.</li>
+      </ul>
+
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Adding and editing blocks</h3>
       <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Open the editor: click <strong>Home Page</strong> in the sidebar, then the <strong>Edit</strong> pill on the live page.</li>
-        <li>Describe what you want in the <strong>Brief</strong> box &mdash; audience, sections you want (hero, cards, call to action), tone.</li>
-        <li>Click <strong>Generate with AI</strong>. Leave the brief empty to use the example brief shown beneath it.</li>
-        <li>Generation <em>replaces</em> the whole page. Use <strong>Modify</strong> further down for smaller tweaks instead.</li>
+        <li>Click one of the <strong>Add</strong> buttons at the bottom &mdash; a new block appears at the end of the list.</li>
+        <li>Use the up/down arrows in the block header to reorder, the trash icon to delete.</li>
+        <li>For images and videos, paste a URL or click <strong>Upload</strong> &mdash; uploads go to Vercel Blob.</li>
       </ol>
 
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing inline</h3>
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Preview and save</h3>
       <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Click any text in the <strong>Editable preview</strong> and type to edit it directly.</li>
-        <li>Inline edits are captured when you click <strong>Save</strong>, or when an AI action runs (the in-progress edit is committed first).</li>
-        <li>For more control, expand <strong>View / edit raw HTML</strong> at the bottom &mdash; the preview updates as you type.</li>
+        <li>Click <strong>Preview</strong> to see what the role will see &mdash; click again to return to editing.</li>
+        <li>Click <strong>Save</strong> to publish. Users in that role see the new page on next load.</li>
+        <li>If a role has no blocks saved, users in that role see a fallback &ldquo;Welcome&rdquo; placeholder.</li>
       </ul>
 
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Adding media</h3>
-      <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li><strong>Image</strong> &mdash; upload a PNG, JPG, GIF, or SVG. It&apos;s stored on Vercel Blob and inserted at the bottom of the preview.</li>
-        <li><strong>Video file</strong> &mdash; upload an MP4 or WebM. Renders with native browser controls.</li>
-        <li><strong>YouTube / Vimeo</strong> &mdash; paste a watch URL; we convert it to an embed automatically.</li>
-        <li>Newly added items appear at the bottom of the preview &mdash; cut and paste in the raw HTML view to reposition.</li>
-      </ul>
-
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Modifying with AI</h3>
-      <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Use <strong>Modify the existing layout</strong> for small focused changes &mdash; the AI keeps the rest of the page intact.</li>
-        <li>Be specific: <em>&ldquo;change the hero heading to X and make the third card teal&rdquo;</em> works better than <em>&ldquo;improve it&rdquo;</em>.</li>
-        <li>If the result isn&apos;t what you wanted, click <strong>Undo last AI change</strong> to revert &mdash; one level of undo is kept until you run another AI action.</li>
-      </ol>
-
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Saving and publishing</h3>
-      <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Click <strong>Save</strong> to publish. All authenticated users see the new version on next page load.</li>
-        <li>HTML is sanitised on save &mdash; scripts and inline event handlers are stripped automatically.</li>
-        <li>Click <strong>View live</strong> (top-right) to see exactly what learners see.</li>
-      </ul>
-
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">The default snapshot</h3>
-      <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li><strong>Make this the default</strong> &mdash; captures the currently saved page as a known-good snapshot. Save first, then click this to capture.</li>
-        <li><strong>Reset to default</strong> &mdash; restores that snapshot and republishes immediately. Useful if an experiment goes wrong.</li>
-        <li>Replacing the default overwrites the previous snapshot &mdash; there&apos;s only one slot.</li>
-      </ul>
-
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Tuning the AI behaviour</h3>
-      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        The two prompts powering this page &mdash; <strong>Home Page &mdash; Generate From Brief</strong>
-        and <strong>Home Page &mdash; Modify Existing Layout</strong> &mdash; live in <strong>AI Prompts</strong>
-        under the <em>Home Page</em> category. Edit them there to change tone, requirements, the
-        model, or to attach context files (e.g. a brand style guide). Changes apply to the next
-        generate/modify call.
-      </p>
-
-      <Tip>Use <strong>Make this the default</strong> after a clean save you&apos;re happy with. It&apos;s the quickest way to recover from a bad AI edit later &mdash; one click on <strong>Reset to default</strong> and you&apos;re back to the known-good page.</Tip>
+      <Tip>Build one role first as a template, then copy-paste blocks into the others by switching tabs and using the JSON in your browser&apos;s storage if you want to duplicate. Or just start with a Hero + Tiles combo on every role &mdash; it&apos;s a strong default.</Tip>
     </>
   )
 }
