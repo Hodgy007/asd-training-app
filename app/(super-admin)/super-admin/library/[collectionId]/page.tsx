@@ -88,6 +88,7 @@ export default function CollectionDetailPage() {
   const [zipUploading, setZipUploading] = useState(false)
   const [zipProgress, setZipProgress] = useState<number | null>(null)
   const [zipStatusText, setZipStatusText] = useState<string | null>(null)
+  const [clearingDocs, setClearingDocs] = useState(false)
   const [zipResults, setZipResults] = useState<{
     created: number
     errors: { fileName: string; error: string }[]
@@ -247,6 +248,31 @@ export default function CollectionDetailPage() {
       setZipUploading(false)
       setZipProgress(null)
       setZipStatusText(null)
+    }
+  }
+
+  async function handleClearAllDocs() {
+    if (!collection) return
+    const count = collection.documents?.length ?? 0
+    if (count === 0) {
+      showToast('No documents to delete.', 'error')
+      return
+    }
+    if (!confirm(`Delete all ${count} document${count !== 1 ? 's' : ''} in this collection? The collection itself will be kept. This cannot be undone.`)) return
+    setClearingDocs(true)
+    try {
+      const res = await fetch(`/api/super-admin/library/${collectionId}/documents`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok) {
+        showToast(data.error || 'Failed to clear documents.', 'error')
+        return
+      }
+      showToast(`Deleted ${data.deleted} document${data.deleted !== 1 ? 's' : ''}.`, 'success')
+      fetchCollection()
+    } catch {
+      showToast('Failed to clear documents.', 'error')
+    } finally {
+      setClearingDocs(false)
     }
   }
 
@@ -523,6 +549,21 @@ export default function CollectionDetailPage() {
                 <ExternalLink className="h-4 w-4" />
               </Link>
             )}
+            <button
+              type="button"
+              onClick={handleClearAllDocs}
+              disabled={clearingDocs || zipUploading || !collection.documents?.length}
+              className={clsx(
+                'inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors',
+                clearingDocs || !collection.documents?.length
+                  ? 'opacity-50 cursor-not-allowed border-calm-200 dark:border-slate-600 text-slate-400'
+                  : 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20',
+              )}
+              title="Delete all documents but keep the collection"
+            >
+              <Trash2 className="h-4 w-4" />
+              {clearingDocs ? 'Clearing…' : 'Clear all'}
+            </button>
             <label className={clsx(
               'inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors cursor-pointer',
               zipUploading
