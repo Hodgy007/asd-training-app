@@ -56,6 +56,23 @@ function fileNameToTitle(base: string): string {
 }
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    return await handleZipUpload(req, params)
+  } catch (err) {
+    // Surface the underlying message instead of letting Next.js return an
+    // opaque 500. Common causes here: out-of-memory while extracting a large
+    // ZIP, Prisma connection error, Blob put() failure outside the per-entry
+    // try/catch.
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    console.error('[zip-upload] route failed:', err)
+    return NextResponse.json(
+      { error: `ZIP extraction failed: ${message}` },
+      { status: 500 },
+    )
+  }
+}
+
+async function handleZipUpload(req: NextRequest, params: { id: string }) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
