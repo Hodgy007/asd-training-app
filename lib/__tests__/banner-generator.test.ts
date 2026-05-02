@@ -19,7 +19,7 @@ describe('generateBannerPng', () => {
       image: { uint8Array: new Uint8Array(PNG_MAGIC), mediaType: 'image/png' },
       images: [{ uint8Array: new Uint8Array(PNG_MAGIC), mediaType: 'image/png' }],
     } as never)
-    const buf = await generateBannerPng('a prompt', 'google/gemini-2.5-flash-image-preview', '3:1')
+    const buf = await generateBannerPng('a prompt', 'google/imagen-4.0-ultra-generate-001', '16:9')
     expect(buf.subarray(0, 8).equals(PNG_MAGIC)).toBe(true)
   })
 
@@ -29,7 +29,7 @@ describe('generateBannerPng', () => {
       image: undefined,
       images: [{ uint8Array: new Uint8Array(PNG_MAGIC), mediaType: 'image/png' }],
     } as never)
-    const buf = await generateBannerPng('a prompt', 'google/gemini-2.5-flash-image-preview', '3:1')
+    const buf = await generateBannerPng('a prompt', 'google/imagen-4.0-ultra-generate-001', '16:9')
     expect(buf.subarray(0, 8).equals(PNG_MAGIC)).toBe(true)
   })
 
@@ -39,7 +39,7 @@ describe('generateBannerPng', () => {
       images: [{ uint8Array: new Uint8Array([0xff, 0xd8, 0xff]), mediaType: 'image/jpeg' }],
     } as never)
     await expect(
-      generateBannerPng('a prompt', 'google/gemini-2.5-flash-image-preview', '3:1'),
+      generateBannerPng('a prompt', 'google/imagen-4.0-ultra-generate-001', '16:9'),
     ).rejects.toThrow(/PNG/i)
   })
 
@@ -49,7 +49,7 @@ describe('generateBannerPng', () => {
       images: [{ uint8Array: new Uint8Array([]), mediaType: 'image/png' }],
     } as never)
     await expect(
-      generateBannerPng('a prompt', 'google/gemini-2.5-flash-image-preview', '3:1'),
+      generateBannerPng('a prompt', 'google/imagen-4.0-ultra-generate-001', '16:9'),
     ).rejects.toThrow(/0 bytes/)
   })
 })

@@ -11,6 +11,15 @@ const PROMPT_KEY = 'homepage.heroImage.generate'
 const VALID_ASPECTS = new Set(['3:1', '4:1'])
 type AspectRatio = '3:1' | '4:1'
 
+// Imagen 4 only supports a fixed set of aspect ratios (1:1, 16:9, 9:16, 4:3,
+// 3:4). Our editor talks in 3:1 (hero) and 4:1 (inline) for display, so we
+// map both to 16:9 — the widest supported ratio. The display container then
+// crops top/bottom via object-cover.
+const GATEWAY_ASPECT: Record<AspectRatio, '16:9'> = {
+  '3:1': '16:9',
+  '4:1': '16:9',
+}
+
 // 10 generations per 5 minutes per IP — image generation is expensive.
 const heroImageLimiter = createRateLimiter('hero-image-generate', 5 * 60 * 1000, 10)
 
@@ -59,7 +68,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const png = await generateBannerPng(fullPrompt, promptRow.model, aspectRatio as AspectRatio)
+    // Map our display aspect (3:1 / 4:1) to a gateway-supported aspect (16:9).
+    const gatewayAspect = GATEWAY_ASPECT[aspectRatio as AspectRatio]
+    const png = await generateBannerPng(fullPrompt, promptRow.model, gatewayAspect)
     const url = await storeBannerToBlob(systemPreamble, prompt, promptRow.model, aspectRatio, png)
     return NextResponse.json({ url, cached: false })
   } catch (err) {
