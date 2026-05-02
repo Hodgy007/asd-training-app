@@ -117,7 +117,8 @@ async function parseDocx(buffer: Buffer, includeImages: boolean): Promise<Parsed
   let html: string
 
   if (includeImages) {
-    const result = await mammoth.convertToHtml({
+    // mammoth's TS types omit convertImage from Input but it is a valid runtime option
+    const opts = {
       buffer,
       convertImage: mammoth.images.imgElement(
         async (image: { read: () => Promise<Buffer>; contentType?: string }) => {
@@ -133,7 +134,8 @@ async function parseDocx(buffer: Buffer, includeImages: boolean): Promise<Parsed
           }
         }
       ),
-    })
+    } as Parameters<typeof mammoth.convertToHtml>[0]
+    const result = await mammoth.convertToHtml(opts)
     html = result.value
   } else {
     const result = await mammoth.convertToHtml({ buffer })
