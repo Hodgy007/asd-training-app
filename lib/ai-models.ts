@@ -37,6 +37,11 @@ export const AI_MODELS: AiModel[] = [
     label: 'GPT-4.1',
     description: 'High quality, slower, more expensive.',
   },
+  {
+    id: 'google/gemini-2.5-flash-image-preview',
+    label: 'Gemini 2.5 Flash (image)',
+    description: 'Image generation only. Used for homepage banner generation.',
+  },
 ]
 
 export const DEFAULT_MODEL_ID: string = AI_MODELS.find((m) => m.default)!.id
