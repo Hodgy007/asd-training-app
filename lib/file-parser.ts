@@ -127,10 +127,10 @@ async function parseDocx(buffer: Buffer, includeImages: boolean): Promise<Parsed
             const mime = image.contentType ?? 'image/png'
             const ext = mime.split('/')[1]?.split('+')[0]?.toLowerCase() ?? 'png'
             const url = await uploadImageToBlob(buf, ext)
-            if (!url) return {}
+            if (!url) return { src: '', alt: '' }
             return { src: url, alt: '' }
           } catch {
-            return {}
+            return { src: '', alt: '' }
           }
         }
       ),
