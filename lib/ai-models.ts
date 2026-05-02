@@ -38,8 +38,8 @@ export const AI_MODELS: AiModel[] = [
     description: 'High quality, slower, more expensive.',
   },
   {
-    id: 'google/gemini-2.5-flash-image-preview',
-    label: 'Gemini 2.5 Flash (image)',
+    id: 'google/imagen-4.0-ultra-generate-001',
+    label: 'Imagen 4 (image)',
     description: 'Image generation only. Used for homepage banner generation.',
   },
 ]
