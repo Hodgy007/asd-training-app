@@ -24,10 +24,14 @@ interface CohortRow {
   name: string
   slug: string
   active: boolean
+  lifecycleStatus: 'ACTIVE' | 'ARCHIVED'
+  archivedAt: string | null
   allowedProgramIds: string[]
   createdAt: string
   _count: { users: number }
 }
+
+type StatusTab = 'ACTIVE' | 'ARCHIVED'
 
 export default function CohortsPage() {
   const { data: session, status } = useSession()
@@ -36,6 +40,7 @@ export default function CohortsPage() {
   const [cohorts, setCohorts] = useState<CohortRow[]>([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [statusTab, setStatusTab] = useState<StatusTab>('ACTIVE')
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -44,12 +49,12 @@ export default function CohortsPage() {
   useEffect(() => {
     if (status !== 'authenticated') return
     fetchCohorts()
-  }, [status])
+  }, [status, statusTab])
 
   async function fetchCohorts() {
     setLoading(true)
     try {
-      const res = await fetch('/api/super-admin/cohorts')
+      const res = await fetch(`/api/super-admin/cohorts?status=${statusTab}`)
       if (res.ok) {
         const data = await res.json()
         setCohorts(data)
@@ -120,6 +125,26 @@ export default function CohortsPage() {
             New Cohort
           </Link>
         )}
+      </div>
+
+      {/* Status tabs */}
+      <div className="border-b border-calm-200 dark:border-slate-700">
+        <nav className="flex gap-1 -mb-px">
+          {(['ACTIVE', 'ARCHIVED'] as StatusTab[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setStatusTab(tab)}
+              className={clsx(
+                'px-4 py-2.5 text-sm font-medium border-b-2 transition-colors',
+                statusTab === tab
+                  ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+              )}
+            >
+              {tab === 'ACTIVE' ? 'Active' : 'Archived'}
+            </button>
+          ))}
+        </nav>
       </div>
 
       {/* Empty state */}

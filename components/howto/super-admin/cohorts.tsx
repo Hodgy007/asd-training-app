@@ -4,18 +4,24 @@ export default function CohortsHowTo() {
   return (
     <>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        A <strong>Cohort</strong> is a special kind of organisation used for group-based delivery &mdash; e.g. a training cohort for interns on a shared programme. They behave like organisations but are tagged so you can distinguish them in reports and target them separately.
+        A <strong>Cohort</strong> is a lightweight group for workshop or programme attendees who don&apos;t belong to a registered organisation &mdash; e.g. participants from a public webinar or a community event. Members get a stripped-back &ldquo;Workshop Participant&rdquo; experience built around their cohort.
       </p>
 
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Managing cohorts</h3>
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Setting up a cohort</h3>
       <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Open <strong>Cohorts</strong> from the sidebar.</li>
-        <li>Create a new cohort with a name, training programs, and allowed roles.</li>
-        <li>Add users and assign a cohort lead (Org Admin-equivalent).</li>
-        <li>Cohorts support the same hierarchy, training-plan assignment, and reporting as regular organisations.</li>
+        <li>Open the <strong>Products</strong> tile and click <strong>Cohorts</strong>.</li>
+        <li>Create a cohort with a name and any training programs you want members to access.</li>
+        <li>From the cohort page, generate an <strong>invite link</strong> and share it &mdash; people sign themselves up by clicking it.</li>
+        <li>You can also add members manually or import a CSV.</li>
+        <li>Assign document collections and surveys, then schedule workshop sessions targeted at the cohort.</li>
       </ol>
 
-      <Tip>Use cohorts when you want to ring-fence analytics for a specific intake or programme.</Tip>
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">When the cohort ends</h3>
+      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+        Click <strong>Archive</strong>. Members keep their account and read-only access to past session recordings and toolkit downloads &mdash; new invites are disabled. Use <strong>Reactivate</strong> later if you need to bring it back.
+      </p>
+
+      <Tip>People can belong to several cohorts over time. Archiving never locks a participant out &mdash; they just stop receiving new content from that cohort.</Tip>
     </>
   )
 }
