@@ -6,7 +6,6 @@ import Link from 'next/link'
 import {
   Building2,
   Briefcase,
-  UserX,
   TrendingUp,
   Users,
   Calendar,
@@ -14,6 +13,7 @@ import {
   ArrowRight,
   CheckCircle2,
   ClipboardList,
+  Heart,
 } from 'lucide-react'
 import { isCharityLevel, hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { HowToPanel } from '@/components/howto/panel'
@@ -58,9 +58,12 @@ export default async function SuperAdminPage() {
 
   const [
     pendingOrgCount,
-    draftSurveyCount,
+    expiringSurveyCount,
     expiringJobCount,
-    deactivatedUserCount,
+    activeOrgCount,
+    activeUserCount,
+    liveSurveyCount,
+    openJobCount,
     completionsLast30,
     completionsPrev30,
     activeUsersLast30,
@@ -73,7 +76,12 @@ export default async function SuperAdminPage() {
       ? prisma.organisation.count({ where: { pendingApproval: true } })
       : Promise.resolve(0),
     canManageSurveys
-      ? prisma.survey.count({ where: { status: 'DRAFT' } })
+      ? prisma.survey.count({
+          where: {
+            status: 'PUBLISHED',
+            closesAt: { gte: now, lte: sevenDaysAhead },
+          },
+        })
       : Promise.resolve(0),
     canManageJobs
       ? prisma.jobOpening.count({
@@ -84,7 +92,20 @@ export default async function SuperAdminPage() {
         })
       : Promise.resolve(0),
     canManageOrgs
-      ? prisma.user.count({ where: { active: false } })
+      ? prisma.organisation.count({ where: { active: true, pendingApproval: false } })
+      : Promise.resolve(0),
+    canManageOrgs
+      ? prisma.user.count({
+          where: { active: true, role: { notIn: ['SUPER_ADMIN'] } },
+        })
+      : Promise.resolve(0),
+    canManageSurveys
+      ? prisma.survey.count({ where: { status: 'PUBLISHED' } })
+      : Promise.resolve(0),
+    canManageJobs
+      ? prisma.jobOpening.count({
+          where: { status: 'PUBLISHED', closingDate: { gt: now } },
+        })
       : Promise.resolve(0),
     canViewReports
       ? prisma.trainingProgress.count({
@@ -236,9 +257,9 @@ export default async function SuperAdminPage() {
   }
   if (canManageSurveys) {
     attentionCards.push({
-      key: 'draft-surveys',
-      label: 'Draft surveys',
-      count: draftSurveyCount,
+      key: 'expiring-surveys',
+      label: 'Surveys closing in 7 days',
+      count: expiringSurveyCount,
       icon: ClipboardList,
       tone: 'sky',
       href: '/super-admin/surveys',
@@ -254,14 +275,46 @@ export default async function SuperAdminPage() {
       href: '/super-admin/jobs',
     })
   }
+
+  const healthCards: Array<{
+    key: string
+    label: string
+    count: number
+    icon: typeof Building2
+    href: string
+  }> = []
   if (canManageOrgs) {
-    attentionCards.push({
-      key: 'deactivated-users',
-      label: 'Deactivated users',
-      count: deactivatedUserCount,
-      icon: UserX,
-      tone: 'slate',
-      href: '/super-admin/users?status=inactive',
+    healthCards.push({
+      key: 'active-orgs',
+      label: 'Active organisations',
+      count: activeOrgCount,
+      icon: Building2,
+      href: '/super-admin/organisations',
+    })
+    healthCards.push({
+      key: 'active-users',
+      label: 'Active users',
+      count: activeUserCount,
+      icon: Users,
+      href: '/super-admin/users',
+    })
+  }
+  if (canManageSurveys) {
+    healthCards.push({
+      key: 'live-surveys',
+      label: 'Live surveys',
+      count: liveSurveyCount,
+      icon: ClipboardList,
+      href: '/super-admin/surveys',
+    })
+  }
+  if (canManageJobs) {
+    healthCards.push({
+      key: 'open-jobs',
+      label: 'Open jobs',
+      count: openJobCount,
+      icon: Briefcase,
+      href: '/super-admin/jobs',
     })
   }
 
@@ -284,7 +337,7 @@ export default async function SuperAdminPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Needs your attention
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-stagger">
             {attentionCards.map((card) => {
               const Icon = card.icon
               const styles = TONE_STYLES[card.tone]
@@ -303,6 +356,36 @@ export default async function SuperAdminPage() {
                     <p className="text-sm text-slate-500 dark:text-slate-400">{card.label}</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-600 dark:group-hover:text-slate-300 flex-shrink-0" />
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Health snapshot */}
+      {healthCards.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 flex items-center gap-2">
+            <Heart className="h-4 w-4 text-sage-500" />
+            Platform health
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {healthCards.map((card) => {
+              const Icon = card.icon
+              return (
+                <Link
+                  key={card.key}
+                  href={card.href}
+                  className="card group flex items-center gap-3 transition-all"
+                >
+                  <div className="w-10 h-10 bg-sage-100 dark:bg-sage-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Icon className="h-5 w-5 text-sage-600 dark:text-sage-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xl font-bold text-slate-900 dark:text-white">{card.count}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{card.label}</p>
+                  </div>
                 </Link>
               )
             })}
