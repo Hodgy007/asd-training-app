@@ -42,8 +42,10 @@ export async function POST(req: NextRequest) {
     files.push(entry)
   }
 
+  const includeImages = formData.get('includeImages') === 'true'
+
   try {
-    const parsedFiles = await parseFiles(files)
+    const parsedFiles = await parseFiles(files, { includeImages })
     return NextResponse.json({ files: parsedFiles })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to parse files'
