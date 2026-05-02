@@ -5,6 +5,7 @@
 export interface ParsedSection {
   heading?: string
   content: string
+  images?: string[] // Vercel Blob URLs of images found in this section
 }
 
 export interface ParsedFile {

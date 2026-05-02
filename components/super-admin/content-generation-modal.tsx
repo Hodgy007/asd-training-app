@@ -82,6 +82,7 @@ export function ContentGenerationModal({
   const [files, setFiles] = useState<File[]>([])
   const [programName, setProgramName] = useState('')
   const [lens, setLens] = useState<GenerationLens>('autism')
+  const [includeImages, setIncludeImages] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   // Processing step state
@@ -110,6 +111,7 @@ export function ContentGenerationModal({
     setFiles([])
     setProgramName('')
     setLens('autism')
+    setIncludeImages(false)
     setUploadError(null)
     setProgressPhase('parsing')
     setProgressCurrentLesson(1)
@@ -143,6 +145,7 @@ export function ContentGenerationModal({
       for (const file of files) {
         formData.append('files', file)
       }
+      formData.append('includeImages', includeImages ? 'true' : 'false')
 
       const parseRes = await fetch('/api/super-admin/training/parse-files', {
         method: 'POST',
@@ -242,7 +245,7 @@ export function ContentGenerationModal({
       setProgressPhase('error')
       setUploadError(message)
     }
-  }, [files, programName, mode, lens])
+  }, [files, programName, mode, lens, includeImages])
 
   // ─── Retry Lesson ────────────────────────────────────────────────────────────
 
@@ -451,6 +454,28 @@ export function ContentGenerationModal({
                   </div>
                 </div>
               )}
+
+              {/* Include images */}
+              <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
+                <input
+                  id="include-images"
+                  type="checkbox"
+                  checked={includeImages}
+                  onChange={(e) => setIncludeImages(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-slate-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600"
+                />
+                <div>
+                  <label
+                    htmlFor="include-images"
+                    className="block text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer"
+                  >
+                    Include images from documents
+                  </label>
+                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    Extracts images from DOCX and PPTX files and embeds them in the generated lesson content. PDF images are not supported.
+                  </p>
+                </div>
+              </div>
 
               {/* Error */}
               {uploadError && (

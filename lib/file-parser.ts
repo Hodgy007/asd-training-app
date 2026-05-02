@@ -9,6 +9,31 @@ import type { ParsedFile, ParsedSection } from './content-generator-types'
 
 const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.pptx'] as const
 
+// Web-safe image extensions we'll upload to Blob; EMF/WMF can't render in browsers
+const WEB_IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'])
+
+// ─── Blob Upload Helper ───────────────────────────────────────────────────────
+
+async function uploadImageToBlob(buf: Buffer, ext: string): Promise<string | null> {
+  if (!WEB_IMAGE_EXTS.has(ext)) return null
+  try {
+    const { put } = await import('@vercel/blob')
+    const contentType = ext === 'jpg' || ext === 'jpeg'
+      ? 'image/jpeg'
+      : ext === 'svg'
+      ? 'image/svg+xml'
+      : `image/${ext}`
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+    const { url } = await put(`training-images/${unique}.${ext}`, buf, {
+      access: 'public',
+      contentType,
+    })
+    return url
+  } catch {
+    return null
+  }
+}
+
 // ─── PDF Parsing ─────────────────────────────────────────────────────────────
 
 /**
@@ -43,7 +68,6 @@ async function parsePdf(buffer: Buffer): Promise<ParsedSection[]> {
     const firstLine = lines[0].trim()
 
     if (lines.length === 1) {
-      // Single-line block — treat as standalone content (possibly a heading)
       if (isHeadingLine(firstLine)) {
         sections.push({ heading: firstLine, content: '' })
       } else {
@@ -52,10 +76,7 @@ async function parsePdf(buffer: Buffer): Promise<ParsedSection[]> {
     } else {
       if (isHeadingLine(firstLine)) {
         const bodyLines = lines.slice(1).map(l => l.trim()).filter(Boolean)
-        sections.push({
-          heading: firstLine,
-          content: bodyLines.join('\n'),
-        })
+        sections.push({ heading: firstLine, content: bodyLines.join('\n') })
       } else {
         sections.push({ content: trimmed })
       }
@@ -67,54 +88,14 @@ async function parsePdf(buffer: Buffer): Promise<ParsedSection[]> {
 
 // ─── DOCX Parsing ────────────────────────────────────────────────────────────
 
-async function parseDocx(buffer: Buffer): Promise<ParsedSection[]> {
-  const mammoth = await import('mammoth')
-  const result = await mammoth.convertToHtml({ buffer })
-  const html = result.value
-
-  // Split on heading tags; each heading starts a new section.
-  // Regex captures the heading text and everything up to the next heading.
-  const headingPattern = /<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/gi
-  const sections: ParsedSection[] = []
-
-  // Collect preamble text before the first heading
-  const matches: Array<{ heading: string; index: number; fullMatchLength: number }> = []
-
-  let match: RegExpExecArray | null
-  while ((match = headingPattern.exec(html)) !== null) {
-    const rawHeading = match[1].replace(/<[^>]+>/g, '').trim()
-    matches.push({
-      heading: rawHeading,
-      index: match.index,
-      fullMatchLength: match[0].length,
-    })
-  }
-
-  if (matches.length === 0) {
-    // No headings — treat the entire document as one section
-    const text = stripHtml(html)
-    if (text) sections.push({ content: text })
-    return sections
-  }
-
-  // Text before the first heading
-  const preamble = stripHtml(html.slice(0, matches[0].index))
-  if (preamble) sections.push({ content: preamble })
-
-  for (let i = 0; i < matches.length; i++) {
-    const current = matches[i]
-    const contentStart = current.index + current.fullMatchLength
-    const contentEnd = i + 1 < matches.length ? matches[i + 1].index : html.length
-    const bodyHtml = html.slice(contentStart, contentEnd)
-    const bodyText = stripHtml(bodyHtml)
-
-    sections.push({
-      heading: current.heading,
-      content: bodyText,
-    })
-  }
-
-  return sections.filter(s => s.heading || s.content)
+/** Extract img src URLs from an HTML chunk, returning clean HTML with img tags removed. */
+function extractImgsFromHtml(html: string): { html: string; images: string[] } {
+  const images: string[] = []
+  const cleaned = html.replace(/<img[^>]+src="([^"]+)"[^>]*\/?>/gi, (_, src: string) => {
+    if (src.startsWith('http')) images.push(src)
+    return ''
+  })
+  return { html: cleaned, images }
 }
 
 function stripHtml(html: string): string {
@@ -130,11 +111,79 @@ function stripHtml(html: string): string {
     .trim()
 }
 
+async function parseDocx(buffer: Buffer, includeImages: boolean): Promise<ParsedSection[]> {
+  const mammoth = await import('mammoth')
+
+  let html: string
+
+  if (includeImages) {
+    // mammoth's TS types omit convertImage from Input but it is a valid runtime option
+    const opts = {
+      buffer,
+      convertImage: mammoth.images.imgElement(
+        async (image: { read: () => Promise<Buffer>; contentType?: string }) => {
+          try {
+            const buf = await image.read()
+            const mime = image.contentType ?? 'image/png'
+            const ext = mime.split('/')[1]?.split('+')[0]?.toLowerCase() ?? 'png'
+            const url = await uploadImageToBlob(buf, ext)
+            if (!url) return { src: '', alt: '' }
+            return { src: url, alt: '' }
+          } catch {
+            return { src: '', alt: '' }
+          }
+        }
+      ),
+    } as Parameters<typeof mammoth.convertToHtml>[0]
+    const result = await mammoth.convertToHtml(opts)
+    html = result.value
+  } else {
+    const result = await mammoth.convertToHtml({ buffer })
+    html = result.value
+  }
+
+  const headingPattern = /<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/gi
+  const sections: ParsedSection[] = []
+  const matches: Array<{ heading: string; index: number; fullMatchLength: number }> = []
+
+  let match: RegExpExecArray | null
+  while ((match = headingPattern.exec(html)) !== null) {
+    const rawHeading = match[1].replace(/<[^>]+>/g, '').trim()
+    matches.push({ heading: rawHeading, index: match.index, fullMatchLength: match[0].length })
+  }
+
+  if (matches.length === 0) {
+    const { html: cleanHtml, images } = extractImgsFromHtml(html)
+    const text = stripHtml(cleanHtml)
+    if (text) sections.push({ content: text, ...(images.length ? { images } : {}) })
+    return sections
+  }
+
+  // Preamble before first heading
+  const preambleHtml = html.slice(0, matches[0].index)
+  const { html: cleanPreamble, images: preambleImgs } = extractImgsFromHtml(preambleHtml)
+  const preambleText = stripHtml(cleanPreamble)
+  if (preambleText) sections.push({ content: preambleText, ...(preambleImgs.length ? { images: preambleImgs } : {}) })
+
+  for (let i = 0; i < matches.length; i++) {
+    const current = matches[i]
+    const contentStart = current.index + current.fullMatchLength
+    const contentEnd = i + 1 < matches.length ? matches[i + 1].index : html.length
+    const bodyHtml = html.slice(contentStart, contentEnd)
+    const { html: cleanBody, images } = extractImgsFromHtml(bodyHtml)
+    const bodyText = stripHtml(cleanBody)
+    sections.push({
+      heading: current.heading,
+      content: bodyText,
+      ...(images.length ? { images } : {}),
+    })
+  }
+
+  return sections.filter(s => s.heading || s.content)
+}
+
 // ─── PPTX Parsing ────────────────────────────────────────────────────────────
 
-/**
- * Recursively collect all `a:t` text node values from a parsed XML object.
- */
 function collectTextNodes(node: unknown): string[] {
   if (typeof node === 'string') return [node]
   if (Array.isArray(node)) return node.flatMap(collectTextNodes)
@@ -143,7 +192,6 @@ function collectTextNodes(node: unknown): string[] {
     const results: string[] = []
     for (const key of Object.keys(obj)) {
       if (key === 'a:t') {
-        // Extract text values directly from a:t elements
         const vals = Array.isArray(obj[key]) ? obj[key] : [obj[key]]
         for (const v of vals as unknown[]) {
           if (typeof v === 'string') results.push(v)
@@ -158,11 +206,10 @@ function collectTextNodes(node: unknown): string[] {
   return []
 }
 
-async function parsePptx(buffer: Buffer): Promise<ParsedSection[]> {
+async function parsePptx(buffer: Buffer, includeImages: boolean): Promise<ParsedSection[]> {
   const zip = new AdmZip(buffer)
   const entries = zip.getEntries()
 
-  // Find all slide XML files and sort by slide number
   const slideEntries = entries
     .filter(e => /^ppt\/slides\/slide\d+\.xml$/.test(e.entryName))
     .sort((a, b) => {
@@ -172,6 +219,8 @@ async function parsePptx(buffer: Buffer): Promise<ParsedSection[]> {
     })
 
   const sections: ParsedSection[] = []
+  // Deduplicate media uploads across slides: mediaPath → blobUrl
+  const uploadedMedia = new Map<string, string>()
 
   for (const entry of slideEntries) {
     const xmlContent = entry.getData().toString('utf8')
@@ -180,20 +229,58 @@ async function parsePptx(buffer: Buffer): Promise<ParsedSection[]> {
     try {
       parsed = await parseStringPromise(xmlContent, { explicitArray: true })
     } catch {
-      // Skip malformed slide XML
       continue
     }
 
-    const allTexts = collectTextNodes(parsed)
-      .map(t => t.trim())
-      .filter(Boolean)
-
+    const allTexts = collectTextNodes(parsed).map(t => t.trim()).filter(Boolean)
     if (allTexts.length === 0) continue
 
     const heading = allTexts[0]
     const content = allTexts.slice(1).join('\n')
+    const slideImages: string[] = []
 
-    sections.push({ heading, content })
+    if (includeImages) {
+      const slideNum = parseInt(entry.entryName.replace(/\D/g, ''), 10)
+      const relsPath = `ppt/slides/_rels/slide${slideNum}.xml.rels`
+      const relsEntry = zip.getEntry(relsPath)
+
+      if (relsEntry) {
+        try {
+          const relsData = await parseStringPromise(relsEntry.getData().toString('utf8'), { explicitArray: true })
+          const rels = (relsData?.Relationships?.Relationship ?? []) as Array<{ $?: { Type?: string; Target?: string } }>
+
+          for (const rel of rels) {
+            const type = rel.$?.Type ?? ''
+            const target = rel.$?.Target ?? ''
+            if (!type.endsWith('/image')) continue
+
+            const filename = target.split('/').pop() ?? ''
+            const ext = filename.split('.').pop()?.toLowerCase() ?? ''
+            if (!WEB_IMAGE_EXTS.has(ext)) continue
+
+            const mediaPath = `ppt/media/${filename}`
+
+            if (uploadedMedia.has(mediaPath)) {
+              slideImages.push(uploadedMedia.get(mediaPath)!)
+              continue
+            }
+
+            const mediaEntry = zip.getEntry(mediaPath)
+            if (!mediaEntry) continue
+
+            const url = await uploadImageToBlob(mediaEntry.getData(), ext)
+            if (url) {
+              uploadedMedia.set(mediaPath, url)
+              slideImages.push(url)
+            }
+          }
+        } catch {
+          // Skip on rels parse error
+        }
+      }
+    }
+
+    sections.push({ heading, content, ...(slideImages.length ? { images: slideImages } : {}) })
   }
 
   return sections
@@ -201,12 +288,14 @@ async function parsePptx(buffer: Buffer): Promise<ParsedSection[]> {
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
-/**
- * Parse a single File object and return a structured ParsedFile.
- */
-export async function parseFile(file: File): Promise<ParsedFile> {
+export interface ParseOptions {
+  includeImages?: boolean
+}
+
+export async function parseFile(file: File, options: ParseOptions = {}): Promise<ParsedFile> {
   const filename = file.name
   const ext = filename.substring(filename.lastIndexOf('.')).toLowerCase()
+  const includeImages = options.includeImages ?? false
 
   const arrayBuffer = await file.arrayBuffer()
   const buffer = Buffer.from(arrayBuffer)
@@ -217,12 +306,12 @@ export async function parseFile(file: File): Promise<ParsedFile> {
   }
 
   if (ext === '.docx') {
-    const sections = await parseDocx(buffer)
+    const sections = await parseDocx(buffer, includeImages)
     return { filename, format: 'docx', sections }
   }
 
   if (ext === '.pptx') {
-    const sections = await parsePptx(buffer)
+    const sections = await parsePptx(buffer, includeImages)
     return { filename, format: 'pptx', sections }
   }
 
@@ -231,20 +320,14 @@ export async function parseFile(file: File): Promise<ParsedFile> {
   )
 }
 
-/**
- * Parse multiple File objects in order and return an array of ParsedFile results.
- */
-export async function parseFiles(files: File[]): Promise<ParsedFile[]> {
+export async function parseFiles(files: File[], options: ParseOptions = {}): Promise<ParsedFile[]> {
   const results: ParsedFile[] = []
   for (const file of files) {
-    results.push(await parseFile(file))
+    results.push(await parseFile(file, options))
   }
   return results
 }
 
-/**
- * Returns the list of supported file extensions.
- */
 export function getSupportedExtensions(): string[] {
   return [...SUPPORTED_EXTENSIONS]
 }

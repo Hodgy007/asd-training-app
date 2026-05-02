@@ -72,13 +72,27 @@ function extractSourceSections(files: ParsedFile[], sourceRefs: SourceRef[]): st
         ? `[${file.filename} — Section ${sectionIndex}: ${section.heading}]`
         : `[${file.filename} — Section ${sectionIndex}]`
 
-      parts.push(`${heading}\n${section.content}`)
+      let chunk = `${heading}\n${section.content}`
+
+      if (section.images && section.images.length > 0) {
+        chunk += `\n\nImages in this section:\n${section.images.map(u => `- ${u}`).join('\n')}`
+      }
+
+      parts.push(chunk)
     }
   }
 
   const joined = parts.join('\n\n')
   if (joined.length <= MAX_LESSON_SOURCE_CHARS) return joined
   return joined.slice(0, MAX_LESSON_SOURCE_CHARS) + '\n\n[Content truncated]'
+}
+
+function sourceRefsHaveImages(files: ParsedFile[], sourceRefs: SourceRef[]): boolean {
+  return sourceRefs.some(ref => {
+    const file = files[ref.fileIndex]
+    if (!file) return false
+    return ref.sectionIndices.some(idx => (file.sections[idx]?.images?.length ?? 0) > 0)
+  })
 }
 
 export async function withRetry<T>(
@@ -137,6 +151,11 @@ export async function generateLessonContent(
   } else {
     modeGuidance =
       'PRACTITIONER LENS: Professional but accessible. Include practical strategies, case examples, and reflection prompts (<blockquote>) to encourage deeper thinking.'
+  }
+
+  if (sourceRefsHaveImages(files, sourceRefs)) {
+    modeGuidance +=
+      '\n\nIMAGES: Where image URLs are listed in the source material, embed them in the HTML at the relevant point using <img src="URL" alt="Training image" style="max-width:100%;border-radius:8px;margin:16px 0"> tags.'
   }
 
   const text = await runPrompt('training.lessonContent', {
