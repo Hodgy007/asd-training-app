@@ -8,6 +8,13 @@ interface GenerateBannerModalProps {
   /** When provided + non-empty, modal opens with this prompt and skips suggest. */
   initialPrompt?: string | null
   aspectRatio: '3:1' | '4:1'
+  /** Context passed to the suggest-prompt API so it can tailor the suggestion. */
+  context?: {
+    role?: string
+    blockKind?: string
+    blockTitle?: string
+    blockSubtitle?: string
+  }
   onClose: () => void
   onUse: (result: { url: string; prompt: string }) => void
 }
@@ -18,6 +25,7 @@ export function GenerateBannerModal({
   open,
   initialPrompt,
   aspectRatio,
+  context,
   onClose,
   onUse,
 }: GenerateBannerModalProps) {
@@ -38,7 +46,11 @@ export function GenerateBannerModal({
     let cancelled = false
     setStatus('suggesting')
     setPrompt('')
-    fetch('/api/super-admin/home/hero-image/suggest-prompt', { method: 'POST' })
+    fetch('/api/super-admin/home/hero-image/suggest-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(context ?? {}),
+      })
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return

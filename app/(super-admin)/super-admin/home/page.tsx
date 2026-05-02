@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Save, Loader2, ArrowUp, ArrowDown, Trash2, Plus, Upload, Eye,
-  Image as ImageIcon, Film, LayoutGrid, Type, Layout,
+  Image as ImageIcon, Film, LayoutGrid, Type, Layout, Sparkles,
 } from 'lucide-react'
 import { ROLE_LABELS } from '@/lib/rbac'
 import {
@@ -16,6 +16,7 @@ import {
 import { HomeBlocksRenderer } from '@/components/home/home-blocks'
 import { HowToPanel } from '@/components/howto/panel'
 import HomePageBuilderHowTo from '@/components/howto/super-admin/home'
+import { GenerateBannerModal } from '@/components/super-admin/generate-banner-modal'
 
 type BlockKind = HomeBlock['kind']
 
@@ -177,6 +178,7 @@ export default function SuperAdminHomePage() {
               <BlockCard
                 key={block.id}
                 block={block}
+                activeRole={activeRole}
                 isFirst={idx === 0}
                 isLast={idx === blocks.length - 1}
                 onUpdate={(next) => updateBlock(idx, next)}
@@ -239,9 +241,10 @@ function AddBlockMenu({ onAdd }: { onAdd: (kind: BlockKind) => void }) {
 }
 
 function BlockCard({
-  block, isFirst, isLast, onUpdate, onMoveUp, onMoveDown, onRemove,
+  block, activeRole, isFirst, isLast, onUpdate, onMoveUp, onMoveDown, onRemove,
 }: {
   block: HomeBlock
+  activeRole: EditableHomepageRole
   isFirst: boolean
   isLast: boolean
   onUpdate: (next: HomeBlock) => void
@@ -263,7 +266,7 @@ function BlockCard({
           <IconButton onClick={onRemove} aria-label="Remove" className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"><Trash2 className="h-4 w-4" /></IconButton>
         </div>
       </div>
-      <BlockEditor block={block} onUpdate={onUpdate} />
+      <BlockEditor block={block} activeRole={activeRole} onUpdate={onUpdate} />
     </div>
   )
 }
@@ -279,12 +282,12 @@ function IconButton({ children, className = '', ...rest }: React.ButtonHTMLAttri
   )
 }
 
-function BlockEditor({ block, onUpdate }: { block: HomeBlock; onUpdate: (next: HomeBlock) => void }) {
+function BlockEditor({ block, activeRole, onUpdate }: { block: HomeBlock; activeRole: EditableHomepageRole; onUpdate: (next: HomeBlock) => void }) {
   switch (block.kind) {
-    case 'hero': return <HeroEditor block={block} onUpdate={onUpdate} />
+    case 'hero': return <HeroEditor block={block} activeRole={activeRole} onUpdate={onUpdate} />
     case 'tiles': return <TilesEditor block={block} onUpdate={onUpdate} />
     case 'richText': return <RichTextEditor block={block} onUpdate={onUpdate} />
-    case 'image': return <ImageEditor block={block} onUpdate={onUpdate} />
+    case 'image': return <ImageEditor block={block} activeRole={activeRole} onUpdate={onUpdate} />
     case 'video': return <VideoEditor block={block} onUpdate={onUpdate} />
   }
 }
@@ -296,7 +299,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 const inputClass =
   'w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
 
-function HeroEditor({ block, onUpdate }: { block: Extract<HomeBlock, { kind: 'hero' }>; onUpdate: (b: HomeBlock) => void }) {
+function HeroEditor({ block, activeRole, onUpdate }: { block: Extract<HomeBlock, { kind: 'hero' }>; activeRole: EditableHomepageRole; onUpdate: (b: HomeBlock) => void }) {
   return (
     <div className="grid md:grid-cols-2 gap-3">
       <div>
@@ -309,7 +312,17 @@ function HeroEditor({ block, onUpdate }: { block: Extract<HomeBlock, { kind: 'he
       </div>
       <div className="md:col-span-2">
         <FieldLabel>Image (optional)</FieldLabel>
-        <MediaUpload kind="image" url={block.imageUrl} onChange={(url) => onUpdate({ ...block, imageUrl: url })} />
+        <MediaUpload
+          kind="image"
+          url={block.imageUrl}
+          onChange={(url) => onUpdate({ ...block, imageUrl: url })}
+          aiContext={{
+            role: activeRole,
+            blockKind: 'hero',
+            blockTitle: block.title,
+            blockSubtitle: block.subtitle,
+          }}
+        />
       </div>
       <div>
         <FieldLabel>Button text (optional)</FieldLabel>
@@ -388,10 +401,18 @@ function RichTextEditor({ block, onUpdate }: { block: Extract<HomeBlock, { kind:
   )
 }
 
-function ImageEditor({ block, onUpdate }: { block: Extract<HomeBlock, { kind: 'image' }>; onUpdate: (b: HomeBlock) => void }) {
+function ImageEditor({ block, activeRole, onUpdate }: { block: Extract<HomeBlock, { kind: 'image' }>; activeRole: EditableHomepageRole; onUpdate: (b: HomeBlock) => void }) {
   return (
     <div className="space-y-3">
-      <MediaUpload kind="image" url={block.src} onChange={(url) => onUpdate({ ...block, src: url })} />
+      <MediaUpload
+        kind="image"
+        url={block.src}
+        onChange={(url) => onUpdate({ ...block, src: url })}
+        aiContext={{
+          role: activeRole,
+          blockKind: 'image',
+        }}
+      />
       <div className="grid md:grid-cols-2 gap-3">
         <div>
           <FieldLabel>Alt text</FieldLabel>
@@ -418,9 +439,27 @@ function VideoEditor({ block, onUpdate }: { block: Extract<HomeBlock, { kind: 'v
   )
 }
 
-function MediaUpload({ kind, url, onChange }: { kind: 'image' | 'video'; url: string; onChange: (url: string) => void }) {
+function MediaUpload({
+  kind,
+  url,
+  onChange,
+  aiContext,
+  aspectRatio,
+}: {
+  kind: 'image' | 'video'
+  url: string
+  onChange: (url: string) => void
+  aiContext?: {
+    role: string
+    blockKind: 'hero' | 'image'
+    blockTitle?: string
+    blockSubtitle?: string
+  }
+  aspectRatio?: '3:1' | '4:1'
+}) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [bannerModalOpen, setBannerModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function upload(file: File) {
@@ -441,6 +480,8 @@ function MediaUpload({ kind, url, onChange }: { kind: 'image' | 'video'; url: st
     }
   }
 
+  const resolvedAspectRatio = aspectRatio ?? (aiContext?.blockKind === 'hero' ? '3:1' : '4:1')
+
   return (
     <div className="space-y-2">
       <div className="flex gap-2 items-center">
@@ -459,6 +500,16 @@ function MediaUpload({ kind, url, onChange }: { kind: 'image' | 'video'; url: st
           {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
           Upload
         </button>
+        {aiContext && kind === 'image' && (
+          <button
+            type="button"
+            onClick={() => setBannerModalOpen(true)}
+            disabled={uploading}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 whitespace-nowrap"
+          >
+            <Sparkles className="h-4 w-4" /> AI ✨
+          </button>
+        )}
         <input
           ref={fileInputRef}
           type="file"
@@ -475,6 +526,18 @@ function MediaUpload({ kind, url, onChange }: { kind: 'image' | 'video'; url: st
       {url && kind === 'image' && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt="" className="h-24 w-auto rounded-lg border border-slate-200 dark:border-slate-700" />
+      )}
+      {aiContext && (
+        <GenerateBannerModal
+          open={bannerModalOpen}
+          aspectRatio={resolvedAspectRatio}
+          context={aiContext}
+          onClose={() => setBannerModalOpen(false)}
+          onUse={({ url: generatedUrl }) => {
+            onChange(generatedUrl)
+            setBannerModalOpen(false)
+          }}
+        />
       )}
     </div>
   )
