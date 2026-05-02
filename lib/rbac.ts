@@ -42,6 +42,7 @@ export const ROLE_LABELS: Record<string, string> = {
   STUDENT: 'Student',
   INTERN: 'Intern',
   EMPLOYEE: 'Employee',
+  PARTICIPANT: 'Workshop Participant',
 }
 
 /** Get the display label for a role. Falls back to the raw role string. */
@@ -106,9 +107,22 @@ export function isOrgAdmin(session: Session | null): boolean {
   return hasRole(session, 'ORG_ADMIN')
 }
 
-/** Any of the five leaf roles (end users who do training) */
+/** Any of the leaf roles (end users who do training, including workshop participants) */
 export function isLeafRole(session: Session | null): boolean {
-  return hasRole(session, 'CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE')
+  return hasRole(
+    session,
+    'CAREGIVER',
+    'CAREER_DEV_OFFICER',
+    'STUDENT',
+    'INTERN',
+    'EMPLOYEE',
+    'PARTICIPANT'
+  )
+}
+
+/** PARTICIPANT — joined a cohort via invite link, no formal org affiliation */
+export function isParticipant(session: Session | null): boolean {
+  return hasRole(session, 'PARTICIPANT')
 }
 
 /**

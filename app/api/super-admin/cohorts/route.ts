@@ -20,14 +20,22 @@ function slugify(name: string): string {
     .substring(0, 80)
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
+  const status = req.nextUrl.searchParams.get('status') ?? 'ACTIVE'
+  const where: { orgType: 'COHORT'; lifecycleStatus?: 'ACTIVE' | 'ARCHIVED' } = {
+    orgType: 'COHORT',
+  }
+  if (status === 'ACTIVE' || status === 'ARCHIVED') {
+    where.lifecycleStatus = status
+  }
+
   const cohorts = await prisma.organisation.findMany({
-    where: { orgType: 'COHORT' },
+    where,
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { users: true } } },
   })

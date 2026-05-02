@@ -2,7 +2,7 @@
 import { getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/register-organisation', '/privacy', '/terms', '/api/auth', '/api/organisations/register', '/api/cron', '/courses', '/toolkit', '/api/toolkit', '/api/checkout/session', '/api/stripe/webhook', '/api/courses/free-claim']
+const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/register-organisation', '/privacy', '/terms', '/api/auth', '/api/organisations/register', '/api/cron', '/courses', '/toolkit', '/api/toolkit', '/api/checkout/session', '/api/stripe/webhook', '/api/courses/free-claim', '/join', '/api/join']
 
 // Temporary MFA kill-switch. Set `DISABLE_MFA=true` in env to skip all MFA
 // enforcement (verify + setup). Existing TOTP secrets remain intact; users
@@ -116,6 +116,16 @@ export async function middleware(req: NextRequest) {
   // /students/* — CAREER_DEV_OFFICER only (within leaf roles)
   if (pathname.startsWith('/students') && role !== 'CAREER_DEV_OFFICER') {
     return NextResponse.redirect(new URL(homeForRole(role), req.url))
+  }
+
+  // PARTICIPANT — workshop attendees get a stripped-back surface. They join via
+  // an invite link and don't have access to the careers tooling or formal
+  // training-program management features that other leaf roles see.
+  if (role === 'PARTICIPANT') {
+    const blockedForParticipant = ['/cv-builder', '/careers-advisor', '/jobs', '/students', '/careers']
+    if (blockedForParticipant.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+      return NextResponse.redirect(new URL(homeForRole(role), req.url))
+    }
   }
 
   // Post-login redirect: if landing on root /, redirect to role home

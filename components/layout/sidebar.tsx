@@ -61,6 +61,13 @@ function getNavItems(
     }
   }
 
+  // PARTICIPANT — workshop attendees get a deliberately stripped surface.
+  // Their cohort drives all their content; programs (if any) are surfaced
+  // inline on the dashboard via the CohortHub. We don't auto-add training
+  // links to the sidebar — most participants only see one cohort and an
+  // ever-growing nav list adds noise.
+  // Library + Workshops items are added by the shared logic below.
+
   // Single Document Library entry — the library page itself handles
   // collection grid / per-collection drill-in (and auto-selects when there's only one).
   if (collections.length > 0) {
@@ -81,6 +88,7 @@ const ROLE_LABELS: Record<string, string> = {
   STUDENT: 'Student',
   INTERN: 'Intern',
   EMPLOYEE: 'Employee',
+  PARTICIPANT: 'Workshop Participant',
 }
 
 const ROLE_BADGE_STYLES: Record<string, string> = {
@@ -89,6 +97,7 @@ const ROLE_BADGE_STYLES: Record<string, string> = {
   STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
   INTERN: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
   EMPLOYEE: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300',
+  PARTICIPANT: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
 }
 
 interface SidebarProps {

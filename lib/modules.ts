@@ -64,22 +64,57 @@ export async function getUserPrograms(userId: string): Promise<ProgramInfo[]> {
     },
   })
   if (!user) return []
-  if (user.organisationId) return getOrgPrograms(user.organisationId)
 
-  // Individual subscriber — fall back to user-level fields
-  if (subscriptionGrantsAccess(user.subscriptionStatus, user.subscriptionCurrentPeriodEnd)) {
-    return prisma.trainingProgram.findMany({
+  // Programs from active cohort memberships are unioned with the primary-org
+  // programs so that PARTICIPANT users (and anyone else dual-enrolled) get
+  // access to everything their cohorts hand them.
+  const cohortPrograms = await getCohortProgramsForUser(userId)
+
+  let basePrograms: ProgramInfo[] = []
+  if (user.organisationId) {
+    basePrograms = await getOrgPrograms(user.organisationId)
+  } else if (subscriptionGrantsAccess(user.subscriptionStatus, user.subscriptionCurrentPeriodEnd)) {
+    basePrograms = await prisma.trainingProgram.findMany({
       where: { active: true, status: 'APPROVED' },
       select: { id: true, name: true },
       orderBy: { order: 'asc' },
     })
+  } else if (user.allowedProgramIds.length > 0) {
+    basePrograms = await prisma.trainingProgram.findMany({
+      where: { id: { in: user.allowedProgramIds }, active: true },
+      select: { id: true, name: true },
+      orderBy: { order: 'asc' },
+    })
   }
-  if (user.allowedProgramIds.length === 0) return []
+
+  return dedupeById([...basePrograms, ...cohortPrograms])
+}
+
+async function getCohortProgramsForUser(userId: string): Promise<ProgramInfo[]> {
+  const memberships = await prisma.cohortMembership.findMany({
+    where: { userId, status: 'ACTIVE' },
+    select: { cohort: { select: { allowedProgramIds: true } } },
+  })
+  const programIds = Array.from(
+    new Set(memberships.flatMap((m) => m.cohort.allowedProgramIds))
+  )
+  if (programIds.length === 0) return []
   return prisma.trainingProgram.findMany({
-    where: { id: { in: user.allowedProgramIds }, active: true },
+    where: { id: { in: programIds }, active: true, status: 'APPROVED' },
     select: { id: true, name: true },
     orderBy: { order: 'asc' },
   })
+}
+
+function dedupeById(programs: ProgramInfo[]): ProgramInfo[] {
+  const seen = new Set<string>()
+  const out: ProgramInfo[] = []
+  for (const p of programs) {
+    if (seen.has(p.id)) continue
+    seen.add(p.id)
+    out.push(p)
+  }
+  return out
 }
 
 export async function getOrgSubscriptionState(orgId: string): Promise<OrgSubscriptionState> {

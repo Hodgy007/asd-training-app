@@ -135,7 +135,7 @@ describe('isOrgAdmin', () => {
 })
 
 describe('isLeafRole', () => {
-  const leafRoles = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']
+  const leafRoles = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE', 'PARTICIPANT']
   const nonLeafRoles = ['SUPER_ADMIN', 'CHARITY_EMPLOYEE', 'ORG_ADMIN']
 
   it.each(leafRoles)('returns true for %s', (role) => {
@@ -306,7 +306,8 @@ describe('CHARITY_PERMISSIONS constant', () => {
 })
 
 describe('ROLE_LABELS constant', () => {
-  it('has labels for all eight roles', () => {
-    expect(Object.keys(ROLE_LABELS)).toHaveLength(8)
+  it('has labels for all nine roles', () => {
+    expect(Object.keys(ROLE_LABELS)).toHaveLength(9)
+    expect(ROLE_LABELS.PARTICIPANT).toBe('Workshop Participant')
   })
 })

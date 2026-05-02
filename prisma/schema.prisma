@@ -9,21 +9,21 @@ datasource db {
 }
 
 model User {
-  id                 String   @id @default(cuid())
-  email              String   @unique
-  name               String?
-  password           String?
-  role               Role     @default(CAREGIVER)
-  active             Boolean  @default(true)
-  pendingApproval    Boolean  @default(false)
-  organisationId     String?
-  mustChangePassword Boolean  @default(false)
-  totpSecret         String?
-  totpEnabled        Boolean  @default(false)
-  charityPermissions String[] @default([])
-  notificationsLastOpenedAt DateTime?
-  invitedAt          DateTime?
-  invitedBy          String?
+  id                           String             @id @default(cuid())
+  email                        String             @unique
+  name                         String?
+  password                     String?
+  role                         Role               @default(CAREGIVER)
+  active                       Boolean            @default(true)
+  pendingApproval              Boolean            @default(false)
+  organisationId               String?
+  mustChangePassword           Boolean            @default(false)
+  totpSecret                   String?
+  totpEnabled                  Boolean            @default(false)
+  charityPermissions           String[]           @default([])
+  notificationsLastOpenedAt    DateTime?
+  invitedAt                    DateTime?
+  invitedBy                    String?
   // Individual-subscriber fields. Only used when organisationId is null —
   // i.e. the user purchased on their own and isn't part of a shared org.
   // Resolved alongside org-level fields by lib/subscription.ts.
@@ -33,35 +33,36 @@ model User {
   subscriptionCurrentPeriodEnd DateTime?
   subscriptionPriceId          String?
   allowedProgramIds            String[]           @default([])
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt                    DateTime           @default(now())
+  updatedAt                    DateTime           @updatedAt
 
-  organisation       Organisation?          @relation(fields: [organisationId], references: [id])
-  accounts           Account[]
-  sessions           Session[]
-  trainingProgress   TrainingProgress[]
-  announcements      Announcement[]         @relation("AnnouncementsCreated")
-  hostedSessions     ClassSession[]         @relation("SessionHost")
-  createdSessions    ClassSession[]         @relation("SessionCreator")
-  sessionAttendees   SessionAttendee[]
-  surveysCreated     Survey[]               @relation("SurveysCreated")
-  surveyResponses    SurveyResponse[]       @relation("SurveyResponses")
-  collectionsCreated LibraryCollection[]    @relation("CollectionsCreated")
-  uploadedDocuments  LibraryDocument[]      @relation("UploadedDocuments")
-  documentEvents     LibraryDocumentEvent[] @relation("DocumentEvents")
-  integrationKeys    IntegrationApiKey[]    @relation("IntegrationKeys")
-  cvs                    CV[]
-  careerAdvisorSessions  CareerAdvisorSession[]
-  lessonNotes            LessonNote[]
-  invitedByUser      User?                  @relation("UserInviter", fields: [invitedBy], references: [id])
-  invitedUsers       User[]                 @relation("UserInviter")
-  editedAiPrompts    AiPrompt[]             @relation("AiPromptEditor")
-  jobsCreated          JobOpening[]    @relation("JobOpeningCreatedBy")
-  jobAssignments       JobAssignment[] @relation("JobAssignmentUser")
-  jobAssignmentsGiven  JobAssignment[] @relation("JobAssignmentAssignedBy")
-  feedbackSubmissions FeedbackSubmission[] @relation("FeedbackSubmitter")
-  resolvedFeedback    FeedbackSubmission[] @relation("FeedbackResolver")
-  purchases            Purchase[]
+  organisation          Organisation?          @relation(fields: [organisationId], references: [id])
+  accounts              Account[]
+  sessions              Session[]
+  trainingProgress      TrainingProgress[]
+  announcements         Announcement[]         @relation("AnnouncementsCreated")
+  hostedSessions        ClassSession[]         @relation("SessionHost")
+  createdSessions       ClassSession[]         @relation("SessionCreator")
+  sessionAttendees      SessionAttendee[]
+  surveysCreated        Survey[]               @relation("SurveysCreated")
+  surveyResponses       SurveyResponse[]       @relation("SurveyResponses")
+  collectionsCreated    LibraryCollection[]    @relation("CollectionsCreated")
+  uploadedDocuments     LibraryDocument[]      @relation("UploadedDocuments")
+  documentEvents        LibraryDocumentEvent[] @relation("DocumentEvents")
+  integrationKeys       IntegrationApiKey[]    @relation("IntegrationKeys")
+  cvs                   CV[]
+  careerAdvisorSessions CareerAdvisorSession[]
+  lessonNotes           LessonNote[]
+  cohortMemberships     CohortMembership[]
+  invitedByUser         User?                  @relation("UserInviter", fields: [invitedBy], references: [id])
+  invitedUsers          User[]                 @relation("UserInviter")
+  editedAiPrompts       AiPrompt[]             @relation("AiPromptEditor")
+  jobsCreated           JobOpening[]           @relation("JobOpeningCreatedBy")
+  jobAssignments        JobAssignment[]        @relation("JobAssignmentUser")
+  jobAssignmentsGiven   JobAssignment[]        @relation("JobAssignmentAssignedBy")
+  feedbackSubmissions   FeedbackSubmission[]   @relation("FeedbackSubmitter")
+  resolvedFeedback      FeedbackSubmission[]   @relation("FeedbackResolver")
+  purchases             Purchase[]
 
   @@index([organisationId])
 }
@@ -101,51 +102,77 @@ model VerificationToken {
 }
 
 model Organisation {
-  id                String           @id @default(cuid())
-  name              String
-  slug              String           @unique
-  active            Boolean          @default(true)
-  organisationType  OrganisationType @default(BUSINESS)
-  allowedProgramIds String[]
-  allowedRoles      String[]
-  cvBuilderEnabled      Boolean  @default(true)
-  careersAdvisorEnabled Boolean  @default(true)
-  logoUrl               String?
-  contactName       String?
-  contactEmail      String?
-  contactPhone      String?
-  addressLine1      String?
-  addressLine2      String?
-  city              String?
-  county            String?
-  postcode          String?
-  country           String   @default("United Kingdom")
-  pendingApproval   Boolean  @default(false)
-  orgType           OrgType  @default(ORGANISATION)
-  parentOrgId       String?
-  isParentOrg       Boolean  @default(false)
-  inheritSettings   Boolean  @default(true)
+  id                           String             @id @default(cuid())
+  name                         String
+  slug                         String             @unique
+  active                       Boolean            @default(true)
+  organisationType             OrganisationType   @default(BUSINESS)
+  allowedProgramIds            String[]
+  allowedRoles                 String[]
+  cvBuilderEnabled             Boolean            @default(true)
+  careersAdvisorEnabled        Boolean            @default(true)
+  logoUrl                      String?
+  contactName                  String?
+  contactEmail                 String?
+  contactPhone                 String?
+  addressLine1                 String?
+  addressLine2                 String?
+  city                         String?
+  county                       String?
+  postcode                     String?
+  country                      String             @default("United Kingdom")
+  pendingApproval              Boolean            @default(false)
+  orgType                      OrgType            @default(ORGANISATION)
+  parentOrgId                  String?
+  isParentOrg                  Boolean            @default(false)
+  inheritSettings              Boolean            @default(true)
   isPersonal                   Boolean            @default(false)
+  lifecycleStatus              OrgLifecycleStatus @default(ACTIVE)
+  archivedAt                   DateTime?
+  inviteCode                   String?            @unique
+  inviteEnabled                Boolean            @default(false)
+  inviteExpiresAt              DateTime?
   stripeCustomerId             String?            @unique
   stripeSubscriptionId         String?
   subscriptionStatus           SubscriptionStatus @default(NONE)
   subscriptionCurrentPeriodEnd DateTime?
   subscriptionPriceId          String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt                    DateTime           @default(now())
+  updatedAt                    DateTime           @updatedAt
 
-  parentOrg     Organisation?  @relation("OrgHierarchy", fields: [parentOrgId], references: [id])
-  childOrgs     Organisation[] @relation("OrgHierarchy")
-  users         User[]
-  announcements Announcement[]
-  sessions      ClassSession[]
-  meetingConfig OrgMeetingConfig?
-  ssoConfig     OrgSsoConfig?
-  surveyTargets SurveyTarget[]
-  feedback      FeedbackSubmission[] @relation("OrgFeedback")
-  purchases     Purchase[]
+  parentOrg         Organisation?        @relation("OrgHierarchy", fields: [parentOrgId], references: [id])
+  childOrgs         Organisation[]       @relation("OrgHierarchy")
+  users             User[]
+  cohortMemberships CohortMembership[]
+  announcements     Announcement[]
+  sessions          ClassSession[]
+  meetingConfig     OrgMeetingConfig?
+  ssoConfig         OrgSsoConfig?
+  surveyTargets     SurveyTarget[]
+  feedback          FeedbackSubmission[] @relation("OrgFeedback")
+  purchases         Purchase[]
 
   @@index([parentOrgId])
+  @@index([orgType, lifecycleStatus])
+}
+
+model CohortMembership {
+  id        String                 @id @default(cuid())
+  userId    String
+  cohortId  String
+  status    CohortMembershipStatus @default(ACTIVE)
+  joinedAt  DateTime               @default(now())
+  leftAt    DateTime?
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cohort Organisation @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cohortId])
+  @@index([userId])
+  @@index([cohortId])
+  @@index([status])
 }
 
 model Announcement {
@@ -166,17 +193,17 @@ model Announcement {
 }
 
 model TrainingProgress {
-  id          String    @id @default(cuid())
-  userId      String
-  moduleId    String
-  lessonId    String?
-  completed   Boolean   @default(false)
+  id              String    @id @default(cuid())
+  userId          String
+  moduleId        String
+  lessonId        String?
+  completed       Boolean   @default(false)
   score           Int?
   interactionData Json?
   completedAt     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, moduleId, lessonId])
   @@index([userId])
@@ -216,28 +243,28 @@ model Module {
 }
 
 model Lesson {
-  id            String         @id
-  moduleId      String
-  title         String
-  type          LessonType
-  content           String         @db.Text
+  id                String             @id
+  moduleId          String
+  title             String
+  type              LessonType
+  content           String             @db.Text
   interactiveBlocks Json?
   videoUrl          String?
-  transcript        String?        @db.Text
-  order         Int
-  active        Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  scormBlobPrefix  String?
-  scormEntryPath   String?
-  scormVersion     String?
-  scormToc         Json?
-  surveyId         String?
-  module        Module             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  survey        Survey?            @relation(fields: [surveyId], references: [id], onDelete: SetNull)
-  quizQuestions QuizQuestion[]
-  attachments   LessonAttachment[]
-  notes         LessonNote[]
+  transcript        String?            @db.Text
+  order             Int
+  active            Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  scormBlobPrefix   String?
+  scormEntryPath    String?
+  scormVersion      String?
+  scormToc          Json?
+  surveyId          String?
+  module            Module             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  survey            Survey?            @relation(fields: [surveyId], references: [id], onDelete: SetNull)
+  quizQuestions     QuizQuestion[]
+  attachments       LessonAttachment[]
+  notes             LessonNote[]
 
   @@index([surveyId])
 }
@@ -283,30 +310,30 @@ model LessonNote {
 }
 
 model TrainingProgram {
-  id              String           @id @default(cuid())
+  id              String          @id @default(cuid())
   name            String
-  description     String?          @db.Text
+  description     String?         @db.Text
   order           Int
-  active          Boolean          @default(true)
-  version         String           @default("1.0")
-  status          ProgramStatus    @default(DRAFT)
-  audience        ProgramAudience  @default(EDUCATION)
+  active          Boolean         @default(true)
+  version         String          @default("1.0")
+  status          ProgramStatus   @default(DRAFT)
+  audience        ProgramAudience @default(EDUCATION)
   reviewedAt      DateTime?
   reviewedBy      String?
-  reviewNotes     String?       @db.Text
+  reviewNotes     String?         @db.Text
   priceAmount     Int?
-  currency        String        @default("gbp")
+  currency        String          @default("gbp")
   stripeProductId String?
   stripePriceId   String?
-  purchasable     Boolean       @default(false)
+  purchasable     Boolean         @default(false)
   // Default role assigned to users who self-provision themselves into this
   // program — currently the free-claim flow on /courses and the anonymous
   // Stripe checkout webhook. Admin-created users are unaffected.
   // Should always be a leaf role (CAREGIVER / CAREER_DEV_OFFICER / STUDENT
   // / INTERN / EMPLOYEE); the admin form enforces that.
   defaultLeafRole Role?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   modules   Module[]
   purchases Purchase[]
@@ -523,8 +550,8 @@ enum OrganisationType {
   ACADEMY
   UNIVERSITY
   EMPLOYER
-  EDUCATION   // legacy — kept for existing rows
-  BUSINESS    // legacy — kept for existing rows
+  EDUCATION // legacy — kept for existing rows
+  BUSINESS // legacy — kept for existing rows
 }
 
 enum Role {
@@ -536,6 +563,17 @@ enum Role {
   STUDENT
   INTERN
   EMPLOYEE
+  PARTICIPANT
+}
+
+enum OrgLifecycleStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum CohortMembershipStatus {
+  ACTIVE
+  LEFT
 }
 
 enum SurveyStatus {
@@ -591,17 +629,17 @@ enum CVStatus {
 }
 
 model LibraryCollection {
-  id           String   @id @default(cuid())
-  title        String
-  description  String   @db.Text
-  thumbnailUrl String?
-  targetOrgIds String[]
-  targetRoles  String[]
-  active       Boolean  @default(true)
-  publishedToToolkit Boolean @default(false)
-  createdById  String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  title              String
+  description        String   @db.Text
+  thumbnailUrl       String?
+  targetOrgIds       String[]
+  targetRoles        String[]
+  active             Boolean  @default(true)
+  publishedToToolkit Boolean  @default(false)
+  createdById        String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   createdBy User              @relation("CollectionsCreated", fields: [createdById], references: [id])
   documents LibraryDocument[]
@@ -622,9 +660,9 @@ model LibraryDocument {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  collection LibraryCollection      @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  uploadedBy User                   @relation("UploadedDocuments", fields: [uploadedById], references: [id])
-  events     LibraryDocumentEvent[]
+  collection      LibraryCollection               @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  uploadedBy      User                            @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+  events          LibraryDocumentEvent[]
   anonymousEvents ToolkitAnonymousDocumentEvent[]
 }
 
@@ -671,29 +709,29 @@ model IntegrationApiKey {
 }
 
 model CV {
-  id                    String       @id @default(cuid())
-  userId                String
-  title                 String       @default("My CV")
-  template              CVTemplate   @default(ACCESSIBLE)
-  status                CVStatus     @default(DRAFT)
-  currentStep           Int          @default(0)
-  fullName              String?
-  email                 String?
-  phone                 String?
-  city                  String?
-  postcode              String?
-  linkedIn              String?
-  personalStatement     String?      @db.Text
-  interests             String?      @db.Text
-  refsAvailableOnRequest Boolean     @default(true)
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
+  id                     String     @id @default(cuid())
+  userId                 String
+  title                  String     @default("My CV")
+  template               CVTemplate @default(ACCESSIBLE)
+  status                 CVStatus   @default(DRAFT)
+  currentStep            Int        @default(0)
+  fullName               String?
+  email                  String?
+  phone                  String?
+  city                   String?
+  postcode               String?
+  linkedIn               String?
+  personalStatement      String?    @db.Text
+  interests              String?    @db.Text
+  refsAvailableOnRequest Boolean    @default(true)
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
 
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workExperiences CVWorkExperience[]
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workExperiences  CVWorkExperience[]
   educationEntries CVEducation[]
-  skills          CVSkill[]
-  references      CVReference[]
+  skills           CVSkill[]
+  references       CVReference[]
 
   @@index([userId])
 }
@@ -735,11 +773,11 @@ model CVEducation {
 }
 
 model CVSkill {
-  id       String   @id @default(cuid())
+  id       String  @id @default(cuid())
   cvId     String
   name     String
   category String?
-  order    Int      @default(0)
+  order    Int     @default(0)
 
   cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
 
@@ -747,7 +785,7 @@ model CVSkill {
 }
 
 model CVReference {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   cvId         String
   name         String
   jobTitle     String?
@@ -755,7 +793,7 @@ model CVReference {
   email        String?
   phone        String?
   relationship String?
-  order        Int      @default(0)
+  order        Int     @default(0)
 
   cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
 
@@ -785,47 +823,47 @@ model CareerAdvisorSession {
 }
 
 model AiPrompt {
-  id               String   @id @default(cuid())
-  key              String   @unique
-  name             String
-  purpose          String
-  category         String
+  id       String @id @default(cuid())
+  key      String @unique
+  name     String
+  purpose  String
+  category String
 
-  tone             String
-  requirements     String[]
-  exampleOutput    String?
+  tone          String
+  requirements  String[]
+  exampleOutput String?
 
-  inputVariables   String[]
-  responseFormat   String
+  inputVariables String[]
+  responseFormat String
 
-  model            String
-  enabled          Boolean  @default(true)
+  model   String
+  enabled Boolean @default(true)
 
-  previousFields   Json?
-  defaultFields    Json
+  previousFields Json?
+  defaultFields  Json
 
-  updatedBy        String?
-  updatedByUser    User?    @relation("AiPromptEditor", fields: [updatedBy], references: [id])
-  updatedAt        DateTime @updatedAt
-  createdAt        DateTime @default(now())
+  updatedBy     String?
+  updatedByUser User?    @relation("AiPromptEditor", fields: [updatedBy], references: [id])
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
 
-  contextFiles     AiPromptContextFile[]
+  contextFiles AiPromptContextFile[]
 
   @@index([category])
 }
 
 model AiPromptContextFile {
-  id          String   @id @default(cuid())
-  promptId    String
-  prompt      AiPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  promptId String
+  prompt   AiPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
 
-  fileName    String
-  fileSize    Int
-  mimeType    String
-  blobUrl     String
-  parsedText  String
-  uploadedBy  String?
-  uploadedAt  DateTime @default(now())
+  fileName   String
+  fileSize   Int
+  mimeType   String
+  blobUrl    String
+  parsedText String
+  uploadedBy String?
+  uploadedAt DateTime @default(now())
 
   @@index([promptId])
 }
@@ -833,72 +871,72 @@ model AiPromptContextFile {
 // ─── Job Openings ─────────────────────────────────────────────────────────────
 
 model JobOpening {
-  id                  String             @id @default(cuid())
-  title               String
-  employer            String
-  employerLogoUrl     String?
-  location            String
-  locationType        JobLocationType    @default(ONSITE)
-  employmentType      JobEmploymentType
+  id              String            @id @default(cuid())
+  title           String
+  employer        String
+  employerLogoUrl String?
+  location        String
+  locationType    JobLocationType   @default(ONSITE)
+  employmentType  JobEmploymentType
 
   summary             String
   description         String
   skills              String[]
   autismFriendlyNotes String?
 
-  salary              String?
-  hoursPerWeek        String?
-  startDate           String?
-  duration            String?
+  salary       String?
+  hoursPerWeek String?
+  startDate    String?
+  duration     String?
 
-  applyUrl            String?
-  applyEmail          String?
-  contactName         String?
-  contactEmail        String?
+  applyUrl     String?
+  applyEmail   String?
+  contactName  String?
+  contactEmail String?
 
-  closingDate         DateTime
-  status              JobStatus          @default(DRAFT)
+  closingDate DateTime
+  status      JobStatus @default(DRAFT)
 
-  targetOrgIds        String[]
-  targetRoles         String[]
+  targetOrgIds String[]
+  targetRoles  String[]
 
-  createdById         String
-  createdBy           User               @relation("JobOpeningCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdById String
+  createdBy   User   @relation("JobOpeningCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
 
-  attachments         JobAttachment[]
-  assignments         JobAssignment[]
+  attachments JobAttachment[]
+  assignments JobAssignment[]
 
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status, closingDate])
   @@index([createdById])
 }
 
 model JobAttachment {
-  id          String      @id @default(cuid())
-  jobId       String
-  job         JobOpening  @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  filename    String
-  url         String
-  sizeBytes   Int
-  createdAt   DateTime    @default(now())
+  id        String     @id @default(cuid())
+  jobId     String
+  job       JobOpening @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  filename  String
+  url       String
+  sizeBytes Int
+  createdAt DateTime   @default(now())
 
   @@index([jobId])
 }
 
 model JobAssignment {
-  id            String      @id @default(cuid())
-  jobId         String
-  userId        String
-  assignedById  String
-  note          String?
+  id           String  @id @default(cuid())
+  jobId        String
+  userId       String
+  assignedById String
+  note         String?
 
-  job           JobOpening  @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  user          User        @relation("JobAssignmentUser", fields: [userId], references: [id], onDelete: Cascade)
-  assignedBy    User        @relation("JobAssignmentAssignedBy", fields: [assignedById], references: [id], onDelete: Restrict)
+  job        JobOpening @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user       User       @relation("JobAssignmentUser", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy User       @relation("JobAssignmentAssignedBy", fields: [assignedById], references: [id], onDelete: Restrict)
 
-  createdAt     DateTime    @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([jobId, userId])
   @@index([userId])
@@ -979,28 +1017,28 @@ model HomePage {
 // ─── Feedback System ──────────────────────────────────────────────────────────
 
 model FeedbackSubmission {
-  id             String          @id @default(cuid())
+  id             String        @id @default(cuid())
   userId         String
-  user           User            @relation("FeedbackSubmitter", fields: [userId], references: [id], onDelete: Cascade)
+  user           User          @relation("FeedbackSubmitter", fields: [userId], references: [id], onDelete: Cascade)
   organisationId String?
-  organisation   Organisation?   @relation("OrgFeedback", fields: [organisationId], references: [id], onDelete: SetNull)
+  organisation   Organisation? @relation("OrgFeedback", fields: [organisationId], references: [id], onDelete: SetNull)
 
-  type           FeedbackType
-  message        String          @db.Text
+  type    FeedbackType
+  message String       @db.Text
 
-  url            String
-  userAgent      String          @db.Text
-  viewport       String
-  clientLogs     Json?
+  url        String
+  userAgent  String @db.Text
+  viewport   String
+  clientLogs Json?
 
-  status         FeedbackStatus  @default(NEW)
-  resolvedAt     DateTime?
-  resolvedById   String?
-  resolvedBy     User?           @relation("FeedbackResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
-  adminNotes     String?         @db.Text
+  status       FeedbackStatus @default(NEW)
+  resolvedAt   DateTime?
+  resolvedById String?
+  resolvedBy   User?          @relation("FeedbackResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  adminNotes   String?        @db.Text
 
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
   @@index([userId])

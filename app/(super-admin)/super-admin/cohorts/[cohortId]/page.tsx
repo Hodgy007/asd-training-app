@@ -20,6 +20,10 @@ import {
   Download,
   UserPlus,
   ClipboardList,
+  Archive,
+  ArchiveRestore,
+  Link2,
+  Copy,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
@@ -72,11 +76,19 @@ interface Cohort {
   id: string
   name: string
   active: boolean
+  lifecycleStatus: 'ACTIVE' | 'ARCHIVED'
+  archivedAt: string | null
   allowedProgramIds: string[]
   allowedRoles: string[]
   createdAt: string
   _count: { users: number }
   users: CohortMember[]
+}
+
+interface InviteState {
+  code: string | null
+  enabled: boolean
+  expiresAt: string | null
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -141,6 +153,14 @@ export default function CohortDetailPage() {
   const [selectedProgramIds, setSelectedProgramIds] = useState<string[]>([])
   const [savingPrograms, setSavingPrograms] = useState(false)
 
+  // Invite state
+  const [invite, setInvite] = useState<InviteState | null>(null)
+  const [inviteBusy, setInviteBusy] = useState(false)
+  const [inviteCopied, setInviteCopied] = useState(false)
+
+  // Archive busy
+  const [archiveBusy, setArchiveBusy] = useState(false)
+
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
@@ -153,13 +173,16 @@ export default function CohortDetailPage() {
   async function fetchAll() {
     setLoading(true)
     try {
-      const [cohortRes, programsRes, documentsRes, surveysRes, sessionsRes] = await Promise.all([
+      const [cohortRes, programsRes, documentsRes, surveysRes, sessionsRes, inviteRes] = await Promise.all([
         fetch(`/api/super-admin/cohorts/${cohortId}`),
         fetch('/api/super-admin/training/programs'),
         fetch(`/api/super-admin/cohorts/${cohortId}/documents`),
         fetch(`/api/super-admin/cohorts/${cohortId}/surveys`),
         fetch('/api/super-admin/sessions'),
+        fetch(`/api/super-admin/cohorts/${cohortId}/invite`),
       ])
+
+      if (inviteRes.ok) setInvite(await inviteRes.json())
 
       if (cohortRes.ok) {
         const c = await cohortRes.json()
@@ -352,6 +375,71 @@ export default function CohortDetailPage() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
+  async function handleArchive() {
+    if (!cohort) return
+    const confirmMessage = cohort.lifecycleStatus === 'ARCHIVED'
+      ? `Reactivate "${cohort.name}"? Members can be invited again and the cohort reappears in targeting.`
+      : `Archive "${cohort.name}"? Members keep platform access and read-only access to past content. Invites will be disabled.`
+    if (!confirm(confirmMessage)) return
+    setArchiveBusy(true)
+    try {
+      const method = cohort.lifecycleStatus === 'ARCHIVED' ? 'DELETE' : 'POST'
+      const res = await fetch(`/api/super-admin/cohorts/${cohortId}/archive`, { method })
+      if (res.ok) {
+        showToast(cohort.lifecycleStatus === 'ARCHIVED' ? 'Cohort reactivated.' : 'Cohort archived.', 'success')
+        fetchAll()
+      } else {
+        showToast('Failed to update cohort.', 'error')
+      }
+    } finally {
+      setArchiveBusy(false)
+    }
+  }
+
+  async function handleGenerateInvite() {
+    setInviteBusy(true)
+    try {
+      const res = await fetch(`/api/super-admin/cohorts/${cohortId}/invite`, { method: 'POST' })
+      if (res.ok) {
+        setInvite(await res.json())
+        showToast('Invite link generated.', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Failed to generate invite.', 'error')
+      }
+    } finally {
+      setInviteBusy(false)
+    }
+  }
+
+  async function handleToggleInvite(enabled: boolean) {
+    setInviteBusy(true)
+    try {
+      const res = await fetch(`/api/super-admin/cohorts/${cohortId}/invite`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      })
+      if (res.ok) {
+        setInvite(await res.json())
+        showToast(enabled ? 'Invite link enabled.' : 'Invite link disabled.', 'success')
+      } else {
+        showToast('Failed to update invite.', 'error')
+      }
+    } finally {
+      setInviteBusy(false)
+    }
+  }
+
+  function copyInviteLink() {
+    if (!invite?.code) return
+    const url = `${window.location.origin}/join/${invite.code}`
+    navigator.clipboard.writeText(url).then(() => {
+      setInviteCopied(true)
+      setTimeout(() => setInviteCopied(false), 2000)
+    })
+  }
+
   function downloadBulkCredentials() {
     if (!bulkResults) return
     const lines = ['Name,Email,Password,Role', ...bulkResults.map((r) => `"${r.name}","${r.email}","${r.password}","${r.role}"`)]
@@ -425,24 +513,121 @@ export default function CohortDetailPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <UsersRound className="h-6 w-6 text-emerald-600" />
             {cohort.name}
+            {cohort.lifecycleStatus === 'ARCHIVED' && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-medium">
+                Archived
+              </span>
+            )}
+            {!cohort.active && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 font-medium">
+                Inactive
+              </span>
+            )}
           </h1>
-          {!cohort.active && (
-            <span className="mt-1 inline-block text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 font-medium">
-              Inactive
-            </span>
-          )}
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Created {new Date(cohort.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+            {cohort.archivedAt && (
+              <> · Archived {new Date(cohort.archivedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</>
+            )}
           </p>
         </div>
-        <Link
-          href={`/super-admin/sessions/new`}
-          className="btn-primary flex items-center gap-2 text-sm"
-        >
-          <Calendar className="h-4 w-4" />
-          Create Workshop
-        </Link>
+        <div className="flex gap-2">
+          <button
+            onClick={handleArchive}
+            disabled={archiveBusy}
+            className="btn-secondary flex items-center gap-2 text-sm disabled:opacity-50"
+            title={cohort.lifecycleStatus === 'ARCHIVED' ? 'Reactivate this cohort' : 'Archive this cohort'}
+          >
+            {cohort.lifecycleStatus === 'ARCHIVED' ? (
+              <>
+                <ArchiveRestore className="h-4 w-4" />
+                Reactivate
+              </>
+            ) : (
+              <>
+                <Archive className="h-4 w-4" />
+                Archive
+              </>
+            )}
+          </button>
+          {cohort.lifecycleStatus === 'ACTIVE' && (
+            <Link
+              href={`/super-admin/sessions/new`}
+              className="btn-primary flex items-center gap-2 text-sm"
+            >
+              <Calendar className="h-4 w-4" />
+              Create Workshop
+            </Link>
+          )}
+        </div>
       </div>
+
+      {/* Invite link panel — only for active cohorts */}
+      {cohort.lifecycleStatus === 'ACTIVE' && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Link2 className="h-4 w-4 text-emerald-600" />
+                Invite link
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Share this link to let people sign up and join this cohort. New users get the Workshop Participant role.
+              </p>
+            </div>
+            {invite?.code && (
+              <button
+                onClick={() => handleToggleInvite(!invite.enabled)}
+                disabled={inviteBusy}
+                className={clsx(
+                  'text-xs px-2.5 py-1 rounded-full font-medium transition disabled:opacity-50',
+                  invite.enabled
+                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200'
+                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                )}
+              >
+                {invite.enabled ? 'Enabled' : 'Disabled — click to enable'}
+              </button>
+            )}
+          </div>
+
+          {invite?.code ? (
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${invite.code}`}
+                className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm font-mono bg-calm-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                onClick={(e) => (e.target as HTMLInputElement).select()}
+              />
+              <button
+                onClick={copyInviteLink}
+                className="btn-secondary flex items-center gap-2 text-sm"
+              >
+                <Copy className="h-4 w-4" />
+                {inviteCopied ? 'Copied!' : 'Copy'}
+              </button>
+              <button
+                onClick={handleGenerateInvite}
+                disabled={inviteBusy}
+                className="btn-secondary flex items-center gap-2 text-sm disabled:opacity-50"
+                title="Generate a new code (the old link stops working)"
+              >
+                <RefreshCw className={clsx('h-4 w-4', inviteBusy && 'animate-spin')} />
+                Regenerate
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleGenerateInvite}
+              disabled={inviteBusy}
+              className="btn-primary flex items-center gap-2 text-sm disabled:opacity-50"
+            >
+              <Link2 className="h-4 w-4" />
+              {inviteBusy ? 'Generating…' : 'Generate invite link'}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="border-b border-calm-200 dark:border-slate-700">

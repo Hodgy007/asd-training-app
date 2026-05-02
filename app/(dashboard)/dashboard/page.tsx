@@ -12,13 +12,32 @@ import { LearningJourney } from '@/components/training/learning-journey'
 import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
 import { PendingSurveys } from '@/components/dashboard/pending-surveys'
-import { isCharityLevel } from '@/lib/rbac'
+import { isCharityLevel, isParticipant } from '@/lib/rbac'
 import { HowToPanel } from '@/components/howto/panel'
 import DashboardHowTo from '@/components/howto/learner/dashboard'
+import { CohortHub } from '@/components/dashboard/cohort-hub'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
+
+  // PARTICIPANT users see only their Cohort Hub — they don't have allowed-program
+  // training of their own outside of what their cohort gives them, and they
+  // don't need the careers/CV tooling.
+  if (isParticipant(session)) {
+    const firstName = session.user.name?.split(' ')[0] || 'there'
+    return (
+      <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Welcome, {firstName}</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Here&apos;s what&apos;s happening with your workshop.
+          </p>
+        </div>
+        <CohortHub userId={session.user.id} />
+      </div>
+    )
+  }
 
   const progressRecords = await prisma.trainingProgress.findMany({
     where: { userId: session.user.id, completed: true },
@@ -66,6 +85,7 @@ export default async function DashboardPage() {
       </div>
 
       <DashboardAnnouncements />
+      <CohortHub userId={session.user.id} />
       <UpcomingSessions />
       <PendingSurveys />
 
