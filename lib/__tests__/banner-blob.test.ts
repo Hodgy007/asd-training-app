@@ -6,7 +6,7 @@ vi.mock('@vercel/blob', () => ({
 }))
 
 import { list, put } from '@vercel/blob'
-import { bannerCacheKey, getCachedBannerUrl, storeBannerToBlob } from '../banner-blob'
+import { bannerCacheKey, getCachedBannerUrl, storeBannerToBlob, _resetBannerUrlCache } from '../banner-blob'
 
 describe('bannerCacheKey', () => {
   it('produces a stable hash from systemPrompt + userPrompt + model + aspectRatio', () => {
@@ -32,6 +32,7 @@ describe('bannerCacheKey', () => {
 describe('getCachedBannerUrl', () => {
   beforeEach(() => {
     vi.mocked(list).mockReset()
+    _resetBannerUrlCache()
   })
 
   it('returns the URL when the listed pathname matches the computed hash', async () => {
@@ -58,11 +59,26 @@ describe('getCachedBannerUrl', () => {
     const url = await getCachedBannerUrl('sys', 'user', 'm', '3:1')
     expect(url).toBeNull()
   })
+
+  it('returns the in-memory cached URL on a second call without hitting list()', async () => {
+    const hash = bannerCacheKey('sys', 'user', 'm', '3:1')
+    vi.mocked(list).mockResolvedValue({
+      blobs: [{ pathname: `home-banners/${hash}.png`, url: 'https://blob/once.png' } as never],
+      cursor: '',
+      hasMore: false,
+    } as never)
+    const first = await getCachedBannerUrl('sys', 'user', 'm', '3:1')
+    const second = await getCachedBannerUrl('sys', 'user', 'm', '3:1')
+    expect(first).toBe('https://blob/once.png')
+    expect(second).toBe('https://blob/once.png')
+    expect(list).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('storeBannerToBlob', () => {
   beforeEach(() => {
     vi.mocked(put).mockReset()
+    _resetBannerUrlCache()
   })
 
   it('uploads to the deterministic pathname and returns the URL', async () => {

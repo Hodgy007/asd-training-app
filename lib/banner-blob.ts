@@ -1,6 +1,14 @@
 import { list, put } from '@vercel/blob'
 import crypto from 'crypto'
 
+/** In-memory hot cache: pathname → public URL. Saves ~200 ms per lookup on a warm Lambda. */
+const urlCache = new Map<string, string>()
+
+/** Test-only helper to reset the in-memory cache between test cases. */
+export function _resetBannerUrlCache(): void {
+  urlCache.clear()
+}
+
 /**
  * Deterministic cache key. Including `systemPrompt` means edits to the AAA
  * brand prompt naturally invalidate old entries — no manual cache busting
@@ -31,9 +39,13 @@ export async function getCachedBannerUrl(
   const hash = bannerCacheKey(systemPrompt, userPrompt, model, aspectRatio)
   const pathname = blobPathname(hash)
 
+  const hot = urlCache.get(pathname)
+  if (hot) return hot
+
   try {
     const { blobs } = await list({ prefix: pathname, limit: 1 })
     if (blobs.length > 0 && blobs[0].pathname === pathname) {
+      urlCache.set(pathname, blobs[0].url)
       return blobs[0].url
     }
   } catch (err) {
@@ -58,5 +70,6 @@ export async function storeBannerToBlob(
     cacheControlMaxAge: 60 * 60 * 24 * 365,
     allowOverwrite: true,
   })
+  urlCache.set(pathname, blob.url)
   return blob.url
 }
