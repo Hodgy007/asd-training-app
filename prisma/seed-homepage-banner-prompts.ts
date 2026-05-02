@@ -65,7 +65,7 @@ async function main() {
       exampleOutput: null,
       inputVariables: ['prompt', 'aspectRatio'],
       responseFormat: 'PNG image.',
-      model: 'google/gemini-2.5-flash-image-preview',
+      model: 'google/imagen-4.0-ultra-generate-001',
       enabled: true,
       defaultFields: {
         tone: 'Warm, optimistic, hand-drawn illustrative.',
@@ -77,7 +77,7 @@ async function main() {
           'Aspect ratio: {{aspectRatio}}.',
         ],
         exampleOutput: null,
-        model: 'google/gemini-2.5-flash-image-preview',
+        model: 'google/imagen-4.0-ultra-generate-001',
       },
     },
   })
