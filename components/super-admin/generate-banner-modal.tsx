@@ -72,13 +72,17 @@ export function GenerateBannerModal({
       const data = await res.json()
       if (!res.ok) {
         setStatus('error')
-        setErrorMessage(
-          data.error === 'gateway_unavailable'
-            ? 'Banner generation is temporarily unavailable. Try again in a few minutes.'
-            : data.error === 'content_policy'
-              ? 'That prompt was rejected. Try rewording it.'
-              : 'Something went wrong. Try again.',
-        )
+        if (res.status === 429) {
+          setErrorMessage(
+            typeof data?.error === 'string'
+              ? data.error
+              : 'Too many requests. Please wait a few minutes before trying again.',
+          )
+        } else if (data?.error === 'gateway_unavailable') {
+          setErrorMessage('Banner generation is temporarily unavailable. Try again in a few minutes.')
+        } else {
+          setErrorMessage('Something went wrong. Try again.')
+        }
         return
       }
       setPreviewUrl(data.url)
