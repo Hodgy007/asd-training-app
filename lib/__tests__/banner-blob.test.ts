@@ -54,6 +54,22 @@ describe('getCachedBannerUrl', () => {
     expect(url).toBeNull()
   })
 
+  it('returns null when the listed blob pathname does not match exactly', async () => {
+    vi.mocked(list).mockResolvedValue({
+      blobs: [
+        {
+          // Same prefix `home-banners/` but a different hash — must not match.
+          pathname: 'home-banners/' + 'a'.repeat(64) + '.png',
+          url: 'https://blob/wrong.png',
+        } as never,
+      ],
+      cursor: '',
+      hasMore: false,
+    } as never)
+    const url = await getCachedBannerUrl('sys', 'user', 'm', '3:1')
+    expect(url).toBeNull()
+  })
+
   it('returns null when list throws', async () => {
     vi.mocked(list).mockRejectedValue(new Error('blob down'))
     const url = await getCachedBannerUrl('sys', 'user', 'm', '3:1')
@@ -89,7 +105,13 @@ describe('storeBannerToBlob', () => {
     expect(put).toHaveBeenCalledWith(
       expect.stringMatching(/^home-banners\/[a-f0-9]{64}\.png$/),
       png,
-      expect.objectContaining({ access: 'public', contentType: 'image/png' }),
+      expect.objectContaining({
+        access: 'public',
+        contentType: 'image/png',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        cacheControlMaxAge: 60 * 60 * 24 * 365,
+      }),
     )
   })
 })

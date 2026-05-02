@@ -21,6 +21,9 @@ export async function generateBannerPng(
   model: string,
   aspectRatio: '3:1' | '4:1',
 ): Promise<Buffer> {
+  // The `as Parameters<...>[0]` cast is needed because `generateImage`'s
+  // parameter shape varies per provider (e.g., some providers route aspectRatio
+  // via providerOptions). Validated against google/gemini-2.5-flash-image-preview.
   const result = await generateImage({
     model,
     prompt: fullPrompt,
