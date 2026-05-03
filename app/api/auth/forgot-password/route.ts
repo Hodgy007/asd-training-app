@@ -5,13 +5,16 @@ import crypto from 'crypto'
 import { z } from 'zod'
 import { forgotPasswordLimiter, getClientIp } from '@/lib/rate-limit'
 import { wrapEmailHtml } from '@/lib/email-templates/layout'
+import { logger, errMeta } from '@/lib/logger'
 
 const schema = z.object({ email: z.string().email() })
 
 export async function POST(req: NextRequest) {
+  const requestId = req.headers.get('x-request-id') ?? undefined
   const ip = getClientIp(req)
   const rateLimit = forgotPasswordLimiter.check(ip)
   if (!rateLimit.success) {
+    logger.warn('auth.forgot_password.rate_limited', { requestId, ip })
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.' },
       { status: 429, headers: { 'Retry-After': String(Math.ceil(rateLimit.retryAfterMs / 1000)) } }
@@ -21,6 +24,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
+    logger.warn('auth.forgot_password.invalid_input', { requestId, ip })
     return NextResponse.json({ error: 'Invalid email.' }, { status: 400 })
   }
 
@@ -29,6 +33,11 @@ export async function POST(req: NextRequest) {
   // Always return success to prevent email enumeration
   const user = await prisma.user.findUnique({ where: { email } })
   if (!user || !user.active) {
+    logger.info('auth.forgot_password.no_match', {
+      requestId,
+      ip,
+      reason: !user ? 'unknown_email' : 'inactive_user',
+    })
     return NextResponse.json({ message: 'If that email exists, a reset link has been sent.' })
   }
 
@@ -43,7 +52,10 @@ export async function POST(req: NextRequest) {
   const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`
 
   if (!process.env.RESEND_API_KEY) {
-    console.error('RESEND_API_KEY is not configured — cannot send password reset email')
+    logger.error('auth.forgot_password.resend_not_configured', {
+      requestId,
+      userId: user.id,
+    })
     return NextResponse.json({ message: 'If that email exists, a reset link has been sent.' })
   }
 
@@ -62,8 +74,16 @@ export async function POST(req: NextRequest) {
       subject: 'Reset your password',
       html: wrapEmailHtml(innerHtml),
     })
+    logger.info('auth.forgot_password.email_sent', {
+      requestId,
+      userId: user.id,
+    })
   } catch (error) {
-    console.error('Failed to send password reset email:', error)
+    logger.error('auth.forgot_password.email_failed', {
+      requestId,
+      userId: user.id,
+      ...errMeta(error),
+    })
   }
 
   return NextResponse.json({ message: 'If that email exists, a reset link has been sent.' })
