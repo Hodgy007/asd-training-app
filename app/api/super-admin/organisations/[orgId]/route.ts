@@ -5,6 +5,7 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { LEAF_ROLES } from '@/types'
+import { isSystemOrg } from '@/lib/cohort'
 
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -113,6 +114,26 @@ export async function PATCH(
   // Extract collection/survey assignment arrays before passing to org update
   const { assignedCollectionIds, assignedSurveyIds, ...orgData } = parsed.data
 
+  // System orgs (Independent Learners): block only the changes that would
+  // break the singleton. The slug is how `isSystemOrg` finds the row, and
+  // its `active=true` / `pendingApproval=false` invariants are what make
+  // signup work. Everything else is fine to edit (name display, contact
+  // details, library/survey targeting, feature flags).
+  if (isSystemOrg(org)) {
+    if (parsed.data.slug && parsed.data.slug !== org.slug) {
+      return NextResponse.json(
+        { error: 'The system org slug cannot be changed.' },
+        { status: 400 }
+      )
+    }
+    if (parsed.data.active === false) {
+      return NextResponse.json(
+        { error: 'The system org cannot be deactivated.' },
+        { status: 400 }
+      )
+    }
+  }
+
   const updated = await prisma.organisation.update({
     where: { id: params.orgId },
     data: orgData,
@@ -192,6 +213,13 @@ export async function DELETE(
   })
 
   if (!org) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  if (isSystemOrg(org)) {
+    return NextResponse.json(
+      { error: 'This is a system-managed organisation and cannot be deleted.' },
+      { status: 400 }
+    )
+  }
 
   if (org._count.users > 0) {
     return NextResponse.json(

@@ -5,6 +5,7 @@ import type { Role } from '@/types'
 
 export const CHARITY_PERMISSIONS = {
   MANAGE_ORGANISATIONS: 'manage_organisations',
+  MANAGE_COHORTS: 'manage_cohorts',
   MANAGE_TRAINING: 'manage_training',
   MANAGE_SURVEYS: 'manage_surveys',
   MANAGE_ANNOUNCEMENTS: 'manage_announcements',
@@ -21,6 +22,7 @@ export const ALL_CHARITY_PERMISSIONS: CharityPermission[] = Object.values(CHARIT
 
 export const PERMISSION_LABELS: Record<string, string> = {
   manage_announcements: 'Manage Announcements',
+  manage_cohorts: 'Manage Cohorts',
   manage_library: 'Manage Library',
   manage_organisations: 'Manage Organisations',
   manage_surveys: 'Manage Surveys',

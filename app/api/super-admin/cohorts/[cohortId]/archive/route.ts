@@ -11,7 +11,7 @@ async function findCohort(cohortId: string) {
 
 export async function POST(_req: NextRequest, { params }: { params: { cohortId: string } }) {
   const session = await getServerSession(authOptions)
-  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
   const cohort = await findCohort(params.cohortId)
@@ -22,7 +22,7 @@ export async function POST(_req: NextRequest, { params }: { params: { cohortId: 
 
 export async function DELETE(_req: NextRequest, { params }: { params: { cohortId: string } }) {
   const session = await getServerSession(authOptions)
-  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
   const cohort = await findCohort(params.cohortId)

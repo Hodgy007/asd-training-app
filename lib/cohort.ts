@@ -9,7 +9,17 @@ import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 
-const INDEPENDENT_LEARNERS_SLUG = 'independent-learners'
+export const INDEPENDENT_LEARNERS_SLUG = 'independent-learners'
+
+/**
+ * The Independent Learners org is system-managed: its row exists so PARTICIPANT
+ * users always have a valid `organisationId` (avoiding a nullable refactor).
+ * It can be targeted by libraries / announcements / surveys, but cannot be
+ * renamed, deleted, or have its `orgType` changed by admins.
+ */
+export function isSystemOrg(org: { slug?: string | null; isPersonal?: boolean | null }): boolean {
+  return org.slug === INDEPENDENT_LEARNERS_SLUG
+}
 
 /** URL-safe code, ~16 chars of base64url (96 bits of entropy). */
 export function generateInviteCode(): string {

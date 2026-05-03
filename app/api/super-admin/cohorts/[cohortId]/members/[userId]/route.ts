@@ -9,7 +9,7 @@ export async function DELETE(
   { params }: { params: { cohortId: string; userId: string } },
 ) {
   const session = await getServerSession(authOptions)
-  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

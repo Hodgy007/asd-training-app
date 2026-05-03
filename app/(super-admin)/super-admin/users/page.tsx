@@ -301,7 +301,7 @@ export default function CharityUsersPage() {
           {formRole === 'CHARITY_EMPLOYEE' && (
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Permissions</label>
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                 {ALL_CHARITY_PERMISSIONS.map((perm) => (
                   <label key={perm} className="flex items-center gap-3 cursor-pointer">
                     <input

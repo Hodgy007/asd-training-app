@@ -39,18 +39,30 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
+  // Include the Independent Learners system org alongside real orgs so charity
+  // staff can target it with libraries/announcements/surveys (catch-all for
+  // unaffiliated PARTICIPANT users). Cohorts are still excluded — those have
+  // their own UI under /super-admin/cohorts.
+  const where = {
+    pendingApproval: false,
+    OR: [
+      { orgType: 'ORGANISATION' as const },
+      { orgType: 'PERSONAL' as const, isPersonal: true },
+    ],
+  }
+
   if (!canManageOrganisations && canManageSessions) {
     const orgs = await prisma.organisation.findMany({
-      where: { pendingApproval: false, orgType: 'ORGANISATION' },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true, name: true, slug: true, active: true },
+      where,
+      orderBy: [{ orgType: 'asc' }, { createdAt: 'desc' }],
+      select: { id: true, name: true, slug: true, active: true, orgType: true, isPersonal: true },
     })
     return NextResponse.json(orgs)
   }
 
   const orgs = await prisma.organisation.findMany({
-    where: { pendingApproval: false, orgType: 'ORGANISATION' },
-    orderBy: { createdAt: 'desc' },
+    where,
+    orderBy: [{ orgType: 'asc' }, { createdAt: 'desc' }],
     include: { _count: { select: { users: true, childOrgs: true } } },
   })
 
