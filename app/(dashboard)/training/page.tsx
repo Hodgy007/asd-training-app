@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { isCharityLevel } from '@/lib/rbac'
+import { getUserPrograms } from '@/lib/modules'
 import Link from 'next/link'
 import { BookOpen, ChevronRight } from 'lucide-react'
 import { stripHtml } from '@/lib/rich-text'
@@ -37,15 +38,11 @@ export default async function TrainingPage({
       orderBy: { order: 'asc' },
     })
   } else {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { organisation: { select: { allowedProgramIds: true } } },
-    })
-    const allowedProgramIds = user?.organisation?.allowedProgramIds ?? []
-    if (allowedProgramIds.length === 0) redirect('/dashboard')
+    const allowed = await getUserPrograms(session.user.id)
+    if (allowed.length === 0) redirect('/dashboard')
 
     programs = await prisma.trainingProgram.findMany({
-      where: { id: { in: allowedProgramIds }, active: true },
+      where: { id: { in: allowed.map((p) => p.id) }, active: true },
       select: { id: true, name: true, description: true, audience: true },
       orderBy: { order: 'asc' },
     })

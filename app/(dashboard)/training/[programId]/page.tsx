@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { ModuleCard } from '@/components/training/module-card'
 import { isCharityLevel } from '@/lib/rbac'
+import { getUserPrograms } from '@/lib/modules'
 import { Award, Download } from 'lucide-react'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { isHtml } from '@/lib/rich-text'
@@ -18,14 +19,12 @@ export default async function ProgramPage({ params }: { params: { programId: str
 
   if (!program) redirect('/dashboard')
 
-  // Check access: SUPER_ADMIN and CHARITY_EMPLOYEE can preview all; others need org assignment
+  // Check access: SUPER_ADMIN and CHARITY_EMPLOYEE can preview all; others use the
+  // canonical resolver which unions org / cohort / per-user (Independent Learners)
+  // allowed program IDs.
   if (!isCharityLevel(session)) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { organisation: { select: { allowedProgramIds: true } } },
-    })
-    const allowedProgramIds = user?.organisation?.allowedProgramIds ?? []
-    if (!allowedProgramIds.includes(params.programId)) {
+    const allowed = await getUserPrograms(session.user.id)
+    if (!allowed.some((p) => p.id === params.programId)) {
       redirect('/dashboard')
     }
   }
