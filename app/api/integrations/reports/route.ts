@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateApiKey } from '@/lib/integration-auth'
 import { prisma } from '@/lib/prisma'
+import { logger, errMeta } from '@/lib/logger'
 
 async function fetchTraining() {
   const allModules = await prisma.module.findMany({
@@ -122,28 +123,81 @@ async function fetchSurveys() {
 }
 
 export async function GET(req: NextRequest) {
-  const valid = await validateApiKey(req.headers.get('authorization'))
+  const requestId = req.headers.get('x-request-id') ?? undefined
+  const startedAt = Date.now()
+  const authHeader = req.headers.get('authorization')
+  const keyPrefix = authHeader?.replace(/^Bearer\s+/i, '').slice(0, 8)
+
+  const valid = await validateApiKey(authHeader)
   if (!valid) {
+    logger.warn('integrations.reports.auth_failed', { requestId, keyPrefix })
     return NextResponse.json({ error: 'Invalid or expired API key' }, { status: 401 })
   }
 
-  const section = req.nextUrl.searchParams.get('section')
+  const section = req.nextUrl.searchParams.get('section') ?? 'all'
 
-  if (section === 'training') return NextResponse.json({ training: await fetchTraining() })
-  if (section === 'library') return NextResponse.json({ library: await fetchLibrary() })
-  if (section === 'surveys') return NextResponse.json({ surveys: await fetchSurveys() })
+  logger.info('integrations.reports.request', { requestId, keyPrefix, section })
 
-  // All sections
-  const [training, library, surveys] = await Promise.all([
-    fetchTraining(),
-    fetchLibrary(),
-    fetchSurveys(),
-  ])
+  try {
+    if (section === 'training') {
+      const training = await fetchTraining()
+      logger.info('integrations.reports.success', {
+        requestId,
+        keyPrefix,
+        section,
+        durationMs: Date.now() - startedAt,
+      })
+      return NextResponse.json({ training })
+    }
+    if (section === 'library') {
+      const library = await fetchLibrary()
+      logger.info('integrations.reports.success', {
+        requestId,
+        keyPrefix,
+        section,
+        durationMs: Date.now() - startedAt,
+      })
+      return NextResponse.json({ library })
+    }
+    if (section === 'surveys') {
+      const surveys = await fetchSurveys()
+      logger.info('integrations.reports.success', {
+        requestId,
+        keyPrefix,
+        section,
+        durationMs: Date.now() - startedAt,
+      })
+      return NextResponse.json({ surveys })
+    }
 
-  return NextResponse.json({
-    generatedAt: new Date().toISOString(),
-    training,
-    library,
-    surveys,
-  })
+    // All sections
+    const [training, library, surveys] = await Promise.all([
+      fetchTraining(),
+      fetchLibrary(),
+      fetchSurveys(),
+    ])
+
+    logger.info('integrations.reports.success', {
+      requestId,
+      keyPrefix,
+      section: 'all',
+      durationMs: Date.now() - startedAt,
+    })
+
+    return NextResponse.json({
+      generatedAt: new Date().toISOString(),
+      training,
+      library,
+      surveys,
+    })
+  } catch (error) {
+    logger.error('integrations.reports.failed', {
+      requestId,
+      keyPrefix,
+      section,
+      durationMs: Date.now() - startedAt,
+      ...errMeta(error),
+    })
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
 }
