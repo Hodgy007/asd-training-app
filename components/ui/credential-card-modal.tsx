@@ -64,7 +64,7 @@ export function CredentialCardModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md">
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
       {/* Printable credential card */}
       <div id="credential-card-print-area" className="credential-card-print-area">
         <div className="text-center mb-6">
@@ -128,8 +128,10 @@ export function CredentialCardModal({
         </div>
       )}
 
-      {/* Action buttons — hidden during print */}
-      <div className="no-print flex flex-wrap gap-3 mt-6 pt-4 border-t border-calm-200">
+      {/* Action buttons — hidden during print. flex-nowrap keeps them on one
+          row so the modal doesn't grow taller than the viewport on small
+          screens and force inner scroll. */}
+      <div className="no-print flex flex-nowrap gap-3 mt-6 pt-4 border-t border-calm-200">
         <button
           onClick={handleSendInvite}
           disabled={inviteState === 'sending' || inviteState === 'sent'}
