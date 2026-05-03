@@ -7,6 +7,7 @@ import { prisma } from './prisma'
 import { getUserPrograms } from './modules'
 import type { ProgramInfo } from './modules'
 import { getEffectiveOrgSettings } from './org-hierarchy'
+import { isSystemOrg } from './cohort'
 
 async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> {
   return getUserPrograms(userId)
@@ -22,9 +23,13 @@ async function getOrgFeatureFlags(organisationId: string | null | undefined): Pr
 }
 
 /**
- * Effective per-user feature flags. A non-null user-level override wins over
- * the org default — used to give Independent Learners users custom CV Builder
- * / Careers Advisor access without changing every other org's behaviour.
+ * Effective per-user feature flags.
+ *
+ * Normal orgs: user-level override wins, otherwise inherit the org default.
+ * Independent Learners (system org): null user-level value means OFF, not
+ *   inherit. Each unaffiliated learner is opted in explicitly — we don't
+ *   want toggling the org default to silently grant CV Builder to every
+ *   workshop participant.
  */
 async function getEffectiveFeatureFlags(
   userId: string | null | undefined,
@@ -34,11 +39,21 @@ async function getEffectiveFeatureFlags(
   if (!userId) return orgFlags
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { cvBuilderEnabled: true, careersAdvisorEnabled: true },
+    select: {
+      cvBuilderEnabled: true,
+      careersAdvisorEnabled: true,
+      organisation: { select: { slug: true } },
+    },
   })
+  if (!user) return orgFlags
+  const onSystemOrg = isSystemOrg(user.organisation ?? {})
   return {
-    cvBuilderEnabled: user?.cvBuilderEnabled ?? orgFlags.cvBuilderEnabled,
-    careersAdvisorEnabled: user?.careersAdvisorEnabled ?? orgFlags.careersAdvisorEnabled,
+    cvBuilderEnabled: onSystemOrg
+      ? (user.cvBuilderEnabled ?? false)
+      : (user.cvBuilderEnabled ?? orgFlags.cvBuilderEnabled),
+    careersAdvisorEnabled: onSystemOrg
+      ? (user.careersAdvisorEnabled ?? false)
+      : (user.careersAdvisorEnabled ?? orgFlags.careersAdvisorEnabled),
   }
 }
 
