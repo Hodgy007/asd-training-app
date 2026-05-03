@@ -52,6 +52,8 @@ interface ParentOrgSummary {
   name: string
 }
 
+const SYSTEM_ORG_SLUG = 'independent-learners'
+
 interface OrgDetail {
   id: string
   name: string
@@ -60,6 +62,7 @@ interface OrgDetail {
   allowedRoles: string[]
   allowedProgramIds: string[]
   isParentOrg: boolean
+  orgType?: string
   parentOrgId: string | null
   inheritSettings: boolean
   contactName: string | null
@@ -446,8 +449,20 @@ export default function OrgDetailPage() {
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Building2 className="h-6 w-6 text-primary-600" />
               {org.name}
+              {org.slug === SYSTEM_ORG_SLUG && (
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                  System
+                </span>
+              )}
             </h1>
             <p className="text-slate-500 mt-1 font-mono text-sm">{org.slug}</p>
+            {org.slug === SYSTEM_ORG_SLUG && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 max-w-prose">
+                System-managed catch-all for unaffiliated learners (workshop participants, individual signups).
+                You can target this org with libraries, surveys, and announcements, but its name, slug, type and
+                membership rules are read-only.
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span
@@ -1001,32 +1016,34 @@ export default function OrgDetailPage() {
         </div>
       </div>
 
-      {/* Danger zone */}
-      <div className="card border border-red-200 dark:border-red-900 space-y-3">
-        <h2 className="text-base font-semibold text-red-700 dark:text-red-400">Danger Zone</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Permanently delete this organisation. Only available when there are no users.
-        </p>
-        <button
-          onClick={() => setShowDeleteModal(true)}
-          disabled={deleting || org._count.users > 0}
-          className={clsx(
-            'inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors',
-            org._count.users > 0
-              ? 'bg-slate-100 text-slate-400 cursor-not-allowed dark:bg-slate-700 dark:text-slate-500'
-              : 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
-          )}
-          title={org._count.users > 0 ? 'Remove all users before deleting this organisation' : undefined}
-        >
-          <Trash2 className="h-4 w-4" />
-          Delete Organisation
-        </button>
-        {org._count.users > 0 && (
-          <p className="text-xs text-slate-400">
-            This organisation has {org._count.users} user{org._count.users !== 1 ? 's' : ''}. Reassign or delete all users first.
+      {/* Danger zone — hidden for system orgs */}
+      {org.slug !== SYSTEM_ORG_SLUG && (
+        <div className="card border border-red-200 dark:border-red-900 space-y-3">
+          <h2 className="text-base font-semibold text-red-700 dark:text-red-400">Danger Zone</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Permanently delete this organisation. Only available when there are no users.
           </p>
-        )}
-      </div>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            disabled={deleting || org._count.users > 0}
+            className={clsx(
+              'inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors',
+              org._count.users > 0
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed dark:bg-slate-700 dark:text-slate-500'
+                : 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
+            )}
+            title={org._count.users > 0 ? 'Remove all users before deleting this organisation' : undefined}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Organisation
+          </button>
+          {org._count.users > 0 && (
+            <p className="text-xs text-slate-400">
+              This organisation has {org._count.users} user{org._count.users !== 1 ? 's' : ''}. Reassign or delete all users first.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Delete confirmation modal */}
       {showDeleteModal && (

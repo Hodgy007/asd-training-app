@@ -34,9 +34,14 @@ interface OrgRow {
   allowedRoles: string[]
   allowedProgramIds: string[]
   isParentOrg: boolean
+  orgType?: string
+  isPersonal?: boolean
   createdAt: string
   _count: { users: number; childOrgs: number }
 }
+
+const SYSTEM_ORG_SLUG = 'independent-learners'
+const isSystem = (org: { slug: string }) => org.slug === SYSTEM_ORG_SLUG
 
 interface PendingOrg {
   id: string
@@ -670,6 +675,14 @@ function OrganisationsContent() {
                             Parent
                           </span>
                         )}
+                        {isSystem(org) && (
+                          <span
+                            className="ml-2 inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                            title="System-managed catch-all for unaffiliated learners. Targetable by libraries, surveys and announcements but cannot be renamed or deleted."
+                          >
+                            System
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 font-mono text-xs text-slate-500">{org.slug}</td>
                       <td className="px-4 py-3 text-slate-700">
@@ -681,22 +694,28 @@ function OrganisationsContent() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <button
-                          disabled={isLoading}
-                          onClick={() => toggleActive(org)}
-                          className={clsx(
-                            'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-colors',
-                            org.active
-                              ? 'bg-sage-100 text-sage-700 hover:bg-sage-200'
-                              : 'bg-red-100 text-red-700 hover:bg-red-200'
-                          )}
-                        >
-                          {org.active ? (
-                            <><CheckCircle className="h-3 w-3" />Active</>
-                          ) : (
-                            <><XCircle className="h-3 w-3" />Inactive</>
-                          )}
-                        </button>
+                        {isSystem(org) ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400" title="System orgs are always active.">
+                            <CheckCircle className="h-3 w-3" />Active
+                          </span>
+                        ) : (
+                          <button
+                            disabled={isLoading}
+                            onClick={() => toggleActive(org)}
+                            className={clsx(
+                              'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-colors',
+                              org.active
+                                ? 'bg-sage-100 text-sage-700 hover:bg-sage-200'
+                                : 'bg-red-100 text-red-700 hover:bg-red-200'
+                            )}
+                          >
+                            {org.active ? (
+                              <><CheckCircle className="h-3 w-3" />Active</>
+                            ) : (
+                              <><XCircle className="h-3 w-3" />Inactive</>
+                            )}
+                          </button>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-xs text-slate-400 hidden md:table-cell">
                         {new Date(org.createdAt).toLocaleDateString('en-GB', {
