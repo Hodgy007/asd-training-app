@@ -39,6 +39,7 @@ interface LibraryDoc {
   fileSize: number
   fileType: string
   thumbnailUrl: string | null
+  videoUrl: string | null
   active: boolean
   createdAt: string
   uploadedBy: { name: string | null }
@@ -75,6 +76,7 @@ export default function CollectionDetailPage() {
   const [formDescription, setFormDescription] = useState('')
   const [formFile, setFormFile] = useState<File | null>(null)
   const [formThumbnailUrl, setFormThumbnailUrl] = useState<string | null>(null)
+  const [formVideoUrl, setFormVideoUrl] = useState('')
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [aiGenerating, setAiGenerating] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -84,6 +86,7 @@ export default function CollectionDetailPage() {
   const [editingDoc, setEditingDoc] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const [editVideoUrl, setEditVideoUrl] = useState('')
   const [editSaving, setEditSaving] = useState(false)
 
   // ZIP upload state
@@ -178,6 +181,7 @@ export default function CollectionDetailPage() {
     setFormDescription('')
     setFormFile(null)
     setFormThumbnailUrl(null)
+    setFormVideoUrl('')
   }
 
   async function handleZipUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -387,6 +391,7 @@ export default function CollectionDetailPage() {
           fileSize: formFile.size,
           fileType: formFile.type,
           thumbnailUrl: formThumbnailUrl,
+          videoUrl: formVideoUrl.trim() || null,
         }),
       })
 
@@ -427,12 +432,14 @@ export default function CollectionDetailPage() {
     setEditingDoc(doc.id)
     setEditTitle(doc.title)
     setEditDescription(doc.description)
+    setEditVideoUrl(doc.videoUrl ?? '')
   }
 
   function cancelEdit() {
     setEditingDoc(null)
     setEditTitle('')
     setEditDescription('')
+    setEditVideoUrl('')
   }
 
   async function handleSaveEdit(doc: LibraryDoc) {
@@ -441,7 +448,11 @@ export default function CollectionDetailPage() {
       const res = await fetch(`/api/super-admin/library/${collectionId}/documents/${doc.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: editTitle, description: editDescription }),
+        body: JSON.stringify({
+          title: editTitle,
+          description: editDescription,
+          videoUrl: editVideoUrl.trim() || null,
+        }),
       })
       if (res.ok) {
         showToast('Document updated.', 'success')
@@ -840,6 +851,20 @@ export default function CollectionDetailPage() {
               )}
             </div>
 
+            <div>
+              <label className="label">How-to video URL (optional)</label>
+              <input
+                className="input w-full"
+                type="url"
+                value={formVideoUrl}
+                onChange={(e) => setFormVideoUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=… or any video URL"
+              />
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                YouTube and Vimeo URLs are embedded automatically; other URLs render as a link.
+              </p>
+            </div>
+
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700">
                 Cancel
@@ -900,6 +925,16 @@ export default function CollectionDetailPage() {
                         className="input w-full text-sm min-h-[50px] resize-y"
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1 block">How-to video URL <span className="text-slate-400 font-normal">(optional)</span></label>
+                      <input
+                        className="input w-full text-sm"
+                        type="url"
+                        value={editVideoUrl}
+                        onChange={(e) => setEditVideoUrl(e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=…"
                       />
                     </div>
                     <div className="flex justify-end gap-2">

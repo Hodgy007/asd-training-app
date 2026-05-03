@@ -28,6 +28,7 @@ export async function GET() {
           fileSize: true,
           fileType: true,
           thumbnailUrl: true,
+          videoUrl: true,
           createdAt: true,
         },
       },
