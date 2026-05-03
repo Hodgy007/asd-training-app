@@ -9,15 +9,19 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
 // Roles this endpoint may create. ORG_ADMIN is the default for normal orgs;
-// PARTICIPANT is used for the Independent Learners system org where there's no
-// org admin role — charity staff manage the unaffiliated learner pool directly.
-const CREATABLE_ROLES = ['ORG_ADMIN', 'PARTICIPANT'] as const
+// any leaf role can be created on the Independent Learners system org so
+// charity staff can provision practitioners / students / etc directly.
+const SYSTEM_ORG_ROLES = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE', 'PARTICIPANT'] as const
+const CREATABLE_ROLES = ['ORG_ADMIN', ...SYSTEM_ORG_ROLES] as const
 
 const createAdminSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
   password: z.string().min(1).max(128),
   role: z.enum(CREATABLE_ROLES).optional(),
+  // Per-user program assignment for Independent Learners users (empty = no access).
+  // Ignored for normal orgs (those inherit from the org's allowedProgramIds).
+  allowedProgramIds: z.array(z.string()).optional(),
 })
 
 export async function POST(
@@ -48,18 +52,22 @@ export async function POST(
     return NextResponse.json({ error: 'A user with that email already exists.' }, { status: 409 })
   }
 
-  // Default to ORG_ADMIN unless the caller explicitly asks for PARTICIPANT,
-  // and only allow PARTICIPANT on the Independent Learners system org so we
-  // don't accidentally create unaffiliated-learner accounts inside a real org.
-  let role: 'ORG_ADMIN' | 'PARTICIPANT' = parsed.data.role ?? 'ORG_ADMIN'
-  if (role === 'PARTICIPANT' && !isSystemOrg(org)) {
+  const isSystem = isSystemOrg(org)
+  // Default to ORG_ADMIN for normal orgs and PARTICIPANT for the system org.
+  let role: typeof CREATABLE_ROLES[number] = parsed.data.role ?? (isSystem ? 'PARTICIPANT' : 'ORG_ADMIN')
+
+  if (!isSystem && role !== 'ORG_ADMIN') {
     return NextResponse.json(
-      { error: 'PARTICIPANT can only be created on the Independent Learners system org.' },
+      { error: 'Leaf roles can only be created on the Independent Learners system org.' },
       { status: 400 }
     )
   }
-  // System org never has an org admin — collapse any attempt to create one.
-  if (isSystemOrg(org) && role === 'ORG_ADMIN') role = 'PARTICIPANT'
+  if (isSystem && role === 'ORG_ADMIN') {
+    return NextResponse.json(
+      { error: 'The Independent Learners org does not have org admins — pick a leaf role.' },
+      { status: 400 }
+    )
+  }
 
   const hashedPassword = await bcrypt.hash(parsed.data.password, 12)
 
@@ -72,6 +80,9 @@ export async function POST(
       organisationId: params.orgId,
       mustChangePassword: true,
       active: true,
+      // Only honour allowedProgramIds on the system org (other orgs inherit
+      // from the org row, so per-user override would just confuse things).
+      allowedProgramIds: isSystem ? (parsed.data.allowedProgramIds ?? []) : [],
     },
     select: { id: true, name: true, email: true, role: true },
   })

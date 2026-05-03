@@ -1,6 +1,7 @@
 import type { SubscriptionStatus } from '@prisma/client'
 import prisma from './prisma'
 import { getEffectiveOrgSettings } from './org-hierarchy'
+import { isSystemOrg } from './cohort'
 
 export interface ProgramInfo {
   id: string
@@ -61,6 +62,7 @@ export async function getUserPrograms(userId: string): Promise<ProgramInfo[]> {
       subscriptionStatus: true,
       subscriptionCurrentPeriodEnd: true,
       allowedProgramIds: true,
+      organisation: { select: { slug: true } },
     },
   })
   if (!user) return []
@@ -72,7 +74,20 @@ export async function getUserPrograms(userId: string): Promise<ProgramInfo[]> {
 
   let basePrograms: ProgramInfo[] = []
   if (user.organisationId) {
-    basePrograms = await getOrgPrograms(user.organisationId)
+    // Independent Learners is a catch-all org with no shared baseline. Each
+    // user there is granted programs explicitly via User.allowedProgramIds —
+    // an empty list means no access (their cohort memberships still apply).
+    if (isSystemOrg(user.organisation ?? {})) {
+      if (user.allowedProgramIds.length > 0) {
+        basePrograms = await prisma.trainingProgram.findMany({
+          where: { id: { in: user.allowedProgramIds }, active: true },
+          select: { id: true, name: true },
+          orderBy: { order: 'asc' },
+        })
+      }
+    } else {
+      basePrograms = await getOrgPrograms(user.organisationId)
+    }
   } else if (subscriptionGrantsAccess(user.subscriptionStatus, user.subscriptionCurrentPeriodEnd)) {
     basePrograms = await prisma.trainingProgram.findMany({
       where: { active: true, status: 'APPROVED' },

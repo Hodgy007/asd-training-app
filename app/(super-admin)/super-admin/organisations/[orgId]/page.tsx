@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -37,9 +37,19 @@ interface OrgUser {
   active: boolean
   mustChangePassword: boolean
   ssoOnly: boolean
+  allowedProgramIds: string[]
   createdAt: string
   _count: { trainingProgress: number }
 }
+
+const SYSTEM_ORG_ROLES = [
+  'CAREGIVER',
+  'CAREER_DEV_OFFICER',
+  'STUDENT',
+  'INTERN',
+  'EMPLOYEE',
+  'PARTICIPANT',
+] as const
 
 interface ChildOrgSummary {
   id: string
@@ -114,6 +124,7 @@ const ROLE_LABELS: Record<string, string> = {
   STUDENT: 'Student',
   INTERN: 'Intern',
   EMPLOYEE: 'Employee',
+  PARTICIPANT: 'Workshop Participant',
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -123,6 +134,7 @@ const ROLE_COLORS: Record<string, string> = {
   STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
   INTERN: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
   EMPLOYEE: 'bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200',
+  PARTICIPANT: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -172,10 +184,20 @@ export default function OrgDetailPage() {
   const [adminName, setAdminName] = useState('')
   const [adminEmail, setAdminEmail] = useState('')
   const [adminPassword, setAdminPassword] = useState('')
+  const [adminRole, setAdminRole] = useState<typeof SYSTEM_ORG_ROLES[number]>('PARTICIPANT')
+  const [adminProgramIds, setAdminProgramIds] = useState<string[]>([])
   const [credentialCard, setCredentialCard] = useState<{
     id: string; name: string; email: string; password: string
   } | null>(null)
   const [adminSubmitting, setAdminSubmitting] = useState(false)
+
+  // Inline edit state for system-org users (one row at a time)
+  const [editingUserId, setEditingUserId] = useState<string | null>(null)
+  const [editUserName, setEditUserName] = useState('')
+  const [editUserRole, setEditUserRole] = useState<typeof SYSTEM_ORG_ROLES[number]>('PARTICIPANT')
+  const [editUserActive, setEditUserActive] = useState(true)
+  const [editUserProgramIds, setEditUserProgramIds] = useState<string[]>([])
+  const [editUserSaving, setEditUserSaving] = useState(false)
 
   // Delete
   const [deleting, setDeleting] = useState(false)
@@ -351,7 +373,7 @@ export default function OrgDetailPage() {
           name: adminName,
           email: adminEmail,
           password: adminPassword,
-          ...(isSystem ? { role: 'PARTICIPANT' } : {}),
+          ...(isSystem ? { role: adminRole, allowedProgramIds: adminProgramIds } : {}),
         }),
       })
       if (res.ok) {
@@ -362,11 +384,13 @@ export default function OrgDetailPage() {
           email: adminEmail,
           password: adminPassword,
         })
-        showToast(isSystem ? 'Workshop participant created.' : 'Org admin created.', 'success')
+        showToast(isSystem ? 'User created.' : 'Org admin created.', 'success')
         setShowAdminForm(false)
         setAdminName('')
         setAdminEmail('')
         setAdminPassword('')
+        setAdminRole('PARTICIPANT')
+        setAdminProgramIds([])
         fetchOrg()
       } else {
         const d = await res.json()
@@ -374,6 +398,50 @@ export default function OrgDetailPage() {
       }
     } finally {
       setAdminSubmitting(false)
+    }
+  }
+
+  // ── Edit user (system org only) ────────────────────────────────────────────
+
+  function startEditUser(u: OrgUser) {
+    setEditingUserId(u.id)
+    setEditUserName(u.name ?? '')
+    setEditUserRole(
+      (SYSTEM_ORG_ROLES as readonly string[]).includes(u.role)
+        ? (u.role as typeof SYSTEM_ORG_ROLES[number])
+        : 'PARTICIPANT'
+    )
+    setEditUserActive(u.active)
+    setEditUserProgramIds(u.allowedProgramIds ?? [])
+  }
+
+  function cancelEditUser() {
+    setEditingUserId(null)
+  }
+
+  async function handleSaveUser(userId: string) {
+    setEditUserSaving(true)
+    try {
+      const res = await fetch(`/api/super-admin/organisations/${orgId}/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editUserName.trim(),
+          role: editUserRole,
+          active: editUserActive,
+          allowedProgramIds: editUserProgramIds,
+        }),
+      })
+      if (res.ok) {
+        showToast('User updated.', 'success')
+        setEditingUserId(null)
+        fetchOrg()
+      } else {
+        const d = await res.json()
+        showToast(d.error || 'Failed to update user.', 'error')
+      }
+    } finally {
+      setEditUserSaving(false)
     }
   }
 
@@ -899,7 +967,7 @@ export default function OrgDetailPage() {
         {showAdminForm && (
           <div className="px-4 py-4 border-b border-calm-200 bg-primary-50">
             <p className="text-sm font-medium text-primary-800 mb-3">
-              {org.slug === SYSTEM_ORG_SLUG ? 'New Workshop Participant' : 'New Org Admin'}
+              {org.slug === SYSTEM_ORG_SLUG ? 'New User' : 'New Org Admin'}
             </p>
             <form onSubmit={handleAddAdmin} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
@@ -921,7 +989,7 @@ export default function OrgDetailPage() {
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
                   required
-                  placeholder="admin@example.com"
+                  placeholder="user@example.com"
                 />
               </div>
               <div>
@@ -936,6 +1004,48 @@ export default function OrgDetailPage() {
                   placeholder="Min 8 characters"
                 />
               </div>
+
+              {org.slug === SYSTEM_ORG_SLUG && (
+                <>
+                  <div className="sm:col-span-3">
+                    <label className="label text-xs">Role</label>
+                    <select
+                      className="input w-full text-sm"
+                      value={adminRole}
+                      onChange={(e) => setAdminRole(e.target.value as typeof SYSTEM_ORG_ROLES[number])}
+                    >
+                      {SYSTEM_ORG_ROLES.map((r) => (
+                        <option key={r} value={r}>{ROLE_LABELS[r] ?? r}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label className="label text-xs">
+                      Training programs <span className="text-slate-400">(none = no training access)</span>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-48 overflow-y-auto rounded-lg border border-calm-200 bg-white p-2">
+                      {programs.length === 0 ? (
+                        <p className="text-xs text-slate-400 italic px-2 py-1">No active programs.</p>
+                      ) : (
+                        programs.map((p) => (
+                          <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded hover:bg-calm-50">
+                            <input
+                              type="checkbox"
+                              checked={adminProgramIds.includes(p.id)}
+                              onChange={() => setAdminProgramIds((prev) =>
+                                prev.includes(p.id) ? prev.filter((x) => x !== p.id) : [...prev, p.id]
+                              )}
+                              className="accent-primary-600"
+                            />
+                            <span className="text-slate-700 truncate">{p.name}</span>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="sm:col-span-3 flex justify-end gap-2 pt-1">
                 <button
                   type="button"
@@ -971,60 +1081,158 @@ export default function OrgDetailPage() {
                 <th className="text-left px-4 py-3 font-semibold text-slate-600">Active</th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">Lessons</th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">Created</th>
+                {org.slug === SYSTEM_ORG_SLUG && (
+                  <th className="text-right px-4 py-3 font-semibold text-slate-600 w-px"></th>
+                )}
               </tr>
             </thead>
             <tbody className={org.users.length > 0 ? 'animate-stagger' : ''}>
               {org.users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                  <td colSpan={org.slug === SYSTEM_ORG_SLUG ? 7 : 6} className="px-4 py-10 text-center text-slate-400">
                     <Users className="h-7 w-7 mx-auto mb-2 opacity-30" />
                     No users yet.
                   </td>
                 </tr>
               ) : (
                 org.users.map((user) => (
-                  <tr key={user.id} className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
-                      <span className="inline-flex items-center gap-1.5">
-                        {user.name ?? <span className="text-slate-400 italic">--</span>}
-                        {user.ssoOnly && (
-                          <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-primary-500 dark:text-primary-400 flex-shrink-0" /></span>
-                        )}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 text-xs">{user.email}</td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={clsx(
-                          'inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full',
-                          ROLE_COLORS[user.role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-200'
-                        )}
-                      >
-                        {ROLE_LABELS[user.role] ?? user.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {user.active ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-sage-700">
-                          <CheckCircle className="h-3 w-3" /> Yes
+                  <React.Fragment key={user.id}>
+                    <tr className="border-b border-calm-100 hover:bg-calm-50 transition-colors">
+                      <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
+                        <span className="inline-flex items-center gap-1.5">
+                          {user.name ?? <span className="text-slate-400 italic">--</span>}
+                          {user.ssoOnly && (
+                            <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-primary-500 dark:text-primary-400 flex-shrink-0" /></span>
+                          )}
                         </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
-                          <XCircle className="h-3 w-3" /> No
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 text-xs">{user.email}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={clsx(
+                            'inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full',
+                            ROLE_COLORS[user.role] ?? 'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-200'
+                          )}
+                        >
+                          {ROLE_LABELS[user.role] ?? user.role}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {user.active ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-sage-700">
+                            <CheckCircle className="h-3 w-3" /> Yes
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
+                            <XCircle className="h-3 w-3" /> No
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 hidden md:table-cell">
+                        {user._count.trainingProgress}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-400 hidden md:table-cell">
+                        {new Date(user.createdAt).toLocaleDateString('en-GB', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </td>
+                      {org.slug === SYSTEM_ORG_SLUG && (
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => editingUserId === user.id ? cancelEditUser() : startEditUser(user)}
+                            className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg border border-calm-200 text-slate-600 hover:bg-calm-100"
+                          >
+                            <Pencil className="h-3 w-3" />
+                            {editingUserId === user.id ? 'Cancel' : 'Edit'}
+                          </button>
+                        </td>
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 hidden md:table-cell">
-                      {user._count.trainingProgress}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-slate-400 hidden md:table-cell">
-                      {new Date(user.createdAt).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </td>
-                  </tr>
+                    </tr>
+
+                    {editingUserId === user.id && org.slug === SYSTEM_ORG_SLUG && (
+                      <tr className="border-b border-calm-200 bg-primary-50/50">
+                        <td colSpan={7} className="px-4 py-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                              <label className="label text-xs">Name</label>
+                              <input
+                                className="input w-full text-sm"
+                                type="text"
+                                value={editUserName}
+                                onChange={(e) => setEditUserName(e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <label className="label text-xs">Role</label>
+                              <select
+                                className="input w-full text-sm"
+                                value={editUserRole}
+                                onChange={(e) => setEditUserRole(e.target.value as typeof SYSTEM_ORG_ROLES[number])}
+                              >
+                                {SYSTEM_ORG_ROLES.map((r) => (
+                                  <option key={r} value={r}>{ROLE_LABELS[r] ?? r}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="label text-xs">Active</label>
+                              <select
+                                className="input w-full text-sm"
+                                value={editUserActive ? 'true' : 'false'}
+                                onChange={(e) => setEditUserActive(e.target.value === 'true')}
+                              >
+                                <option value="true">Yes — can log in</option>
+                                <option value="false">No — sign-in blocked</option>
+                              </select>
+                            </div>
+                            <div className="sm:col-span-3">
+                              <label className="label text-xs">
+                                Training programs <span className="text-slate-400">(none = no training access)</span>
+                              </label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-48 overflow-y-auto rounded-lg border border-calm-200 bg-white p-2">
+                                {programs.length === 0 ? (
+                                  <p className="text-xs text-slate-400 italic px-2 py-1">No active programs.</p>
+                                ) : (
+                                  programs.map((p) => (
+                                    <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded hover:bg-calm-50">
+                                      <input
+                                        type="checkbox"
+                                        checked={editUserProgramIds.includes(p.id)}
+                                        onChange={() => setEditUserProgramIds((prev) =>
+                                          prev.includes(p.id) ? prev.filter((x) => x !== p.id) : [...prev, p.id]
+                                        )}
+                                        className="accent-primary-600"
+                                      />
+                                      <span className="text-slate-700 truncate">{p.name}</span>
+                                    </label>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                            <div className="sm:col-span-3 flex justify-end gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={cancelEditUser}
+                                className="px-3 py-1.5 rounded-xl border border-calm-200 text-xs font-medium text-slate-600 hover:bg-calm-50"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveUser(user.id)}
+                                disabled={editUserSaving}
+                                className="px-3 py-1.5 rounded-xl bg-primary-600 text-white text-xs font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
+                              >
+                                {editUserSaving ? 'Saving…' : 'Save'}
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))
               )}
             </tbody>
