@@ -52,6 +52,7 @@ export async function GET(
           id: true, name: true, email: true, role: true, active: true,
           mustChangePassword: true, createdAt: true,
           password: true,
+          allowedProgramIds: true,
           _count: { select: { trainingProgress: true } },
         },
         orderBy: { createdAt: 'desc' },
