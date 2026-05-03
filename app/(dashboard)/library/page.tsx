@@ -219,79 +219,109 @@ function LibraryPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {docs.map((doc) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
+            {docs.map((doc, idx) => {
               const FileIcon = getFileIcon(doc.fileType)
               const typeBadge = getFileTypeBadge(doc.fileType)
               const embedUrl = doc.videoUrl ? toEmbedUrl(doc.videoUrl) : null
+              const theme = themeFor(idx)
               return (
-                <div key={doc.id} className="card p-0 overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-4 px-4 py-3">
+                <div
+                  key={doc.id}
+                  className="group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white dark:bg-slate-800 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                >
+                  {/* Header — coloured panel with thumbnail or file icon */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
+                    <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full opacity-60" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
+                    <div className="pointer-events-none absolute -top-6 -left-6 h-20 w-20 rounded-full opacity-40" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
                     {doc.thumbnailUrl ? (
-                      <div
-                        className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
+                      <button
+                        type="button"
                         onClick={() => setZoomedImage(doc.thumbnailUrl)}
+                        className="relative block h-full w-full"
+                        title="Zoom"
                       >
-                        <img src={doc.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-                      </div>
+                        <img
+                          src={doc.thumbnailUrl}
+                          alt=""
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        />
+                      </button>
                     ) : (
-                      <div className="h-12 w-12 rounded-lg bg-calm-50 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
-                        <FileIcon className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+                      <div className="relative flex h-full w-full items-center justify-center">
+                        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/80 shadow-sm">
+                          <FileIcon className="h-10 w-10" style={{ color: theme.accent }} />
+                        </div>
                       </div>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-slate-800 dark:text-slate-200 truncate">{doc.title}</h3>
-                        <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-calm-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300">{typeBadge}</span>
-                      </div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">{doc.description}</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                        {formatFileSize(doc.fileSize)} · {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                    </div>
-                    <a
-                      href={doc.fileUrl}
-                      download={doc.fileName}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => trackDownload(doc.id)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-2.5 sm:px-4 sm:py-2 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-sm font-semibold hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors flex-shrink-0"
-                      title="Download"
-                    >
-                      <Download className="h-4 w-4" />
-                      <span className="hidden sm:inline">Download</span>
-                    </a>
                   </div>
 
-                  {/* How-to video — embedded if YouTube/Vimeo, otherwise rendered as a link */}
-                  {doc.videoUrl && (
-                    <div className="border-t border-calm-100 dark:border-slate-700 bg-calm-50/60 dark:bg-slate-900/40 px-4 py-3">
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
-                        How to use this resource
-                      </p>
-                      {embedUrl ? (
-                        <div className="aspect-video rounded-xl overflow-hidden bg-black">
-                          <iframe
-                            src={embedUrl}
-                            title={`How to use ${doc.title}`}
-                            loading="lazy"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="h-full w-full border-0"
-                          />
-                        </div>
-                      ) : (
-                        <a
-                          href={doc.videoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400 hover:underline"
-                        >
-                          Watch instructions →
-                        </a>
-                      )}
+                  {/* Body */}
+                  <div className="flex flex-1 flex-col gap-3 p-5">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                        style={{ backgroundColor: `${theme.accent}1A`, color: theme.accent }}
+                      >
+                        {typeBadge}
+                      </span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                        {formatFileSize(doc.fileSize)}
+                      </span>
                     </div>
-                  )}
+                    <h3 className="text-base font-extrabold leading-tight text-slate-900 dark:text-slate-100 line-clamp-2">
+                      {doc.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-3">
+                      {doc.description}
+                    </p>
+
+                    {/* How-to video — embedded if YouTube/Vimeo, otherwise rendered as a link */}
+                    {doc.videoUrl && (
+                      <div className="rounded-xl border border-calm-100 dark:border-slate-700 bg-calm-50/60 dark:bg-slate-900/40 p-3">
+                        <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                          How to use
+                        </p>
+                        {embedUrl ? (
+                          <div className="aspect-video rounded-lg overflow-hidden bg-black">
+                            <iframe
+                              src={embedUrl}
+                              title={`How to use ${doc.title}`}
+                              loading="lazy"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              className="h-full w-full border-0"
+                            />
+                          </div>
+                        ) : (
+                          <a
+                            href={doc.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-sm font-semibold hover:underline"
+                            style={{ color: theme.accent }}
+                          >
+                            Watch instructions →
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="mt-auto pt-2">
+                      <a
+                        href={doc.fileUrl}
+                        download={doc.fileName}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackDownload(doc.id)}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md"
+                        style={{ backgroundColor: theme.accent }}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </a>
+                    </div>
+                  </div>
                 </div>
               )
             })}
