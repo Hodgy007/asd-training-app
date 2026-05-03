@@ -13,6 +13,7 @@ import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
 import { PendingSurveys } from '@/components/dashboard/pending-surveys'
 import { isCharityLevel, isParticipant } from '@/lib/rbac'
+import { getUserPrograms } from '@/lib/modules'
 import { HowToPanel } from '@/components/howto/panel'
 import DashboardHowTo from '@/components/howto/learner/dashboard'
 import { CohortHub } from '@/components/dashboard/cohort-hub'
@@ -43,7 +44,8 @@ export default async function DashboardPage() {
     where: { userId: session.user.id, completed: true },
   })
 
-  // Determine which programs the user can access
+  // Determine which programs the user can access via the canonical resolver.
+  // For charity-level users return all active programs (preview mode).
   let allowedProgramIds: string[] = []
   if (isCharityLevel(session)) {
     const allPrograms = await prisma.trainingProgram.findMany({
@@ -52,11 +54,8 @@ export default async function DashboardPage() {
     })
     allowedProgramIds = allPrograms.map((p) => p.id)
   } else {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { organisation: { select: { allowedProgramIds: true } } },
-    })
-    allowedProgramIds = user?.organisation?.allowedProgramIds ?? []
+    const allowed = await getUserPrograms(session.user.id)
+    allowedProgramIds = allowed.map((p) => p.id)
   }
 
   const activeModules = allowedProgramIds.length > 0

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isCharityLevel } from '@/lib/rbac'
+import { getUserPrograms } from '@/lib/modules'
 import { renderProgramCertificateToBuffer } from '@/lib/certificate-template'
 
 export async function GET(
@@ -36,14 +37,11 @@ export async function GET(
       return NextResponse.json({ error: 'Program not found' }, { status: 404 })
     }
 
-    // Check access: charity-level users can preview all; others need org assignment
+    // Check access: charity-level users can preview all; others use the canonical
+    // resolver (org / cohort / per-user IL all unioned).
     if (!isCharityLevel(session)) {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { organisation: { select: { allowedProgramIds: true } } },
-      })
-      const allowedProgramIds = user?.organisation?.allowedProgramIds ?? []
-      if (!allowedProgramIds.includes(params.programId)) {
+      const allowed = await getUserPrograms(session.user.id)
+      if (!allowed.some((p) => p.id === params.programId)) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
     }
