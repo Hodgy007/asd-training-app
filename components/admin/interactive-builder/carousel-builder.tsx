@@ -1,9 +1,10 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Plus, Trash2, Upload, Loader2, ChevronUp, ChevronDown } from 'lucide-react'
+import { Plus, Trash2, Upload, Loader2, ChevronUp, ChevronDown, ImageIcon } from 'lucide-react'
 import { InteractiveBlock, CarouselData, CarouselSlide } from '@/types/interactive'
 import { RichDescriptionEditor } from '@/components/ui/rich-description-editor'
+import { ImagePickerModal } from './image-picker-modal'
 
 interface CarouselBuilderProps {
   block: InteractiveBlock
@@ -38,6 +39,7 @@ export function CarouselBuilder({ block, onChange }: CarouselBuilderProps) {
   const data = block.data as CarouselData
   const slides = data.slides ?? []
   const [uploadingSlideId, setUploadingSlideId] = useState<string | null>(null)
+  const [pickerForSlideId, setPickerForSlideId] = useState<string | null>(null)
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
   function updateData(next: CarouselData) {
@@ -191,7 +193,7 @@ export function CarouselBuilder({ block, onChange }: CarouselBuilderProps) {
                     </button>
                   </div>
                 ) : (
-                  <>
+                  <div className="flex flex-wrap gap-2">
                     <input
                       ref={(el) => { fileInputRefs.current[slide.id] = el }}
                       type="file"
@@ -213,9 +215,18 @@ export function CarouselBuilder({ block, onChange }: CarouselBuilderProps) {
                       ) : (
                         <Upload className="h-4 w-4" />
                       )}
-                      {uploadingSlideId === slide.id ? 'Uploading...' : 'Upload image'}
+                      {uploadingSlideId === slide.id ? 'Uploading...' : 'Upload new'}
                     </button>
-                  </>
+                    <button
+                      type="button"
+                      onClick={() => setPickerForSlideId(slide.id)}
+                      disabled={uploadingSlideId === slide.id}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-calm-300 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary-400 dark:hover:border-primary-500 transition-colors disabled:opacity-50"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      Pick from library
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -239,6 +250,14 @@ export function CarouselBuilder({ block, onChange }: CarouselBuilderProps) {
           <Plus className="h-4 w-4" /> Add slide
         </button>
       </div>
+      <ImagePickerModal
+        open={pickerForSlideId !== null}
+        onClose={() => setPickerForSlideId(null)}
+        onSelect={(url) => {
+          if (pickerForSlideId) updateSlide(pickerForSlideId, { imageUrl: url })
+        }}
+        title="Pick a carousel image"
+      />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Plus, Trash2, Upload, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Upload, Loader2, ImageIcon } from 'lucide-react'
 import {
   InteractiveBlock,
   HotspotData,
@@ -9,6 +9,7 @@ import {
   Hotspot,
   RevealCard,
 } from '@/types/interactive'
+import { ImagePickerModal } from './image-picker-modal'
 
 interface HotspotBuilderProps {
   block: InteractiveBlock
@@ -37,6 +38,7 @@ export function HotspotBuilder({ block, onChange }: HotspotBuilderProps) {
   const [titleEdit, setTitleEdit] = useState(block.title)
   const [instructionsEdit, setInstructionsEdit] = useState(block.instructions)
   const [uploading, setUploading] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function handleImageUpload(file: File) {
@@ -216,7 +218,7 @@ export function HotspotBuilder({ block, onChange }: HotspotBuilderProps) {
                 </button>
               </div>
             ) : (
-              <div>
+              <div className="flex flex-wrap gap-2">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -234,10 +236,25 @@ export function HotspotBuilder({ block, onChange }: HotspotBuilderProps) {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-calm-300 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary-400 dark:hover:border-primary-500 transition-colors disabled:opacity-50"
                 >
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                  {uploading ? 'Uploading...' : 'Upload image'}
+                  {uploading ? 'Uploading...' : 'Upload new'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(true)}
+                  disabled={uploading}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-calm-300 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary-400 dark:hover:border-primary-500 transition-colors disabled:opacity-50"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  Pick from library
                 </button>
               </div>
             )}
+            <ImagePickerModal
+              open={pickerOpen}
+              onClose={() => setPickerOpen(false)}
+              onSelect={(url) => updateData({ ...data, imageUrl: url })}
+              title="Pick a hotspot image"
+            />
           </div>
 
           {/* Image preview with click-to-place */}
