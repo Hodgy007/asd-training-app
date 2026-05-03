@@ -134,12 +134,12 @@ function LibraryPage() {
       if (res.ok) {
         const data: LibraryCollection[] = await res.json()
         setCollections(data)
-        // Auto-select from ?c= query param, or auto-select if only one collection
+        // Auto-select only when the URL points at a specific collection
+        // (sidebar deep-link). Otherwise always show the colourful grid first
+        // — even with a single collection — so learners see the landing page.
         if (collectionParam) {
           const match = data.find((col) => col.id === collectionParam)
           if (match) setSelectedCollection(match)
-        } else if (data.length === 1) {
-          setSelectedCollection(data[0])
         }
       }
     } finally {
