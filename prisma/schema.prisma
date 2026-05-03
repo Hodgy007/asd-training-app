@@ -655,6 +655,7 @@ model LibraryDocument {
   fileSize     Int
   fileType     String
   thumbnailUrl String?
+  videoUrl     String?
   active       Boolean  @default(true)
   uploadedById String
   createdAt    DateTime @default(now())

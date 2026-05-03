@@ -29,7 +29,50 @@ interface LibraryDoc {
   fileSize: number
   fileType: string
   thumbnailUrl: string | null
+  videoUrl: string | null
   createdAt: string
+}
+
+// Toolkit-style colour palette — cycled through tiles so the wall feels lively
+// without each title needing its own colour.
+const TILE_THEMES = [
+  { bg: '#FFEDD2', accent: '#F5821F', shape: '#FCAF17' },
+  { bg: '#E0F6E5', accent: '#34B44A', shape: '#7DD8A0' },
+  { bg: '#DDEEF8', accent: '#056BB0', shape: '#44C7EE' },
+  { bg: '#FCE3F2', accent: '#E13CAF', shape: '#F7A8DA' },
+  { bg: '#FFF3CC', accent: '#FCAF17', shape: '#FFD84D' },
+  { bg: '#E0F4FB', accent: '#44C7EE', shape: '#7BDBF1' },
+] as const
+
+function themeFor(idOrIndex: string | number): typeof TILE_THEMES[number] {
+  const i = typeof idOrIndex === 'number'
+    ? idOrIndex
+    : Array.from(idOrIndex).reduce((a, c) => a + c.charCodeAt(0), 0)
+  return TILE_THEMES[i % TILE_THEMES.length]
+}
+
+/** Convert a YouTube/Vimeo watch URL to an embeddable URL. Returns null for unsupported hosts. */
+function toEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url)
+    // YouTube — watch?v=, youtu.be/, embed/, shorts/
+    if (u.hostname.includes('youtube.com') || u.hostname === 'youtu.be') {
+      let id: string | null = null
+      if (u.hostname === 'youtu.be') id = u.pathname.slice(1)
+      else if (u.pathname.startsWith('/embed/')) id = u.pathname.split('/')[2]
+      else if (u.pathname.startsWith('/shorts/')) id = u.pathname.split('/')[2]
+      else id = u.searchParams.get('v')
+      if (id) return `https://www.youtube.com/embed/${id}`
+    }
+    // Vimeo
+    if (u.hostname.includes('vimeo.com')) {
+      const id = u.pathname.split('/').filter(Boolean)[0]
+      if (id && /^\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`
+    }
+  } catch {
+    // fall through
+  }
+  return null
 }
 
 interface LibraryCollection {
@@ -180,6 +223,7 @@ function LibraryPage() {
             {docs.map((doc) => {
               const FileIcon = getFileIcon(doc.fileType)
               const typeBadge = getFileTypeBadge(doc.fileType)
+              const embedUrl = doc.videoUrl ? toEmbedUrl(doc.videoUrl) : null
               return (
                 <div key={doc.id} className="card p-0 overflow-hidden hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-4 px-4 py-3">
@@ -218,6 +262,36 @@ function LibraryPage() {
                       <span className="hidden sm:inline">Download</span>
                     </a>
                   </div>
+
+                  {/* How-to video — embedded if YouTube/Vimeo, otherwise rendered as a link */}
+                  {doc.videoUrl && (
+                    <div className="border-t border-calm-100 dark:border-slate-700 bg-calm-50/60 dark:bg-slate-900/40 px-4 py-3">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                        How to use this resource
+                      </p>
+                      {embedUrl ? (
+                        <div className="aspect-video rounded-xl overflow-hidden bg-black">
+                          <iframe
+                            src={embedUrl}
+                            title={`How to use ${doc.title}`}
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="h-full w-full border-0"
+                          />
+                        </div>
+                      ) : (
+                        <a
+                          href={doc.videoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                        >
+                          Watch instructions →
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -282,37 +356,54 @@ function LibraryPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-stagger">
-          {filteredCollections.map((col) => (
-            <button
-              key={col.id}
-              onClick={() => { setSelectedCollection(col); setSearch('') }}
-              className="card p-0 overflow-hidden text-left hover:shadow-md transition-shadow group"
-            >
-              {col.thumbnailUrl ? (
-                <div className="h-36 bg-calm-50 dark:bg-slate-700 overflow-hidden">
-                  <img src={col.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
+          {filteredCollections.map((col, idx) => {
+            const theme = themeFor(idx)
+            return (
+              <button
+                key={col.id}
+                onClick={() => { setSelectedCollection(col); setSearch('') }}
+                className="group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white dark:bg-slate-800 shadow-md text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
+                style={{ outlineColor: theme.accent }}
+              >
+                <div className="relative aspect-[4/3] w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
+                  <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full opacity-60" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
+                  <div className="pointer-events-none absolute -top-6 -left-6 h-20 w-20 rounded-full opacity-40" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
+                  {col.thumbnailUrl ? (
+                    <img
+                      src={col.thumbnailUrl}
+                      alt=""
+                      className="relative h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="relative flex h-full w-full items-center justify-center">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/80 shadow-sm">
+                        <FolderOpen className="h-10 w-10" style={{ color: theme.accent }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="h-36 bg-calm-50 dark:bg-slate-700 flex items-center justify-center">
-                  <FolderOpen className="h-14 w-14 text-slate-300 dark:text-slate-500 group-hover:text-primary-400 transition-colors" />
+                <div className="flex flex-1 flex-col gap-2 p-5">
+                  <span
+                    className="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
+                    style={{ backgroundColor: `${theme.accent}1A`, color: theme.accent }}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.accent }} />
+                    Collection
+                  </span>
+                  <h3 className="text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-100">{col.title}</h3>
+                  <p className="line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{col.description}</p>
+                  <div className="mt-auto flex items-center justify-between pt-2">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      <FileText className="h-3.5 w-3.5" />
+                      {col._count.documents} {col._count.documents === 1 ? 'document' : 'documents'}
+                    </span>
+                    <ChevronRight className="h-5 w-5" style={{ color: theme.accent }} />
+                  </div>
                 </div>
-              )}
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-slate-800 dark:text-slate-200 leading-snug line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                    {col.title}
-                  </h3>
-                  <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600 flex-shrink-0 mt-0.5 group-hover:text-primary-400 transition-colors" />
-                </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">{col.description}</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 flex items-center gap-1">
-                  <FileText className="h-3 w-3" />
-                  {col._count.documents} document{col._count.documents !== 1 ? 's' : ''}
-                </p>
-              </div>
-            </button>
-          ))}
+              </button>
+            )
+          })}
         </div>
       )}
 

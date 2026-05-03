@@ -14,6 +14,7 @@ const createSchema = z.object({
   fileSize: z.number().int().positive(),
   fileType: z.string().min(1),
   thumbnailUrl: z.string().url().nullable().optional(),
+  videoUrl: z.string().url().nullable().optional().or(z.literal('')),
 })
 
 // POST — add a document to a collection
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       fileSize: parsed.data.fileSize,
       fileType: parsed.data.fileType,
       thumbnailUrl: parsed.data.thumbnailUrl ?? null,
+      videoUrl: parsed.data.videoUrl ? parsed.data.videoUrl : null,
       uploadedById: session.user.id,
     },
   })

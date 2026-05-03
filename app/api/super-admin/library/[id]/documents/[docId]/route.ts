@@ -10,6 +10,7 @@ const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().min(1).optional(),
   thumbnailUrl: z.string().url().nullable().optional(),
+  videoUrl: z.string().url().nullable().optional().or(z.literal('')),
   active: z.boolean().optional(),
 })
 
@@ -36,9 +37,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     try { await del(doc.thumbnailUrl) } catch { /* best-effort */ }
   }
 
+  // Normalise empty-string videoUrl to null
+  const data: typeof parsed.data = { ...parsed.data }
+  if (data.videoUrl === '') data.videoUrl = null
+
   const updated = await prisma.libraryDocument.update({
     where: { id: params.docId },
-    data: parsed.data,
+    data,
   })
 
   return NextResponse.json(updated)
