@@ -88,6 +88,24 @@ export async function getSurveyInsights(surveyId: string) {
 
 // ── User queries ──
 
+// A SurveyTarget either picks a specific user (userId set), or picks by
+// role/org filters (userId null). Both modes are unioned so a survey can be
+// available via either path.
+function targetMatchesUser(userId: string, userRole: Role, userOrgId: string | null) {
+  return {
+    OR: [
+      { userId },
+      {
+        AND: [
+          { userId: null },
+          { OR: [{ role: null }, { role: userRole }] },
+          { OR: [{ organisationId: null }, { organisationId: userOrgId }] },
+        ],
+      },
+    ],
+  }
+}
+
 export async function getPendingSurveys(userId: string, userRole: Role, userOrgId: string | null) {
   const now = new Date()
 
@@ -98,14 +116,7 @@ export async function getPendingSurveys(userId: string, userRole: Role, userOrgI
         { closesAt: null },
         { closesAt: { gt: now } },
       ],
-      targets: {
-        some: {
-          AND: [
-            { OR: [{ role: null }, { role: userRole }] },
-            { OR: [{ organisationId: null }, { organisationId: userOrgId }] },
-          ],
-        },
-      },
+      targets: { some: targetMatchesUser(userId, userRole, userOrgId) },
       NOT: {
         responses: {
           some: { userId, completedAt: { not: null } },
@@ -130,14 +141,7 @@ export async function getSurveyForUser(surveyId: string, userId: string, userRol
         { closesAt: null },
         { closesAt: { gt: new Date() } },
       ],
-      targets: {
-        some: {
-          AND: [
-            { OR: [{ role: null }, { role: userRole }] },
-            { OR: [{ organisationId: null }, { organisationId: userOrgId }] },
-          ],
-        },
-      },
+      targets: { some: targetMatchesUser(userId, userRole, userOrgId) },
     },
     include: {
       questions: { orderBy: { order: 'asc' } },

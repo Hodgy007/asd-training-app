@@ -33,6 +33,10 @@ model User {
   subscriptionCurrentPeriodEnd DateTime?
   subscriptionPriceId          String?
   allowedProgramIds            String[]           @default([])
+  // Per-user feature overrides (mainly for Independent Learners). Null means
+  // "inherit from the user's org"; explicit true/false overrides the org flag.
+  cvBuilderEnabled             Boolean?
+  careersAdvisorEnabled        Boolean?
   createdAt                    DateTime           @default(now())
   updatedAt                    DateTime           @updatedAt
 
@@ -51,6 +55,7 @@ model User {
   documentEvents        LibraryDocumentEvent[] @relation("DocumentEvents")
   integrationKeys       IntegrationApiKey[]    @relation("IntegrationKeys")
   cvs                   CV[]
+  surveyTargets         SurveyTarget[]         @relation("SurveyTargets")
   careerAdvisorSessions CareerAdvisorSession[]
   lessonNotes           LessonNote[]
   cohortMemberships     CohortMembership[]
@@ -466,11 +471,19 @@ model SurveyQuestion {
 model SurveyTarget {
   id             String  @id @default(cuid())
   surveyId       String
+  // Targeting modes (any one or combination): role, organisation, individual user.
+  // Independent Learners users are assigned surveys via userId (per-user picks)
+  // because the org has no shared baseline; normal-org users still get surveys
+  // via role/organisationId targeting.
   role           Role?
   organisationId String?
+  userId         String?
 
   survey       Survey        @relation(fields: [surveyId], references: [id], onDelete: Cascade)
   organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: SetNull)
+  user         User?         @relation("SurveyTargets", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model SurveyResponse {
