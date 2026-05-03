@@ -342,11 +342,17 @@ export default function OrgDetailPage() {
   async function handleAddAdmin(e: React.FormEvent) {
     e.preventDefault()
     setAdminSubmitting(true)
+    const isSystem = org?.slug === SYSTEM_ORG_SLUG
     try {
       const res = await fetch(`/api/super-admin/organisations/${orgId}/admins`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: adminName, email: adminEmail, password: adminPassword }),
+        body: JSON.stringify({
+          name: adminName,
+          email: adminEmail,
+          password: adminPassword,
+          ...(isSystem ? { role: 'PARTICIPANT' } : {}),
+        }),
       })
       if (res.ok) {
         const created = await res.json()
@@ -356,7 +362,7 @@ export default function OrgDetailPage() {
           email: adminEmail,
           password: adminPassword,
         })
-        showToast('Org admin created.', 'success')
+        showToast(isSystem ? 'Workshop participant created.' : 'Org admin created.', 'success')
         setShowAdminForm(false)
         setAdminName('')
         setAdminEmail('')
@@ -364,7 +370,7 @@ export default function OrgDetailPage() {
         fetchOrg()
       } else {
         const d = await res.json()
-        showToast(d.error || 'Failed to create admin.', 'error')
+        showToast(d.error || `Failed to create ${isSystem ? 'user' : 'admin'}.`, 'error')
       }
     } finally {
       setAdminSubmitting(false)
@@ -881,14 +887,20 @@ export default function OrgDetailPage() {
             )}
           >
             <Plus className="h-3.5 w-3.5" />
-            {showAdminForm ? 'Cancel' : 'Add Org Admin'}
+            {showAdminForm
+              ? 'Cancel'
+              : org.slug === SYSTEM_ORG_SLUG
+                ? 'Add User'
+                : 'Add Org Admin'}
           </button>
         </div>
 
         {/* Add admin inline form */}
         {showAdminForm && (
           <div className="px-4 py-4 border-b border-calm-200 bg-primary-50">
-            <p className="text-sm font-medium text-primary-800 mb-3">New Org Admin</p>
+            <p className="text-sm font-medium text-primary-800 mb-3">
+              {org.slug === SYSTEM_ORG_SLUG ? 'New Workshop Participant' : 'New Org Admin'}
+            </p>
             <form onSubmit={handleAddAdmin} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="label text-xs">Name</label>
@@ -937,7 +949,11 @@ export default function OrgDetailPage() {
                   disabled={adminSubmitting}
                   className="px-3 py-1.5 rounded-xl bg-primary-600 text-white text-xs font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
                 >
-                  {adminSubmitting ? 'Creating...' : 'Create Admin'}
+                  {adminSubmitting
+                    ? 'Creating...'
+                    : org.slug === SYSTEM_ORG_SLUG
+                      ? 'Create User'
+                      : 'Create Admin'}
                 </button>
               </div>
             </form>
