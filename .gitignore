@@ -21,8 +21,11 @@ playwright-report/
 .graphify_python
 graphify-out/
 
-# Local Claude Code skills
+# Local Claude Code state — per-user MCP permissions, runtime locks, worktrees
 .claude/skills/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/worktrees/
 
 # Remotion render outputs
 remotion-demo/out/
