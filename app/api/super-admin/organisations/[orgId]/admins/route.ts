@@ -22,6 +22,10 @@ const createAdminSchema = z.object({
   // Per-user program assignment for Independent Learners users (empty = no access).
   // Ignored for normal orgs (those inherit from the org's allowedProgramIds).
   allowedProgramIds: z.array(z.string()).optional(),
+  // Per-user feature toggles + survey picks (system org only — ignored elsewhere).
+  cvBuilderEnabled: z.boolean().optional(),
+  careersAdvisorEnabled: z.boolean().optional(),
+  surveyIds: z.array(z.string()).optional(),
 })
 
 export async function POST(
@@ -80,12 +84,22 @@ export async function POST(
       organisationId: params.orgId,
       mustChangePassword: true,
       active: true,
-      // Only honour allowedProgramIds on the system org (other orgs inherit
-      // from the org row, so per-user override would just confuse things).
+      // System-org-only fields: per-user program list, per-user feature toggles.
+      // Other orgs ignore these (they inherit from the org row).
       allowedProgramIds: isSystem ? (parsed.data.allowedProgramIds ?? []) : [],
+      cvBuilderEnabled: isSystem ? (parsed.data.cvBuilderEnabled ?? false) : null,
+      careersAdvisorEnabled: isSystem ? (parsed.data.careersAdvisorEnabled ?? false) : null,
     },
     select: { id: true, name: true, email: true, role: true },
   })
+
+  // System org: optional per-user survey assignments.
+  if (isSystem && parsed.data.surveyIds && parsed.data.surveyIds.length > 0) {
+    await prisma.surveyTarget.createMany({
+      data: parsed.data.surveyIds.map((surveyId) => ({ surveyId, userId: user.id })),
+      skipDuplicates: true,
+    })
+  }
 
   return NextResponse.json(user, { status: 201 })
 }

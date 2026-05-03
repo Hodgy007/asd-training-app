@@ -21,6 +21,27 @@ async function getOrgFeatureFlags(organisationId: string | null | undefined): Pr
   }
 }
 
+/**
+ * Effective per-user feature flags. A non-null user-level override wins over
+ * the org default — used to give Independent Learners users custom CV Builder
+ * / Careers Advisor access without changing every other org's behaviour.
+ */
+async function getEffectiveFeatureFlags(
+  userId: string | null | undefined,
+  organisationId: string | null | undefined
+): Promise<{ cvBuilderEnabled: boolean; careersAdvisorEnabled: boolean }> {
+  const orgFlags = await getOrgFeatureFlags(organisationId)
+  if (!userId) return orgFlags
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { cvBuilderEnabled: true, careersAdvisorEnabled: true },
+  })
+  return {
+    cvBuilderEnabled: user?.cvBuilderEnabled ?? orgFlags.cvBuilderEnabled,
+    careersAdvisorEnabled: user?.careersAdvisorEnabled ?? orgFlags.careersAdvisorEnabled,
+  }
+}
+
 async function getOrgIsParent(organisationId: string | null | undefined): Promise<boolean> {
   if (!organisationId) return false
   const org = await prisma.organisation.findUnique({
@@ -243,7 +264,7 @@ export const authOptions: NextAuthOptions = {
           select: { charityPermissions: true },
         })
         token.charityPermissions = dbUserForPerms?.charityPermissions ?? []
-        const flags = await getOrgFeatureFlags(token.organisationId as string | null)
+        const flags = await getEffectiveFeatureFlags(user.id, token.organisationId as string | null)
         token.cvBuilderEnabled = flags.cvBuilderEnabled
         token.careersAdvisorEnabled = flags.careersAdvisorEnabled
         token.isParentOrg = await getOrgIsParent(token.organisationId as string | null)
@@ -271,7 +292,7 @@ export const authOptions: NextAuthOptions = {
           token.hasPassword = !!dbUser.password
           token.effectivePrograms = await getUserEffectivePrograms(dbUser.id)
           token.charityPermissions = dbUser.charityPermissions ?? []
-          const ssoFlags = await getOrgFeatureFlags(dbUser.organisationId)
+          const ssoFlags = await getEffectiveFeatureFlags(dbUser.id, dbUser.organisationId)
           token.cvBuilderEnabled = ssoFlags.cvBuilderEnabled
           token.careersAdvisorEnabled = ssoFlags.careersAdvisorEnabled
           token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
@@ -293,7 +314,7 @@ export const authOptions: NextAuthOptions = {
           token.totpEnabled = dbUser.totpEnabled
           token.hasPassword = !!dbUser.password
           token.charityPermissions = dbUser.charityPermissions ?? []
-          const updateFlags = await getOrgFeatureFlags(dbUser.organisationId)
+          const updateFlags = await getEffectiveFeatureFlags(token.id as string, dbUser.organisationId)
           token.cvBuilderEnabled = updateFlags.cvBuilderEnabled
           token.careersAdvisorEnabled = updateFlags.careersAdvisorEnabled
           token.isParentOrg = await getOrgIsParent(dbUser.organisationId)

@@ -53,6 +53,9 @@ export async function GET(
           mustChangePassword: true, createdAt: true,
           password: true,
           allowedProgramIds: true,
+          cvBuilderEnabled: true,
+          careersAdvisorEnabled: true,
+          surveyTargets: { select: { surveyId: true } },
           _count: { select: { trainingProgress: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -77,12 +80,26 @@ export async function GET(
     select: { surveyId: true },
   })
 
-  // Strip password hashes and add ssoOnly flag
+  // Available surveys (for the per-user assignment picker on the system org).
+  // Cheap: tiny payload — id + title + status — and only fetched on this admin
+  // page so the duplication with /super-admin/surveys is fine.
+  const availableSurveys = await prisma.survey.findMany({
+    where: { status: { in: ['DRAFT', 'PUBLISHED'] } },
+    select: { id: true, title: true, status: true },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  // Strip password hashes; flatten user.surveyTargets to surveyIds for the UI.
   const orgWithSso = {
     ...org,
-    users: org.users.map(({ password, ...rest }) => ({ ...rest, ssoOnly: password === '' })),
+    users: org.users.map(({ password, surveyTargets, ...rest }) => ({
+      ...rest,
+      ssoOnly: password === '',
+      surveyIds: surveyTargets.map((t) => t.surveyId),
+    })),
     assignedCollectionIds: assignedCollections.map((c) => c.id),
     assignedSurveyIds: surveyTargets.map((t) => t.surveyId),
+    availableSurveys,
   }
   return NextResponse.json(orgWithSso)
 }

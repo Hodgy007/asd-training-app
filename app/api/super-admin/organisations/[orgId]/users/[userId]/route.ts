@@ -20,6 +20,9 @@ const patchSchema = z.object({
   role: z.enum(SYSTEM_ORG_ROLES).optional(),
   active: z.boolean().optional(),
   allowedProgramIds: z.array(z.string()).optional(),
+  cvBuilderEnabled: z.boolean().optional(),
+  careersAdvisorEnabled: z.boolean().optional(),
+  surveyIds: z.array(z.string()).optional(),
 })
 
 /**
@@ -61,9 +64,12 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
   }
 
+  // Pull surveyIds out — it's a join-table sync, not a User column update.
+  const { surveyIds, ...userData } = parsed.data
+
   const updated = await prisma.user.update({
     where: { id: params.userId },
-    data: parsed.data,
+    data: userData,
     select: {
       id: true,
       name: true,
@@ -71,7 +77,25 @@ export async function PATCH(
       role: true,
       active: true,
       allowedProgramIds: true,
+      cvBuilderEnabled: true,
+      careersAdvisorEnabled: true,
     },
   })
+
+  if (surveyIds !== undefined) {
+    // Sync per-user SurveyTarget rows: delete the user's existing user-targeted
+    // rows (org/role-targeted ones for this user are untouched — they point at
+    // userId=null), then re-create from the new list.
+    await prisma.surveyTarget.deleteMany({
+      where: { userId: params.userId },
+    })
+    if (surveyIds.length > 0) {
+      await prisma.surveyTarget.createMany({
+        data: surveyIds.map((surveyId) => ({ surveyId, userId: params.userId })),
+        skipDuplicates: true,
+      })
+    }
+  }
+
   return NextResponse.json(updated)
 }

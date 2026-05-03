@@ -38,8 +38,17 @@ interface OrgUser {
   mustChangePassword: boolean
   ssoOnly: boolean
   allowedProgramIds: string[]
+  cvBuilderEnabled: boolean | null
+  careersAdvisorEnabled: boolean | null
+  surveyIds: string[]
   createdAt: string
   _count: { trainingProgress: number }
+}
+
+interface AvailableSurvey {
+  id: string
+  title: string
+  status: 'DRAFT' | 'PUBLISHED' | 'CLOSED'
 }
 
 const SYSTEM_ORG_ROLES = [
@@ -88,6 +97,7 @@ interface OrgDetail {
   _count: { users: number }
   assignedCollectionIds: string[]
   assignedSurveyIds: string[]
+  availableSurveys: AvailableSurvey[]
   cvBuilderEnabled: boolean
   careersAdvisorEnabled: boolean
   organisationType: string
@@ -186,6 +196,9 @@ export default function OrgDetailPage() {
   const [adminPassword, setAdminPassword] = useState('')
   const [adminRole, setAdminRole] = useState<typeof SYSTEM_ORG_ROLES[number]>('PARTICIPANT')
   const [adminProgramIds, setAdminProgramIds] = useState<string[]>([])
+  const [adminCvBuilder, setAdminCvBuilder] = useState(false)
+  const [adminCareersAdvisor, setAdminCareersAdvisor] = useState(false)
+  const [adminSurveyIds, setAdminSurveyIds] = useState<string[]>([])
   const [credentialCard, setCredentialCard] = useState<{
     id: string; name: string; email: string; password: string
   } | null>(null)
@@ -197,6 +210,9 @@ export default function OrgDetailPage() {
   const [editUserRole, setEditUserRole] = useState<typeof SYSTEM_ORG_ROLES[number]>('PARTICIPANT')
   const [editUserActive, setEditUserActive] = useState(true)
   const [editUserProgramIds, setEditUserProgramIds] = useState<string[]>([])
+  const [editUserCvBuilder, setEditUserCvBuilder] = useState(false)
+  const [editUserCareersAdvisor, setEditUserCareersAdvisor] = useState(false)
+  const [editUserSurveyIds, setEditUserSurveyIds] = useState<string[]>([])
   const [editUserSaving, setEditUserSaving] = useState(false)
 
   // Delete
@@ -373,7 +389,13 @@ export default function OrgDetailPage() {
           name: adminName,
           email: adminEmail,
           password: adminPassword,
-          ...(isSystem ? { role: adminRole, allowedProgramIds: adminProgramIds } : {}),
+          ...(isSystem ? {
+            role: adminRole,
+            allowedProgramIds: adminProgramIds,
+            cvBuilderEnabled: adminCvBuilder,
+            careersAdvisorEnabled: adminCareersAdvisor,
+            surveyIds: adminSurveyIds,
+          } : {}),
         }),
       })
       if (res.ok) {
@@ -391,6 +413,9 @@ export default function OrgDetailPage() {
         setAdminPassword('')
         setAdminRole('PARTICIPANT')
         setAdminProgramIds([])
+        setAdminCvBuilder(false)
+        setAdminCareersAdvisor(false)
+        setAdminSurveyIds([])
         fetchOrg()
       } else {
         const d = await res.json()
@@ -413,6 +438,10 @@ export default function OrgDetailPage() {
     )
     setEditUserActive(u.active)
     setEditUserProgramIds(u.allowedProgramIds ?? [])
+    // null override means "inherit org default"; for simplicity we treat that as off
+    setEditUserCvBuilder(u.cvBuilderEnabled ?? false)
+    setEditUserCareersAdvisor(u.careersAdvisorEnabled ?? false)
+    setEditUserSurveyIds(u.surveyIds ?? [])
   }
 
   function cancelEditUser() {
@@ -430,6 +459,9 @@ export default function OrgDetailPage() {
           role: editUserRole,
           active: editUserActive,
           allowedProgramIds: editUserProgramIds,
+          cvBuilderEnabled: editUserCvBuilder,
+          careersAdvisorEnabled: editUserCareersAdvisor,
+          surveyIds: editUserSurveyIds,
         }),
       })
       if (res.ok) {
@@ -1043,6 +1075,54 @@ export default function OrgDetailPage() {
                       )}
                     </div>
                   </div>
+
+                  <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label className="flex items-center gap-2 text-xs cursor-pointer px-3 py-2 rounded-lg border border-calm-200 bg-white hover:bg-calm-50">
+                      <input
+                        type="checkbox"
+                        checked={adminCvBuilder}
+                        onChange={(e) => setAdminCvBuilder(e.target.checked)}
+                        className="accent-primary-600"
+                      />
+                      <span className="text-slate-700 font-medium">CV Builder</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer px-3 py-2 rounded-lg border border-calm-200 bg-white hover:bg-calm-50">
+                      <input
+                        type="checkbox"
+                        checked={adminCareersAdvisor}
+                        onChange={(e) => setAdminCareersAdvisor(e.target.checked)}
+                        className="accent-primary-600"
+                      />
+                      <span className="text-slate-700 font-medium">Careers Advisor</span>
+                    </label>
+                  </div>
+
+                  <div className="sm:col-span-3">
+                    <label className="label text-xs">
+                      Surveys assigned to this user <span className="text-slate-400">(optional)</span>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto rounded-lg border border-calm-200 bg-white p-2">
+                      {org.availableSurveys.length === 0 ? (
+                        <p className="text-xs text-slate-400 italic px-2 py-1">No surveys available.</p>
+                      ) : (
+                        org.availableSurveys.map((s) => (
+                          <label key={s.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded hover:bg-calm-50">
+                            <input
+                              type="checkbox"
+                              checked={adminSurveyIds.includes(s.id)}
+                              onChange={() => setAdminSurveyIds((prev) =>
+                                prev.includes(s.id) ? prev.filter((x) => x !== s.id) : [...prev, s.id]
+                              )}
+                              className="accent-primary-600"
+                            />
+                            <span className="text-slate-700 truncate">
+                              {s.title} <span className="text-slate-400">· {s.status.toLowerCase()}</span>
+                            </span>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 </>
               )}
 
@@ -1206,6 +1286,52 @@ export default function OrgDetailPage() {
                                         className="accent-primary-600"
                                       />
                                       <span className="text-slate-700 truncate">{p.name}</span>
+                                    </label>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                            <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <label className="flex items-center gap-2 text-xs cursor-pointer px-3 py-2 rounded-lg border border-calm-200 bg-white hover:bg-calm-50">
+                                <input
+                                  type="checkbox"
+                                  checked={editUserCvBuilder}
+                                  onChange={(e) => setEditUserCvBuilder(e.target.checked)}
+                                  className="accent-primary-600"
+                                />
+                                <span className="text-slate-700 font-medium">CV Builder</span>
+                              </label>
+                              <label className="flex items-center gap-2 text-xs cursor-pointer px-3 py-2 rounded-lg border border-calm-200 bg-white hover:bg-calm-50">
+                                <input
+                                  type="checkbox"
+                                  checked={editUserCareersAdvisor}
+                                  onChange={(e) => setEditUserCareersAdvisor(e.target.checked)}
+                                  className="accent-primary-600"
+                                />
+                                <span className="text-slate-700 font-medium">Careers Advisor</span>
+                              </label>
+                            </div>
+                            <div className="sm:col-span-3">
+                              <label className="label text-xs">
+                                Surveys assigned to this user <span className="text-slate-400">(optional)</span>
+                              </label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto rounded-lg border border-calm-200 bg-white p-2">
+                                {org.availableSurveys.length === 0 ? (
+                                  <p className="text-xs text-slate-400 italic px-2 py-1">No surveys available.</p>
+                                ) : (
+                                  org.availableSurveys.map((s) => (
+                                    <label key={s.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded hover:bg-calm-50">
+                                      <input
+                                        type="checkbox"
+                                        checked={editUserSurveyIds.includes(s.id)}
+                                        onChange={() => setEditUserSurveyIds((prev) =>
+                                          prev.includes(s.id) ? prev.filter((x) => x !== s.id) : [...prev, s.id]
+                                        )}
+                                        className="accent-primary-600"
+                                      />
+                                      <span className="text-slate-700 truncate">
+                                        {s.title} <span className="text-slate-400">· {s.status.toLowerCase()}</span>
+                                      </span>
                                     </label>
                                   ))
                                 )}
