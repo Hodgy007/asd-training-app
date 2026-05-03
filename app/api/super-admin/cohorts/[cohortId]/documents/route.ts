@@ -20,7 +20,7 @@ export async function GET(
   { params }: { params: { cohortId: string } }
 ) {
   const session = await getServerSession(authOptions)
-  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -55,7 +55,7 @@ export async function PUT(
   { params }: { params: { cohortId: string } }
 ) {
   const session = await getServerSession(authOptions)
-  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
+  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

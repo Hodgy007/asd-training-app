@@ -88,7 +88,7 @@ export default function CohortsPage() {
     )
   }
 
-  const canManage = session && hasPermission(session as any, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)
+  const canManage = session && hasPermission(session as any, CHARITY_PERMISSIONS.MANAGE_COHORTS)
 
   return (
     <div className="space-y-6 animate-page-enter">

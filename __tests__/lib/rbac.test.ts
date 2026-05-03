@@ -291,9 +291,10 @@ describe('getRoleLabel', () => {
 })
 
 describe('CHARITY_PERMISSIONS constant', () => {
-  it('contains all nine expected permissions', () => {
-    expect(Object.keys(CHARITY_PERMISSIONS)).toHaveLength(9)
+  it('contains all ten expected permissions', () => {
+    expect(Object.keys(CHARITY_PERMISSIONS)).toHaveLength(10)
     expect(CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS).toBe('manage_organisations')
+    expect(CHARITY_PERMISSIONS.MANAGE_COHORTS).toBe('manage_cohorts')
     expect(CHARITY_PERMISSIONS.MANAGE_TRAINING).toBe('manage_training')
     expect(CHARITY_PERMISSIONS.MANAGE_SURVEYS).toBe('manage_surveys')
     expect(CHARITY_PERMISSIONS.MANAGE_ANNOUNCEMENTS).toBe('manage_announcements')
