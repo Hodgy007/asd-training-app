@@ -341,22 +341,34 @@ export default function LibraryPage() {
                       {col.active ? 'Deactivate' : 'Activate'}
                     </button>
 
+                    <Link
+                      href={`/library?c=${col.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 transition-colors"
+                      title="Preview as a learner sees it"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Preview as learner<ExternalLink className="h-3 w-3" />
+                    </Link>
+
                     {status === 'live' ? (
                       <Link
                         href={`/toolkit/${col.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 transition-colors"
+                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 transition-colors"
                         title="Preview on the public Toolkit"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        Preview<ExternalLink className="h-3 w-3" />
+                        Toolkit<ExternalLink className="h-3 w-3" />
                       </Link>
                     ) : (
                       <span
-                        className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed"
-                        title={status === 'awaiting' ? 'Add a document first' : 'Publish to enable preview'}
+                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed"
+                        title={status === 'awaiting' ? 'Add a document first' : 'Publish to enable toolkit preview'}
                       >
-                        Preview<ExternalLink className="h-3 w-3" />
+                        Toolkit<ExternalLink className="h-3 w-3" />
                       </span>
                     )}
 
