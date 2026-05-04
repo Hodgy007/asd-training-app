@@ -142,20 +142,13 @@ export function SurveyAiModal({ isOpen, onClose, onGenerated }: SurveyAiModalPro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
       aria-modal="true"
       role="dialog"
       aria-labelledby="survey-ai-modal-title"
     >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={handleClose}
-        aria-hidden="true"
-      />
-
       {/* Card */}
-      <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white shadow-2xl dark:bg-slate-800">
+      <div className="pointer-events-auto relative z-10 w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">

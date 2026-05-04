@@ -360,20 +360,13 @@ export function ContentGenerationModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
       aria-modal="true"
       role="dialog"
       aria-labelledby="modal-title"
     >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={handleClose}
-        aria-hidden="true"
-      />
-
       {/* Card */}
-      <div className="relative z-10 flex w-full max-w-3xl flex-col rounded-2xl bg-white shadow-2xl dark:bg-slate-900 max-h-[90vh]">
+      <div className="pointer-events-auto relative z-10 flex w-full max-w-3xl flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
