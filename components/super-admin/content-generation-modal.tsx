@@ -81,7 +81,7 @@ export function ContentGenerationModal({
   // Upload step state
   const [files, setFiles] = useState<File[]>([])
   const [programName, setProgramName] = useState('')
-  const [lens, setLens] = useState<GenerationLens>('autism')
+  const [lens, setLens] = useState<GenerationLens>('practitioner')
   const [includeImages, setIncludeImages] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
@@ -110,7 +110,7 @@ export function ContentGenerationModal({
     setStep('upload')
     setFiles([])
     setProgramName('')
-    setLens('autism')
+    setLens('practitioner')
     setIncludeImages(false)
     setUploadError(null)
     setProgressPhase('parsing')
@@ -422,6 +422,18 @@ export function ContentGenerationModal({
                   <div className="flex gap-2">
                     <button
                       type="button"
+                      onClick={() => setLens('practitioner')}
+                      className={clsx(
+                        'flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors',
+                        lens === 'practitioner'
+                          ? 'border-primary-500 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/20 dark:text-primary-300'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500'
+                      )}
+                    >
+                      Default Lens
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setLens('autism')}
                       className={clsx(
                         'flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors',
@@ -431,18 +443,6 @@ export function ContentGenerationModal({
                       )}
                     >
                       Autism Lens
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLens('practitioner')}
-                      className={clsx(
-                        'flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors',
-                        lens === 'practitioner'
-                          ? 'border-primary-500 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/20 dark:text-primary-300'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500'
-                      )}
-                    >
-                      Practitioner Lens
                     </button>
                   </div>
                 </div>
