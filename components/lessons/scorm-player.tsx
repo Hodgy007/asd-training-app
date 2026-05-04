@@ -242,7 +242,9 @@ export function ScormPlayer({
               // session cookie and pass auth. The browser will warn about
               // sandbox-escape risk; tracked separately for a signed-URL
               // hardening pass.
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+              allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+              allowFullScreen
               className="h-full w-full bg-white"
             />
           ) : (
