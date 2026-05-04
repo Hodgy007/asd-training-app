@@ -7,6 +7,25 @@ import { logger, errMeta } from '@/lib/logger'
 export const AI_FEATURE_UNAVAILABLE =
   'This AI feature is temporarily unavailable. Please try again later.'
 
+/**
+ * Thrown by `runPromptStrict` (and is also detectable from `runPrompt`'s
+ * sentinel return). Use this for paths whose output flows directly into
+ * user-visible content — a CV personal statement, a careers report — where
+ * silently substituting the literal "feature unavailable" string would
+ * corrupt the user's saved record.
+ */
+export class AiUnavailableError extends Error {
+  constructor(public readonly reason: 'missing_prompt' | 'disabled' | 'failed', cause?: unknown) {
+    super(AI_FEATURE_UNAVAILABLE)
+    this.name = 'AiUnavailableError'
+    if (cause !== undefined) (this as { cause?: unknown }).cause = cause
+  }
+}
+
+export function isAiUnavailable(value: unknown): value is AiUnavailableError {
+  return value instanceof AiUnavailableError
+}
+
 // Vercel AI Gateway is OpenAI-compatible. Wrap model strings like
 // "google/gemini-2.5-flash" through this client so generateText receives
 // a proper LanguageModel object instead of a raw string.
@@ -91,4 +110,23 @@ export async function runPrompt(
     })
     return AI_FEATURE_UNAVAILABLE
   }
+}
+
+/**
+ * Strict variant of `runPrompt`: throws `AiUnavailableError` instead of
+ * returning the human-readable sentinel string. Use in any code path whose
+ * output lands directly in user-visible content (CVs, careers reports,
+ * survey question generation) so a model failure can't end up being saved
+ * verbatim as "This AI feature is temporarily unavailable…" in the user's
+ * record.
+ */
+export async function runPromptStrict(
+  key: string,
+  values: Record<string, string>,
+): Promise<string> {
+  const text = await runPrompt(key, values)
+  if (text === AI_FEATURE_UNAVAILABLE) {
+    throw new AiUnavailableError('failed')
+  }
+  return text
 }

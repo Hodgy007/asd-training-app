@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { canAccessCareersAdvisor } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { generateCareersReport } from '@/lib/careers-advisor-ai'
+import { isAiUnavailable } from '@/lib/ai-runner'
 import type { AdvisorAnswers } from '@/types'
 
 // Simple in-memory rate limiter: 10 requests per 5 minutes per user
@@ -68,6 +69,12 @@ export async function POST(
 
     return NextResponse.json({ report: updated.report })
   } catch (error) {
+    if (isAiUnavailable(error)) {
+      return NextResponse.json(
+        { error: 'AI is temporarily unavailable. Please try again in a moment.', code: 'AI_UNAVAILABLE' },
+        { status: 503 }
+      )
+    }
     const msg = error instanceof Error ? error.message : String(error)
     console.error('Failed to generate careers report:', msg)
     return NextResponse.json(

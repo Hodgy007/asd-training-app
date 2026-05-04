@@ -10,6 +10,7 @@ import {
   generateSurveyComparative,
   generateSurveyRecommendations,
 } from '@/lib/survey-ai'
+import { isAiUnavailable } from '@/lib/ai-runner'
 
 export const maxDuration = 120
 
@@ -46,11 +47,27 @@ export async function POST(
 
   const data = buildResultsData(survey)
 
-  const [summary, comparative, recommendations] = await Promise.all([
-    generateSurveySummary(data),
-    generateSurveyComparative(data),
-    generateSurveyRecommendations(data),
-  ])
+  let summary: string
+  let comparative: string
+  let recommendations: string
+  try {
+    ;[summary, comparative, recommendations] = await Promise.all([
+      generateSurveySummary(data),
+      generateSurveyComparative(data),
+      generateSurveyRecommendations(data),
+    ])
+  } catch (error) {
+    // AiUnavailableError → 503. Importantly, NEVER persist the sentinel
+    // string as a SurveyInsight.content row — that would mean the next
+    // GET returns "AI is temporarily unavailable…" as the saved insight.
+    if (isAiUnavailable(error)) {
+      return NextResponse.json(
+        { error: 'AI is temporarily unavailable. Please try again in a moment.', code: 'AI_UNAVAILABLE' },
+        { status: 503 }
+      )
+    }
+    throw error
+  }
 
   const insights = await prisma.$transaction([
     prisma.surveyInsight.upsert({

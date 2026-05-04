@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { parseFiles } from '@/lib/file-parser'
 import { generateSurveyFromFiles } from '@/lib/survey-ai'
+import { isAiUnavailable } from '@/lib/ai-runner'
 
 export const maxDuration = 120
 
@@ -25,6 +26,12 @@ export async function POST(req: NextRequest) {
     const survey = await generateSurveyFromFiles(parsed)
     return NextResponse.json(survey)
   } catch (error) {
+    if (isAiUnavailable(error)) {
+      return NextResponse.json(
+        { error: 'AI is temporarily unavailable. Please try again in a moment.', code: 'AI_UNAVAILABLE' },
+        { status: 503 }
+      )
+    }
     console.error('AI survey generation from files failed:', error)
     return NextResponse.json(
       { error: 'Failed to generate survey from files. Please try again.' },

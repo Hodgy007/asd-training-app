@@ -9,6 +9,7 @@ import {
   improveDescription,
   expandInterests,
 } from '@/lib/cv-ai'
+import { isAiUnavailable } from '@/lib/ai-runner'
 
 const ALLOWED_ROLES = ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']
 
@@ -154,6 +155,16 @@ export async function POST(req: NextRequest, { params }: { params: { cvId: strin
 
     return NextResponse.json({ result })
   } catch (error) {
+    // AI unavailable → 503 with a clear code so the UI can show a banner
+    // (or, in the current implementation, silently no-op). Crucially, do
+    // NOT return the literal sentinel string as `result` — that would land
+    // verbatim inside the user's saved CV.
+    if (isAiUnavailable(error)) {
+      return NextResponse.json(
+        { error: 'AI is temporarily unavailable. Please try again in a moment.', code: 'AI_UNAVAILABLE' },
+        { status: 503 },
+      )
+    }
     console.error('POST /api/cv-builder/[cvId]/ai error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

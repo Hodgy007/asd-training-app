@@ -85,8 +85,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const orgId = session.user.organisationId
-  if (!orgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
+  const sessionOrgId = session.user.organisationId
+  if (!sessionOrgId) return NextResponse.json({ error: 'No organisation' }, { status: 400 })
+
+  // Parent-org drill-down: parent admins can create users in any of their
+  // child orgs by passing ?orgId=. GET already supports this — without the
+  // matching POST support a parent admin could only LIST child-org users
+  // but never create them, breaking the flow.
+  const { searchParams } = new URL(req.url)
+  const targetOrgId = searchParams.get('orgId')
+  let orgId = sessionOrgId
+  if (targetOrgId && targetOrgId !== sessionOrgId) {
+    if (!session.user.isParentOrg) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    const canManage = await canManageChildOrg(session, targetOrgId)
+    if (!canManage) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    orgId = targetOrgId
+  }
 
   const org = await prisma.organisation.findUnique({
     where: { id: orgId },

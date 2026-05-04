@@ -15,8 +15,34 @@ export async function GET() {
   // active collection regardless of role/org targeting.
   const isPreview = userRole === 'SUPER_ADMIN' || userRole === 'CHARITY_EMPLOYEE'
 
+  // Push targeting into the SQL `where` clause instead of fetching everything
+  // and filtering in JS. The previous code returned every active collection
+  // (including their documents and full URLs) and only stripped them at the
+  // last moment — one log line, error path, or refactor that returned the
+  // unfiltered list would have leaked URLs from collections the user can't
+  // see. Now the DB never sees a row the user shouldn't have.
+  const orgFilters = isPreview
+    ? []
+    : [
+        { targetOrgIds: { isEmpty: true } },
+        ...(userOrgId ? [{ targetOrgIds: { has: userOrgId } }] : []),
+      ]
+  const roleFilters = isPreview
+    ? []
+    : [
+        { targetRoles: { isEmpty: true } },
+        ...(userRole ? [{ targetRoles: { has: userRole } }] : []),
+      ]
+
+  const where = isPreview
+    ? { active: true }
+    : {
+        active: true,
+        AND: [{ OR: orgFilters }, { OR: roleFilters }],
+      }
+
   const collections = await prisma.libraryCollection.findMany({
-    where: { active: true },
+    where,
     orderBy: { createdAt: 'desc' },
     include: {
       // (themeKey + thumbnailUrl are top-level fields — included automatically)
@@ -42,14 +68,5 @@ export async function GET() {
     },
   })
 
-  // Filter collections by user's org and role (preview mode skips the filter)
-  const filtered = isPreview
-    ? collections
-    : collections.filter((col) => {
-        const orgMatch = col.targetOrgIds.length === 0 || (userOrgId && col.targetOrgIds.includes(userOrgId))
-        const roleMatch = col.targetRoles.length === 0 || (userRole && col.targetRoles.includes(userRole))
-        return orgMatch && roleMatch
-      })
-
-  return NextResponse.json(filtered)
+  return NextResponse.json(collections)
 }

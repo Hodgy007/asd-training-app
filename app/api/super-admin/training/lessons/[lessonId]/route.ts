@@ -4,15 +4,34 @@ import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { getLessonById } from '@/lib/training-db'
 import prisma from '@/lib/prisma'
-import { LessonType } from '@prisma/client'
+import { LessonType, Prisma } from '@prisma/client'
 import { validateInteractiveBlocks } from '@/lib/interactive-blocks'
 import { extractLessonTtsTexts } from '@/lib/tts-extract'
+import { sanitizeHtml } from '@/lib/sanitize'
 import {
   DEFAULT_VOICE_ID,
   generateMp3FromElevenLabs,
   getCachedTtsUrl,
   storeTtsToBlob,
 } from '@/lib/tts-blob'
+
+// Allowed schemes/hosts for `videoUrl`. Stored values flow into <video src=...>
+// and the YouTube/Vimeo embed-detector in components/training/video-player.tsx,
+// so a `javascript:` or `data:` URL would land in a learner-rendered DOM.
+function validateVideoUrl(value: unknown): { ok: true; value: string | null } | { ok: false; reason: string } {
+  if (value === null || value === '') return { ok: true, value: null }
+  if (typeof value !== 'string') return { ok: false, reason: 'videoUrl must be a string or null' }
+  let parsed: URL
+  try {
+    parsed = new URL(value)
+  } catch {
+    return { ok: false, reason: 'videoUrl is not a valid URL' }
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { ok: false, reason: 'videoUrl must use http(s)' }
+  }
+  return { ok: true, value }
+}
 
 interface Params {
   params: { lessonId: string }
@@ -92,17 +111,52 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
   }
 
+  // Sanitize HTML on write (defence-in-depth — every render path also
+  // sanitizes, but doing it here means a future render path that forgets
+  // to call sanitize can't leak whatever the editor sent us).
+  const safeContent = content !== undefined && typeof content === 'string'
+    ? sanitizeHtml(content)
+    : undefined
+  const safeTranscript = transcript !== undefined && typeof transcript === 'string'
+    ? sanitizeHtml(transcript)
+    : undefined
+
+  // Validate videoUrl scheme — see validateVideoUrl for rationale.
+  let safeVideoUrl: string | null | undefined
+  if (videoUrl !== undefined) {
+    const check = validateVideoUrl(videoUrl)
+    if (!check.ok) return NextResponse.json({ error: check.reason }, { status: 400 })
+    safeVideoUrl = check.value
+  }
+
+  // Validate interactive blocks JSON shape against the schema before persisting.
+  // An undefined input means the field isn't being touched; an explicit empty
+  // array clears the blocks. Anything else must round-trip through the Zod
+  // schema or we reject — stops admins from poking arbitrary JSON in via curl.
+  let safeBlocks: unknown
+  if (interactiveBlocks !== undefined) {
+    if (interactiveBlocks === null || (Array.isArray(interactiveBlocks) && interactiveBlocks.length === 0)) {
+      safeBlocks = []
+    } else {
+      const parsed = validateInteractiveBlocks(interactiveBlocks)
+      if (!parsed) {
+        return NextResponse.json({ error: 'Invalid interactiveBlocks payload' }, { status: 400 })
+      }
+      safeBlocks = parsed
+    }
+  }
+
   const updated = await prisma.lesson.update({
     where: { id: params.lessonId },
     data: {
       ...(title !== undefined && { title }),
       ...(type !== undefined && { type }),
-      ...(content !== undefined && { content }),
-      ...(videoUrl !== undefined && { videoUrl }),
+      ...(safeContent !== undefined && { content: safeContent }),
+      ...(safeVideoUrl !== undefined && { videoUrl: safeVideoUrl }),
       ...(order !== undefined && { order }),
       ...(active !== undefined && { active }),
-      ...(transcript !== undefined && { transcript }),
-      ...(interactiveBlocks !== undefined && { interactiveBlocks }),
+      ...(safeTranscript !== undefined && { transcript: safeTranscript }),
+      ...(safeBlocks !== undefined && { interactiveBlocks: safeBlocks as Prisma.InputJsonValue }),
       ...(surveyId !== undefined && { surveyId: surveyId || null }),
       ...(type !== undefined && type !== LessonType.SURVEY && { surveyId: null }),
     },

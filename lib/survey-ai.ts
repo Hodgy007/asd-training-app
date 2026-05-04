@@ -1,10 +1,24 @@
-import { runPrompt } from '@/lib/ai-runner'
+import { runPromptStrict } from '@/lib/ai-runner'
 import type { ParsedFile } from './content-generator-types'
 
 function extractJson(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (fenced) return fenced[1].trim()
   return text.trim()
+}
+
+// Wrap JSON.parse — models occasionally return malformed JSON (truncated,
+// markdown-wrapped, trailing commas). Without this wrapper a bad response
+// crashes the route with a 500 and an opaque SyntaxError; with it the
+// caller can map the failure to a friendly "couldn't generate, try again".
+function parseSurveyJson(text: string): GeneratedSurvey {
+  try {
+    return JSON.parse(extractJson(text)) as GeneratedSurvey
+  } catch (err) {
+    throw new Error(
+      `AI returned malformed JSON for the survey. Try again or rephrase your input. (${err instanceof Error ? err.message : 'parse error'})`
+    )
+  }
 }
 
 export interface GeneratedSurvey {
@@ -23,8 +37,8 @@ export async function generateSurveyFromTopic(
   topic: string,
   audience?: string,
 ): Promise<GeneratedSurvey> {
-  const text = await runPrompt('survey.fromTopic', { topic, audience: audience ?? '' })
-  return JSON.parse(extractJson(text)) as GeneratedSurvey
+  const text = await runPromptStrict('survey.fromTopic', { topic, audience: audience ?? '' })
+  return parseSurveyJson(text)
 }
 
 export async function generateSurveyFromFiles(files: ParsedFile[]): Promise<GeneratedSurvey> {
@@ -36,8 +50,8 @@ export async function generateSurveyFromFiles(files: ParsedFile[]): Promise<Gene
       return `## File: ${f.filename}\n${sections}`
     })
     .join('\n\n---\n\n')
-  const text = await runPrompt('survey.fromFiles', { fileContent })
-  return JSON.parse(extractJson(text)) as GeneratedSurvey
+  const text = await runPromptStrict('survey.fromFiles', { fileContent })
+  return parseSurveyJson(text)
 }
 
 // ── Results Insights ──
@@ -150,7 +164,7 @@ export async function generateSurveySummary(data: ResultsData): Promise<string> 
     data.totalResponses < 5
       ? `\n\nNote: This survey has only ${data.totalResponses} response(s). Results may not be representative.`
       : ''
-  return runPrompt('survey.summary', {
+  return runPromptStrict('survey.summary', {
     surveyTitle: data.surveyTitle,
     totalResponses: String(data.totalResponses),
     questionSummaries,
@@ -166,7 +180,7 @@ export async function generateSurveyComparative(data: ResultsData): Promise<stri
     data.totalResponses < 5
       ? `\n\nNote: This survey has only ${data.totalResponses} response(s). Comparisons may not be statistically meaningful.`
       : ''
-  return runPrompt('survey.comparative', {
+  return runPromptStrict('survey.comparative', {
     surveyTitle: data.surveyTitle,
     totalResponses: String(data.totalResponses),
     roles: roles.join(', '),
@@ -182,7 +196,7 @@ export async function generateSurveyRecommendations(data: ResultsData): Promise<
     data.totalResponses < 5
       ? `\n\nNote: Based on limited responses (${data.totalResponses}). Recommendations should be treated as preliminary.`
       : ''
-  return runPrompt('survey.recommendations', {
+  return runPromptStrict('survey.recommendations', {
     surveyTitle: data.surveyTitle,
     totalResponses: String(data.totalResponses),
     questionSummaries,

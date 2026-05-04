@@ -2,14 +2,31 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
+import { canManageChildOrg } from '@/lib/org-hierarchy'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import type { Session } from 'next-auth'
 
 const updateSchema = z.object({
   role: z.string().optional(),
   active: z.boolean().optional(),
   name: z.string().min(1).max(100).optional(),
 })
+
+/**
+ * Returns true iff the session admin is allowed to manage a user from
+ * `targetOrgId`. Same-org always allowed; parent-org admins may manage
+ * direct child orgs.
+ */
+async function canManageUserOrg(
+  session: Session,
+  targetOrgId: string | null,
+): Promise<boolean> {
+  if (!targetOrgId) return false
+  if (targetOrgId === session.user.organisationId) return true
+  if (!session.user.isParentOrg) return false
+  return canManageChildOrg(session, targetOrgId)
+}
 
 export async function GET(
   _req: NextRequest,
@@ -29,7 +46,7 @@ export async function GET(
     },
   })
 
-  if (!user || user.organisationId !== session.user.organisationId) {
+  if (!user || !(await canManageUserOrg(session, user.organisationId))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -50,7 +67,7 @@ export async function PATCH(
   }
 
   const user = await prisma.user.findUnique({ where: { id: params.userId } })
-  if (!user || user.organisationId !== session.user.organisationId) {
+  if (!user || !(await canManageUserOrg(session, user.organisationId))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -61,8 +78,11 @@ export async function PATCH(
   }
 
   if (parsed.data.role) {
+    // Use the TARGET user's org for the allowed-role check, not the admin's
+    // own org — a parent admin editing a child-org user must respect the
+    // child org's allowedRoles, not their own.
     const org = await prisma.organisation.findUnique({
-      where: { id: session.user.organisationId! },
+      where: { id: user.organisationId! },
       select: { allowedRoles: true },
     })
     if (!org || !org.allowedRoles.includes(parsed.data.role)) {
@@ -100,7 +120,7 @@ export async function DELETE(
   }
 
   const user = await prisma.user.findUnique({ where: { id: params.userId } })
-  if (!user || user.organisationId !== session.user.organisationId) {
+  if (!user || !(await canManageUserOrg(session, user.organisationId))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 

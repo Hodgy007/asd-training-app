@@ -1,4 +1,4 @@
-import { runPrompt } from '@/lib/ai-runner'
+import { runPromptStrict } from '@/lib/ai-runner'
 import type { AdvisorAnswers, AdvisorReport } from '@/types'
 
 function formatAnswers(answers: AdvisorAnswers): string {
@@ -43,7 +43,9 @@ function formatAnswers(answers: AdvisorAnswers): string {
 
 export async function generateCareersReport(answers: AdvisorAnswers): Promise<AdvisorReport> {
   const formattedAnswers = formatAnswers(answers)
-  const text = await runPrompt('careers.report', { formattedAnswers })
+  // Strict — output is parsed JSON saved as the user's careers report.
+  // AiUnavailableError bubbles up to the API route which translates to 503.
+  const text = await runPromptStrict('careers.report', { formattedAnswers })
 
   if (!text) {
     throw new Error('Failed to generate a valid careers report. Please try again.')
