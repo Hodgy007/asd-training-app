@@ -4,7 +4,7 @@ import { introspectLimiter, getClientIp } from '@/lib/rate-limit'
 
 export async function GET(req: NextRequest) {
   const ip = getClientIp(req)
-  const rate = introspectLimiter.check(ip)
+  const rate = await introspectLimiter.check(ip)
   if (!rate.success) {
     return NextResponse.json(
       { error: 'Too many requests' },

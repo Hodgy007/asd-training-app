@@ -30,7 +30,7 @@ function slugify(name: string): string {
 export async function POST(req: NextRequest) {
   // Rate limit
   const ip = getClientIp(req)
-  const rl = registerOrgLimiter.check(ip)
+  const rl = await registerOrgLimiter.check(ip)
   if (!rl.success) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.' },

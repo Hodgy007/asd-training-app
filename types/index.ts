@@ -161,6 +161,13 @@ declare module 'next-auth/jwt' {
     isParentOrg: boolean
     subscriptionStatus: string
     isPersonalOrg: boolean
+    /**
+     * Unix-ms timestamp of the last DB re-validation of role/active/flags/etc.
+     * The JWT callback re-fetches once this is older than VALIDATION_INTERVAL_MS
+     * so a deactivation, role demotion or feature-flag change takes effect within
+     * ~60s instead of waiting up to 8h for the session to expire.
+     */
+    lastValidatedAt: number
   }
 }
 

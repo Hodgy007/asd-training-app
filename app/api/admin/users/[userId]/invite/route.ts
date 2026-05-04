@@ -24,7 +24,7 @@ export async function POST(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const rate = inviteLimiter.check(session.user.id)
+  const rate = await inviteLimiter.check(session.user.id)
   if (!rate.success) {
     return NextResponse.json(
       { error: 'Too many invite sends. Please wait before trying again.' },

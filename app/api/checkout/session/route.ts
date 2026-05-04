@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = getClientIp(req)
-  const rl = checkoutLimiter.check(ip)
+  const rl = await checkoutLimiter.check(ip)
   if (!rl.success) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.' },

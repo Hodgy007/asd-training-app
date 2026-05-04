@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = getClientIp(req)
-  const rl = freeClaimLimiter.check(ip)
+  const rl = await freeClaimLimiter.check(ip)
   if (!rl.success) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.' },

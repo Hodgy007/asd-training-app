@@ -42,7 +42,7 @@ const joinSchema = z.object({
 
 export async function POST(req: NextRequest, { params }: { params: { code: string } }) {
   const ip = getClientIp(req)
-  const limit = joinLimiter.check(ip)
+  const limit = await joinLimiter.check(ip)
   if (!limit.success) {
     return NextResponse.json(
       { error: 'Too many attempts. Try again in a few minutes.' },

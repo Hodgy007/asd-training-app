@@ -156,6 +156,7 @@ export async function POST(req: NextRequest) {
         subscriptionStatus:
           orgForFeatures?.subscriptionStatus ?? userSubInfo?.subscriptionStatus ?? 'NONE',
         isPersonalOrg: !user.organisationId,
+        lastValidatedAt: Date.now(),
       },
       secret: process.env.NEXTAUTH_SECRET!,
     })

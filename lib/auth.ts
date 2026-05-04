@@ -306,6 +306,7 @@ export const authOptions: NextAuthOptions = {
         )
         token.subscriptionStatus = subInfo.subscriptionStatus
         token.isPersonalOrg = subInfo.isPersonalOrg
+        token.lastValidatedAt = Date.now()
       }
 
       // SSO login — look up DB user by email since there's no adapter
@@ -331,31 +332,71 @@ export const authOptions: NextAuthOptions = {
           const ssoSubInfo = await getUserSubscriptionInfo(dbUser.id, dbUser.organisationId)
           token.subscriptionStatus = ssoSubInfo.subscriptionStatus
           token.isPersonalOrg = ssoSubInfo.isPersonalOrg
+          token.lastValidatedAt = Date.now()
         }
       }
 
-      if (trigger === 'update') {
+      // Periodic re-validation. Without this, role demotions, deactivations,
+      // feature-flag toggles, and program revocations only take effect when
+      // the user signs out and back in (up to 8h). Now they propagate within
+      // VALIDATION_INTERVAL_MS (60s) — fast enough for ops, infrequent enough
+      // that the per-request DB cost is negligible.
+      //
+      // Forced refreshes (`trigger === 'update'` from session.update() on the
+      // client) bypass the freshness window so explicit refresh works
+      // immediately. Fail-closed: if the user is gone or deactivated we
+      // return null so NextAuth treats the session as signed out.
+      const VALIDATION_INTERVAL_MS = 60_000
+      const needsRefresh =
+        Boolean(token.id) && (
+          trigger === 'update' ||
+          typeof token.lastValidatedAt !== 'number' ||
+          Date.now() - token.lastValidatedAt > VALIDATION_INTERVAL_MS
+        )
+
+      if (needsRefresh && token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true, organisationId: true, mustChangePassword: true, totpEnabled: true, charityPermissions: true, password: true },
+          select: {
+            role: true,
+            organisationId: true,
+            active: true,
+            mustChangePassword: true,
+            totpEnabled: true,
+            charityPermissions: true,
+            password: true,
+            organisation: { select: { active: true } },
+          },
         })
-        if (dbUser) {
-          token.role = dbUser.role
-          token.organisationId = dbUser.organisationId
-          token.mustChangePassword = dbUser.mustChangePassword
-          token.totpEnabled = dbUser.totpEnabled
-          token.hasPassword = !!dbUser.password
-          token.charityPermissions = dbUser.charityPermissions ?? []
-          const updateFlags = await getEffectiveFeatureFlags(token.id as string, dbUser.organisationId)
-          token.cvBuilderEnabled = updateFlags.cvBuilderEnabled
-          token.careersAdvisorEnabled = updateFlags.careersAdvisorEnabled
-          token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
-          const updateSubInfo = await getUserSubscriptionInfo(token.id as string, dbUser.organisationId)
-          token.subscriptionStatus = updateSubInfo.subscriptionStatus
-          token.isPersonalOrg = updateSubInfo.isPersonalOrg
+
+        if (!dbUser || !dbUser.active || (dbUser.organisation && !dbUser.organisation.active)) {
+          // NextAuth v4 supports returning null from the jwt callback to
+          // invalidate the session at runtime, but its TS signature only
+          // declares JWT. Cast — confirmed via the (deactivation) test path
+          // below and via NextAuth's own credentials-provider behaviour.
+          return null as unknown as import('next-auth/jwt').JWT
         }
-        token.mfaPending = false
+
+        token.role = dbUser.role
+        token.organisationId = dbUser.organisationId
+        token.mustChangePassword = dbUser.mustChangePassword
+        token.totpEnabled = dbUser.totpEnabled
+        token.hasPassword = !!dbUser.password
+        token.charityPermissions = dbUser.charityPermissions ?? []
+        const updateFlags = await getEffectiveFeatureFlags(token.id as string, dbUser.organisationId)
+        token.cvBuilderEnabled = updateFlags.cvBuilderEnabled
+        token.careersAdvisorEnabled = updateFlags.careersAdvisorEnabled
+        token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
+        const updateSubInfo = await getUserSubscriptionInfo(token.id as string, dbUser.organisationId)
+        token.subscriptionStatus = updateSubInfo.subscriptionStatus
+        token.isPersonalOrg = updateSubInfo.isPersonalOrg
         token.effectivePrograms = await getUserEffectivePrograms(token.id as string)
+        token.lastValidatedAt = Date.now()
+      }
+
+      // Explicit session.update() also clears any pending MFA gate.
+      if (trigger === 'update') {
+        token.mfaPending = false
       }
 
       return token

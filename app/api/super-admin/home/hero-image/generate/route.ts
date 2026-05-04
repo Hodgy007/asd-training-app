@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   // Per-IP rate limit
   const ip = getClientIp(req)
-  const rl = heroImageLimiter.check(ip)
+  const rl = await heroImageLimiter.check(ip)
   if (!rl.success) {
     return NextResponse.json(
       { error: 'Too many requests. Please wait before generating another banner.' },

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, ctx: { params: { nextauth: string[]
 
   if (isCredentialsSignIn) {
     const ip = getClientIp(req)
-    const result = loginLimiter.check(ip)
+    const result = await loginLimiter.check(ip)
     if (!result.success) {
       return NextResponse.json(
         { error: 'Too many login attempts. Please try again later.' },

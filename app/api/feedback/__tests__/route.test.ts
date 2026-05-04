@@ -16,7 +16,7 @@ vi.mock('@/lib/feedback-email', () => ({
 }))
 vi.mock('@/lib/rate-limit', async () => {
   const actual = await vi.importActual<typeof import('@/lib/rate-limit')>('@/lib/rate-limit')
-  return { ...actual, feedbackLimiter: { check: vi.fn(() => ({ success: true })) } }
+  return { ...actual, feedbackLimiter: { check: vi.fn(async () => ({ success: true })) } }
 })
 
 import { getServerSession } from 'next-auth'
@@ -47,7 +47,7 @@ describe('POST /api/feedback', () => {
     vi.mocked(getServerSession).mockReset()
     vi.mocked(prisma.feedbackSubmission.create).mockReset()
     vi.mocked(sendFeedbackEmail).mockClear()
-    vi.mocked(feedbackLimiter.check).mockReturnValue({ success: true })
+    vi.mocked(feedbackLimiter.check).mockResolvedValue({ success: true })
   })
 
   it('returns 401 when unauthenticated', async () => {
@@ -58,7 +58,7 @@ describe('POST /api/feedback', () => {
 
   it('returns 429 when rate-limited', async () => {
     vi.mocked(getServerSession).mockResolvedValue({ user: { id: 'u1', organisationId: 'o1' } } as any)
-    vi.mocked(feedbackLimiter.check).mockReturnValue({ success: false, retryAfterMs: 60000 })
+    vi.mocked(feedbackLimiter.check).mockResolvedValue({ success: false, retryAfterMs: 60000 })
     const res = await POST(makeRequest(validBody))
     expect(res.status).toBe(429)
   })

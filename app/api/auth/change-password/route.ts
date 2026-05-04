@@ -16,7 +16,7 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   const requestId = req.headers.get('x-request-id') ?? undefined
   const ip = getClientIp(req)
-  const rateLimit = changePasswordLimiter.check(ip)
+  const rateLimit = await changePasswordLimiter.check(ip)
   if (!rateLimit.success) {
     logger.warn('auth.change_password.rate_limited', { requestId, ip })
     return NextResponse.json(

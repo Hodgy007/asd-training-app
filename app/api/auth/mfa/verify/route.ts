@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger'
 export async function POST(req: NextRequest) {
   const requestId = req.headers.get('x-request-id') ?? undefined
   const ip = getClientIp(req)
-  const rateLimit = mfaVerifyLimiter.check(ip)
+  const rateLimit = await mfaVerifyLimiter.check(ip)
   if (!rateLimit.success) {
     logger.warn('auth.mfa_verify.rate_limited', { requestId, ip })
     return NextResponse.json(
