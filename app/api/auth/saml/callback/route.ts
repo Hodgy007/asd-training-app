@@ -3,6 +3,7 @@ import { encode } from 'next-auth/jwt'
 import { prisma } from '@/lib/prisma'
 import { validateSamlResponse } from '@/lib/saml'
 import { getUserPrograms } from '@/lib/modules'
+import { LEAF_ROLES } from '@/types'
 
 export async function POST(req: NextRequest) {
   try {
@@ -91,12 +92,23 @@ export async function POST(req: NextRequest) {
           where: { emailDomain: domain, configured: true },
         })
         if (orgConfig?.autoProvision) {
+          // Defence in depth: even if a malformed defaultRole somehow
+          // landed in the DB (manual edit, bypassed migration, future
+          // bug in the config endpoint), refuse to mint anything other
+          // than a leaf role here. ORG_ADMIN / SUPER_ADMIN / CHARITY_*
+          // must never be auto-provisioned.
+          const configuredRole = orgConfig.defaultRole
+          const safeRole =
+            typeof configuredRole === 'string' &&
+            LEAF_ROLES.includes(configuredRole as typeof LEAF_ROLES[number])
+              ? configuredRole
+              : 'EMPLOYEE'
           user = await prisma.user.create({
             data: {
               email: validatedEmail,
               name: validatedName || validatedEmail.split('@')[0],
               password: null, // SSO user, no password
-              role: (orgConfig.defaultRole as any) || 'EMPLOYEE', // eslint-disable-line @typescript-eslint/no-explicit-any
+              role: safeRole as any, // eslint-disable-line @typescript-eslint/no-explicit-any
               organisationId: orgConfig.organisationId,
               active: true,
             },

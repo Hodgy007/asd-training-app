@@ -55,7 +55,7 @@ function generateTempPassword(): string {
   // xorshift PRNG that lets an attacker who sees one issued password
   // predict others generated in the same session.
   const buf = new Uint32Array(12)
-  window.crypto.getRandomValues(buf)
+  ;(typeof window !== 'undefined' ? window.crypto : globalThis.crypto).getRandomValues(buf)
   let out = ''
   for (let i = 0; i < 12; i++) out += chars[buf[i] % chars.length]
   return out + '!1'

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { LEAF_ROLES } from '@/types'
 
 export async function GET(_req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -34,6 +35,20 @@ export async function PUT(req: NextRequest) {
 
   if (!emailDomain) {
     return NextResponse.json({ error: 'emailDomain is required' }, { status: 400 })
+  }
+
+  // defaultRole drives auto-provisioning in the SAML callback. Reject any
+  // value that isn't a leaf role — otherwise an org admin could provision
+  // SUPER_ADMIN / ORG_ADMIN / CHARITY_EMPLOYEE accounts at any IdP-asserted
+  // email in their domain. null/undefined are fine (callback falls back
+  // to EMPLOYEE).
+  if (defaultRole !== null && defaultRole !== undefined && defaultRole !== '') {
+    if (typeof defaultRole !== 'string' || !LEAF_ROLES.includes(defaultRole as typeof LEAF_ROLES[number])) {
+      return NextResponse.json(
+        { error: 'defaultRole must be a leaf role (CAREGIVER, CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE, or PARTICIPANT)' },
+        { status: 400 },
+      )
+    }
   }
 
   const configured = Boolean(ssoUrl && entityId && certificate)
