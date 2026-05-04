@@ -276,9 +276,11 @@ export default function LibraryPage() {
                 </p>
                 <CollectionActionsPanel
                   collectionId={editingCollection.id}
+                  active={editingCollection.active}
                   publishedToToolkit={Boolean(editingCollection.publishedToToolkit)}
                   documentCount={editingCollection._count.documents}
                   onUpdate={fetchCollections}
+                  onAfterDelete={() => { setEditingId(null); fetchCollections() }}
                   onToast={showToast}
                 />
               </div>
@@ -380,68 +382,21 @@ export default function LibraryPage() {
                     </p>
                   )}
 
-                  {/* Actions */}
-                  <div className="mt-auto pt-4 flex flex-wrap items-center gap-2">
-                    <button
-                      disabled={actionLoading === col.id + '-publish'}
-                      onClick={(e) => { e.preventDefault(); togglePublishedToToolkit(col) }}
-                      className={clsx(
-                        'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-colors disabled:opacity-50',
-                        col.publishedToToolkit
-                          ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200',
-                      )}
-                    >
-                      <Globe2 className="h-3 w-3" />{col.publishedToToolkit ? 'Unpublish' : 'Publish'}
-                    </button>
-
-                    <button
-                      disabled={actionLoading === col.id + '-toggle'}
-                      onClick={(e) => { e.preventDefault(); toggleActive(col) }}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 transition-colors disabled:opacity-50"
-                    >
-                      {col.active ? 'Deactivate' : 'Activate'}
-                    </button>
-
+                  {/* Actions — only Preview as learner here. Everything else
+                      (Publish, Activate, Delete, Upload ZIP, Clear all) lives
+                      in the edit form (click the pencil) so the tile stays
+                      uncluttered and reads as a status card. */}
+                  <div className="mt-auto pt-4 flex items-center justify-end">
                     <Link
                       href={`/library?c=${col.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 transition-colors"
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 transition-colors"
                       title="Preview as a learner sees it"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Preview as learner<ExternalLink className="h-3 w-3" />
                     </Link>
-
-                    {status === 'live' ? (
-                      <Link
-                        href={`/toolkit/${col.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 transition-colors"
-                        title="Preview on the public Toolkit"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Toolkit<ExternalLink className="h-3 w-3" />
-                      </Link>
-                    ) : (
-                      <span
-                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed"
-                        title={status === 'awaiting' ? 'Add a document first' : 'Publish to enable toolkit preview'}
-                      >
-                        Toolkit<ExternalLink className="h-3 w-3" />
-                      </span>
-                    )}
-
-                    <button
-                      disabled={actionLoading === col.id + '-delete'}
-                      onClick={(e) => { e.preventDefault(); handleDelete(col) }}
-                      className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-40"
-                      title="Delete collection"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
                   </div>
                 </div>
               </div>

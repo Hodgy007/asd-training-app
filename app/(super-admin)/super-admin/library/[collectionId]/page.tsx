@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { clsx } from 'clsx'
 import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
@@ -71,6 +71,7 @@ function formatFileSize(bytes: number): string {
 
 export default function CollectionDetailPage() {
   const { collectionId } = useParams<{ collectionId: string }>()
+  const router = useRouter()
   const [collection, setCollection] = useState<Collection | null>(null)
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -604,9 +605,11 @@ export default function CollectionDetailPage() {
                   </p>
                   <CollectionActionsPanel
                     collectionId={collection.id}
+                    active={collection.active}
                     publishedToToolkit={collection.publishedToToolkit}
                     documentCount={collection.documents?.length ?? 0}
                     onUpdate={fetchCollection}
+                    onAfterDelete={() => router.push('/super-admin/library')}
                     onToast={showToast}
                   />
                 </div>
