@@ -16,19 +16,22 @@ export function hashApiKey(rawKey: string): string {
 
 /**
  * Validate a Bearer token from the Authorization header.
- * Returns true if the key is valid, active, and not expired.
+ * Returns the key's hash + id on success (so callers can rate-limit per
+ * key without holding the raw token), or null otherwise.
  * Updates lastUsedAt on success.
  */
-export async function validateApiKey(authHeader: string | null): Promise<boolean> {
-  if (!authHeader?.startsWith('Bearer ')) return false
+export async function validateApiKey(
+  authHeader: string | null,
+): Promise<{ id: string; keyHash: string } | null> {
+  if (!authHeader?.startsWith('Bearer ')) return null
   const rawKey = authHeader.slice(7).trim()
-  if (!rawKey) return false
+  if (!rawKey) return null
 
   const keyHash = hashApiKey(rawKey)
   const apiKey = await prisma.integrationApiKey.findUnique({ where: { keyHash } })
 
-  if (!apiKey || !apiKey.active) return false
-  if (apiKey.expiresAt && apiKey.expiresAt < new Date()) return false
+  if (!apiKey || !apiKey.active) return null
+  if (apiKey.expiresAt && apiKey.expiresAt < new Date()) return null
 
   // Update last used timestamp (fire-and-forget)
   prisma.integrationApiKey.update({
@@ -36,5 +39,5 @@ export async function validateApiKey(authHeader: string | null): Promise<boolean
     data: { lastUsedAt: new Date() },
   }).catch(() => {})
 
-  return true
+  return { id: apiKey.id, keyHash }
 }

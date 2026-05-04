@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { validateApiKey } from '@/lib/integration-auth'
 import { prisma } from '@/lib/prisma'
 import { logger, errMeta } from '@/lib/logger'
+import { createRateLimiter } from '@/lib/rate-limit'
+
+// 60 requests per minute per API key. Survey responses contain personal
+// data (pseudonymised but still per-respondent), so we cap bulk-extract.
+const integrationsLimiter = createRateLimiter('integrations.reports', 60_000, 60)
 
 async function fetchTraining() {
   const allModules = await prisma.module.findMany({
@@ -80,6 +86,21 @@ async function fetchLibrary() {
   }))
 }
 
+// Pseudonymise a user id for export: HMAC-SHA-256 truncated to 16 hex chars.
+// Stable per-(user, survey) so analytics can correlate responses across
+// questions, but not reversible without the secret. We salt with a fixed
+// per-deployment value (NEXTAUTH_SECRET, which already has to exist) so
+// the same user gets the same pseudonym across runs but it can't be
+// guessed from a leaked report alone.
+function pseudonymiseRespondent(userId: string, surveyId: string): string {
+  const secret = process.env.NEXTAUTH_SECRET ?? ''
+  return crypto
+    .createHmac('sha256', secret)
+    .update(`${surveyId}:${userId}`)
+    .digest('hex')
+    .slice(0, 16)
+}
+
 async function fetchSurveys() {
   const surveys = await prisma.survey.findMany({
     include: {
@@ -90,7 +111,8 @@ async function fetchSurveys() {
           answers: true,
           user: {
             select: {
-              name: true, role: true,
+              id: true,
+              role: true,
               organisation: { select: { name: true } },
             },
           },
@@ -109,7 +131,11 @@ async function fetchSurveys() {
     questionCount: survey.questions.length,
     responseCount: survey.responses.length,
     responses: survey.responses.map((r) => ({
-      respondent: r.user.name,
+      // Pseudonym instead of full name. Charity-issued integration keys
+      // are platform-wide (read every org) — exposing real names would
+      // leak GDPR personal data cross-tenant. Aggregate role/org context
+      // is preserved so reports can still segment.
+      respondentId: pseudonymiseRespondent(r.user.id, survey.id),
       role: r.user.role,
       organisation: r.user.organisation?.name ?? '',
       completedAt: r.completedAt,
@@ -132,6 +158,16 @@ export async function GET(req: NextRequest) {
   if (!valid) {
     logger.warn('integrations.reports.auth_failed', { requestId, keyPrefix })
     return NextResponse.json({ error: 'Invalid or expired API key' }, { status: 401 })
+  }
+
+  // Per-key rate limit (keyed by hash so we never log the raw token).
+  const rate = await integrationsLimiter.check(valid.keyHash)
+  if (!rate.success) {
+    logger.warn('integrations.reports.rate_limited', { requestId, keyPrefix })
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    )
   }
 
   const section = req.nextUrl.searchParams.get('section') ?? 'all'
