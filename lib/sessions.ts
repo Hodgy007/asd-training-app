@@ -1,14 +1,39 @@
 import prisma from './prisma'
-import type { ClassSession, SessionAttendee, User, Role, SessionStatus } from '@prisma/client'
+import type { ClassSession, SessionAttendee, Role, SessionStatus } from '@prisma/client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+// Only safe-to-expose User fields. NEVER include `password` or `totpSecret` here —
+// SessionWithDetails is returned in JSON responses to org admins / hosts.
+export type SafeSessionUser = {
+  id: string
+  name: string | null
+  email: string
+  role: Role
+  organisationId: string | null
+}
+
 export type SessionWithDetails = ClassSession & {
-  host: User
-  createdBy: User
-  attendees: (SessionAttendee & { user: User })[]
+  host: SafeSessionUser
+  createdBy: SafeSessionUser
+  attendees: (SessionAttendee & { user: SafeSessionUser })[]
   _count: { attendees: number }
 }
+
+const SAFE_USER_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  organisationId: true,
+} as const
+
+const SESSION_INCLUDE = {
+  host: { select: SAFE_USER_SELECT },
+  createdBy: { select: SAFE_USER_SELECT },
+  attendees: { include: { user: { select: SAFE_USER_SELECT } } },
+  _count: { select: { attendees: true } },
+} as const
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
@@ -23,12 +48,7 @@ export async function getOrgSessions(
       ...(status ? { status } : {}),
     },
     orderBy: { scheduledAt: 'desc' },
-    include: {
-      host: true,
-      createdBy: true,
-      attendees: { include: { user: true } },
-      _count: { select: { attendees: true } },
-    },
+    include: SESSION_INCLUDE,
   })
 }
 
@@ -36,12 +56,7 @@ export async function getOrgSessions(
 export async function getSessionById(sessionId: string): Promise<SessionWithDetails | null> {
   return prisma.classSession.findUnique({
     where: { id: sessionId },
-    include: {
-      host: true,
-      createdBy: true,
-      attendees: { include: { user: true } },
-      _count: { select: { attendees: true } },
-    },
+    include: SESSION_INCLUDE,
   })
 }
 
@@ -67,12 +82,7 @@ export async function getUpcomingSessions(userId: string): Promise<SessionWithDe
     },
     orderBy: { scheduledAt: 'asc' },
     take: 10,
-    include: {
-      host: true,
-      createdBy: true,
-      attendees: { include: { user: true } },
-      _count: { select: { attendees: true } },
-    },
+    include: SESSION_INCLUDE,
   })
 }
 
@@ -238,12 +248,7 @@ export async function getCharitySessions(
       ...(status ? { status } : {}),
     },
     orderBy: { scheduledAt: 'desc' },
-    include: {
-      host: true,
-      createdBy: true,
-      attendees: { include: { user: true } },
-      _count: { select: { attendees: true } },
-    },
+    include: SESSION_INCLUDE,
   })
 }
 

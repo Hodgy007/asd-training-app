@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type Stripe from 'stripe'
-import type { SubscriptionStatus } from '@prisma/client'
+import { Prisma, type SubscriptionStatus } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { Resend } from 'resend'
 import { prisma } from './prisma'
@@ -25,26 +25,37 @@ export function mapStripeSubscriptionStatus(
 }
 
 export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
-  const already = await prisma.stripeEvent.findUnique({ where: { id: event.id } })
-  if (already) return
+  // Insert the dedupe row FIRST. If two parallel deliveries of the same
+  // event.id race past a `findUnique` check, both used to run side effects;
+  // now the second insert throws P2002 and we abort cleanly.
+  try {
+    await prisma.stripeEvent.create({ data: { id: event.id, type: event.type } })
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      return // duplicate delivery — the first one is (or will be) handled
+    }
+    throw err
+  }
+
+  // event.created is unix-seconds. Pass it through to subscription handlers so
+  // they can drop stale events (e.g. a late `updated` after `deleted`).
+  const eventCreatedAt = new Date(event.created * 1000)
 
   switch (event.type) {
     case 'checkout.session.completed':
-      await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session)
+      await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session, eventCreatedAt)
       break
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted':
-      await handleSubscriptionChange(event.data.object as Stripe.Subscription)
+      await handleSubscriptionChange(event.data.object as Stripe.Subscription, eventCreatedAt)
       break
     case 'invoice.payment_failed':
-      await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice)
+      await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice, eventCreatedAt)
       break
     case 'invoice.payment_succeeded':
-      await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice)
+      await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice, eventCreatedAt)
       break
   }
-
-  await prisma.stripeEvent.create({ data: { id: event.id, type: event.type } })
 }
 
 // ─── Owner resolution ─────────────────────────────────────────────────────────
@@ -202,7 +213,10 @@ async function resolveOwnerFromSubscriptionId(subscriptionId: string): Promise<O
 
 // ─── Event handlers ───────────────────────────────────────────────────────────
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+async function handleCheckoutCompleted(
+  session: Stripe.Checkout.Session,
+  eventCreatedAt: Date
+): Promise<void> {
   const owner = await resolveOwnerFromSession(session)
   if (!owner) return
 
@@ -224,7 +238,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   if (session.mode === 'payment') {
     await handlePurchaseFulfilment(session, owner)
   } else if (session.mode === 'subscription') {
-    await handleSubscriptionFulfilment(session, owner)
+    await handleSubscriptionFulfilment(session, owner, eventCreatedAt)
   }
 }
 
@@ -259,16 +273,14 @@ async function handlePurchaseFulfilment(
       },
     })
 
-    const org = await prisma.organisation.findUnique({
-      where: { id: owner.id },
-      select: { allowedProgramIds: true },
-    })
-    if (org && !org.allowedProgramIds.includes(programId)) {
-      await prisma.organisation.update({
-        where: { id: owner.id },
-        data: { allowedProgramIds: [...org.allowedProgramIds, programId] },
-      })
-    }
+    // Atomic, idempotent append — array_append + ANY() guard prevents both
+    // races and duplicates without a read-modify-write window.
+    await prisma.$executeRaw`
+      UPDATE "Organisation"
+      SET "allowedProgramIds" = array_append("allowedProgramIds", ${programId})
+      WHERE "id" = ${owner.id}
+        AND NOT (${programId} = ANY("allowedProgramIds"))
+    `
     return
   }
 
@@ -291,21 +303,18 @@ async function handlePurchaseFulfilment(
     },
   })
 
-  const user = await prisma.user.findUnique({
-    where: { id: owner.id },
-    select: { allowedProgramIds: true },
-  })
-  if (user && !user.allowedProgramIds.includes(programId)) {
-    await prisma.user.update({
-      where: { id: owner.id },
-      data: { allowedProgramIds: [...user.allowedProgramIds, programId] },
-    })
-  }
+  await prisma.$executeRaw`
+    UPDATE "User"
+    SET "allowedProgramIds" = array_append("allowedProgramIds", ${programId})
+    WHERE "id" = ${owner.id}
+      AND NOT (${programId} = ANY("allowedProgramIds"))
+  `
 }
 
 async function handleSubscriptionFulfilment(
   session: Stripe.Checkout.Session,
-  owner: Owner
+  owner: Owner,
+  eventCreatedAt: Date
 ): Promise<void> {
   const subscriptionId = session.subscription as string | null
   if (!subscriptionId) {
@@ -314,13 +323,16 @@ async function handleSubscriptionFulfilment(
   }
   const stripe = requireStripe()
   const sub = await stripe.subscriptions.retrieve(subscriptionId)
-  await syncSubscriptionToOwner(owner, sub)
+  await syncSubscriptionToOwner(owner, sub, eventCreatedAt)
 }
 
-async function handleSubscriptionChange(sub: Stripe.Subscription): Promise<void> {
+async function handleSubscriptionChange(
+  sub: Stripe.Subscription,
+  eventCreatedAt: Date
+): Promise<void> {
   const owner = await resolveOwnerFromSubscriptionId(sub.id)
   if (!owner) return
-  await syncSubscriptionToOwner(owner, sub)
+  await syncSubscriptionToOwner(owner, sub, eventCreatedAt)
 }
 
 // current_period_end moved from the subscription to each item in API 2026-03-25.dahlia.
@@ -340,42 +352,80 @@ function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
   return null
 }
 
-async function syncSubscriptionToOwner(owner: Owner, sub: Stripe.Subscription): Promise<void> {
+async function syncSubscriptionToOwner(
+  owner: Owner,
+  sub: Stripe.Subscription,
+  eventCreatedAt: Date
+): Promise<void> {
   const data = {
     subscriptionStatus: mapStripeSubscriptionStatus(sub.status),
     stripeSubscriptionId: sub.id,
     subscriptionCurrentPeriodEnd: getSubscriptionPeriodEnd(sub),
     subscriptionPriceId: sub.items.data[0]?.price.id ?? null,
+    lastStripeEventAt: eventCreatedAt,
   }
+
+  // Conditional update — only apply if the incoming event is newer than the
+  // last one we processed for this owner. This drops out-of-order deliveries
+  // (a late `customer.subscription.updated` arriving after `deleted` would
+  // otherwise resurrect a canceled subscription).
   if (owner.kind === 'org') {
-    await prisma.organisation.update({ where: { id: owner.id }, data })
+    await prisma.organisation.updateMany({
+      where: {
+        id: owner.id,
+        OR: [
+          { lastStripeEventAt: null },
+          { lastStripeEventAt: { lt: eventCreatedAt } },
+        ],
+      },
+      data,
+    })
   } else {
-    await prisma.user.update({ where: { id: owner.id }, data })
+    await prisma.user.updateMany({
+      where: {
+        id: owner.id,
+        OR: [
+          { lastStripeEventAt: null },
+          { lastStripeEventAt: { lt: eventCreatedAt } },
+        ],
+      },
+      data,
+    })
   }
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+async function handleInvoicePaymentFailed(
+  invoice: Stripe.Invoice,
+  eventCreatedAt: Date
+): Promise<void> {
   const subscriptionId = getInvoiceSubscriptionId(invoice)
   if (!subscriptionId) return
   const owner = await resolveOwnerFromSubscriptionId(subscriptionId)
   if (!owner) return
+  // Same staleness guard as syncSubscriptionToOwner — never let a late invoice
+  // event flip status backwards over a more recent subscription update.
+  const where = {
+    id: owner.id,
+    OR: [
+      { lastStripeEventAt: null },
+      { lastStripeEventAt: { lt: eventCreatedAt } },
+    ],
+  }
+  const data = { subscriptionStatus: 'PAST_DUE' as const, lastStripeEventAt: eventCreatedAt }
   if (owner.kind === 'org') {
-    await prisma.organisation.update({
-      where: { id: owner.id },
-      data: { subscriptionStatus: 'PAST_DUE' },
-    })
+    await prisma.organisation.updateMany({ where, data })
   } else {
-    await prisma.user.update({
-      where: { id: owner.id },
-      data: { subscriptionStatus: 'PAST_DUE' },
-    })
+    await prisma.user.updateMany({ where, data })
   }
 }
 
-async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
+async function handleInvoicePaymentSucceeded(
+  invoice: Stripe.Invoice,
+  eventCreatedAt: Date
+): Promise<void> {
   const subscriptionId = getInvoiceSubscriptionId(invoice)
   if (!subscriptionId) return
   const stripe = requireStripe()
   const sub = await stripe.subscriptions.retrieve(subscriptionId)
-  await handleSubscriptionChange(sub)
+  await handleSubscriptionChange(sub, eventCreatedAt)
 }

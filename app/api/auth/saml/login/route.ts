@@ -24,7 +24,9 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      const redirectUrl = generateSamlLoginUrl(config.ssoUrl, `charity:${email}`)
+      const redirectUrl = await generateSamlLoginUrl(config.ssoUrl, `charity:${email}`, {
+        isCharity: true,
+      })
       return NextResponse.json({ redirectUrl })
     }
 
@@ -45,7 +47,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const redirectUrl = generateSamlLoginUrl(config.ssoUrl, email)
+    const redirectUrl = await generateSamlLoginUrl(config.ssoUrl, email)
     return NextResponse.json({ redirectUrl })
   } catch (error) {
     console.error('SAML login error:', error)

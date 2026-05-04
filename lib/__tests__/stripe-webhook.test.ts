@@ -1,11 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type Stripe from 'stripe'
+import { Prisma } from '@prisma/client'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    stripeEvent: { findUnique: vi.fn(), create: vi.fn() },
-    organisation: { findFirst: vi.fn(), findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
-    user: { findUnique: vi.fn(), create: vi.fn() },
+    stripeEvent: { create: vi.fn() },
+    organisation: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
+      create: vi.fn(),
+    },
+    user: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
+      create: vi.fn(),
+    },
     purchase: { upsert: vi.fn() },
   },
 }))
@@ -40,22 +53,28 @@ describe('mapStripeSubscriptionStatus', () => {
 
 describe('handleStripeEvent idempotency', () => {
   beforeEach(() => {
-    vi.mocked(prisma.stripeEvent.findUnique).mockReset()
     vi.mocked(prisma.stripeEvent.create).mockReset()
     vi.mocked(prisma.organisation.findFirst).mockReset()
     vi.mocked(prisma.organisation.update).mockReset()
+    vi.mocked(prisma.organisation.updateMany).mockReset()
+    vi.mocked(prisma.user.findFirst).mockReset()
+    vi.mocked(prisma.user.updateMany).mockReset()
   })
 
-  it('no-ops when the event id has already been recorded', async () => {
-    vi.mocked(prisma.stripeEvent.findUnique).mockResolvedValue({
-      id: 'evt_123',
-      type: 'customer.subscription.updated',
-      createdAt: new Date(),
-    } as never)
+  it('no-ops when the event id has already been recorded (P2002 on create)', async () => {
+    // The new contract: insert StripeEvent FIRST. A duplicate delivery hits the
+    // unique constraint and we abort before running side effects.
+    vi.mocked(prisma.stripeEvent.create).mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+        code: 'P2002',
+        clientVersion: '5.x',
+      })
+    )
 
     const event = {
       id: 'evt_123',
       type: 'customer.subscription.updated',
+      created: Math.floor(Date.now() / 1000),
       data: { object: { id: 'sub_abc' } as Stripe.Subscription },
     } as Stripe.Event
 
@@ -63,18 +82,20 @@ describe('handleStripeEvent idempotency', () => {
 
     expect(prisma.organisation.findFirst).not.toHaveBeenCalled()
     expect(prisma.organisation.update).not.toHaveBeenCalled()
-    expect(prisma.stripeEvent.create).not.toHaveBeenCalled()
+    expect(prisma.organisation.updateMany).not.toHaveBeenCalled()
   })
 
-  it('processes a new event and records it for future idempotency', async () => {
-    vi.mocked(prisma.stripeEvent.findUnique).mockResolvedValue(null)
-    vi.mocked(prisma.organisation.findFirst).mockResolvedValue({ id: 'org_1' } as never)
-    vi.mocked(prisma.organisation.update).mockResolvedValue({} as never)
+  it('processes a new event and uses updateMany with a staleness guard', async () => {
     vi.mocked(prisma.stripeEvent.create).mockResolvedValue({} as never)
+    vi.mocked(prisma.organisation.findFirst).mockResolvedValue({ id: 'org_1' } as never)
+    vi.mocked(prisma.organisation.updateMany).mockResolvedValue({ count: 1 } as never)
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null)
 
+    const eventCreatedSec = Math.floor(Date.now() / 1000)
     const event = {
       id: 'evt_new',
       type: 'invoice.payment_failed',
+      created: eventCreatedSec,
       data: {
         object: {
           parent: {
@@ -86,26 +107,29 @@ describe('handleStripeEvent idempotency', () => {
 
     await handleStripeEvent(event)
 
+    expect(prisma.stripeEvent.create).toHaveBeenCalledWith({
+      data: { id: 'evt_new', type: 'invoice.payment_failed' },
+    })
     expect(prisma.organisation.findFirst).toHaveBeenCalledWith({
       where: { stripeSubscriptionId: 'sub_xyz' },
       select: { id: true },
     })
-    expect(prisma.organisation.update).toHaveBeenCalledWith({
-      where: { id: 'org_1' },
-      data: { subscriptionStatus: 'PAST_DUE' },
-    })
-    expect(prisma.stripeEvent.create).toHaveBeenCalledWith({
-      data: { id: 'evt_new', type: 'invoice.payment_failed' },
+    // Status update goes through updateMany with the staleness guard.
+    expect(prisma.organisation.updateMany).toHaveBeenCalledTimes(1)
+    const callArg = vi.mocked(prisma.organisation.updateMany).mock.calls[0]![0]
+    expect(callArg.where).toMatchObject({ id: 'org_1' })
+    expect(callArg.data).toMatchObject({
+      subscriptionStatus: 'PAST_DUE',
     })
   })
 
   it('ignores unknown event types but still records the id', async () => {
-    vi.mocked(prisma.stripeEvent.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.stripeEvent.create).mockResolvedValue({} as never)
 
     const event = {
       id: 'evt_unknown',
       type: 'charge.dispute.created',
+      created: Math.floor(Date.now() / 1000),
       data: { object: {} },
     } as unknown as Stripe.Event
 

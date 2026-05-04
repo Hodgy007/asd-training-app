@@ -68,6 +68,11 @@ export function ScormPlayer({
 }: ScormPlayerProps) {
   const initialCmiRef = useRef(initialCmi)
   const apiRef = useRef<any>(null)
+  // Chain of in-flight commit promises so we never POST a stale CMI on top of
+  // a newer one. Each new commit awaits the previous before sending — combined
+  // with the server-side monotonic-completion guard this stops out-of-order
+  // writes from reverting completion.
+  const commitChainRef = useRef<Promise<void>>(Promise.resolve())
   const [apiReady, setApiReady] = useState(false)
   const [initFailed, setInitFailed] = useState(false)
   const [status, setStatus] = useState<'idle' | 'saved' | 'saving' | 'error'>('idle')
@@ -133,24 +138,24 @@ export function ScormPlayer({
       ;(window as any)[globalKey] = api
       apiRef.current = api
 
-      const persistCommit = async () => {
-        setStatus('saving')
+      const persistCommit = () => {
+        // Snapshot CMI synchronously at fire time so a later commit can't
+        // overwrite the snapshot before the previous request lands.
         const cmi = api.renderCommitCMI(true) ?? api.cmi?.toJSON?.() ?? {}
-        try {
-          const res = await fetch('/api/training/progress/scorm', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              moduleId,
-              lessonId,
-              cmi,
-              navLocation: currentHrefRef.current,
-            }),
-          })
-          setStatus(res.ok ? 'saved' : 'error')
-        } catch {
-          setStatus('error')
-        }
+        const navLocation = currentHrefRef.current
+        setStatus('saving')
+        commitChainRef.current = commitChainRef.current.then(async () => {
+          try {
+            const res = await fetch('/api/training/progress/scorm', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ moduleId, lessonId, cmi, navLocation }),
+            })
+            setStatus(res.ok ? 'saved' : 'error')
+          } catch {
+            setStatus('error')
+          }
+        })
       }
       api.on(isScorm2004 ? 'Commit' : 'LMSCommit', persistCommit)
 

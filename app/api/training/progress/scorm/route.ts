@@ -41,25 +41,49 @@ export async function POST(req: NextRequest) {
   }
 
   const update = mapScormStateToProgress(cmi as CmiState, navLocation)
+  const userId = session.user.id
+
+  // Read the existing row (if any) so we can:
+  //   1. Never revert `completed=true → false`. Out-of-order serverless
+  //      handlers can deliver an older CMI snapshot after a newer one;
+  //      we treat completion as monotonic.
+  //   2. Preserve a higher previously-recorded score when a later snapshot
+  //      reports a worse number (same race).
+  //   3. Keep the original completedAt timestamp once a lesson is marked
+  //      complete — re-marking with a later timestamp lies about when the
+  //      learner actually finished.
+  const existing = await prisma.trainingProgress.findUnique({
+    where: {
+      userId_moduleId_lessonId: { userId, moduleId, lessonId },
+    },
+    select: { completed: true, score: true, completedAt: true },
+  })
+
+  const completed = existing?.completed ? true : update.completed
+  const score =
+    existing?.score != null && update.score != null
+      ? Math.max(existing.score, update.score)
+      : (update.score ?? existing?.score ?? null)
+  const completedAt = existing?.completedAt ?? (update.completed ? new Date() : null)
 
   const saved = await prisma.trainingProgress.upsert({
     where: {
-      userId_moduleId_lessonId: { userId: session.user.id, moduleId, lessonId },
+      userId_moduleId_lessonId: { userId, moduleId, lessonId },
     },
     create: {
-      userId: session.user.id,
+      userId,
       moduleId,
       lessonId,
-      completed: update.completed,
-      score: update.score,
+      completed,
+      score,
       interactionData: update.interactionData,
-      completedAt: update.completed ? new Date() : null,
+      completedAt,
     },
     update: {
-      completed: update.completed,
-      score: update.score,
+      completed,
+      score,
       interactionData: update.interactionData,
-      completedAt: update.completed ? new Date() : null,
+      completedAt,
     },
   })
 

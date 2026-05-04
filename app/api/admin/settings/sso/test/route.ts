@@ -26,7 +26,7 @@ export async function POST(_req: NextRequest) {
     return NextResponse.json({ error: 'SSO URL and email domain are required' }, { status: 400 })
   }
 
-  const loginUrl = generateSamlLoginUrl(config.ssoUrl, 'test@' + config.emailDomain)
+  const loginUrl = await generateSamlLoginUrl(config.ssoUrl, 'test@' + config.emailDomain)
 
   return NextResponse.json({ loginUrl })
 }

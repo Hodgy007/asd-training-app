@@ -34,6 +34,20 @@ export const maxDuration = 300
 
 const MAX_ZIP_BYTES = 200 * 1024 * 1024 // 200 MB — matches the per-lesson route
 
+// Allowlist of hostnames the import endpoint is willing to fetch from. Anything
+// else is rejected to prevent SSRF: a caller with MANAGE_TRAINING could
+// otherwise point `blobUrl` at internal services (cloud metadata, private
+// network IPs) and get the Lambda to fetch them.
+function isAllowedBlobHost(url: URL): boolean {
+  const host = url.hostname.toLowerCase()
+  return (
+    url.protocol === 'https:' &&
+    (host === 'blob.vercel-storage.com' ||
+      host.endsWith('.public.blob.vercel-storage.com') ||
+      host.endsWith('.blob.vercel-storage.com'))
+  )
+}
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
@@ -58,9 +72,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Expected a .zip filename' }, { status: 400 })
   }
 
+  let parsedBlobUrl: URL
+  try {
+    parsedBlobUrl = new URL(blobUrl)
+  } catch {
+    return NextResponse.json({ error: 'Invalid blobUrl' }, { status: 400 })
+  }
+  if (!isAllowedBlobHost(parsedBlobUrl)) {
+    return NextResponse.json(
+      { error: 'blobUrl must reference a Vercel Blob host' },
+      { status: 400 },
+    )
+  }
+
   // Pull the zip back from Blob. The browser uploaded it there via a signed
   // token, so this is an internal fetch of our own bucket over HTTPS.
-  const zipResponse = await fetch(blobUrl)
+  const zipResponse = await fetch(parsedBlobUrl.toString(), { redirect: 'error' })
   if (!zipResponse.ok) {
     return NextResponse.json(
       { error: `Could not fetch uploaded zip (${zipResponse.status})` },

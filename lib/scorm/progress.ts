@@ -65,6 +65,11 @@ export function mapScormStateToProgress(
       }
     }
   }
+  // Clamp percentage to [0, 100] so a misbehaving SCO that reports raw=120
+  // doesn't end up with a 120% score on reports.
+  if (score !== null) {
+    score = Math.max(0, Math.min(100, score))
+  }
 
   const trimmedNav = typeof navLocation === 'string' ? navLocation.trim() : ''
   return {

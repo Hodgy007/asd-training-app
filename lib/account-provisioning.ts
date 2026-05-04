@@ -134,33 +134,40 @@ export async function grantFreeAccess(args: {
 
   const existing = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, organisationId: true, allowedProgramIds: true },
+    select: { id: true, organisationId: true },
   })
 
   let userId: string
   let created = false
   let programAttached = false
+  let tempPassword: string | null = null
 
   if (existing) {
     userId = existing.id
+    // Atomically append the program ID, scoped inside a transaction so a
+    // parallel claim can't read-modify-write its way into clobbering ours.
+    // Uses `array_append` with a NOT EXISTS guard so duplicates are no-ops.
     if (existing.organisationId) {
-      const org = await prisma.organisation.findUnique({
-        where: { id: existing.organisationId },
-        select: { allowedProgramIds: true },
+      const targetOrgId = existing.organisationId
+      programAttached = await prisma.$transaction(async (tx) => {
+        const updated = await tx.$executeRaw`
+          UPDATE "Organisation"
+          SET "allowedProgramIds" = array_append("allowedProgramIds", ${programId})
+          WHERE "id" = ${targetOrgId}
+            AND NOT (${programId} = ANY("allowedProgramIds"))
+        `
+        return updated > 0
       })
-      if (org && !org.allowedProgramIds.includes(programId)) {
-        await prisma.organisation.update({
-          where: { id: existing.organisationId },
-          data: { allowedProgramIds: [...org.allowedProgramIds, programId] },
-        })
-        programAttached = true
-      }
-    } else if (!existing.allowedProgramIds.includes(programId)) {
-      await prisma.user.update({
-        where: { id: existing.id },
-        data: { allowedProgramIds: [...existing.allowedProgramIds, programId] },
+    } else {
+      programAttached = await prisma.$transaction(async (tx) => {
+        const updated = await tx.$executeRaw`
+          UPDATE "User"
+          SET "allowedProgramIds" = array_append("allowedProgramIds", ${programId})
+          WHERE "id" = ${existing.id}
+            AND NOT (${programId} = ANY("allowedProgramIds"))
+        `
+        return updated > 0
       })
-      programAttached = true
     }
 
     // Mint a fresh single-use reset token so the email can include a one-click
@@ -181,7 +188,7 @@ export async function grantFreeAccess(args: {
 
     await sendAccessGrantedEmail({ email, name, programName, resetUrl })
   } else {
-    const tempPassword = crypto.randomBytes(9).toString('base64url')
+    tempPassword = crypto.randomBytes(9).toString('base64url')
     const passwordHash = await bcrypt.hash(tempPassword, 10)
     const emailLocal = email.split('@')[0] ?? 'user'
     const user = await prisma.user.create({
@@ -200,16 +207,17 @@ export async function grantFreeAccess(args: {
     userId = user.id
     created = true
     programAttached = true
-
-    await sendCredentialsEmail({ email, tempPassword, name, programName })
   }
 
-  // Record an at-rest Purchase row even though no money changed hands. Keeps
-  // reporting + audit consistent and ensures we don't double-grant if the same
-  // claim is replayed (the synthetic session id is unique per claim).
-  const syntheticSessionId = `free_${crypto.randomBytes(12).toString('hex')}`
-  await prisma.purchase.create({
-    data: {
+  // Record an at-rest Purchase row even though no money changed hands.
+  // Idempotency: the synthetic session id is keyed on (userId, programId)
+  // — replays of the same claim hit the unique constraint and become a
+  // no-op rather than a duplicate Purchase row. The amount field stays at
+  // 0 either way; we don't strictly need to update anything on conflict.
+  const syntheticSessionId = `free_${userId}_${programId}`
+  await prisma.purchase.upsert({
+    where: { stripeCheckoutSessionId: syntheticSessionId },
+    create: {
       userId,
       organisationId: null,
       programId,
@@ -219,7 +227,15 @@ export async function grantFreeAccess(args: {
       currency: 'gbp',
       status: 'PAID',
     },
+    update: {},
   })
+
+  // Email the new user only after the user row + purchase have committed,
+  // so a transaction failure doesn't leak a temp password for an account
+  // that doesn't exist.
+  if (created && tempPassword) {
+    await sendCredentialsEmail({ email, tempPassword, name, programName })
+  }
 
   return { created, programAttached }
 }

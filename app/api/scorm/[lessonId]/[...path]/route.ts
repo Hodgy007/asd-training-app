@@ -59,6 +59,9 @@ export async function GET(
   const contentType = upstream.headers.get('content-type') ?? 'application/octet-stream'
   headers.set('content-type', contentType)
   headers.set('cache-control', 'private, max-age=3600')
+  // Stop browsers from sniffing a `text/plain` SCO file as HTML and executing
+  // it; combined with allow-same-origin on the iframe, sniffing widens XSS.
+  headers.set('x-content-type-options', 'nosniff')
   // Restrictive CSP for SCORM content: no external scripts.
   headers.set(
     'content-security-policy',
