@@ -32,6 +32,10 @@ model User {
   subscriptionStatus           SubscriptionStatus @default(NONE)
   subscriptionCurrentPeriodEnd DateTime?
   subscriptionPriceId          String?
+  // Timestamp of the most-recently applied Stripe subscription event for this
+  // owner. Used to drop stale `customer.subscription.*` events that arrive
+  // out of order (e.g. a late `updated` after `deleted`).
+  lastStripeEventAt            DateTime?
   allowedProgramIds            String[]           @default([])
   // Per-user feature overrides (mainly for Independent Learners). Null means
   // "inherit from the user's org"; explicit true/false overrides the org flag.
@@ -142,6 +146,8 @@ model Organisation {
   subscriptionStatus           SubscriptionStatus @default(NONE)
   subscriptionCurrentPeriodEnd DateTime?
   subscriptionPriceId          String?
+  // See User.lastStripeEventAt — drops stale subscription events.
+  lastStripeEventAt            DateTime?
   createdAt                    DateTime           @default(now())
   updatedAt                    DateTime           @updatedAt
 
@@ -437,6 +443,20 @@ model CharitySsoConfig {
   updatedAt              DateTime @updatedAt
 }
 
+// Server-side nonce store for SAML AuthnRequest IDs. The IdP echoes our
+// request ID back as InResponseTo on the SAML Response; we mark the row
+// `consumed` on first use to prevent replay. Rows expire after 1 hour.
+model SamlAuthnRequest {
+  id        String   @id
+  email     String
+  isCharity Boolean  @default(false)
+  consumed  Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
 model Survey {
   id          String       @id @default(cuid())
   title       String
@@ -646,6 +666,10 @@ model LibraryCollection {
   title              String
   description        String   @db.Text
   thumbnailUrl       String?
+  // Visual theme on the learner-facing library tile. Null = auto-cycle from
+  // the palette by collection id. Set to one of the palette keys (orange,
+  // green, blue, pink, yellow, cyan) to lock the colour.
+  themeKey           String?
   targetOrgIds       String[]
   targetRoles        String[]
   active             Boolean  @default(true)
@@ -1004,7 +1028,9 @@ model Purchase {
 
   user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   organisation Organisation?   @relation(fields: [organisationId], references: [id], onDelete: SetNull)
-  program      TrainingProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  // Restrict (not Cascade) so deleting a TrainingProgram can't silently wipe
+  // its purchase/revenue history. Admins should ARCHIVE programs instead.
+  program      TrainingProgram @relation(fields: [programId], references: [id], onDelete: Restrict)
 
   @@index([organisationId])
   @@index([programId])

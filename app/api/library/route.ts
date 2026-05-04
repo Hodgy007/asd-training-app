@@ -19,6 +19,7 @@ export async function GET() {
     where: { active: true },
     orderBy: { createdAt: 'desc' },
     include: {
+      // (themeKey + thumbnailUrl are top-level fields — included automatically)
       documents: {
         where: { active: true },
         orderBy: { createdAt: 'desc' },
