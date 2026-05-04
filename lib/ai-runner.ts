@@ -29,7 +29,11 @@ export function isAiUnavailable(value: unknown): value is AiUnavailableError {
 // Vercel AI Gateway is OpenAI-compatible. Wrap model strings like
 // "google/gemini-2.5-flash" through this client so generateText receives
 // a proper LanguageModel object instead of a raw string.
-const gateway = createOpenAI({
+//
+// Exported so other call sites (notably the prompt-test endpoint) route
+// through the same gateway rather than letting the AI SDK auto-detect a
+// provider from the model prefix and bypass billing/observability.
+export const gateway = createOpenAI({
   baseURL: 'https://ai-gateway.vercel.sh/v1',
   apiKey: process.env.AI_GATEWAY_API_KEY ?? process.env.VERCEL_OIDC_TOKEN ?? '',
 })

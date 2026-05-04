@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { isValidModelId } from '@/lib/ai-models'
 import { assemblePrompt } from '@/lib/ai-runner-assemble'
+import { gateway } from '@/lib/ai-runner'
+import { logger, errMeta } from '@/lib/logger'
 import { generateText } from 'ai'
 import { z } from 'zod'
 
@@ -76,13 +78,27 @@ export async function POST(
 
   try {
     const { text } = await generateText({
-      model: parsed.data.draft.model,
+      // Route through the Vercel AI Gateway like the production runner.
+      // Calling generateText with a raw model string lets the AI SDK
+      // auto-detect a provider from the prefix, which bypasses the
+      // gateway's billing / observability.
+      model: gateway(parsed.data.draft.model),
       prompt: assembled,
       maxRetries: 2,
     })
     return NextResponse.json({ response: text, assembledPrompt: assembled })
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error)
-    return NextResponse.json({ error: msg, assembledPrompt: assembled }, { status: 502 })
+    // Log the full error server-side, but don't echo provider error messages
+    // (which can include stack frames or internal endpoint details) back to
+    // the admin UI.
+    logger.error('ai.prompt_test.failed', {
+      promptId: params.id,
+      model: parsed.data.draft.model,
+      ...errMeta(error),
+    })
+    return NextResponse.json(
+      { error: 'AI request failed. Check the server logs for details.', assembledPrompt: assembled },
+      { status: 502 },
+    )
   }
 }
