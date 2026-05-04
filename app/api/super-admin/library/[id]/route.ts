@@ -5,10 +5,13 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
+const ALLOWED_THEME_KEYS = ['orange', 'green', 'blue', 'pink', 'yellow', 'cyan'] as const
+
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().min(1).optional(),
   thumbnailUrl: z.string().url().nullable().optional(),
+  themeKey: z.enum(ALLOWED_THEME_KEYS).nullable().optional(),
   targetOrgIds: z.array(z.string()).optional(),
   targetRoles: z.array(z.string()).optional(),
   active: z.boolean().optional(),

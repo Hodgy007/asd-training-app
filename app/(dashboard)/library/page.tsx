@@ -35,20 +35,26 @@ interface LibraryDoc {
 
 // Toolkit-style colour palette — cycled through tiles so the wall feels lively
 // without each title needing its own colour.
-const TILE_THEMES = [
-  { bg: '#FFEDD2', accent: '#F5821F', shape: '#FCAF17' },
-  { bg: '#E0F6E5', accent: '#34B44A', shape: '#7DD8A0' },
-  { bg: '#DDEEF8', accent: '#056BB0', shape: '#44C7EE' },
-  { bg: '#FCE3F2', accent: '#E13CAF', shape: '#F7A8DA' },
-  { bg: '#FFF3CC', accent: '#FCAF17', shape: '#FFD84D' },
-  { bg: '#E0F4FB', accent: '#44C7EE', shape: '#7BDBF1' },
-] as const
+const TILE_THEMES = {
+  orange: { bg: '#FFEDD2', accent: '#F5821F', shape: '#FCAF17' },
+  green:  { bg: '#E0F6E5', accent: '#34B44A', shape: '#7DD8A0' },
+  blue:   { bg: '#DDEEF8', accent: '#056BB0', shape: '#44C7EE' },
+  pink:   { bg: '#FCE3F2', accent: '#E13CAF', shape: '#F7A8DA' },
+  yellow: { bg: '#FFF3CC', accent: '#FCAF17', shape: '#FFD84D' },
+  cyan:   { bg: '#E0F4FB', accent: '#44C7EE', shape: '#7BDBF1' },
+} as const
+type ThemeKey = keyof typeof TILE_THEMES
+const THEME_KEYS = Object.keys(TILE_THEMES) as ThemeKey[]
 
-function themeFor(idOrIndex: string | number): typeof TILE_THEMES[number] {
+/** Resolve a theme: explicit themeKey wins, otherwise hash by id (or by index). */
+function themeFor(idOrIndex: string | number, explicitKey?: string | null): typeof TILE_THEMES[ThemeKey] {
+  if (explicitKey && (THEME_KEYS as readonly string[]).includes(explicitKey)) {
+    return TILE_THEMES[explicitKey as ThemeKey]
+  }
   const i = typeof idOrIndex === 'number'
     ? idOrIndex
     : Array.from(idOrIndex).reduce((a, c) => a + c.charCodeAt(0), 0)
-  return TILE_THEMES[i % TILE_THEMES.length]
+  return TILE_THEMES[THEME_KEYS[i % THEME_KEYS.length]]
 }
 
 /** Convert a YouTube/Vimeo watch URL to an embeddable URL. Returns null for unsupported hosts. */
@@ -80,6 +86,7 @@ interface LibraryCollection {
   title: string
   description: string
   thumbnailUrl: string | null
+  themeKey: string | null
   _count: { documents: number }
   documents: LibraryDoc[]
 }
@@ -388,7 +395,7 @@ function LibraryPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
           {filteredCollections.map((col, idx) => {
-            const theme = themeFor(idx)
+            const theme = themeFor(col.id || idx, col.themeKey)
             return (
               <button
                 key={col.id}

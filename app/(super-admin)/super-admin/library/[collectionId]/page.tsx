@@ -51,12 +51,23 @@ interface Collection {
   title: string
   description: string
   thumbnailUrl: string | null
+  themeKey: string | null
   targetOrgIds: string[]
   targetRoles: string[]
   active: boolean
   publishedToToolkit: boolean
   documents: LibraryDoc[]
 }
+
+// Mirror of the learner palette so the picker shows the same swatches.
+const COLLECTION_THEMES = [
+  { key: 'orange', label: 'Orange', bg: '#FFEDD2', accent: '#F5821F' },
+  { key: 'green',  label: 'Green',  bg: '#E0F6E5', accent: '#34B44A' },
+  { key: 'blue',   label: 'Blue',   bg: '#DDEEF8', accent: '#056BB0' },
+  { key: 'pink',   label: 'Pink',   bg: '#FCE3F2', accent: '#E13CAF' },
+  { key: 'yellow', label: 'Yellow', bg: '#FFF3CC', accent: '#FCAF17' },
+  { key: 'cyan',   label: 'Cyan',   bg: '#E0F4FB', accent: '#44C7EE' },
+] as const
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -87,7 +98,9 @@ export default function CollectionDetailPage() {
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [editVideoUrl, setEditVideoUrl] = useState('')
+  const [editThumbnailUrl, setEditThumbnailUrl] = useState<string | null>(null)
   const [editSaving, setEditSaving] = useState(false)
+  const [editAiGenerating, setEditAiGenerating] = useState(false)
 
   // ZIP upload state
   const [zipUploading, setZipUploading] = useState(false)
@@ -105,6 +118,7 @@ export default function CollectionDetailPage() {
   const [editingCollection, setEditingCollection] = useState(false)
   const [colEditTitle, setColEditTitle] = useState('')
   const [colEditDescription, setColEditDescription] = useState('')
+  const [colEditThemeKey, setColEditThemeKey] = useState<string | null>(null)
   const [colEditSaving, setColEditSaving] = useState(false)
 
   const fetchCollection = useCallback(async () => {
@@ -130,6 +144,7 @@ export default function CollectionDetailPage() {
     if (!collection) return
     setColEditTitle(collection.title)
     setColEditDescription(collection.description)
+    setColEditThemeKey(collection.themeKey)
     setEditingCollection(true)
   }
 
@@ -139,7 +154,11 @@ export default function CollectionDetailPage() {
       const res = await fetch(`/api/super-admin/library/${collectionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: colEditTitle, description: colEditDescription }),
+        body: JSON.stringify({
+          title: colEditTitle,
+          description: colEditDescription,
+          themeKey: colEditThemeKey,
+        }),
       })
       if (res.ok) {
         showToast('Collection updated.', 'success')
@@ -433,6 +452,7 @@ export default function CollectionDetailPage() {
     setEditTitle(doc.title)
     setEditDescription(doc.description)
     setEditVideoUrl(doc.videoUrl ?? '')
+    setEditThumbnailUrl(doc.thumbnailUrl)
   }
 
   function cancelEdit() {
@@ -440,6 +460,30 @@ export default function CollectionDetailPage() {
     setEditTitle('')
     setEditDescription('')
     setEditVideoUrl('')
+    setEditThumbnailUrl(null)
+  }
+
+  /** AI-regenerate the description and/or image for an existing document. */
+  async function handleEditAiGenerate(doc: LibraryDoc, generateImage: boolean) {
+    setEditAiGenerating(true)
+    try {
+      const res = await fetch('/api/super-admin/library/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: doc.fileName, generateImage }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        // Always update description from AI; only update thumbnail if requested
+        if (data.description && !generateImage) setEditDescription(data.description)
+        if (generateImage && data.thumbnailUrl) setEditThumbnailUrl(data.thumbnailUrl)
+        showToast(generateImage ? 'AI image generated.' : 'AI description generated.', 'success')
+      } else {
+        showToast('AI generation failed.', 'error')
+      }
+    } finally {
+      setEditAiGenerating(false)
+    }
   }
 
   async function handleSaveEdit(doc: LibraryDoc) {
@@ -452,6 +496,7 @@ export default function CollectionDetailPage() {
           title: editTitle,
           description: editDescription,
           videoUrl: editVideoUrl.trim() || null,
+          thumbnailUrl: editThumbnailUrl,
         }),
       })
       if (res.ok) {
@@ -544,20 +589,135 @@ export default function CollectionDetailPage() {
                     required
                   />
                 </div>
-                <div className="flex gap-2">
+                <div>
+                  <label className="label">Tile colour on the learner library</label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setColEditThemeKey(null)}
+                      className={clsx(
+                        'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors',
+                        colEditThemeKey === null
+                          ? 'border-primary-500 bg-primary-50 text-primary-700 ring-2 ring-primary-200 dark:bg-primary-900/20 dark:text-primary-300'
+                          : 'border-calm-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700'
+                      )}
+                    >
+                      Auto
+                    </button>
+                    {COLLECTION_THEMES.map((t) => (
+                      <button
+                        key={t.key}
+                        type="button"
+                        onClick={() => setColEditThemeKey(t.key)}
+                        title={t.label}
+                        className={clsx(
+                          'h-8 w-8 rounded-full transition-transform hover:scale-110',
+                          colEditThemeKey === t.key
+                            ? 'ring-2 ring-offset-2 ring-slate-900 dark:ring-white'
+                            : 'ring-1 ring-slate-200 dark:ring-slate-600'
+                        )}
+                        style={{ backgroundColor: t.bg, borderColor: t.accent }}
+                      >
+                        <span className="sr-only">{t.label}</span>
+                        <span
+                          className="block h-3 w-3 rounded-full mx-auto"
+                          style={{ backgroundColor: t.accent }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                    Auto cycles through the palette. Pick a colour to lock this collection&apos;s tile.
+                  </p>
+                </div>
+
+                {/* Collection actions — moved here from the page header so the
+                    main view stays focused on document management. */}
+                <div className="border-t border-calm-200 dark:border-slate-700 pt-4">
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                    Actions
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleToggleToolkitPublishing}
+                      disabled={actionLoading === collection.id + '-publish'}
+                      className={clsx(
+                        'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors disabled:opacity-50',
+                        collection.publishedToToolkit
+                          ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+                          : 'border-calm-200 bg-white text-slate-600 hover:bg-calm-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                      )}
+                    >
+                      <Globe2 className="h-4 w-4" />
+                      {collection.publishedToToolkit ? 'Live on Toolkit — click to unpublish' : 'Publish to Toolkit'}
+                    </button>
+                    <Link
+                      href={`/library?c=${collection.id}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Preview as learner
+                    </Link>
+                    {collection.publishedToToolkit && (
+                      <Link
+                        href={`/toolkit/${collection.id}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Preview toolkit
+                      </Link>
+                    )}
+                    <label className={clsx(
+                      'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors cursor-pointer',
+                      zipUploading
+                        ? 'opacity-50 cursor-not-allowed border-calm-200 dark:border-slate-600 text-slate-400'
+                        : 'border-calm-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-calm-50 dark:hover:bg-slate-700'
+                    )}>
+                      <Archive className="h-4 w-4" />
+                      {zipUploading ? 'Uploading ZIP…' : 'Upload ZIP'}
+                      <input
+                        type="file"
+                        accept=".zip,application/zip,application/x-zip-compressed"
+                        className="hidden"
+                        disabled={zipUploading}
+                        onChange={handleZipUpload}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleClearAllDocs}
+                      disabled={clearingDocs || zipUploading || !collection.documents?.length}
+                      className={clsx(
+                        'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors',
+                        clearingDocs || !collection.documents?.length
+                          ? 'opacity-50 cursor-not-allowed border-calm-200 dark:border-slate-600 text-slate-400'
+                          : 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20',
+                      )}
+                      title="Delete all documents but keep the collection"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {clearingDocs ? 'Clearing…' : 'Clear all documents'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleSaveCollection}
                     disabled={colEditSaving || !colEditTitle.trim() || !colEditDescription.trim()}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
                   >
                     <CheckCircle className="h-3.5 w-3.5" />
-                    {colEditSaving ? 'Saving...' : 'Save'}
+                    {colEditSaving ? 'Saving...' : 'Save collection'}
                   </button>
                   <button
                     onClick={() => setEditingCollection(false)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
                   >
-                    Cancel
+                    Done
                   </button>
                 </div>
               </div>
@@ -583,69 +743,6 @@ export default function CollectionDetailPage() {
         </div>
         {!editingCollection && (
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={handleToggleToolkitPublishing}
-              disabled={actionLoading === collection.id + '-publish'}
-              className={clsx(
-                'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors disabled:opacity-50',
-                collection.publishedToToolkit
-                  ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
-                  : 'border-calm-200 bg-white text-slate-600 hover:bg-calm-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-              )}
-            >
-              {collection.publishedToToolkit ? 'Live on Toolkit' : 'Publish to Toolkit'}
-            </button>
-            <Link
-              href={`/library?c=${collection.id}`}
-              target="_blank"
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
-              title="Open this collection in the learner library to see how it looks"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Preview as learner
-            </Link>
-            {collection.publishedToToolkit && (
-              <Link
-                href={`/toolkit/${collection.id}`}
-                target="_blank"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-                title="Open the public toolkit page for this collection"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Preview toolkit
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={handleClearAllDocs}
-              disabled={clearingDocs || zipUploading || !collection.documents?.length}
-              className={clsx(
-                'inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors',
-                clearingDocs || !collection.documents?.length
-                  ? 'opacity-50 cursor-not-allowed border-calm-200 dark:border-slate-600 text-slate-400'
-                  : 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20',
-              )}
-              title="Delete all documents but keep the collection"
-            >
-              <Trash2 className="h-4 w-4" />
-              {clearingDocs ? 'Clearing…' : 'Clear all'}
-            </button>
-            <label className={clsx(
-              'inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors cursor-pointer',
-              zipUploading
-                ? 'opacity-50 cursor-not-allowed border-calm-200 dark:border-slate-600 text-slate-400'
-                : 'border-calm-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-calm-50 dark:hover:bg-slate-700'
-            )}>
-              <Archive className="h-4 w-4" />
-              {zipUploading ? 'Uploading ZIP…' : 'Upload ZIP'}
-              <input
-                type="file"
-                accept=".zip,application/zip,application/x-zip-compressed"
-                className="hidden"
-                disabled={zipUploading}
-                onChange={handleZipUpload}
-              />
-            </label>
             <button
               onClick={() => { setShowForm((v) => !v); if (showForm) resetForm() }}
               className="btn-primary flex items-center gap-2"
@@ -921,6 +1018,30 @@ export default function CollectionDetailPage() {
                         <X className="h-4 w-4" />
                       </button>
                     </div>
+
+                    {/* AI Assist row — same options as the upload form */}
+                    <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                      <Sparkles className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                      <span className="text-xs text-primary-700 dark:text-primary-300 font-medium mr-1">AI Assist:</span>
+                      <button
+                        type="button"
+                        disabled={editAiGenerating}
+                        onClick={() => handleEditAiGenerate(doc, false)}
+                        className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"
+                      >
+                        {editAiGenerating ? 'Generating…' : 'Regenerate description'}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={editAiGenerating}
+                        onClick={() => handleEditAiGenerate(doc, true)}
+                        className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"
+                      >
+                        <ImageIcon className="h-3 w-3 inline mr-1" />
+                        {editAiGenerating ? 'Generating…' : 'Generate AI image'}
+                      </button>
+                    </div>
+
                     <div>
                       <label className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1 block">Title</label>
                       <input
@@ -937,6 +1058,55 @@ export default function CollectionDetailPage() {
                         onChange={(e) => setEditDescription(e.target.value)}
                       />
                     </div>
+
+                    {/* Thumbnail — manual upload, AI generated, or removed */}
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1 block">Thumbnail image (optional)</label>
+                      {editThumbnailUrl ? (
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={editThumbnailUrl}
+                            alt="Thumbnail preview"
+                            className="h-20 w-20 rounded-lg object-cover border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => setZoomedImage(editThumbnailUrl)}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditThumbnailUrl(null)}
+                            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Remove image
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
+                          <ImageIcon className="h-3.5 w-3.5" />
+                          Upload thumbnail
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/png,image/jpeg,image/webp"
+                            onChange={async (e) => {
+                              const imgFile = e.target.files?.[0]
+                              if (!imgFile) return
+                              try {
+                                const blob = await upload(`library/thumbnails/${imgFile.name}`, imgFile, {
+                                  access: 'public',
+                                  handleUploadUrl: '/api/super-admin/library/upload/upload-url',
+                                })
+                                setEditThumbnailUrl(blob.url)
+                              } catch {
+                                showToast('Thumbnail upload failed.', 'error')
+                              } finally {
+                                e.target.value = ''
+                              }
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+
                     <div>
                       <label className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1 block">How-to video URL <span className="text-slate-400 font-normal">(optional)</span></label>
                       <input
