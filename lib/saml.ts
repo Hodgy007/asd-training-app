@@ -1,6 +1,7 @@
 import { DOMParser } from '@xmldom/xmldom'
 import { SignedXml } from 'xml-crypto'
 import { parseStringPromise } from 'xml2js'
+import { lookup as dnsLookup } from 'dns/promises'
 import { prisma } from './prisma'
 
 const APP_ENTITY_ID = process.env.NEXTAUTH_URL || 'https://asd-training-app-v2.vercel.app'
@@ -72,12 +73,20 @@ export interface SamlValidationResult {
  *     `NotOnOrAfter` window is impossible.
  *   - Recipient — must equal our ACS URL.
  *   - Audience — must contain our entityId.
+ *   - **Issuer** — assertion's `<saml:Issuer>` must equal the IdP's
+ *     configured entityId (defends against IdP-confusion when two tenants
+ *     share a signing certificate, common in Azure AD multi-tenant
+ *     deployments).
  *   - IssueInstant — assertion must be ≤ 5 min old.
  *   - Conditions NotBefore / NotOnOrAfter still enforced as a backstop.
+ *
+ * @param expectedIssuer The IdP's entity ID (from OrgSsoConfig.entityId or
+ *   CharitySsoConfig.entityId). The assertion's Issuer must match exactly.
  */
 export async function validateSamlResponse(
   samlResponseBase64: string,
-  certificate: string
+  certificate: string,
+  expectedIssuer: string
 ): Promise<SamlValidationResult> {
   try {
     const xml = Buffer.from(samlResponseBase64, 'base64').toString('utf-8')
@@ -120,6 +129,19 @@ export async function validateSamlResponse(
     const assertion = resolveAssertion(signedElement)
     if (!assertion) {
       return { valid: false, error: 'Signed element is not a SAML Response or Assertion' }
+    }
+
+    // Issuer must match the IdP's configured entity ID. Without this an
+    // assertion crafted for tenant A could be accepted by tenant B if both
+    // tenants share a signing certificate (common in Azure AD multi-tenant
+    // setups).
+    const issuerEl = firstChildByLocalName(assertion, 'Issuer', SAML_ASSERTION_NS)
+    const issuerValue = issuerEl?.textContent?.trim()
+    if (!issuerValue) {
+      return { valid: false, error: 'No Issuer in signed assertion' }
+    }
+    if (issuerValue !== expectedIssuer) {
+      return { valid: false, error: 'Assertion Issuer does not match the configured IdP entity ID' }
     }
 
     // Subject / NameID — read scoped to the signed assertion only.
@@ -342,19 +364,131 @@ function escapeXml(value: string): string {
     .replace(/'/g, '&apos;')
 }
 
+// Cap on metadata response body. Real IdP metadata is rarely above ~50 KB;
+// we allow 1 MB to leave headroom for unusually verbose Microsoft-style
+// federation metadata, but stop short of letting a hostile endpoint stream
+// gigabytes into the Lambda.
+const METADATA_MAX_BYTES = 1_000_000
+
+// 8 seconds is plenty for a real IdP metadata fetch and short enough that
+// blind-SSRF probes against unresponsive internal hosts don't tie up a
+// serverless function for the full Lambda timeout.
+const METADATA_FETCH_TIMEOUT_MS = 8_000
+
+function isPrivateOrReservedIp(ip: string): boolean {
+  // IPv4 — block loopback (127/8), link-local (169.254/16),
+  // RFC1918 private (10/8, 172.16/12, 192.168/16),
+  // CGNAT (100.64/10), 0.0.0.0/8, multicast (224/4), reserved (240/4).
+  const v4 = ip.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/)
+  if (v4) {
+    const [a, b] = [Number(v4[1]), Number(v4[2])]
+    if (a === 0) return true
+    if (a === 10) return true
+    if (a === 127) return true
+    if (a === 169 && b === 254) return true
+    if (a === 172 && b >= 16 && b <= 31) return true
+    if (a === 192 && b === 168) return true
+    if (a === 100 && b >= 64 && b <= 127) return true
+    if (a >= 224) return true
+    return false
+  }
+  // IPv6 — block loopback (::1), unspecified (::), link-local (fe80::/10),
+  // unique local (fc00::/7), IPv4-mapped (::ffff:..) by checking the v4
+  // suffix, multicast (ff00::/8).
+  const lower = ip.toLowerCase()
+  if (lower === '::' || lower === '::1') return true
+  if (lower.startsWith('fe80:') || lower.startsWith('fe8') || lower.startsWith('fe9') || lower.startsWith('fea') || lower.startsWith('feb')) return true
+  if (lower.startsWith('fc') || lower.startsWith('fd')) return true
+  if (lower.startsWith('ff')) return true
+  const mapped = lower.match(/::ffff:(\d+\.\d+\.\d+\.\d+)$/)
+  if (mapped) return isPrivateOrReservedIp(mapped[1])
+  return false
+}
+
 /**
  * Parse a SAML IdP metadata URL to extract entityId, SSO URL, and signing certificate.
+ *
+ * The fetch is locked down because this endpoint is reachable by every
+ * ORG_ADMIN (per-tenant role) — without these guards an org admin could
+ * use the platform's outbound network to probe internal services
+ * (cloud-metadata, postgres, etc.):
+ *   - https only (no file://, http://, gopher://, ftp://, ...)
+ *   - DNS resolve and reject loopback / RFC1918 / link-local / CGNAT /
+ *     IPv6 ULA / multicast / mapped variants
+ *   - redirect: 'manual' so the IdP can't redirect us to an internal host
+ *   - body size and timeout caps
+ *   - errors don't echo response content for blind probing
  */
 export async function parseMetadataUrl(
   metadataUrl: string
 ): Promise<{ success: boolean; entityId?: string; ssoUrl?: string; certificate?: string; error?: string }> {
   try {
-    const res = await fetch(metadataUrl)
-    if (!res.ok) {
-      return { success: false, error: `Failed to fetch metadata: HTTP ${res.status}` }
+    let parsedUrl: URL
+    try {
+      parsedUrl = new URL(metadataUrl)
+    } catch {
+      return { success: false, error: 'Metadata URL is not a valid URL' }
+    }
+    if (parsedUrl.protocol !== 'https:') {
+      return { success: false, error: 'Metadata URL must use https' }
     }
 
-    const xmlText = await res.text()
+    // Resolve hostname and reject any address that isn't a public unicast
+    // host. Note: this is TOCTOU-vulnerable in theory (DNS could change
+    // between the lookup and the fetch). For per-tenant-admin SSO config
+    // that's a tolerable residual risk; harden further only if you start
+    // letting unauthenticated users drive this.
+    let resolved
+    try {
+      resolved = await dnsLookup(parsedUrl.hostname)
+    } catch {
+      return { success: false, error: 'Could not resolve metadata host' }
+    }
+    if (isPrivateOrReservedIp(resolved.address)) {
+      return { success: false, error: 'Metadata host resolves to a private or reserved address' }
+    }
+
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), METADATA_FETCH_TIMEOUT_MS)
+
+    let res: Response
+    try {
+      res = await fetch(metadataUrl, {
+        redirect: 'manual',
+        signal: controller.signal,
+      })
+    } catch {
+      clearTimeout(timer)
+      return { success: false, error: 'Metadata fetch failed or timed out' }
+    } finally {
+      clearTimeout(timer)
+    }
+
+    if (res.status >= 300 && res.status < 400) {
+      return { success: false, error: 'Metadata URL redirected; configure the final URL directly' }
+    }
+    if (!res.ok) {
+      return { success: false, error: 'Failed to fetch metadata' }
+    }
+
+    // Cap body size — read into a buffer manually so a hostile endpoint
+    // can't trickle in gigabytes that would each slip past `text()`'s
+    // default behaviour.
+    const reader = res.body?.getReader()
+    if (!reader) return { success: false, error: 'Empty metadata response' }
+    const chunks: Uint8Array[] = []
+    let total = 0
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      total += value.byteLength
+      if (total > METADATA_MAX_BYTES) {
+        try { await reader.cancel() } catch { /* noop */ }
+        return { success: false, error: 'Metadata response exceeded the allowed size' }
+      }
+      chunks.push(value)
+    }
+    const xmlText = Buffer.concat(chunks.map((c) => Buffer.from(c))).toString('utf-8')
     const parsed = await parseStringPromise(xmlText, {
       tagNameProcessors: [(name: string) => name.replace(/^[^:]+:/, '')],
     } as Parameters<typeof parseStringPromise>[1])
@@ -411,10 +545,9 @@ export async function parseMetadataUrl(
     }
 
     return { success: true, entityId, ssoUrl, certificate }
-  } catch (err) {
-    return {
-      success: false,
-      error: `Failed to parse metadata: ${err instanceof Error ? err.message : String(err)}`,
-    }
+  } catch {
+    // Don't echo parser errors — they can include fragments of the response
+    // body which is useful for blind-SSRF probing.
+    return { success: false, error: 'Failed to parse metadata response' }
   }
 }

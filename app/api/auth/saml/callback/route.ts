@@ -32,31 +32,36 @@ export async function POST(req: NextRequest) {
 
     // Look up the appropriate SSO config
     let certificate: string
+    let expectedIssuer: string
 
     if (isCharity) {
       const charityConfig = await prisma.charitySsoConfig.findFirst({
         where: { configured: true },
       })
-      if (!charityConfig || !charityConfig.certificate) {
+      if (!charityConfig || !charityConfig.certificate || !charityConfig.entityId) {
         return NextResponse.redirect(
           new URL('/login?error=No+charity+SSO+configuration+found', req.url)
         )
       }
       certificate = charityConfig.certificate
+      expectedIssuer = charityConfig.entityId
     } else {
       const orgConfig = await prisma.orgSsoConfig.findFirst({
         where: { emailDomain: domain, configured: true },
       })
-      if (!orgConfig) {
+      if (!orgConfig || !orgConfig.entityId) {
         return NextResponse.redirect(
           new URL('/login?error=No+SSO+configuration+found', req.url)
         )
       }
       certificate = orgConfig.certificate
+      expectedIssuer = orgConfig.entityId
     }
 
-    // Validate the SAML response
-    const result = await validateSamlResponse(samlResponse, certificate)
+    // Validate the SAML response. expectedIssuer pins the assertion to a
+    // specific IdP — without this a cert shared across tenants would let
+    // one tenant's assertion authenticate against another.
+    const result = await validateSamlResponse(samlResponse, certificate, expectedIssuer)
     if (!result.valid) {
       console.error('SAML validation failed:', result.error)
       return NextResponse.redirect(
