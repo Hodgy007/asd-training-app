@@ -12,15 +12,21 @@ import {
   Trash2,
   AlertTriangle,
   ChevronDown,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
 
 interface Props {
   collectionId: string
+  active: boolean
   publishedToToolkit: boolean
   documentCount: number
   /** Called whenever an action mutates the collection so the parent can refetch. */
   onUpdate: () => void
+  /** Optional — called after a successful delete. List pages just refetch via
+   *  onUpdate; detail pages need to navigate away from the now-deleted row. */
+  onAfterDelete?: () => void
   /** Toast surface — parent owns the actual toast UI. */
   onToast: (message: string, type: 'success' | 'error') => void
 }
@@ -38,9 +44,11 @@ interface ZipResults {
  */
 export function CollectionActionsPanel({
   collectionId,
+  active,
   publishedToToolkit,
   documentCount,
   onUpdate,
+  onAfterDelete,
   onToast,
 }: Props) {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -50,6 +58,7 @@ export function CollectionActionsPanel({
   const [zipResults, setZipResults] = useState<ZipResults | null>(null)
   const [zipErrorsExpanded, setZipErrorsExpanded] = useState(false)
   const [clearingDocs, setClearingDocs] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   async function handleTogglePublish() {
     setActionLoading('publish')
@@ -202,6 +211,44 @@ export function CollectionActionsPanel({
     }
   }
 
+  async function handleToggleActive() {
+    setActionLoading('active')
+    try {
+      const res = await fetch(`/api/super-admin/library/${collectionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !active }),
+      })
+      if (res.ok) {
+        onToast(active ? 'Collection deactivated.' : 'Collection activated.', 'success')
+        onUpdate()
+      } else {
+        const d = await res.json()
+        onToast(d.error || 'Update failed.', 'error')
+      }
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  async function handleDeleteCollection() {
+    if (!confirm('Delete this collection? All its documents will also be removed. This cannot be undone.')) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/super-admin/library/${collectionId}`, { method: 'DELETE' })
+      if (res.ok) {
+        onToast('Collection deleted.', 'success')
+        if (onAfterDelete) onAfterDelete()
+        else onUpdate()
+      } else {
+        const d = await res.json()
+        onToast(d.error || 'Delete failed.', 'error')
+      }
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -255,6 +302,22 @@ export function CollectionActionsPanel({
         </label>
         <button
           type="button"
+          onClick={handleToggleActive}
+          disabled={actionLoading === 'active'}
+          className={clsx(
+            'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors disabled:opacity-50',
+            active
+              ? 'border-calm-200 bg-white text-slate-600 hover:bg-calm-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300'
+          )}
+          title={active ? 'Hide this collection from learners' : 'Show this collection to learners'}
+        >
+          {active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          {active ? 'Deactivate' : 'Activate'}
+        </button>
+
+        <button
+          type="button"
           onClick={handleClearAllDocs}
           disabled={clearingDocs || zipUploading || documentCount === 0}
           className={clsx(
@@ -267,6 +330,17 @@ export function CollectionActionsPanel({
         >
           <Trash2 className="h-4 w-4" />
           {clearingDocs ? 'Clearing…' : 'Clear all documents'}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDeleteCollection}
+          disabled={deleting}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-red-300 dark:border-red-800 bg-white dark:bg-slate-800 text-red-700 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+          title="Delete the entire collection (and all its documents)"
+        >
+          <Trash2 className="h-4 w-4" />
+          {deleting ? 'Deleting…' : 'Delete collection'}
         </button>
       </div>
 
