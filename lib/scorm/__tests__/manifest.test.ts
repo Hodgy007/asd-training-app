@@ -60,6 +60,29 @@ describe('parseScormManifest', () => {
     expect(result.version).toBe('2004')
   })
 
+  it('returns the selected organization title as the course title', () => {
+    const result = parseScormManifest(SCORM_12_MANIFEST)
+    expect(result.title).toBe('Example')
+  })
+
+  it('uses the course title for Captivate single-SCO placeholder item titles', () => {
+    const xml = SCORM_12_MANIFEST
+      .replace('<title>Example</title>', '<title>AAA Autism in the workplace</title>')
+      .replace('<title>Lesson 1</title>', '<title>index_SCO_Title</title>')
+
+    const result = parseScormManifest(xml)
+
+    expect(result.title).toBe('AAA Autism in the workplace')
+    expect(result.toc).toEqual([
+      {
+        id: 'ITEM-1',
+        title: 'AAA Autism in the workplace',
+        href: 'index_lms.html',
+        children: [],
+      },
+    ])
+  })
+
   it('detects SCORM 2004 from "2004 4th Edition" schemaversion', () => {
     const xml = SCORM_12_MANIFEST.replace(
       '<schemaversion>1.2</schemaversion>',

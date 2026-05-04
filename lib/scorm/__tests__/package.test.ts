@@ -14,6 +14,14 @@ const MANIFEST_XML = `<?xml version="1.0"?>
 <manifest xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
   xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2">
   <metadata><schemaversion>1.2</schemaversion></metadata>
+  <organizations default="ORG-1">
+    <organization identifier="ORG-1">
+      <title>Packaged Course Title</title>
+      <item identifier="ITEM-1" identifierref="R1">
+        <title>index_SCO_Title</title>
+      </item>
+    </organization>
+  </organizations>
   <resources>
     <resource identifier="R1" type="webcontent" adlcp:scormtype="sco" href="index.html">
       <file href="index.html"/>
@@ -35,6 +43,15 @@ describe('extractScormPackage', () => {
       upload,
     })
     expect(result.entryPath).toBe('index.html')
+    expect(result.title).toBe('Packaged Course Title')
+    expect(result.toc).toEqual([
+      {
+        id: 'ITEM-1',
+        title: 'Packaged Course Title',
+        href: 'index.html',
+        children: [],
+      },
+    ])
     expect(result.blobPrefix).toBe('scorm/lesson-1')
     expect(upload).toHaveBeenCalledTimes(3)
     expect(upload).toHaveBeenCalledWith(

@@ -169,15 +169,35 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    const updatedLesson = await prisma.lesson.update({
-      where: { id: scaffold.lesson.id },
-      data: {
-        scormBlobPrefix: result.blobPrefix,
-        scormEntryPath: result.entryPath,
-        scormVersion: result.version,
-        scormToc: result.toc as unknown as Prisma.InputJsonValue,
-      },
-    })
+    const importedTitle = result.title?.trim()
+    const finalName = providedName.length > 0 ? programName : (importedTitle || programName)
+
+    const [, , updatedLesson] = await prisma.$transaction([
+      prisma.trainingProgram.update({
+        where: { id: scaffold.program.id },
+        data: { name: finalName },
+      }),
+      prisma.module.update({
+        where: { id: scaffold.mod.id },
+        data: {
+          title: finalName,
+          description:
+            finalName !== programName
+              ? `SCORM package "${finalName}" imported from ${filename}.`
+              : `SCORM package imported from ${filename}.`,
+        },
+      }),
+      prisma.lesson.update({
+        where: { id: scaffold.lesson.id },
+        data: {
+          title: finalName,
+          scormBlobPrefix: result.blobPrefix,
+          scormEntryPath: result.entryPath,
+          scormVersion: result.version,
+          scormToc: result.toc as unknown as Prisma.InputJsonValue,
+        },
+      }),
+    ])
 
     // Extraction succeeded — the temp upload blob is no longer needed. Best
     // effort only; a stale temp blob is harmless and cleanup can be swept up

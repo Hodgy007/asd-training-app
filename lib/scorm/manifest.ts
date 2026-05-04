@@ -19,6 +19,7 @@ export interface ScormTocItem {
 export interface ScormManifestResult {
   entryPath: string
   version: ScormVersion
+  title?: string
   toc: ScormTocItem[]
 }
 
@@ -127,6 +128,10 @@ function pathOnly(hrefWithMaybeQuery: string): string {
   return q === -1 ? hrefWithMaybeQuery : hrefWithMaybeQuery.slice(0, q)
 }
 
+function isCaptivatePlaceholderTitle(title: string): boolean {
+  return /^index_sco_title$/i.test(title.trim())
+}
+
 export function parseScormManifest(xml: string): ScormManifestResult {
   const parser = new XMLParser({
     ignoreAttributes: false,
@@ -171,6 +176,7 @@ export function parseScormManifest(xml: string): ScormManifestResult {
       ? orgList.find((o) => asString(o['@_identifier']) === defaultOrgId)
       : undefined) ??
     orgList[0]
+  const title = asString(chosenOrg?.title)?.trim() || undefined
 
   let toc: ScormTocItem[] = []
   if (chosenOrg) {
@@ -178,6 +184,15 @@ export function parseScormManifest(xml: string): ScormManifestResult {
     toc = items
       .map((i) => buildTocItem(i, resourceMap))
       .filter((x): x is ScormTocItem => x !== null)
+  }
+  if (
+    title &&
+    toc.length === 1 &&
+    toc[0].href &&
+    toc[0].children.length === 0 &&
+    isCaptivatePlaceholderTitle(toc[0].title)
+  ) {
+    toc = [{ ...toc[0], title }]
   }
 
   // Entry path: prefer the first leaf in the TOC. Fall back to the first
@@ -202,5 +217,5 @@ export function parseScormManifest(xml: string): ScormManifestResult {
     throw new Error('Invalid SCORM manifest: resource href is not a safe relative path')
   }
 
-  return { entryPath, version, toc }
+  return { entryPath, version, title, toc }
 }

@@ -21,6 +21,7 @@ export interface ExtractResult {
   blobPrefix: string
   entryPath: string
   version: ScormVersion
+  title?: string
   toc: ScormTocItem[]
 }
 
@@ -168,7 +169,7 @@ export async function extractScormPackage({
   }
 
   const manifestXml = await manifestFile.async('string')
-  const { entryPath, version, toc } = parseScormManifest(manifestXml)
+  const { entryPath, version, title, toc } = parseScormManifest(manifestXml)
 
   const blobPrefix = `scorm/${lessonId}`
   const entries = Object.values(zip.files)
@@ -187,5 +188,5 @@ export async function extractScormPackage({
 
   await uploadAllInParallel(uploadTasks)
 
-  return { blobPrefix, entryPath, version, toc }
+  return { blobPrefix, entryPath, version, title, toc }
 }
