@@ -64,7 +64,7 @@ export default async function EditJobPage({ params }: { params: { jobId: string 
           targetRoles: job.targetRoles,
         }}
       />
-      <JobAttachmentsPanel jobId={job.id} initial={job.attachments.map((a) => ({ id: a.id, filename: a.filename, url: a.url, sizeBytes: a.sizeBytes }))} />
+      <JobAttachmentsPanel jobId={job.id} initial={job.attachments.map((a) => ({ id: a.id, filename: a.filename, url: `/api/jobs/${job.id}/attachments/${a.id}/file`, sizeBytes: a.sizeBytes }))} />
       <JobAssignmentsPanel
         jobId={job.id}
         initial={job.assignments.map((a) => ({ id: a.id, note: a.note, user: a.user }))}

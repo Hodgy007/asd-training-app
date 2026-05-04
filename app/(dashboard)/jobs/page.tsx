@@ -33,7 +33,12 @@ function toCardAndDetail(j: Awaited<ReturnType<typeof listVisibleJobsForUser>>[n
     contactEmail: j.contactEmail,
     closingDate: j.closingDate.toISOString(),
     status: j.status,
-    attachments: j.attachments.map((a) => ({ id: a.id, filename: a.filename, url: a.url, sizeBytes: a.sizeBytes })),
+    attachments: j.attachments.map((a) => ({
+      id: a.id,
+      filename: a.filename,
+      url: `/api/jobs/${j.id}/attachments/${a.id}/file`,
+      sizeBytes: a.sizeBytes,
+    })),
     hasAssignment: Boolean(assignment),
     assignmentNote: assignment?.note ?? null,
   }

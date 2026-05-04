@@ -43,7 +43,17 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  return NextResponse.json(collection)
+  // Don't expose raw Blob URLs to admins either — even charity admins'
+  // browser history is a leak vector. Serve via the auth-gated proxy.
+  const sanitised = {
+    ...collection,
+    documents: collection.documents.map((d) => ({
+      ...d,
+      fileUrl: `/api/library/documents/${d.id}/file`,
+    })),
+  }
+
+  return NextResponse.json(sanitised)
 }
 
 // PATCH — update collection

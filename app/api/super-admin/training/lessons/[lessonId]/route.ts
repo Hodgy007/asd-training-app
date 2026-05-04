@@ -67,8 +67,21 @@ export async function GET(_req: NextRequest, { params }: Params) {
       },
     },
   })
+  if (!lessonWithModule) {
+    return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
+  }
 
-  return NextResponse.json(lessonWithModule)
+  // Replace raw Blob URLs with the auth-gated proxy. Even charity admin
+  // browser history is a leak vector for these.
+  const sanitised = {
+    ...lessonWithModule,
+    attachments: lessonWithModule.attachments.map((a) => ({
+      ...a,
+      url: `/api/training/attachments/${a.id}/file`,
+    })),
+  }
+
+  return NextResponse.json(sanitised)
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {

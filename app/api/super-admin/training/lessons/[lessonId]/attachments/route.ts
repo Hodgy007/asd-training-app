@@ -47,5 +47,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     },
   })
 
-  return NextResponse.json(attachment, { status: 201 })
+  // Don't expose the raw Blob URL — return the auth-gated proxy URL.
+  return NextResponse.json(
+    { ...attachment, url: `/api/training/attachments/${attachment.id}/file` },
+    { status: 201 },
+  )
 }

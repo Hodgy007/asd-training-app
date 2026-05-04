@@ -51,7 +51,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     },
   })
 
-  return NextResponse.json(document, { status: 201 })
+  // Don't expose the raw Blob URL — clients use the auth-gated proxy.
+  return NextResponse.json({
+    ...document,
+    fileUrl: `/api/library/documents/${document.id}/file`,
+  }, { status: 201 })
 }
 
 // DELETE — remove every document in a collection (keeps the collection itself).

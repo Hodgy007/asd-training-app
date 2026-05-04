@@ -68,5 +68,16 @@ export async function GET() {
     },
   })
 
-  return NextResponse.json(collections)
+  // Replace the raw Vercel Blob URL with an auth-gated proxy. Blob URLs
+  // are forever-readable once obtained; the proxy re-checks the user's
+  // entitlement on every request.
+  const sanitised = collections.map((col) => ({
+    ...col,
+    documents: col.documents.map((d) => ({
+      ...d,
+      fileUrl: `/api/library/documents/${d.id}/file`,
+    })),
+  }))
+
+  return NextResponse.json(sanitised)
 }

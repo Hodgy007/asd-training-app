@@ -46,7 +46,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     data,
   })
 
-  return NextResponse.json(updated)
+  // Don't expose the raw Blob URL — clients use the auth-gated proxy.
+  return NextResponse.json({
+    ...updated,
+    fileUrl: `/api/library/documents/${updated.id}/file`,
+  })
 }
 
 // DELETE — remove a document from a collection

@@ -68,5 +68,15 @@ export async function GET(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  return NextResponse.json(lesson)
+  // Replace raw Blob URLs with auth-gated proxy URLs so attachments stay
+  // bound to live program entitlement, not whoever ever held the URL.
+  const sanitised = {
+    ...lesson,
+    attachments: lesson.attachments.map((a) => ({
+      ...a,
+      url: `/api/training/attachments/${a.id}/file`,
+    })),
+  }
+
+  return NextResponse.json(sanitised)
 }
