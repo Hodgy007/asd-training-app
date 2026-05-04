@@ -4,14 +4,20 @@ import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { canManageChildOrg, getEffectiveOrgSettings } from '@/lib/org-hierarchy'
+import { validatePassword } from '@/lib/password-validation'
+import { LEAF_ROLES } from '@/types'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 
+// Restrict to LEAF_ROLES at the schema level. Without this, a parent admin
+// can submit `role: 'ORG_ADMIN'` (or 'SUPER_ADMIN'); the only downstream
+// gate is `effectiveSettings.allowedRoles.includes(data.role)`, but
+// allowedRoles is also admin-controlled and inherits from parent.
 const createUserSchema = z.object({
   name: z.string().min(1).max(200),
   email: z.string().email(),
-  role: z.string(),
-  password: z.string().min(8).max(128).optional(),
+  role: z.enum(LEAF_ROLES as [string, ...string[]]),
+  password: z.string().max(128).optional(),
 })
 
 export async function GET(
@@ -126,9 +132,16 @@ export async function POST(
     return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
   }
 
-  // Hash password if provided
+  // Hash password if provided. Run the platform's complexity rules
+  // (10 chars + uppercase + lowercase + digit + symbol) so child-org
+  // accounts can't be minted with weak passwords that wouldn't pass
+  // anywhere else in the platform.
   let hashedPassword: string | null = null
   if (data.password) {
+    const check = validatePassword(data.password)
+    if (!check.valid) {
+      return NextResponse.json({ error: check.error }, { status: 400 })
+    }
     hashedPassword = await bcrypt.hash(data.password, 12)
   }
 
