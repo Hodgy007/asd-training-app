@@ -40,7 +40,6 @@ describe('validateUpload', () => {
       { ext: 'jpg', mime: 'image/jpeg' },
       { ext: 'jpeg', mime: 'image/jpeg' },
       { ext: 'gif', mime: 'image/gif' },
-      { ext: 'svg', mime: 'image/svg+xml' },
       { ext: 'mp4', mime: 'video/mp4' },
       { ext: 'webm', mime: 'video/webm' },
     ]
@@ -64,7 +63,7 @@ describe('validateUpload', () => {
   // ── Blocked extensions ───────────────────────────────────────────────────────
 
   describe('blocked extensions', () => {
-    const blockedCases = ['exe', 'bat', 'cmd', 'sh', 'ps1', 'vbs', 'js', 'html', 'htm', 'php', 'scr', 'msi', 'dll']
+    const blockedCases = ['exe', 'bat', 'cmd', 'sh', 'ps1', 'vbs', 'js', 'html', 'htm', 'php', 'scr', 'msi', 'dll', 'svg']
 
     it.each(blockedCases)('rejects .%s files', (ext) => {
       const file = createFile(`malware.${ext}`, 1024, 'application/octet-stream')

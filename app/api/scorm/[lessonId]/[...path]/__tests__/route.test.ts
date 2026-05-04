@@ -27,9 +27,16 @@ function ctx(path = ['vr', 'Vi1503.mp4']) {
 
 describe('GET /api/scorm/[lessonId]/[...path]', () => {
   beforeEach(() => {
-    vi.mocked(getServerSession).mockReset().mockResolvedValue({ user: { id: 'u1' } } as any)
+    vi.mocked(getServerSession).mockReset().mockResolvedValue({
+      user: {
+        id: 'u1',
+        role: 'CAREGIVER',
+        effectivePrograms: [{ id: 'program-1', name: 'Test program' }],
+      },
+    } as any)
     vi.mocked(prisma.lesson.findUnique).mockReset().mockResolvedValue({
       scormBlobPrefix: 'scorm/lesson-1',
+      module: { programId: 'program-1' },
     } as any)
     vi.mocked(head).mockReset().mockResolvedValue({
       url: 'https://blob.example/scorm/lesson-1/vr/Vi1503.mp4',

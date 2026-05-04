@@ -27,10 +27,17 @@ function req(body: unknown) {
 
 describe('POST /api/training/progress/scorm', () => {
   beforeEach(() => {
-    vi.mocked(getServerSession).mockReset().mockResolvedValue({ user: { id: 'u1' } } as any)
+    vi.mocked(getServerSession).mockReset().mockResolvedValue({
+      user: {
+        id: 'u1',
+        role: 'CAREGIVER',
+        effectivePrograms: [{ id: 'program-1', name: 'Test program' }],
+      },
+    } as any)
     vi.mocked(prisma.lesson.findUnique).mockReset().mockResolvedValue({
       type: 'SCORM',
       moduleId: 'module-1',
+      module: { programId: 'program-1' },
     } as any)
     vi.mocked(prisma.trainingProgress.findUnique).mockReset().mockResolvedValue(null)
     vi.mocked(prisma.trainingProgress.upsert).mockReset().mockResolvedValue({ id: 'progress-1' } as any)
