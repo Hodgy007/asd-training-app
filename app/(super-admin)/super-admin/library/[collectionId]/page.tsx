@@ -28,6 +28,7 @@ import {
   AlertTriangle,
   ChevronDown,
   ExternalLink,
+  Globe2,
 } from 'lucide-react'
 
 interface LibraryDoc {
