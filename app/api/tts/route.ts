@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { z } from 'zod'
+import { createRateLimiter } from '@/lib/rate-limit'
 import {
   DEFAULT_VOICE_ID,
   generateMp3FromElevenLabs,
   getCachedTtsUrl,
   storeTtsToBlob,
 } from '@/lib/tts-blob'
+
+// 30 requests / minute / user. Cache hits are cheap, but every miss
+// spends an ElevenLabs token (~$0.02 per minute synthesised). Without
+// this cap a logged-in user can script unique-text POSTs and drain the
+// monthly budget; a normal lesson play hits the cache on second use.
+const ttsLimiter = createRateLimiter('tts', 60_000, 30)
 
 // Hard cap on text length per request. Covers full lesson content plus
 // individual interactive block banners. Anything larger is almost certainly
@@ -22,6 +29,14 @@ const bodySchema = z.object({
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const rate = await ttsLimiter.check(session.user.id)
+  if (!rate.success) {
+    return NextResponse.json(
+      { error: 'Too many TTS requests. Please slow down.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    )
+  }
 
   const apiKey = process.env.ELEVENLABS_API_KEY
   if (!apiKey) {
