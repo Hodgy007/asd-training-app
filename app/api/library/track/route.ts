@@ -6,6 +6,9 @@ import { z } from 'zod'
 
 const trackSchema = z.object({
   documentId: z.string().min(1),
+  // Defaults to 'download' for backwards compatibility with any caller
+  // that hasn't been updated to pass it explicitly.
+  action: z.enum(['view', 'download']).default('download'),
 })
 
 export async function POST(req: NextRequest) {
@@ -25,7 +28,7 @@ export async function POST(req: NextRequest) {
       documentId: parsed.data.documentId,
       userId: session.user.id,
       organisationId: session.user.organisationId ?? null,
-      action: 'download',
+      action: parsed.data.action,
     },
   })
 

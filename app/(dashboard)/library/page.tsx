@@ -6,6 +6,7 @@ import { clsx } from 'clsx'
 import {
   FolderOpen,
   Download,
+  Eye,
   FileText,
   Search,
   RefreshCw,
@@ -167,12 +168,26 @@ function LibraryPage() {
     }
   }, [collectionParam, collections])
 
-  function trackDownload(documentId: string) {
+  function trackEvent(documentId: string, action: 'view' | 'download') {
     fetch('/api/library/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ documentId }),
+      body: JSON.stringify({ documentId, action }),
     }).catch(() => {})
+  }
+
+  // File types the file proxy will serve inline (matches the server-side
+  // INLINE_VIEWABLE_PREFIXES list). For everything else (Office docs etc.)
+  // we hide the View button — the browser would just download anyway.
+  function isViewable(fileType: string | null | undefined): boolean {
+    if (!fileType) return false
+    return (
+      fileType === 'application/pdf' ||
+      fileType.startsWith('image/') ||
+      fileType.startsWith('video/') ||
+      fileType.startsWith('audio/') ||
+      fileType.startsWith('text/')
+    )
   }
 
   // Filter collections or documents based on search
@@ -315,14 +330,27 @@ function LibraryPage() {
                       </div>
                     )}
 
-                    <div className="mt-auto pt-2">
+                    <div className="mt-auto flex gap-2 pt-2">
+                      {isViewable(doc.fileType) && (
+                        <a
+                          href={`/api/library/documents/${doc.id}/file?disposition=inline`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => trackEvent(doc.id, 'view')}
+                          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-bold shadow-sm transition-all hover:shadow-md"
+                          style={{ color: theme.accent, borderColor: theme.accent }}
+                        >
+                          <Eye className="h-4 w-4" />
+                          View
+                        </a>
+                      )}
                       <a
                         href={`/api/library/documents/${doc.id}/file`}
                         download={doc.fileName}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={() => trackDownload(doc.id)}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md"
+                        onClick={() => trackEvent(doc.id, 'download')}
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md"
                         style={{ backgroundColor: theme.accent }}
                       >
                         <Download className="h-4 w-4" />

@@ -11,12 +11,26 @@ import { prisma } from '@/lib/prisma'
 // user's current entitlement, the raw blob URL never leaves the server —
 // listing endpoints return /api/library/documents/[docId]/file and this
 // route streams the bytes after re-checking targeting on every request.
+// File types the browser can render natively. Anything outside this list
+// falls back to attachment so a missing native renderer doesn't show the
+// user a screenful of binary garbage.
+const INLINE_VIEWABLE_PREFIXES = ['application/pdf', 'image/', 'video/', 'audio/', 'text/']
+
+function isInlineViewable(fileType: string | null | undefined): boolean {
+  if (!fileType) return false
+  return INLINE_VIEWABLE_PREFIXES.some((prefix) =>
+    prefix.endsWith('/') ? fileType.startsWith(prefix) : fileType === prefix,
+  )
+}
+
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { docId: string } },
 ) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const wantsInline = req.nextUrl.searchParams.get('disposition') === 'inline'
 
   const userRole = session.user.role
   const userOrgId = session.user.organisationId
@@ -67,10 +81,16 @@ export async function GET(
   const len = upstream.headers.get('content-length')
   if (len) headers.set('Content-Length', len)
   // Use attachment + sanitised filename so the browser saves under the
-  // original name rather than a Blob hash.
+  // original name rather than a Blob hash. Switch to inline only when the
+  // caller asked for it AND the file type is something the browser can
+  // safely render — never inline unknown binaries.
   const safeName = doc.fileName.replace(/[\r\n"]/g, '')
-  headers.set('Content-Disposition', `attachment; filename="${safeName}"`)
+  const disposition = wantsInline && isInlineViewable(doc.fileType) ? 'inline' : 'attachment'
+  headers.set('Content-Disposition', `${disposition}; filename="${safeName}"`)
   headers.set('Cache-Control', 'private, no-store')
+  // X-Content-Type-Options stops the browser sniffing past our type
+  // declaration — important for inline rendering.
+  headers.set('X-Content-Type-Options', 'nosniff')
 
   return new NextResponse(upstream.body, { status: 200, headers })
 }

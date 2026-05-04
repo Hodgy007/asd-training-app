@@ -5,6 +5,7 @@ import { clsx } from 'clsx'
 import {
   FolderOpen,
   Download,
+  Eye,
   FileText,
   Search,
   RefreshCw,
@@ -128,6 +129,19 @@ export default function OrgAdminLibraryPage() {
     } finally {
       setEditSaving(false)
     }
+  }
+
+  // Mirrors the server-side INLINE_VIEWABLE_PREFIXES list — anything outside
+  // this set falls back to download-only.
+  function isViewable(fileType: string | null | undefined): boolean {
+    if (!fileType) return false
+    return (
+      fileType === 'application/pdf' ||
+      fileType.startsWith('image/') ||
+      fileType.startsWith('video/') ||
+      fileType.startsWith('audio/') ||
+      fileType.startsWith('text/')
+    )
   }
 
   function trackEvent(documentId: string, action: 'view' | 'download') {
@@ -268,18 +282,33 @@ export default function OrgAdminLibraryPage() {
                         {formatFileSize(doc.fileSize)} · {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </div>
-                    <a
-                      href={`/api/library/documents/${doc.id}/file`}
-                      download={doc.fileName}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => trackEvent(doc.id, 'download')}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-2.5 sm:px-4 sm:py-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors flex-shrink-0"
-                      title="Download"
-                    >
-                      <Download className="h-4 w-4" />
-                      <span className="hidden sm:inline">Download</span>
-                    </a>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {isViewable(doc.fileType) && (
+                        <a
+                          href={`/api/library/documents/${doc.id}/file?disposition=inline`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => trackEvent(doc.id, 'view')}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-2.5 sm:px-4 sm:py-2 rounded-lg bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 text-sm font-semibold hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors"
+                          title="View"
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span className="hidden sm:inline">View</span>
+                        </a>
+                      )}
+                      <a
+                        href={`/api/library/documents/${doc.id}/file`}
+                        download={doc.fileName}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackEvent(doc.id, 'download')}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-2.5 sm:px-4 sm:py-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
+                        title="Download"
+                      >
+                        <Download className="h-4 w-4" />
+                        <span className="hidden sm:inline">Download</span>
+                      </a>
+                    </div>
                   </div>
                 </div>
               )
