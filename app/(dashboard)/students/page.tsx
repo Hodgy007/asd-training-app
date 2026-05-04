@@ -51,8 +51,13 @@ interface UsersResponse {
 
 function generateTempPassword(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+  // window.crypto.getRandomValues is a CSPRNG; Math.random is a recoverable
+  // xorshift PRNG that lets an attacker who sees one issued password
+  // predict others generated in the same session.
+  const buf = new Uint32Array(12)
+  window.crypto.getRandomValues(buf)
   let out = ''
-  for (let i = 0; i < 12; i++) out += chars[Math.floor(Math.random() * chars.length)]
+  for (let i = 0; i < 12; i++) out += chars[buf[i] % chars.length]
   return out + '!1'
 }
 

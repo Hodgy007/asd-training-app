@@ -5,6 +5,7 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 
 const bulkSchema = z.object({
   members: z.array(z.object({
@@ -15,10 +16,13 @@ const bulkSchema = z.object({
 })
 
 function generatePassword(): string {
+  // CSPRNG — Math.random() is V8's xorshift128+ and is recoverable from
+  // a few outputs, which would let one bulk-imported member predict the
+  // temp passwords issued to others in the same batch.
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
   let pass = ''
   for (let i = 0; i < 10; i++) {
-    pass += chars[Math.floor(Math.random() * chars.length)]
+    pass += chars[crypto.randomInt(0, chars.length)]
   }
   return pass
 }
