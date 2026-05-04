@@ -191,7 +191,10 @@ export async function grantFreeAccess(args: {
     await sendAccessGrantedEmail({ email, name, programName, resetUrl })
   } else {
     tempPassword = crypto.randomBytes(9).toString('base64url')
-    const passwordHash = await bcrypt.hash(tempPassword, 10)
+    // Match the cost factor used elsewhere in the platform (12). Cost 10
+    // is still defensible but the inconsistency makes a future rotation
+    // sweep harder to reason about.
+    const passwordHash = await bcrypt.hash(tempPassword, 12)
     const emailLocal = email.split('@')[0] ?? 'user'
     const user = await prisma.user.create({
       data: {
