@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { isCharityLevel } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -35,6 +36,24 @@ export async function POST(req: NextRequest) {
     }
 
     const { moduleId, lessonId, completed, score } = parsed.data
+
+    // Only allow progress writes for modules in programs the user's org is
+    // entitled to. Without this any logged-in user could fabricate
+    // "completed" rows for any module — pollutes per-org reports and
+    // (once cleaned up) program-completion certificates.
+    const moduleRow = await prisma.module.findUnique({
+      where: { id: moduleId },
+      select: { programId: true },
+    })
+    if (!moduleRow) {
+      return NextResponse.json({ error: 'Module not found' }, { status: 404 })
+    }
+    const hasProgramAccess =
+      isCharityLevel(session) ||
+      (session.user.effectivePrograms ?? []).some((p) => p.id === moduleRow.programId)
+    if (!hasProgramAccess) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     const progress = await prisma.trainingProgress.upsert({
       where: {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { head } from '@vercel/blob'
 import { authOptions } from '@/lib/auth'
+import { isCharityLevel } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 
 export const runtime = 'nodejs'
@@ -125,9 +126,24 @@ export async function GET(
 
   const lesson = await prisma.lesson.findUnique({
     where: { id: params.lessonId },
-    select: { scormBlobPrefix: true },
+    select: {
+      scormBlobPrefix: true,
+      module: { select: { programId: true } },
+    },
   })
   if (!lesson?.scormBlobPrefix) {
+    return new NextResponse('Not found', { status: 404 })
+  }
+
+  // Only learners entitled to the lesson's program can stream its SCORM
+  // assets. Without this any authenticated user could pull any program's
+  // SCORM content and (combined with allow-same-origin) hostile SCO JS
+  // could run in their session.
+  const programId = lesson.module.programId
+  const hasProgramAccess =
+    isCharityLevel(session) ||
+    (session.user.effectivePrograms ?? []).some((p) => p.id === programId)
+  if (!hasProgramAccess) {
     return new NextResponse('Not found', { status: 404 })
   }
 
