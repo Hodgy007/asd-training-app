@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { introspectLimiter, getClientIp } from '@/lib/rate-limit'
+import { hashResetToken } from '@/lib/reset-token'
 
 export async function GET(req: NextRequest) {
   const ip = getClientIp(req)
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing token' }, { status: 400 })
   }
 
-  const row = await prisma.passwordResetToken.findUnique({ where: { token } })
+  const row = await prisma.passwordResetToken.findUnique({ where: { token: hashResetToken(token) } })
   if (!row || row.expires < new Date()) {
     return NextResponse.json({ error: 'Invalid or expired token' }, { status: 404 })
   }

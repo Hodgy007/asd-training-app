@@ -6,6 +6,7 @@ import { Resend } from 'resend'
 import crypto from 'crypto'
 import { inviteLimiter } from '@/lib/rate-limit'
 import { renderPasswordInviteEmail, renderSsoInviteEmail } from '@/lib/email-templates/invite'
+import { hashResetToken } from '@/lib/reset-token'
 
 const FROM = 'Ambitious About Autism <onboarding@resend.dev>'
 const TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000
@@ -71,16 +72,16 @@ export async function POST(
       await resend.emails.send({ from: FROM, to: user.email, subject, html, text })
     } else {
       await prisma.passwordResetToken.deleteMany({ where: { email: user.email } })
-      const token = crypto.randomBytes(32).toString('hex')
+      const rawToken = crypto.randomBytes(32).toString('hex')
       await prisma.passwordResetToken.create({
         data: {
           email: user.email,
-          token,
+          token: hashResetToken(rawToken),
           purpose: 'ACTIVATION',
           expires: new Date(Date.now() + TOKEN_EXPIRY_MS),
         },
       })
-      const activationUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`
+      const activationUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${rawToken}`
       const { subject, html, text } = renderPasswordInviteEmail({
         name: user.name,
         activationUrl,
