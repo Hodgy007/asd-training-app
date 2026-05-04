@@ -54,8 +54,10 @@ export async function middleware(req: NextRequest) {
     return res
   }
 
-  // Allow public paths
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+  // Allow public paths. Match exactly or as a path-segment prefix (with a
+  // trailing slash) so `/login` doesn't accidentally also unauth-allow
+  // `/login-evil-page` or `/api/auth` doesn't allow `/api/authorisation`.
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return passThrough()
   }
 
@@ -100,7 +102,9 @@ export async function middleware(req: NextRequest) {
 
   // Force MFA verification for users with MFA enabled who haven't verified yet
   if (!MFA_DISABLED && mfaPending) {
-    if (pathname === '/mfa-verify' || pathname.startsWith('/api/auth')) {
+    // Path-segment prefix only — `pathname.startsWith('/api/auth')` alone
+    // would also let through a future `/api/authorise…` route.
+    if (pathname === '/mfa-verify' || pathname === '/api/auth' || pathname.startsWith('/api/auth/')) {
       return passThrough()
     }
     if (pathname.startsWith('/api/')) {
@@ -118,7 +122,7 @@ export async function middleware(req: NextRequest) {
   const isAdmin = role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE' || role === 'ORG_ADMIN'
   if (!MFA_DISABLED && isAdmin && !totpEnabled && !mfaPending) {
     const allowedPaths = ['/mfa-setup', '/api/auth/mfa', '/api/auth']
-    if (allowedPaths.some((p) => pathname.startsWith(p))) {
+    if (allowedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
       return passThrough()
     }
     if (pathname.startsWith('/api/')) {
@@ -167,16 +171,6 @@ export async function middleware(req: NextRequest) {
     const blockedForParticipant = ['/cv-builder', '/careers-advisor', '/jobs', '/students', '/careers']
     if (blockedForParticipant.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
       return redirect(new URL(homeForRole(role), req.url), 'role_blocked_participant', { userId })
-    }
-  }
-
-  // PARTICIPANT — workshop attendees get a stripped-back surface. They join via
-  // an invite link and don't have access to the careers tooling or formal
-  // training-program management features that other leaf roles see.
-  if (role === 'PARTICIPANT') {
-    const blockedForParticipant = ['/cv-builder', '/careers-advisor', '/jobs', '/students', '/careers']
-    if (blockedForParticipant.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-      return NextResponse.redirect(new URL(homeForRole(role), req.url))
     }
   }
 
