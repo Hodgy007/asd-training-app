@@ -64,17 +64,32 @@ export async function GET(req: NextRequest) {
       select: {
         id: true, name: true, email: true, role: true, active: true,
         mustChangePassword: true, createdAt: true,
-        password: true,
         _count: { select: { trainingProgress: true } },
       },
     }),
     prisma.user.count({ where }),
   ])
 
-  const usersWithSso = users.map(({ password, ...rest }) => ({
-    ...rest,
-    ssoOnly: password === '',
-  }))
+  // Don't read the bcrypt hash to compute ssoOnly. A separate id-only
+  // query asks the DB which of these users have no password (SSO users
+  // have password: null; legacy rows may have ''), and we merge the
+  // boolean back. Avoids the risk of a future logger / refactor leaking
+  // the hash that was sitting on the response object.
+  const ssoOnlyIds = users.length > 0
+    ? new Set(
+        (
+          await prisma.user.findMany({
+            where: {
+              id: { in: users.map((u) => u.id) },
+              OR: [{ password: null }, { password: '' }],
+            },
+            select: { id: true },
+          })
+        ).map((u) => u.id),
+      )
+    : new Set<string>()
+
+  const usersWithSso = users.map((u) => ({ ...u, ssoOnly: ssoOnlyIds.has(u.id) }))
 
   return NextResponse.json({ users: usersWithSso, total, page, pageSize, totalPages: Math.ceil(total / pageSize) })
 }
