@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { forgotPasswordLimiter, getClientIp } from '@/lib/rate-limit'
 import { wrapEmailHtml } from '@/lib/email-templates/layout'
 import { logger, errMeta } from '@/lib/logger'
+import { hashResetToken } from '@/lib/reset-token'
 
 const schema = z.object({ email: z.string().email() })
 
@@ -44,12 +45,17 @@ export async function POST(req: NextRequest) {
   // Delete any existing tokens for this email
   await prisma.passwordResetToken.deleteMany({ where: { email } })
 
-  const token = crypto.randomBytes(32).toString('hex')
+  // Generate the raw token (sent to the user via email) and store ONLY its
+  // SHA-256 digest. A DB leak therefore can't be turned into account takeovers
+  // — the digest is useless on its own (32 bytes of CSPRNG input space).
+  const rawToken = crypto.randomBytes(32).toString('hex')
   const expires = new Date(Date.now() + 1000 * 60 * 60) // 1 hour
 
-  await prisma.passwordResetToken.create({ data: { email, token, expires } })
+  await prisma.passwordResetToken.create({
+    data: { email, token: hashResetToken(rawToken), expires },
+  })
 
-  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`
+  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${rawToken}`
 
   if (!process.env.RESEND_API_KEY) {
     logger.error('auth.forgot_password.resend_not_configured', {

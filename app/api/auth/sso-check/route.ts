@@ -24,30 +24,25 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    // Check if any charity-level user exists with this email domain
-    // and if charity SSO is configured
-    const charityUser = await prisma.user.findFirst({
-      where: {
-        email: { endsWith: `@${domain}` },
-        role: { in: ['SUPER_ADMIN', 'CHARITY_EMPLOYEE'] },
-        active: true,
-      },
-      select: { id: true },
+    // Charity SSO advertisement: previously this branch flipped on iff *any*
+    // active charity-level user used the queried domain — letting an
+    // unauthenticated visitor enumerate "is anyone on @example.com a charity
+    // staff member?". We now surface the charity SSO option whenever it's
+    // configured, regardless of which domain was asked about. This widens
+    // the allowed SSO entry surface harmlessly (anyone hitting the SSO
+    // button still has to authenticate with the IdP) and removes the
+    // domain-presence side channel.
+    const charitySsoConfig = await prisma.charitySsoConfig.findFirst({
+      where: { configured: true },
     })
 
-    if (charityUser) {
-      const charitySsoConfig = await prisma.charitySsoConfig.findFirst({
-        where: { configured: true },
+    if (charitySsoConfig) {
+      return NextResponse.json({
+        sso: true,
+        type: 'charity',
+        displayName: charitySsoConfig.displayName,
+        enforced: charitySsoConfig.enforceForCharityUsers,
       })
-
-      if (charitySsoConfig) {
-        return NextResponse.json({
-          sso: true,
-          type: 'charity',
-          displayName: charitySsoConfig.displayName,
-          enforced: charitySsoConfig.enforceForCharityUsers,
-        })
-      }
     }
 
     return NextResponse.json({ sso: false })

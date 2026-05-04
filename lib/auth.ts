@@ -113,8 +113,15 @@ export const authOptions: NextAuthOptions = {
         totpCode: { label: 'TOTP Code', type: 'text' },
       },
       async authorize(credentials) {
+        // Single, opaque credentials error. Distinct messages for "no such
+        // user" vs "wrong password" vs "uses SSO" let an attacker enumerate
+        // valid emails and learn which sign-in method each one uses.
+        // Collapse them all to one neutral string; only surface specific
+        // copy AFTER we've confirmed the password is correct.
+        const INVALID_CREDENTIALS = 'Invalid email or password'
+
         if (!credentials?.email) {
-          throw new Error('Email is required')
+          throw new Error(INVALID_CREDENTIALS)
         }
 
         const user = await prisma.user.findUnique({
@@ -122,24 +129,11 @@ export const authOptions: NextAuthOptions = {
           include: { organisation: { select: { active: true } } },
         })
 
-        if (!user) {
-          throw new Error('No account found with that email address')
-        }
-
-        if (user.pendingApproval) {
-          throw new Error('Your account is pending approval by your organisation admin. You will be able to sign in once approved.')
-        }
-
-        if (!user.active) {
-          throw new Error('Your account has been deactivated. Please contact an administrator.')
-        }
-
-        if (user.organisation && !user.organisation.active) {
-          throw new Error('Your organisation has been deactivated. Please contact an administrator.')
-        }
-
-        // MFA verification step (second call from MFA verify page)
+        // MFA verification step (second call from MFA verify page) — gated
+        // by an existing user with TOTP enabled. Genuinely keyed on a code,
+        // not a password, so it doesn't widen the enumeration surface.
         if (credentials.totpCode) {
+          if (!user) throw new Error(INVALID_CREDENTIALS)
           const { TOTP } = await import('otpauth')
           if (!user.totpSecret || !user.totpEnabled) {
             throw new Error('MFA not enabled')
@@ -157,7 +151,18 @@ export const authOptions: NextAuthOptions = {
             throw new Error('Invalid MFA code')
           }
 
-          // MFA verified — return user without mfaPending
+          // MFA verified — apply the same post-auth checks that the password
+          // path runs (deactivation / pending approval) before issuing a token.
+          if (user.pendingApproval) {
+            throw new Error('Your account is pending approval by your organisation admin. You will be able to sign in once approved.')
+          }
+          if (!user.active) {
+            throw new Error('Your account has been deactivated. Please contact an administrator.')
+          }
+          if (user.organisation && !user.organisation.active) {
+            throw new Error('Your organisation has been deactivated. Please contact an administrator.')
+          }
+
           return {
             id: user.id,
             email: user.email,
@@ -170,19 +175,31 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        // Normal password check
-        if (!credentials.password) {
-          throw new Error('Password is required')
-        }
-
+        // Normal password check. Every failure path below collapses to the
+        // generic INVALID_CREDENTIALS error.
+        if (!credentials.password) throw new Error(INVALID_CREDENTIALS)
+        if (!user) throw new Error(INVALID_CREDENTIALS)
         if (!user.password) {
-          throw new Error('This account uses Single Sign-On. Please sign in using the SSO option.')
+          // SSO-only account. Don't tell the attacker that — same generic
+          // error as a wrong password. Legitimate SSO users will use the
+          // SSO toggle on the login page.
+          throw new Error(INVALID_CREDENTIALS)
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+        if (!isPasswordValid) throw new Error(INVALID_CREDENTIALS)
 
-        if (!isPasswordValid) {
-          throw new Error('Incorrect password')
+        // Password verified — only NOW reveal account-state errors. These
+        // are not enumeration vectors because the attacker already had to
+        // present the correct password to get here.
+        if (user.pendingApproval) {
+          throw new Error('Your account is pending approval by your organisation admin. You will be able to sign in once approved.')
+        }
+        if (!user.active) {
+          throw new Error('Your account has been deactivated. Please contact an administrator.')
+        }
+        if (user.organisation && !user.organisation.active) {
+          throw new Error('Your organisation has been deactivated. Please contact an administrator.')
         }
 
         // Check if MFA is required

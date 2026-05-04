@@ -11,6 +11,7 @@ import bcrypt from 'bcryptjs'
 import { Resend } from 'resend'
 import { prisma } from './prisma'
 import { wrapEmailHtml } from './email-templates/layout'
+import { hashResetToken } from './reset-token'
 
 const FROM_ADDRESS = 'Ambitious About Autism <onboarding@resend.dev>'
 
@@ -173,18 +174,19 @@ export async function grantFreeAccess(args: {
     // Mint a fresh single-use reset token so the email can include a one-click
     // "Set my password" CTA. Same envelope as forgot-password (1-hour expiry,
     // 32-byte random token). Old tokens for this email are cleared so the
-    // freshest link is always the one that wins.
+    // freshest link is always the one that wins. Stored as SHA-256 digest —
+    // see lib/reset-token.ts for the rationale.
     await prisma.passwordResetToken.deleteMany({ where: { email } })
-    const resetToken = crypto.randomBytes(32).toString('hex')
+    const rawResetToken = crypto.randomBytes(32).toString('hex')
     await prisma.passwordResetToken.create({
       data: {
         email,
-        token: resetToken,
+        token: hashResetToken(rawResetToken),
         expires: new Date(Date.now() + 1000 * 60 * 60),
       },
     })
     const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
-    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`
+    const resetUrl = `${baseUrl}/reset-password?token=${rawResetToken}`
 
     await sendAccessGrantedEmail({ email, name, programName, resetUrl })
   } else {

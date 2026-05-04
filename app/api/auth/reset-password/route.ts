@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { resetPasswordLimiter, getClientIp } from '@/lib/rate-limit'
 import { logger, errMeta } from '@/lib/logger'
+import { hashResetToken } from '@/lib/reset-token'
 
 const schema = z.object({
   token: z.string().min(1),
@@ -38,7 +39,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: passwordCheck.error }, { status: 400 })
   }
 
-  const resetToken = await prisma.passwordResetToken.findUnique({ where: { token } })
+  // Look up by SHA-256 digest of the user-supplied raw token. The DB stores
+  // only digests since the plaintext-token leak fix.
+  const tokenHash = hashResetToken(token)
+  const resetToken = await prisma.passwordResetToken.findUnique({ where: { token: tokenHash } })
 
   if (!resetToken || resetToken.expires < new Date()) {
     logger.warn('auth.reset_password.invalid_token', {
@@ -55,12 +59,16 @@ export async function POST(req: NextRequest) {
   try {
     const hashed = await bcrypt.hash(password, 12)
 
-    await prisma.user.update({
-      where: { email: resetToken.email },
-      data: { password: hashed, mustChangePassword: false },
-    })
-
-    await prisma.passwordResetToken.delete({ where: { token } })
+    // Update the password and consume the token in one transaction so a
+    // partial failure can't leave the new password set with a still-valid
+    // reset link, or vice versa.
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { email: resetToken.email },
+        data: { password: hashed, mustChangePassword: false },
+      }),
+      prisma.passwordResetToken.delete({ where: { token: tokenHash } }),
+    ])
 
     logger.info('auth.reset_password.success', { requestId, ip })
     return NextResponse.json({ message: 'Password updated successfully.' })
