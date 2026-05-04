@@ -8,7 +8,13 @@ import { AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const token = searchParams.get('token') ?? ''
+  // Capture the token into a one-shot ref before scrubbing the URL bar.
+  // The token would otherwise live in the address bar, browser history,
+  // and any referrer headers the page generates. We can't keep using
+  // `searchParams.get('token')` after the URL is replaced — by then the
+  // search-params reader returns null.
+  const initialToken = searchParams.get('token') ?? ''
+  const [token] = useState(initialToken)
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -18,6 +24,24 @@ function ResetPasswordForm() {
   const [error, setError] = useState('')
   const [purpose, setPurpose] = useState<'RESET' | 'ACTIVATION' | null>(null)
   const [userName, setUserName] = useState<string | null>(null)
+
+  // Scrub the token out of the URL on mount: replaceState updates the
+  // current history entry instead of pushing a new one, so the original
+  // /reset-password?token=... URL is gone from both the address bar and
+  // the back-button history. Component state is preserved because this
+  // does not trigger a Next.js navigation. (Server access logs still see
+  // the original GET — for full mitigation we'd need to swap the token
+  // for an httpOnly cookie server-side.)
+  useEffect(() => {
+    if (initialToken && typeof window !== 'undefined') {
+      try {
+        window.history.replaceState({}, '', '/reset-password')
+      } catch {
+        // history.replaceState throwing here is benign; worst case the
+        // URL stays as it was.
+      }
+    }
+  }, [initialToken])
 
   useEffect(() => {
     if (!token) return
