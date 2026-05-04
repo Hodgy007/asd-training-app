@@ -14,9 +14,10 @@ This guide is for Organisation Admins. It covers everything you need to manage y
 4. [Managing Users](#4-managing-users)
 5. [Announcements](#5-announcements)
 6. [Reports](#6-reports)
-7. [Virtual Classroom Sessions](#7-virtual-classroom-sessions)
-8. [Managing Schools (Parent Organisations)](#8-managing-schools-parent-organisations)
-9. [Security and MFA](#9-security-and-mfa)
+7. [Document Library](#7-document-library)
+8. [Virtual Classroom Sessions (Workshops)](#8-virtual-classroom-sessions-workshops)
+9. [Managing Schools (Parent Organisations)](#9-managing-schools-parent-organisations)
+10. [Security and MFA](#10-security-and-mfa)
 
 ---
 
@@ -110,8 +111,8 @@ The Users page lists everyone in your organisation. Each row shows:
 - Their role
 - Whether their account is active or inactive
 - The date they joined
-- **Activity** — for Practitioner users this shows both the number of children they have added and lessons completed; for all other roles it shows only the lesson count
-- **Actions** — a bin icon to delete the user, and a book icon to edit their training plan access (toggle ASD Awareness Training / Careers CPD Training per user)
+- **Activity** — the number of lessons the user has completed
+- **Actions** — a bin icon to delete the user
 
 You can search by name or email using the search bar. You can also filter by role using the dropdown next to the search bar.
 
@@ -121,7 +122,7 @@ Your organisation is configured to use a specific set of roles. The roles availa
 
 | Role | Who it is for | Training access |
 |---|---|---|
-| **Practitioner** | People caring for a child with autism | ASD awareness training modules; can add child profiles and log observations |
+| **Practitioner** | People caring for a child with autism | ASD awareness training modules |
 | **Careers Professional** | Careers advisers and employment support staff | Careers training modules only |
 | **Student** | Learners undertaking training as part of their studies | ASD and/or careers training (depending on what your organisation is assigned) |
 | **Intern** | Interns undertaking the training programme | ASD and/or careers training |
@@ -139,8 +140,9 @@ Not all roles may be available in your organisation. The roles shown in your pan
 3. Choose how the person will sign in:
    - **Standard login (email + password):** Leave the "SSO only" checkbox unticked and set a temporary password (minimum 8 characters). The person will be asked to change this when they first sign in.
    - **SSO only (no password):** Tick the "SSO only" checkbox if your organisation uses Google or Microsoft sign-in. The person will sign in with their existing Google or Microsoft account — no password is needed.
-4. Under **Training Plan Access**, use the **ASD Awareness Training** and **Careers CPD Training** toggles to control which training plans this person can access.
-5. Click **Create User**.
+4. Click **Create User**.
+
+> **Training plan access:** Which training programmes a user can access is determined by the programmes assigned to your organisation by the charity admin — it is not configurable per user. If your organisation needs access to a different set of programmes, contact your platform super admin.
 
 The new account is active immediately. If you set a temporary password, the user will be prompted to change it on first login.
 
@@ -163,7 +165,7 @@ You cannot deactivate your own account.
 
 ### Deleting a user
 
-To permanently delete a user, click the bin icon at the right end of their row. You will be asked to confirm. Deletion is permanent and cannot be undone — all the user's data (including any child profiles and training progress) is removed.
+To permanently delete a user, click the bin icon at the right end of their row. You will be asked to confirm. Deletion is permanent and cannot be undone — all the user's data (including training progress) is removed.
 
 You cannot delete your own account.
 
@@ -231,13 +233,29 @@ Click the refresh button (circular arrow) in the top-right corner of the page at
 
 ---
 
-## 7. Virtual Classroom Sessions
+## 7. Document Library
 
-The **Sessions** section (click **Sessions** in the left-hand sidebar) lets you create and manage live virtual training sessions for your organisation. Sessions can be hosted over Zoom, Microsoft Teams, or any platform using a custom link.
+The **Document Library** section (click **Document Library** in the left-hand sidebar) lets you view and download document collections that the charity has shared with your organisation.
+
+### What you can do
+
+- Browse collections targeted to your organisation at `/admin/library`.
+- Download any document within a collection.
+- Edit the **title** and **description** of a collection that is visible to your org — click the collection, then use the Edit button.
+
+### What is managed by the charity admin
+
+Uploading documents, creating new collections, changing which organisations or roles a collection is targeted to, and deleting collections are all charity admin functions. If you need a new document collection or changes to an existing one, contact your platform super admin.
+
+---
+
+## 8. Virtual Classroom Sessions (Workshops)
+
+The **Workshops** section (click **Workshops** in the left-hand sidebar) lets you create and manage live virtual training sessions for your organisation. Sessions can be hosted over Zoom, Microsoft Teams, or any platform using a custom link.
 
 ### Creating a session
 
-1. Click **Sessions** in the sidebar, then click **Create Session** in the top-right corner.
+1. Click **Workshops** in the sidebar, then click **Create Session** in the top-right corner.
 2. Fill in the session details:
    - **Title** — a short descriptive name (e.g. "ASD Awareness — Module 3 Live Q&A").
    - **Description** (optional) — any context or agenda for attendees.
@@ -304,7 +322,7 @@ Once credentials are saved and the connection is tested, the **Generate link** b
 
 ---
 
-## 8. Managing Schools (Parent Organisations)
+## 9. Managing Schools (Parent Organisations)
 
 **This section only applies if your organisation has been set up as a parent organisation by the platform super admin.** If you do not see a **Schools** link in your sidebar, this section does not apply to you.
 
@@ -341,7 +359,7 @@ On the **Reports**, **Sessions**, and **Announcements** pages, you will see an *
 
 ---
 
-## 9. Security and MFA
+## 10. Security and MFA
 
 ### Two-factor authentication
 

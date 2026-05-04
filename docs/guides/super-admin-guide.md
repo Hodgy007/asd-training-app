@@ -15,8 +15,13 @@
 7. [AI Quiz Generation](#7-ai-quiz-generation)
 8. [Announcements](#8-announcements)
 9. [Reports](#9-reports)
-10. [Single Sign-On (SSO) Setup](#10-single-sign-on-sso-setup)
-11. [Security and MFA](#11-security-and-mfa)
+10. [Document Library](#10-document-library)
+11. [Surveys](#11-surveys)
+12. [AI Prompts](#12-ai-prompts)
+13. [Job Openings](#13-job-openings)
+14. [Charity Employee Accounts](#14-charity-employee-accounts)
+15. [Single Sign-On (SSO) Setup](#15-single-sign-on-sso-setup)
+16. [Security and MFA](#16-security-and-mfa)
 
 ---
 
@@ -326,90 +331,112 @@ You can reactivate a deactivated cohort at any time.
 
 Navigate to **Training Content** in the left-hand sidebar.
 
-Training content is organised into **Modules**, and each module contains **Lessons**. There are two types of training:
+Training content uses a three-level hierarchy: **Training Program → Module → Lesson**. Learners see one sidebar link per Training Program assigned to their organisation.
 
-- **ASD Training** — for Practitioners, Students, Interns, and Employees learning about autism
-- **Careers Training** — for Careers Professionals and others focused on career development
+### Training Programs
 
-### Browsing modules
+Training Programs are the top-level containers. Each program has a name (which appears as a link in the learner sidebar), a rich-text description, a status, and a version number.
 
-The Training Content page shows two sections — ASD Training Modules and Careers Training Modules. Each module card shows:
+**Creating a program**
 
-- The module title and a short description
-- Whether it is **Active** (green) or **Inactive** (red)
-- How many lessons it contains
+Click **New Program** at the top of the Training Content page. A modal offers three creation modes:
 
-### Previewing training content
+- **Blank Program** — creates an empty program. You add modules and lessons manually.
+- **Generate from Files** — upload one or more PDFs or Word documents. The AI reads them and drafts a full program structure (modules, lessons, and content) for you to review and edit. Useful for converting existing training materials into the platform format.
+- **Import SCORM** — upload a SCORM zip package (max 200 MB). The platform extracts the package and creates a program with one module and one SCORM lesson automatically.
 
-Each module card has a **View** button. Clicking it opens the training content as a learner would see it — `/training` for ASD modules or `/careers` for Careers modules — in a new browser tab. This lets you preview exactly what learners experience without leaving the admin area.
+**Status lifecycle**
 
-### Reordering modules
+| Status | Meaning |
+|---|---|
+| Draft | Being built — not visible to learners |
+| Under Review | Awaiting sign-off — not visible to learners |
+| Approved | Live — visible to learners in assigned organisations |
+| Archived | Retired — no longer accessible to learners |
 
-Each module card has up and down arrow buttons on the left side. Click these to move a module higher or lower in the list. The order here is the order learners will see.
+Learners can only access programs in **Approved** status. A program must also be assigned to their organisation.
 
-### Activating and deactivating a module
+**Assigning a program to an organisation**
 
-Deactivating a module is done from inside the module editor (click **Edit** on the module card). There is no toggle on the module list itself. Inside the editor, you can deactivate or delete the module. Inactive modules are hidden from learners.
+Go to the organisation's detail page (Organisations → click the org name) and find the **Training Programs** section. Select the programs to enable for that org and save. The program will appear in the sidebar for all users in that org the next time they load the page.
 
-### Creating a new module
+**Preview**
 
-1. Click **Add Module** next to the relevant section (ASD or Careers).
-2. Fill in the **Module ID** — this is a short internal identifier (e.g. `module-6`). It must be unique.
-3. Fill in the **Title** (e.g. "Module 6: Transitions").
-4. Add an optional **Description** explaining what the module covers.
+Click the **View** button on a program to open it as a learner would see it — in a new tab. This lets you check the experience without leaving the admin area.
+
+### Modules
+
+Modules sit inside a Training Program and group related lessons together.
+
+**Adding a module**
+
+1. Open a program from the Training Content page.
+2. Click **Add Module**.
+3. Enter a title and optional description (supports rich text).
+4. Set the display order, or drag to reorder after creation.
 5. Click **Create Module**.
 
-### Editing a module
+### Lessons
 
-Click **Edit** on any module card. This opens the module editor, where you can:
+Lessons sit inside a module and hold the actual content learners read, watch, or interact with.
 
-- Change the module's **Title** and **Description**
-- Click **Save** to apply those changes
+**Adding a lesson**
 
-The module editor also shows all the lessons within that module.
+Click **Add Lesson** inside a module. Enter a title and choose a type:
 
-### Adding a lesson to a module
+- **Text** — rich WYSIWYG editor with interactive blocks
+- **Video** — embed a video URL (e.g. a YouTube or Vimeo embed link) plus optional transcript
+- **SCORM** — upload a SCORM 1.2 or 2004 zip package directly to a lesson
 
-On the module editor page:
+**Editing a lesson — the Lesson Editor**
 
-1. Click **Add Lesson**.
-2. Enter a **Lesson ID** — a short unique identifier (e.g. `lesson-6-1`).
-3. Enter the **Title** of the lesson.
-4. Choose a **Type**:
-   - **Text** — the lesson will display formatted text content
-   - **Video** — the lesson will embed a video (you will provide a URL)
-5. Optionally add some initial **Content** — you can add and edit this properly in the full lesson editor later.
-6. Click **Create Lesson**.
+Click **Edit** on any lesson to open the full Lesson Editor. Changes are saved by clicking **Save Lesson** — there is no auto-save. After saving you are returned to the module page.
 
-### Reordering lessons
+**Rich text editor (Text lessons)**
 
-Just like modules, each lesson has up and down arrows to change its position within the module.
+The editor works like a word processor. You can:
 
-### Editing a lesson
-
-Click **Edit** on any lesson row. This opens the **Lesson Editor**, where you can:
-
-- Update the lesson **Title**
-- Switch the lesson **Type** between Text and Video
-- For Video lessons: paste in a **Video URL** (e.g. a YouTube embed link)
-- Write or edit the lesson **Content** using the rich text editor (see below)
-- Click **Save Lesson** when finished — after saving, you are automatically returned to the module page
-
-### Using the rich text editor
-
-The content editor works similarly to a word processor. You can:
-
-- Make text **bold**, *italic*, or underlined using the toolbar buttons
-- Add headings (Heading 2 or Heading 3)
+- Make text bold, italic, or underlined
+- Add headings (H2, H3)
 - Create numbered or bulleted lists
 - Insert links
-- Click the eraser icon to remove formatting
+- Upload images directly from the toolbar (stored in Vercel Blob)
+- Embed videos inline
 
-There is no auto-save — always click **Save Lesson** when you have finished making changes.
+**Interactive blocks (Text lessons)**
 
-### Activating and deactivating a lesson
+Below the main editor you can add interactive blocks. These appear inside the lesson after the main content:
 
-To deactivate or delete a lesson, click **Edit** on the lesson to open the lesson editor. Inside the editor you can deactivate or delete the lesson. Inactive lessons are hidden from learners.
+- **Carousel** — a slide show. Add slides with text, images, or video. Each slide gets its own TTS audio button, generated automatically when you save the lesson.
+- **Hotspot Image** — an image with clickable areas. Each hotspot shows a label or tooltip when tapped.
+- **Video Block** — embeds a video within the lesson flow.
+- **Rich Text Block** — an additional block of formatted text.
+
+**PDF and file attachments**
+
+Scroll to the **Attachments** section at the bottom of the Lesson Editor. Upload PDFs or other files — these are stored in Vercel Blob and shown to learners as a **Resources** section below the lesson content, with a download link for each file.
+
+**Text-to-speech (TTS)**
+
+When you save a Text lesson, the platform automatically generates an audio version of the lesson text using ElevenLabs (Lily voice, British female). Learners see a play button at the top of the lesson. Carousel slides each get their own per-slide audio button. Audio is cached so it does not need to be regenerated unless the content changes.
+
+**Completion and certificates**
+
+Progress is saved automatically when a learner reaches the end of a lesson and clicks Complete. Completing a lesson shows a **Certificate of Completion** screen with the Ambitious about Autism logo.
+
+**SCORM lessons**
+
+Upload a SCORM zip (max 200 MB) via the **Upload SCORM Package** button in the Lesson Editor. The platform:
+
+- Supports SCORM 1.2 and SCORM 2004
+- Extracts the package to Vercel Blob storage
+- Detects a table of contents (TOC) if the package contains multiple SCOs — displayed as a left-rail navigation panel inside the lesson
+- Tracks completion and score using the SCORM runtime (scorm-again)
+- Resumes from where the learner left off
+
+**AI quiz generation**
+
+Each lesson can have a multiple-choice quiz. See [Section 7](#7-ai-quiz-generation) for full details.
 
 ---
 
@@ -421,27 +448,29 @@ You can add questions manually, or use the built-in AI tool to generate them aut
 
 ### Generating a quiz with AI
 
-1. Open a lesson by clicking **Edit** on it from the module editor.
-2. Scroll down to the **Quiz Questions** section at the bottom of the page.
-3. Click **Generate Quiz with AI** (the purple button with a sparkle icon).
+Quiz generation is done from inside the **Lesson Editor** — not on the module page.
+
+1. Open a lesson by clicking **Edit** on it from the module page.
+2. Scroll down to the **Quiz Questions** section at the bottom of the Lesson Editor.
+3. Click **Generate Quiz Questions** (the purple button with a sparkle icon).
 4. A panel appears. Set the **Number of questions** — you can choose between 3 and 10.
-5. Click **Generate**. The AI will read the content currently in the editor above and generate questions based on it. This usually takes a few seconds.
+5. Click **Generate**. The AI reads the lesson content currently in the editor and generates questions based on it. This usually takes a few seconds.
 6. Once generation is complete, a preview of the questions appears. Each question shows:
    - The question text
    - The answer options (A, B, C, D), with the correct answer highlighted in green
    - An explanation of why that answer is correct
-7. Review each question. If a question is not right, you can edit it directly in the preview (see below).
-8. When you are happy with the questions, click **Save Quiz**. If the lesson already has questions, you will be asked to confirm — saving the AI-generated questions will replace the existing ones.
+7. Review each question. If a question is not right, you can edit it directly in the preview.
+8. When you are happy with the questions, click **Save Questions**. The generated questions are **appended** to any questions already on the lesson — they do not replace existing ones. If you want a clean slate, delete the existing questions first.
 
-**Note:** The AI generates questions from the content currently in the editor — not the last-saved version. If the lesson content is thin or very short, the questions may be generic. Make sure you have written substantial content in the editor before generating the quiz.
+**Tip:** The AI generates questions from the content in the editor at the time you click Generate. For good results, make sure the lesson has at least 200 words of substantive content before generating. Very short lessons produce generic questions.
 
 ### Editing AI-generated questions before saving
 
-In the AI preview panel, each question can be edited before you save. Expand a question, make your changes, then continue reviewing the rest before clicking Save Quiz.
+In the AI preview panel, each question can be edited before you save. Expand a question, make your changes, then continue reviewing the rest before clicking Save Questions.
 
 ### Adding a question manually
 
-1. In the **Quiz Questions** section, click **Add Manually**.
+1. In the **Quiz Questions** section of the Lesson Editor, click **Add Question**.
 2. Fill in the **Question** text.
 3. Fill in options **A**, **B**, **C**, and **D**.
 4. Set the **Correct Answer** by selecting which option letter is correct.
@@ -469,9 +498,10 @@ Announcements are messages that are broadcast to all users across every organisa
 1. Click **Create Announcement** in the top-right corner.
 2. Fill in the **Title** — a short, clear summary (e.g. "Scheduled maintenance on Saturday").
 3. Fill in the **Body** — the full text of your message.
-4. Optionally set an **Expires at** date and time. After this date, the announcement will no longer be shown to users. If you leave this blank, the announcement will remain active until you manually deactivate or delete it.
-5. The **Active** checkbox is ticked by default — this means the announcement will be visible to users immediately after saving. Untick it if you want to save it as a draft for now.
-6. Click **Create Announcement**.
+4. Optionally set an **Organisation** — leave this blank to send a global announcement to all users on the platform, or select one or more specific organisations to target only their users.
+5. Optionally set an **Expires at** date and time. After this date, the announcement will no longer be shown to users. If you leave this blank, the announcement will remain active until you manually deactivate or delete it.
+6. The **Active** checkbox is ticked by default — this means the announcement will be visible to users immediately after saving. Untick it if you want to save it as a draft for now.
+7. Click **Create Announcement**.
 
 ### Activating and deactivating an announcement
 
@@ -510,6 +540,18 @@ Each module cell shows a completion figure in the format **completed/total (%)**
 
 Click the circular arrow icon to refresh the report data.
 
+### Additional report sections
+
+Below the training completion table, the Reports page includes several further sections:
+
+- **Session Attendance** — counts of workshops held and attendance per organisation
+- **CV Builder** — total CVs created across the platform, broken down by status (Draft / Complete), by template (Accessible / Modern / Classic), and per organisation; also shows CVs created in the last 30 days
+- **Careers Advisor** — total AI Careers Advisor sessions, broken down by status (In Progress / Complete) and per organisation; also shows sessions started in the last 30 days
+- **Document Library** — download counts per document and per organisation, showing which resources are most used
+- **Surveys** — response rates per survey, including how many targeted users have responded
+- **SCORM Quiz Analytics** — per-question performance aggregated across all learners (anonymised — no per-learner data is shown). Questions are sorted worst-performing first so you can quickly see which material may need updating. Access this section at `/super-admin/reports/scorm-quizzes` (requires View Reports permission)
+- **Integration API** — last-used timestamps and request counts for any active Integration API keys
+
 ### Virtual Classroom Sessions — super admin note
 
 Sessions are managed at the organisation level by Org Admins and are scoped to their own organisation. As a Super Admin you do not create or manage sessions directly, but org-level session counts are visible in the platform's organisation reports. If session volume reporting is required, it will appear alongside the existing module completion data in future report updates.
@@ -518,7 +560,192 @@ Organisations that wish to auto-generate Zoom or Microsoft Teams meeting links f
 
 ---
 
-## 10. Single Sign-On (SSO) Setup
+## 10. Document Library
+
+Navigate to **Document Library** in the left-hand sidebar.
+
+The Document Library lets you organise and share files (PDFs, Word documents, images) with learners through targetable collections. Each collection appears as a sidebar link for the users it is shared with, and all collections are also accessible at `/library`.
+
+### Creating a collection
+
+1. Click **New Collection**.
+2. Enter a **Title** and optional **Description**.
+3. Under **Target Organisations**, select which organisations should see this collection. Leave blank to share with all organisations.
+4. Under **Target Roles**, select which roles should see this collection. Leave blank to share with all roles.
+5. Click **Create**.
+
+### Uploading documents
+
+Open a collection and click **Upload Document**. You can upload PDFs, Word documents, and images. Files are stored in Vercel Blob. Each document gets a title (editable after upload) and a download link.
+
+### Thumbnails
+
+Each collection can have a thumbnail image displayed in the library view.
+
+- **AI-generated thumbnail** — click **Generate Thumbnail**. The AI creates an image based on the collection title and description. A preview is shown — click **Accept** to use it or **Regenerate** to try again.
+- **Custom thumbnail** — upload your own JPG or PNG image (800×500 px recommended).
+
+### Editing a collection
+
+You can update a collection's title, description, and targeting at any time. Org Admins can also edit the title and description of collections that are visible to their organisation (from `/admin/library`), but they cannot change targeting.
+
+### Tracking downloads
+
+Downloads are tracked per user and per organisation. View download counts in **Reports → Document Library**. This shows which documents are most used and which organisations are actively engaging with the library.
+
+---
+
+## 11. Surveys
+
+Navigate to **Surveys** in the left-hand sidebar.
+
+Surveys let you collect structured feedback or assessments from learners across the platform.
+
+### Creating a survey
+
+1. Click **New Survey**.
+2. Enter a title and description.
+3. Add questions. Supported question types:
+   - **Multiple Choice** — one answer from a list of options
+   - **Yes / No** — a simple binary question
+   - **Free Text** — an open-ended written response
+   - **Rating Scale** — a numeric scale (e.g. 1–5 or 1–10)
+   - **Multi-Select** — multiple answers allowed from a list of options
+4. Under **Target Audience**, select the organisations and/or roles you want to reach. Leave blank to target everyone.
+5. Save as **Draft** when you are still building the survey.
+
+### Publishing and closing a survey
+
+- **Draft → Published** — click **Publish**. The survey immediately appears on the dashboard of all targeted users who have not yet responded. Users respond at `/surveys/[id]`.
+- **Published → Closed** — click **Close**. No further responses are accepted. Existing responses are preserved.
+
+### Viewing results
+
+Go to the survey's detail page and click **View Results** (or navigate to `/super-admin/surveys/[id]/results`). You can see response counts per question and export raw data as CSV.
+
+### AI insights
+
+After a survey is closed, click **Generate Insights** to ask the AI to analyse the responses. Three insight types are available:
+
+- **Summary** — an overall summary of what respondents said
+- **Comparative** — how different groups (by org or role) answered differently
+- **Recommendations** — suggested actions based on the feedback
+
+Insights are saved to the survey and can be re-generated at any time.
+
+---
+
+## 12. AI Prompts
+
+Navigate to **AI Prompts** in the left-hand sidebar (requires the **Manage AI Prompts** permission).
+
+All AI features on the platform — quiz generation, CV suggestions, the Careers Advisor, survey insights, and document thumbnails — are powered by prompt rows stored in the database. This page lets you view and edit those prompts.
+
+### How prompts work
+
+Each prompt has:
+
+- **Key** — a unique identifier used in code (e.g. `quiz-generation`, `cv-personal-statement`). Do not change the key without a corresponding code update — the system looks up prompts by key at runtime.
+- **Name and Purpose** — a human-readable label and description of what this prompt does.
+- **Model** — the AI model to use for this prompt. Options include `google/gemini-2.5-flash` (default, fast), `google/gemini-2.5-pro` (slower, more capable), `anthropic/claude-sonnet-4`, `anthropic/claude-haiku-4`, `openai/gpt-4o-mini`, and `openai/gpt-4.1`. Models route through the Vercel AI Gateway.
+- **Requirements** — rules the AI must follow when responding (e.g. "always use UK English", "never suggest a diagnosis").
+- **Response Format** — the expected shape of the AI's output (e.g. a JSON structure, a numbered list).
+- **Context Files** — PDFs or Word documents uploaded to Vercel Blob that are prepended to the prompt at runtime. Use these to give the AI additional background knowledge (e.g. a clinical reference document, a style guide).
+
+### Platform-wide AI guidelines
+
+All pre-configured prompts instruct the AI to:
+
+- Never diagnose or suggest that someone has autism
+- Use UK English spelling and grammar
+- Frame responses in a strengths-focused, positive way
+
+Do not remove these instructions when editing prompts.
+
+### Testing a prompt
+
+Click the **Test** button on any prompt to send a sample request and see the AI's output before saving changes. This is a safe way to check the effect of edits without affecting live users. Error messages are sanitised — raw API error details are not shown.
+
+---
+
+## 13. Job Openings
+
+Navigate to **Job Openings** in the left-hand sidebar (requires the **Manage Jobs** permission).
+
+The Jobs feature lets the charity publish job listings to targeted learners — students, interns, employees, and career development officers.
+
+### Creating a job listing
+
+1. Click **New Job**.
+2. Fill in:
+   - **Employer name** and optional **employer logo** (uploaded via the logo button after initial save)
+   - **Job title**
+   - **Description** — full job details
+   - **Location type** — On-site, Hybrid, or Remote
+   - **Employment type** — Internship, Apprenticeship, Part-time, Full-time, or Volunteer
+   - **Closing date** — the listing auto-closes after this date and is no longer shown to learners
+   - **Autism-friendly notes** — any workplace adjustments or autism-friendly practices the employer offers (shown prominently to learners)
+   - **Target organisations** — leave blank to show to all orgs, or select specific ones
+   - **Target roles** — leave blank to show to all eligible roles, or select specific ones
+3. Save as **Draft**. The listing is not visible to learners until Published.
+
+### Status lifecycle
+
+| Status | Meaning |
+|---|---|
+| Draft | Being prepared — not visible to learners |
+| Published | Live — visible to targeted learners at `/jobs` |
+| Closed | No longer accepting interest — can be re-opened |
+| Archived | Retired — hidden from all views |
+
+### Attaching documents
+
+Open a job listing and click **Add Attachment** to upload supporting documents (e.g. a job description PDF, an application form). These appear as downloads on the job detail page at `/jobs/[jobId]`.
+
+### Job Assignments (CDO-to-student targeting)
+
+Career Development Officers (CDOs) can assign specific published jobs to individual students in their organisation. This creates a personalised jobs feed for that student. Assignments are managed by CDOs from their own panel — you do not need to manage these as a Super Admin.
+
+---
+
+## 14. Charity Employee Accounts
+
+The **Charity Employee** role is a delegated access level sitting between Super Admin (full access) and no admin access at all. It allows you to grant trusted staff members access to specific areas of the super admin panel without giving them full platform control.
+
+### Creating a Charity Employee account
+
+Create the user as normal (via an organisation's user list or via Cohorts) and set their role to **Charity Employee**. Charity Employees are typically placed in a dedicated internal organisation or cohort.
+
+### Granting permissions
+
+Once the user account exists, open the user's profile in the super admin panel and find the **Permissions** section. Tick the permissions you want to grant. Available permissions:
+
+| Permission | What it unlocks |
+|---|---|
+| Manage Organisations | Create and edit organisations, manage org users |
+| Manage Cohorts | Create and manage cohorts and their members |
+| Manage Training | Create and edit training programs, modules, and lessons |
+| Manage Surveys | Create, publish, and view survey results |
+| Manage Announcements | Post and manage platform announcements |
+| View Reports | Access the Reports page and all report sections |
+| Manage Sessions | Create and manage charity-level workshops |
+| Manage Library | Create and manage document library collections |
+| Manage AI Prompts | View and edit AI prompt configurations |
+| Manage Jobs | Create and manage job listings |
+
+Save after ticking the permissions you want.
+
+### How the sidebar adapts
+
+The super admin sidebar dynamically shows or hides nav items based on the Charity Employee's permissions. A user with only **View Reports** will see just the Reports link; a user with **Manage Training** and **Manage Surveys** will see those two sections and nothing else.
+
+### Super Admins always have all permissions
+
+Super Admins (Charity Admins) have implicit access to every feature regardless of the permissions list — the permissions system applies only to Charity Employee accounts.
+
+---
+
+## 15. Single Sign-On (SSO) Setup
 
 SSO allows users across all organisations to sign in with their existing Google or Microsoft account instead of a platform-specific password. SSO is a one-time setup performed by the super admin or app owner — once configured, all organisations benefit automatically.
 
@@ -547,7 +774,7 @@ Once these environment variables are deployed, the login page will show Google a
 
 ---
 
-## 11. Security and MFA
+## 16. Security and MFA
 
 ### MFA is mandatory for admin accounts
 

@@ -36,3 +36,8 @@ backups/
 
 # Git worktrees
 .worktrees/
+
+# Python bytecode and one-off script artefacts
+__pycache__/
+*.pyc
+screenshots/
