@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
+import { canAdminManageOrg } from '@/lib/org-hierarchy'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -22,7 +23,7 @@ export async function GET(
   }
 
   const announcement = await prisma.announcement.findUnique({ where: { id: params.id } })
-  if (!announcement || announcement.organisationId !== session.user.organisationId) {
+  if (!announcement || !(await canAdminManageOrg(session, announcement.organisationId))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -39,7 +40,7 @@ export async function PATCH(
   }
 
   const announcement = await prisma.announcement.findUnique({ where: { id: params.id } })
-  if (!announcement || announcement.organisationId !== session.user.organisationId) {
+  if (!announcement || !(await canAdminManageOrg(session, announcement.organisationId))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -68,7 +69,7 @@ export async function DELETE(
   }
 
   const announcement = await prisma.announcement.findUnique({ where: { id: params.id } })
-  if (!announcement || announcement.organisationId !== session.user.organisationId) {
+  if (!announcement || !(await canAdminManageOrg(session, announcement.organisationId))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 

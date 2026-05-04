@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
+import { canManageChildOrg } from '@/lib/org-hierarchy'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -35,8 +36,22 @@ export async function PATCH(
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  const hasAccess =
+  // Direct access: collection has no targeting (visible to all) or
+  // explicitly includes this admin's org.
+  let hasAccess =
     collection.targetOrgIds.length === 0 || collection.targetOrgIds.includes(orgId)
+  // Parent-org access: if a parent admin manages a child org that's in the
+  // targeting, they can also edit the collection's metadata. Without this,
+  // the parent could see the collection in /admin/library lists (via the
+  // listing endpoint's hierarchy filter) but get 403 trying to edit it.
+  if (!hasAccess) {
+    for (const targetId of collection.targetOrgIds) {
+      if (await canManageChildOrg(session, targetId)) {
+        hasAccess = true
+        break
+      }
+    }
+  }
   if (!hasAccess) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }

@@ -73,6 +73,19 @@ export async function canManageChildOrg(session: Session, targetOrgId: string): 
 }
 
 /**
+ * Org admin can manage a row whose organisationId is either their own or a
+ * child of theirs. Use this for any /api/admin/* detail handler that needs
+ * parent-org drill-down (announcements, library collections, etc) — without
+ * it, parent-org admins can list their children's rows but get 404 trying
+ * to edit them.
+ */
+export async function canAdminManageOrg(session: Session, targetOrgId: string | null): Promise<boolean> {
+  if (!targetOrgId) return false
+  if (targetOrgId === session.user.organisationId) return true
+  return canManageChildOrg(session, targetOrgId)
+}
+
+/**
  * Get all child org IDs for a parent org.
  */
 export async function getChildOrgIds(parentOrgId: string): Promise<string[]> {
