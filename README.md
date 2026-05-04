@@ -63,15 +63,18 @@ The platform has eight roles, each with specific access:
 
 ### Charity Employee Permissions
 
-Charity Employees receive granular permissions from the seven available:
+Charity Employees receive granular permissions from the ten available:
 
 - `manage_organisations` — create and edit organisations
+- `manage_cohorts` — create and manage charity-run cohorts (in-person workshops, walk-ins)
 - `manage_training` — create and edit training programs, modules, lessons, and quizzes
 - `manage_surveys` — create, publish, and close surveys; view results and AI insights
 - `manage_announcements` — create and manage platform-wide announcements
 - `view_reports` — access platform-wide analytics and reports
 - `manage_sessions` — create and manage charity-level virtual workshops
 - `manage_library` — manage document library collections, upload files, view download stats
+- `manage_ai_prompts` — edit the DB-backed AI prompt registry and upload context files
+- `manage_jobs` — create, edit, publish, and close job openings; manage CDO assignments
 
 ---
 
@@ -91,8 +94,9 @@ Training is organised into **Programs**, each containing ordered **Modules** wit
 - Charity admins can preview training content as a learner by clicking "View" on any program.
 
 **AI-powered content generation:**
-- Admins can upload reference documents (PDFs, Word files) and use the AI Gateway to auto-generate module outlines, lesson content, and quiz questions.
-- Generated content can be reviewed, edited, and regenerated before publishing.
+- Admins upload reference documents (PDF, DOCX, PPTX) and use the AI Gateway to auto-generate module outlines, lesson content, and quiz questions via the **Generate from Files** option.
+- Generated content can be reviewed, edited, retried per-failed-lesson, and regenerated before publishing. The progress banner surfaces the underlying cause of any lesson that fails to generate (model error, rate limit, malformed JSON) so admins can act on it.
+- The structure-preserving **Import from Files** path was retired — Generate from Files is the single AI-authoring entry point alongside Blank Program and Import SCORM.
 
 **SCORM packages:**
 
@@ -320,13 +324,52 @@ Secure programmatic access to platform data for external systems.
 
 ### Security Features
 
-- Rate limiting on auth endpoints (login: 10 attempts per 15 minutes, registration: 5 per 15 minutes)
+**Authentication and account hygiene**
+- Rate limiting on every auth endpoint — login (10/15 min), forgot-password (5/15 min), reset-password (5/15 min), MFA verify (5/5 min), change-password (5/15 min). The limiter is Upstash-backed in production and falls back to in-memory for local dev (single shared `createRateLimiter` factory; `/api/tts` is also per-user rate-limited to stop abuse of paid TTS minutes).
+- bcrypt cost factor of 12 across all password hashing call-sites (login, registration, account provisioning, cohort import).
+- Forced password change on first login (`mustChangePassword: true`) and on admin-initiated resets.
+- Cohort self-join, CDO temp-password creation, and forgot-password flows all run through `validatePassword` complexity rules.
+- Deactivated users and organisations are blocked at sign-in.
+- Forgot-password token swap runs in a single Prisma `$transaction` so a crash mid-flow can't leave a half-consumed token.
+- Reset-password tokens are stripped from the URL bar via `history.replaceState` after the page loads (no token leakage to browser history, analytics, or referrer headers).
+
+**Storage and serialisation**
+- Reset, invite, and introspection tokens are stored as **SHA-256 hashes** at rest — the raw token only ever appears in the link sent to the user.
+- All temporary passwords (cohort import, CDO-issued credentials) generated with `crypto.randomBytes` (CSPRNG), not `Math.random`.
+- `/api/admin/users` GET no longer returns the bcrypt hash field; the column is excluded from the select.
+- Library, training, and job blob downloads are proxied through `/api/.../download/*` routes that re-check entitlement on every request — no raw `*.public.blob.vercel-storage.com` URLs are exposed.
+- Survey responses are pseudonymised and per-survey-key rate-limited so a respondent can't be identified across surveys.
+
+**Multi-tenancy and entitlement**
+- SCORM CMI POSTs and SCORM asset GETs both check the user's `effectivePrograms` against the lesson's `programId` — no logged-in user can fabricate completions or read SCORM assets for programs their org isn't entitled to.
+- `/api/admin/users`, `/api/admin/announcements`, `/api/admin/library`, `/api/admin/sessions`, `/api/admin/reports`, and `/admin/schools` all verify parent/child org relationships before mutating or reading sub-org data.
+- CDO careers-advisor student lookup filters strictly by leaf role + same organisation.
+- Middleware path matchers tightened to drop a duplicate PARTICIPANT block and prevent path-prefix bypass; `/api/cron` is the only public POST.
+
+**File and content safety**
+- Upload validation enforces an allow-list of MIME types and extensions, with size caps. **SVG uploads are blocked** at the platform layer because SVG can carry inline `<script>`/`foreignObject` payloads — admin SVG editing must go through `sanitize-html` first.
+- `application/octet-stream` uploads are only accepted for genuinely binary formats (PDF, Office docs, PNG/JPG/GIF, MP4/WebM) — text formats must come with the right `text/*` MIME so a malicious `.csv` claiming octet-stream can't slip past the cross-check.
+- SCORM zip extraction caps total entry count and decompressed size, parses ZIP64 EOCD properly, and rejects manifests containing Windows separators, NFD-encoded traversal, or percent-encoded `..` segments.
+- All user-controlled fields in transactional emails are HTML-escaped before being interpolated into the templates.
+
+**SAML and SSO hardening**
+- SAML responses are validated against the org's configured Issuer and signing certificate; the metadata-fetch path has an SSRF guard (private-IP and non-HTTPS rejected).
+- SSO `defaultRole` is validated against `LEAF_ROLES` so an admin role can't be granted via SSO auto-provisioning.
+- Schools sub-route forces password complexity on bulk-created child-org users and constrains the role enum.
+
+**AI and integrations**
+- AI prompt-test endpoint routes through the gateway and sanitises any error string before returning it (no provider stack traces leak to the admin UI).
+- Generated content errors carry diagnostic context (parser reason + 200-char model-output snippet) so failed lessons are immediately actionable.
+
+**Other**
 - Forced password change on first login (when `mustChangePassword: true`)
-- Deactivated users and organisations are blocked at sign-in
-- Input sanitisation on all user inputs
-- File upload validation (size limits, allowed MIME types)
+- Input sanitisation via `sanitize-html` on all rich-text fields (lesson content, announcements, library descriptions)
 - Content Security Policy (CSP) headers
 - Cookie consent banner
+
+### Security audit baseline
+
+A formal audit identified five critical, five high, ten medium, and five low findings — all 25 are tracked in `git log` under `fix(security):`. As of `10232dc`, twenty-four are merged; one (SAML admin TOTP enforcement, audit M-24/M-25) is staged but unapplied pending operator confirmation that all SAML-using admins have TOTP enrolled. The deferred items called out in the audit report (SCORM iframe sandbox, JWT feature-flag staleness, Resend test sender, strict-CSP nonce flow) are documented trade-offs, not bugs.
 
 ---
 
