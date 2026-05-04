@@ -11,15 +11,34 @@ export const ALLOWED_EXTENSIONS = [
   // Documents
   'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv',
   // Images
-  'png', 'jpg', 'jpeg', 'gif', 'svg',
+  'png', 'jpg', 'jpeg', 'gif',
   // Video
   'mp4', 'webm',
 ] as const
 
-/** Blocked/dangerous file extensions (lowercase, without dot) */
+/**
+ * Blocked/dangerous file extensions (lowercase, without dot).
+ *
+ * SVG is here despite being an image format because SVG files can carry
+ * inline <script> tags, foreignObject HTML, and event handlers — opening
+ * a saved SVG in a browser executes it in the storage origin. If you need
+ * SVG support for admin uploads, sanitise through sanitize-html before
+ * storing rather than allowing them through the user-facing upload path.
+ */
 export const BLOCKED_EXTENSIONS = [
-  'exe', 'bat', 'cmd', 'sh', 'ps1', 'vbs', 'js', 'html', 'htm', 'php', 'scr', 'msi', 'dll',
+  'exe', 'bat', 'cmd', 'sh', 'ps1', 'vbs', 'js', 'html', 'htm', 'php', 'scr', 'msi', 'dll', 'svg',
 ] as const
+
+/**
+ * Extensions where `application/octet-stream` is acceptable (genuinely
+ * binary formats). Text-y formats fall through to the strict MIME check
+ * so a malicious `.csv` claiming octet-stream can't slip past sniffing.
+ */
+const OCTET_STREAM_OK_EXTENSIONS: ReadonlySet<string> = new Set([
+  'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+  'png', 'jpg', 'jpeg', 'gif',
+  'mp4', 'webm',
+])
 
 /** Map of allowed MIME types to their corresponding extensions */
 const ALLOWED_MIME_TYPES: Record<string, readonly string[]> = {
@@ -37,12 +56,13 @@ const ALLOWED_MIME_TYPES: Record<string, readonly string[]> = {
   'image/png': ['png'],
   'image/jpeg': ['jpg', 'jpeg'],
   'image/gif': ['gif'],
-  'image/svg+xml': ['svg'],
   // Video
   'video/mp4': ['mp4'],
   'video/webm': ['webm'],
-  // Common alternative MIME types browsers may send
-  'application/octet-stream': [], // checked separately — only allowed if extension is in ALLOWED_EXTENSIONS
+  // Common alternative MIME types browsers may send.
+  // Octet-stream is checked against OCTET_STREAM_OK_EXTENSIONS — text
+  // files or scriptable formats can't slip through with this MIME.
+  'application/octet-stream': [],
 }
 
 /** Blocked MIME types that should never be accepted */
@@ -125,9 +145,19 @@ export function validateUpload(file: File, options: UploadValidationOptions = {}
     }
   }
 
-  // For application/octet-stream (generic binary), allow if the extension is valid
-  // (already checked above). Browsers sometimes send this for uncommon file types.
-  if (mimeType && mimeType !== 'application/octet-stream') {
+  // application/octet-stream is the browser's "I don't know" MIME. Only
+  // accept it when the extension is on a hand-picked list of genuine
+  // binary formats — text-y formats (txt, csv) must come with the right
+  // text/* MIME so a malicious `.csv` claiming octet-stream doesn't dodge
+  // the strict MIME-vs-extension cross-check below.
+  if (mimeType === 'application/octet-stream') {
+    if (!OCTET_STREAM_OK_EXTENSIONS.has(ext)) {
+      return {
+        valid: false,
+        error: `File extension ".${ext}" requires a specific MIME type, not application/octet-stream.`,
+      }
+    }
+  } else if (mimeType) {
     const allowedExtsForMime = ALLOWED_MIME_TYPES[mimeType]
     if (!allowedExtsForMime) {
       return {
