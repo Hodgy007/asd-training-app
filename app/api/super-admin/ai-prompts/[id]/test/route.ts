@@ -7,6 +7,7 @@ import { isValidModelId } from '@/lib/ai-models'
 import { assemblePrompt } from '@/lib/ai-runner-assemble'
 import { gateway } from '@/lib/ai-runner'
 import { logger, errMeta } from '@/lib/logger'
+import { createRateLimiter } from '@/lib/rate-limit'
 import { generateText } from 'ai'
 import { z } from 'zod'
 
@@ -20,21 +21,8 @@ const bodySchema = z.object({
   values: z.record(z.string(), z.string()),
 })
 
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT_MAX = 10
-const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000
-
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(userId)
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
-    return true
-  }
-  if (entry.count >= RATE_LIMIT_MAX) return false
-  entry.count++
-  return true
-}
+// 10 test runs per 5 minutes per user. Backed by Upstash when configured.
+const promptTestLimiter = createRateLimiter('ai-prompt-test', 5 * 60 * 1000, 10)
 
 export async function POST(
   req: NextRequest,
@@ -45,10 +33,11 @@ export async function POST(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  if (!checkRateLimit(session.user.id)) {
+  const rate = await promptTestLimiter.check(session.user.id)
+  if (!rate.success) {
     return NextResponse.json(
       { error: 'Too many test requests. Please wait a few minutes.' },
-      { status: 429 },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rate.retryAfterMs / 1000)) } },
     )
   }
 

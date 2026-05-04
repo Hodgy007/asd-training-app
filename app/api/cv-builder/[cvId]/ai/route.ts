@@ -10,41 +10,14 @@ import {
   expandInterests,
 } from '@/lib/cv-ai'
 import { isAiUnavailable } from '@/lib/ai-runner'
+import { createRateLimiter } from '@/lib/rate-limit'
 
 const ALLOWED_ROLES = ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']
 
-// ─── Simple in-memory rate limiter ────────────────────────────────────────────
-
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT_MAX = 10
-const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
-
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(userId)
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
-    return true
-  }
-
-  if (entry.count >= RATE_LIMIT_MAX) {
-    return false
-  }
-
-  entry.count++
-  return true
-}
-
-// Clean up stale entries periodically to avoid memory leaks
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, entry] of rateLimitMap) {
-    if (now > entry.resetAt) {
-      rateLimitMap.delete(key)
-    }
-  }
-}, 60 * 1000)
+// 10 AI requests per 5 minutes per user. Backed by Upstash when configured
+// so the cap holds across Vercel instances; the previous in-memory Map<>
+// was per-Lambda only, giving an effective limit of 10 × instance count.
+const aiLimiter = createRateLimiter('cv-ai', 5 * 60 * 1000, 10)
 
 // ─── POST handler ─────────────────────────────────────────────────────────────
 
@@ -58,10 +31,11 @@ export async function POST(req: NextRequest, { params }: { params: { cvId: strin
   }
 
   // Rate limit check
-  if (!checkRateLimit(session.user.id)) {
+  const rate = await aiLimiter.check(session.user.id)
+  if (!rate.success) {
     return NextResponse.json(
       { error: 'Too many AI requests. Please wait a few minutes before trying again.' },
-      { status: 429 }
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rate.retryAfterMs / 1000)) } }
     )
   }
 
