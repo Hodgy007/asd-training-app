@@ -27,9 +27,8 @@ graphify-out/
 .claude/scheduled_tasks.lock
 .claude/worktrees/
 
-# Remotion render outputs
-remotion-demo/out/
-remotion-demo/.remotion/
+# Remotion demo (removed from codebase)
+remotion-demo/
 
 # Pre-migration data backups (may contain PII — never commit)
 backups/
