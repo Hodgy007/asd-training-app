@@ -503,7 +503,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
             {lesson.attachments.map((att) => (
               <a
                 key={att.id}
-                href={att.url}
+                href={`/api/training/attachments/${att.id}/file`}
                 target="_blank"
                 rel="noopener noreferrer"
                 download

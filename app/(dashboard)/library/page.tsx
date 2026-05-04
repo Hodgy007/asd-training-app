@@ -317,7 +317,7 @@ function LibraryPage() {
 
                     <div className="mt-auto pt-2">
                       <a
-                        href={doc.fileUrl}
+                        href={`/api/library/documents/${doc.id}/file`}
                         download={doc.fileName}
                         target="_blank"
                         rel="noopener noreferrer"

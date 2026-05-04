@@ -723,7 +723,7 @@ export default function LessonEditorPage() {
               {attachments.map((att) => (
                 <div key={att.id} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 bg-calm-50 dark:bg-slate-700">
                   <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
-                  <a href={att.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate hover:underline">
+                  <a href={`/api/training/attachments/${att.id}/file`} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate hover:underline">
                     {att.fileName}
                   </a>
                   <span className="text-xs text-slate-400 flex-shrink-0">

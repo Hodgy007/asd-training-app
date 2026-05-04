@@ -1103,7 +1103,7 @@ export default function CollectionDetailPage() {
 
                     {/* Preview */}
                     <a
-                      href={doc.fileUrl}
+                      href={`/api/library/documents/${doc.id}/file`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"

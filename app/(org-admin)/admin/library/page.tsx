@@ -269,7 +269,7 @@ export default function OrgAdminLibraryPage() {
                       </p>
                     </div>
                     <a
-                      href={doc.fileUrl}
+                      href={`/api/library/documents/${doc.id}/file`}
                       download={doc.fileName}
                       target="_blank"
                       rel="noopener noreferrer"
