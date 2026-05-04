@@ -39,7 +39,24 @@ function isSafeRelativePath(p: string): boolean {
   const trimmed = p.trim()
   if (trimmed.length === 0) return false
   if (trimmed.startsWith('/')) return false
+  if (trimmed.startsWith('\\')) return false
+  // Reject Windows drive letters (`C:foo`, `C:\foo`). The scheme regex
+  // below catches `C:` only when followed by alphanumerics, but a bare
+  // `C:foo` (no slash) round-trips through path joining as a drive ref.
+  if (/^[a-z]:[\\/]?/i.test(trimmed)) return false
+  // Catch encoded traversal (`%2e%2e/`) and Unicode-normalisation tricks
+  // (NFC vs NFD round-tripping `..`). Decode then NFC-normalise before
+  // re-checking for `..` segments and backslashes.
+  let decoded: string
+  try {
+    decoded = decodeURIComponent(trimmed)
+  } catch {
+    return false
+  }
+  const normalised = decoded.normalize('NFC').replace(/\\/g, '/')
+  if (normalised.split('/').some((seg) => seg === '..')) return false
   if (trimmed.includes('..')) return false
+  // Reject scheme-prefixed URIs (http:, file:, javascript:, data:, ...)
   if (/^[a-z][a-z0-9+\-.]*:/i.test(trimmed)) return false
   return true
 }
