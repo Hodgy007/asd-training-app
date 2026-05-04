@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { joinCohortByCode, JoinError } from '@/lib/cohort'
 import { joinLimiter, getClientIp } from '@/lib/rate-limit'
+import { validatePassword } from '@/lib/password-validation'
 
 /**
  * Public lookup of an invite code — used to render the join page.
@@ -54,6 +55,14 @@ export async function POST(req: NextRequest, { params }: { params: { code: strin
   const parsed = joinSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
+  }
+
+  // Apply the platform's strength rules (10 chars + uppercase + lowercase
+  // + digit + symbol). The schema's min(8) above only stops empty / very
+  // short strings; this is the actual policy gate.
+  const strength = validatePassword(parsed.data.password)
+  if (!strength.valid) {
+    return NextResponse.json({ error: strength.error }, { status: 400 })
   }
 
   try {
