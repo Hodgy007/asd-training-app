@@ -42,18 +42,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'If that email exists, a reset link has been sent.' })
   }
 
-  // Delete any existing tokens for this email
-  await prisma.passwordResetToken.deleteMany({ where: { email } })
-
   // Generate the raw token (sent to the user via email) and store ONLY its
   // SHA-256 digest. A DB leak therefore can't be turned into account takeovers
   // — the digest is useless on its own (32 bytes of CSPRNG input space).
   const rawToken = crypto.randomBytes(32).toString('hex')
   const expires = new Date(Date.now() + 1000 * 60 * 60) // 1 hour
 
-  await prisma.passwordResetToken.create({
-    data: { email, token: hashResetToken(rawToken), expires },
-  })
+  // Atomically replace any existing token row. Doing delete then create as
+  // separate calls leaves a window where a crash between them strands the
+  // user with no token — they couldn't reset until manual cleanup.
+  await prisma.$transaction([
+    prisma.passwordResetToken.deleteMany({ where: { email } }),
+    prisma.passwordResetToken.create({
+      data: { email, token: hashResetToken(rawToken), expires },
+    }),
+  ])
 
   const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${rawToken}`
 
