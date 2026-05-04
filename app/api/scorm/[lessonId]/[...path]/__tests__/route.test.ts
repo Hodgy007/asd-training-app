@@ -86,6 +86,30 @@ describe('GET /api/scorm/[lessonId]/[...path]', () => {
     expect(global.fetch).not.toHaveBeenCalled()
   })
 
+  it('injects SCORM runtime CSS fixes into HTML entry files', async () => {
+    const html = '<!doctype html><html><head><title>Lesson</title></head><body></body></html>'
+    vi.mocked(head).mockResolvedValueOnce({
+      url: 'https://blob.example/scorm/lesson-1/index.html',
+      size: html.length,
+      contentType: 'text/html',
+    } as any)
+    vi.mocked(global.fetch).mockResolvedValueOnce(
+      new Response(html, {
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+      }),
+    )
+
+    const res = await GET(makeReq('index.html'), ctx(['index.html']))
+    const body = await res.text()
+
+    expect(res.status).toBe(200)
+    expect(body).toContain('id="asd-scorm-runtime-fixes"')
+    expect(body).toContain('aspect-ratio: 16 / 9')
+    expect(body.indexOf('id="asd-scorm-runtime-fixes"')).toBeLessThan(body.indexOf('</head>'))
+    expect(res.headers.get('content-length')).toBe(String(new TextEncoder().encode(body).byteLength))
+  })
+
   it('serves known Captivate runtime image fallbacks when the package omitted them', async () => {
     vi.mocked(head).mockRejectedValueOnce(new Error('missing from blob'))
 

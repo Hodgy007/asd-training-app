@@ -34,6 +34,22 @@ const CAPTIVATE_RUNTIME_FALLBACKS = new Set([
   'assessmenthotspotvisited.svg',
 ])
 
+const SCORM_RUNTIME_FIX_STYLE = `
+<style id="asd-scorm-runtime-fixes">
+  .cp-video-card .videoContainer .cp-video-item-wrapper {
+    aspect-ratio: 16 / 9;
+    height: auto !important;
+    max-height: 100%;
+  }
+
+  .cp-video-card .videoContainer .cp-video-item-wrapper .video-item,
+  .cp-video-card .videoContainer .cp-video-item-wrapper iframe,
+  .cp-video-card .videoContainer .cp-video-item-wrapper video {
+    height: 100% !important;
+    width: 100% !important;
+  }
+</style>`
+
 function parseRangeHeader(rangeHeader: string | null, size: number): ByteRange | null | 'invalid' {
   if (!rangeHeader) return null
   if (!Number.isFinite(size) || size <= 0) return 'invalid'
@@ -87,6 +103,21 @@ function buildScormHeaders(contentType: string): Headers {
       "frame-ancestors 'self'",
   )
   return headers
+}
+
+function shouldInjectScormRuntimeFixes(relPath: string, contentType: string, hasRange: boolean): boolean {
+  if (hasRange) return false
+  const normalisedType = contentType.toLowerCase()
+  return normalisedType.includes('text/html') || relPath.toLowerCase().endsWith('.html')
+}
+
+function injectScormRuntimeFixes(html: string): string {
+  if (html.includes('id="asd-scorm-runtime-fixes"')) return html
+  const headClose = /<\/head>/i
+  if (headClose.test(html)) {
+    return html.replace(headClose, `${SCORM_RUNTIME_FIX_STYLE}</head>`)
+  }
+  return `${SCORM_RUNTIME_FIX_STYLE}${html}`
 }
 
 function getCaptivateRuntimeFallback(relPath: string): string | null {
@@ -194,9 +225,13 @@ export async function GET(
     bytes = bytes.subarray(range.start, range.end + 1)
   }
 
-  const headers = buildScormHeaders(
-    blobContentType || upstream.headers.get('content-type') || 'application/octet-stream',
-  )
+  const responseContentType =
+    blobContentType || upstream.headers.get('content-type') || 'application/octet-stream'
+  if (shouldInjectScormRuntimeFixes(relPath, responseContentType, !!range)) {
+    bytes = new TextEncoder().encode(injectScormRuntimeFixes(new TextDecoder().decode(bytes)))
+  }
+
+  const headers = buildScormHeaders(responseContentType)
   headers.set('content-length', String(bytes.byteLength))
 
   if (range) {
