@@ -82,7 +82,7 @@ function buildScormHeaders(contentType: string): Headers {
       "img-src 'self' data: blob: https:; " +
       "media-src 'self' blob: https://vimeo.com https://player.vimeo.com https://*.vimeocdn.com; " +
       "frame-src 'self' https://player.vimeo.com; " +
-      "connect-src 'self' https://player.vimeo.com https://*.vimeo.com https://*.vimeocdn.com; " +
+      "connect-src 'self' https://vimeo.com https://player.vimeo.com https://*.vimeo.com https://*.vimeocdn.com; " +
       "frame-ancestors 'self'",
   )
   return headers

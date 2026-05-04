@@ -63,6 +63,9 @@ describe('GET /api/scorm/[lessonId]/[...path]', () => {
     expect(res.headers.get('content-security-policy')).toContain(
       "media-src 'self' blob: https://vimeo.com",
     )
+    expect(res.headers.get('content-security-policy')).toContain(
+      "connect-src 'self' https://vimeo.com",
+    )
     expect(res.headers.get('content-range')).toBe('bytes 0-99/1000')
     expect(res.headers.get('content-length')).toBe('100')
     expect((await res.arrayBuffer()).byteLength).toBe(100)
