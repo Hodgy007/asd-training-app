@@ -1,4 +1,4 @@
-import { Upload, Sparkles } from 'lucide-react'
+import { Sparkles, Upload } from 'lucide-react'
 import { Tip } from '@/components/howto/panel'
 
 export default function TrainingHowTo() {
@@ -22,24 +22,17 @@ export default function TrainingHowTo() {
       </ol>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-        <span className="inline-flex items-center gap-1.5"><Upload className="h-4 w-4 text-primary-500" /> Import from Files</span>
-      </h3>
-      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        Upload PDF, DOCX, or PPTX files to auto-generate training content using AI. The platform analyses your existing material and organises it into modules, lessons, and quizzes while preserving the original wording as closely as possible. This is ideal for digitising existing training documents.
-      </p>
-      <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Click <strong>Import from Files</strong> on the Training Content page.</li>
-        <li>Upload one or more files (PDF, DOCX, or PPTX).</li>
-        <li>Review the AI-generated structure and make any adjustments.</li>
-        <li>Save to create the program, modules, lessons, and quizzes.</li>
-      </ol>
-
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
         <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-primary-500" /> Generate from Files</span>
       </h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        Upload files and let AI create entirely new, pedagogically-designed training content inspired by your material. Unlike Import, this generates fresh content rather than preserving original wording &mdash; ideal when you want to use source material as a foundation for new courses.
+        Upload PDF, DOCX, or PPTX files and let AI create pedagogically-designed training content inspired by your material. The platform organises your source documents into modules, lessons, and quizzes ready to publish.
       </p>
+      <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
+        <li>Click <strong>Generate from Files</strong> on the Training Content page.</li>
+        <li>Upload one or more files (PDF, DOCX, or PPTX).</li>
+        <li>Review the AI-generated content and make any adjustments.</li>
+        <li>Save to create the program, modules, lessons, and quizzes.</li>
+      </ol>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing modules and lessons</h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -98,7 +91,6 @@ export default function TrainingHowTo() {
         <li><strong>Archived</strong> &mdash; removed from active use but preserved for reference.</li>
       </ol>
 
-      <Tip>Use &ldquo;Import from Files&rdquo; when you want to preserve your existing training material as-is. Use &ldquo;Generate from Files&rdquo; when you want AI to create new, pedagogically-structured content inspired by your source documents.</Tip>
     </>
   )
 }

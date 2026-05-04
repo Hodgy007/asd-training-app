@@ -14,7 +14,6 @@ import {
   Edit3,
   X,
   Trash2,
-  Upload,
   Sparkles,
   Package,
 } from 'lucide-react'
@@ -96,7 +95,7 @@ export default function TrainingContentPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const [generationModalOpen, setGenerationModalOpen] = useState(false)
-  const [generationMode, setGenerationMode] = useState<GenerationMode>('structure')
+  const [generationMode, setGenerationMode] = useState<GenerationMode>('generate')
   const [scormImportOpen, setScormImportOpen] = useState(false)
   const [createMenuOpen, setCreateMenuOpen] = useState(false)
   const createMenuRef = useRef<HTMLDivElement>(null)
@@ -331,23 +330,6 @@ export default function TrainingContentPage() {
                     <p className="font-bold text-sm text-slate-900 dark:text-white">Blank program</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       Start with an empty program and add modules manually.
-                    </p>
-                  </div>
-                </button>
-                <button
-                  role="menuitem"
-                  onClick={() => {
-                    setGenerationMode('structure')
-                    setGenerationModalOpen(true)
-                    setCreateMenuOpen(false)
-                  }}
-                  className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3 border-b border-calm-100 dark:border-slate-700"
-                >
-                  <Upload className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
-                  <div>
-                    <p className="font-bold text-sm text-slate-900 dark:text-white">Import from files</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Build a program structure from uploaded documents.
                     </p>
                   </div>
                 </button>
