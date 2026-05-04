@@ -21,6 +21,8 @@ import {
 import Link from 'next/link'
 import { HowToPanel } from '@/components/howto/panel'
 import LibraryHowTo from '@/components/howto/super-admin/library'
+import { CollectionActionsPanel } from '@/components/super-admin/library/collection-actions-panel'
+import { CollectionThemePicker } from '@/components/super-admin/library/collection-theme-picker'
 
 interface Organisation { id: string; name: string }
 
@@ -29,6 +31,7 @@ interface LibraryCollection {
   title: string
   description: string
   thumbnailUrl: string | null
+  themeKey: string | null
   targetOrgIds: string[]
   targetRoles: string[]
   active: boolean
@@ -69,12 +72,14 @@ export default function LibraryPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const [editThemeKey, setEditThemeKey] = useState<string | null>(null)
   const [editSaving, setEditSaving] = useState(false)
 
   function startEditing(col: LibraryCollection) {
     setEditingId(col.id)
     setEditTitle(col.title)
     setEditDescription(col.description)
+    setEditThemeKey(col.themeKey ?? null)
   }
 
   async function handleSaveEdit() {
@@ -84,7 +89,11 @@ export default function LibraryPage() {
       const res = await fetch(`/api/super-admin/library/${editingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: editTitle, description: editDescription }),
+        body: JSON.stringify({
+          title: editTitle,
+          description: editDescription,
+          themeKey: editThemeKey,
+        }),
       })
       if (res.ok) {
         showToast('Collection updated.', 'success')
@@ -228,18 +237,71 @@ export default function LibraryPage() {
           <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-3" />Loading…
         </div>
       ) : editingId ? (
-        // Inline edit panel above the grid
-        <div className="card space-y-3">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Edit collection</h2>
-          <input className="input w-full text-sm font-semibold" type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Collection name" autoFocus />
-          <textarea className="input w-full text-sm" rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Description" />
-          <div className="flex gap-2">
-            <button onClick={handleSaveEdit} disabled={editSaving || !editTitle.trim() || !editDescription.trim()} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-600 text-white text-xs font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors">
-              <CheckCircle className="h-3.5 w-3.5" />{editSaving ? 'Saving...' : 'Save'}
-            </button>
-            <button onClick={() => setEditingId(null)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-calm-200 dark:border-slate-600 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-          </div>
-        </div>
+        // Inline edit panel above the grid — same fields & actions as the
+        // detail-page edit form so admins get a consistent experience whichever
+        // pencil they click.
+        (() => {
+          const editingCollection = collections.find((c) => c.id === editingId)
+          if (!editingCollection) return null
+          return (
+            <div className="card space-y-4">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Edit collection</h2>
+              <div>
+                <label className="label">Collection name</label>
+                <input
+                  className="input w-full text-sm font-semibold"
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Collection name"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="label">Description</label>
+                <textarea
+                  className="input w-full text-sm"
+                  rows={3}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Description"
+                />
+              </div>
+
+              <CollectionThemePicker value={editThemeKey} onChange={setEditThemeKey} />
+
+              <div className="border-t border-calm-200 dark:border-slate-700 pt-4">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                  Actions
+                </p>
+                <CollectionActionsPanel
+                  collectionId={editingCollection.id}
+                  publishedToToolkit={Boolean(editingCollection.publishedToToolkit)}
+                  documentCount={editingCollection._count.documents}
+                  onUpdate={fetchCollections}
+                  onToast={showToast}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-calm-200 dark:border-slate-700">
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={editSaving || !editTitle.trim() || !editDescription.trim()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
+                >
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  {editSaving ? 'Saving...' : 'Save collection'}
+                </button>
+                <button
+                  onClick={() => setEditingId(null)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          )
+        })()
       ) : null}
 
       {!loading && collections.length === 0 ? (
