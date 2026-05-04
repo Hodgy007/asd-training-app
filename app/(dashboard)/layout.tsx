@@ -26,6 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     pathname.startsWith('/careers') ||
     pathname.startsWith('/cv-builder') ||
     pathname.startsWith('/careers-advisor') ||
+    pathname.startsWith('/library') ||
     isSharedHome
   if (status === 'authenticated') {
     if (session?.user?.role === 'SUPER_ADMIN' && !isPreview) redirect('/super-admin')

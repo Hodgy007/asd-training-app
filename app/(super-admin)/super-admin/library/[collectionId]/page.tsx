@@ -595,14 +595,24 @@ export default function CollectionDetailPage() {
             >
               {collection.publishedToToolkit ? 'Live on Toolkit' : 'Publish to Toolkit'}
             </button>
+            <Link
+              href={`/library?c=${collection.id}`}
+              target="_blank"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+              title="Open this collection in the learner library to see how it looks"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Preview as learner
+            </Link>
             {collection.publishedToToolkit && (
               <Link
                 href={`/toolkit/${collection.id}`}
                 target="_blank"
-                className="p-2 rounded-xl border border-calm-200 dark:border-slate-600 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                title="Preview Toolkit"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                title="Open the public toolkit page for this collection"
               >
                 <ExternalLink className="h-4 w-4" />
+                Preview toolkit
               </Link>
             )}
             <button
