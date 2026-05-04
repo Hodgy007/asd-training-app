@@ -47,6 +47,23 @@ function resolveLogoUrl(): string {
   return 'http://localhost:3000/logo-aaa.png'
 }
 
+/**
+ * HTML-escape a user-controlled string before interpolating into an email
+ * template. Always use this for any field that came from user input
+ * (e.g. user.name, organisation name, free-form fields). Most mail clients
+ * block <script> but happily render <a> and <img>, so an unescaped name
+ * like '<a href="https://evil/...">click here</a>' lands a phishing link
+ * inside an otherwise-trusted transactional email.
+ */
+export function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export interface WrapEmailOptions {
   /** Plain-text alternative to put after the body content if you have one. */
   hideFooter?: boolean

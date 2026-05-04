@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 import { Resend } from 'resend'
 import { prisma } from './prisma'
 import { requireStripe } from './stripe'
-import { wrapEmailHtml } from './email-templates/layout'
+import { wrapEmailHtml, escapeHtml } from './email-templates/layout'
 
 const STRIPE_STATUS_MAP: Record<Stripe.Subscription.Status, SubscriptionStatus> = {
   active: 'ACTIVE',
@@ -176,12 +176,12 @@ async function sendCredentialsEmail(
     const resend = new Resend(process.env.RESEND_API_KEY)
     const loginUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/login?email=${encodeURIComponent(email)}`
     const innerHtml = `
-      <h2 style="color: #f5821f; margin-top: 0;">Welcome${name ? ', ' + name : ''}!</h2>
+      <h2 style="color: #f5821f; margin-top: 0;">Welcome${name ? ', ' + escapeHtml(name) : ''}!</h2>
       <p>Thank you for your purchase. Your training account is ready.</p>
       <p>Sign in with:</p>
       <ul>
-        <li><strong>Email:</strong> ${email}</li>
-        <li><strong>Temporary password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${tempPassword}</code></li>
+        <li><strong>Email:</strong> ${escapeHtml(email)}</li>
+        <li><strong>Temporary password:</strong> <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${escapeHtml(tempPassword)}</code></li>
       </ul>
       <p><a class="btn" href="${loginUrl}">Sign in</a></p>
       <p class="footer">You'll be asked to change your password on first sign-in.</p>

@@ -4,7 +4,7 @@ import { Resend } from 'resend'
 import crypto from 'crypto'
 import { z } from 'zod'
 import { forgotPasswordLimiter, getClientIp } from '@/lib/rate-limit'
-import { wrapEmailHtml } from '@/lib/email-templates/layout'
+import { wrapEmailHtml, escapeHtml } from '@/lib/email-templates/layout'
 import { logger, errMeta } from '@/lib/logger'
 import { hashResetToken } from '@/lib/reset-token'
 
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const innerHtml = `
       <h2 style="color: #f5821f; margin-top: 0;">Password Reset</h2>
-      <p>Hi ${user.name || 'there'},</p>
+      <p>Hi ${user.name ? escapeHtml(user.name) : 'there'},</p>
       <p>You requested a password reset for your Ambitious About Autism account.</p>
       <p><a class="btn" href="${resetUrl}">Reset my password</a></p>
       <p class="footer">This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>

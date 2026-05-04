@@ -1,4 +1,4 @@
-import { wrapEmailHtml } from './layout'
+import { wrapEmailHtml, escapeHtml } from './layout'
 
 interface RenderResult {
   subject: string
@@ -12,15 +12,17 @@ export function renderPasswordInviteEmail(params: {
   name: string | null
   activationUrl: string
 }): RenderResult {
-  const greeting = params.name ? `Hi ${params.name},` : 'Hi there,'
+  // Plain-text greeting for the text/plain body; escaped greeting for HTML.
+  const plainGreeting = params.name ? `Hi ${params.name},` : 'Hi there,'
+  const htmlGreeting = params.name ? `Hi ${escapeHtml(params.name)},` : 'Hi there,'
   const innerHtml = `
-    <p>${greeting}</p>
+    <p>${htmlGreeting}</p>
     <p>An admin at Ambitious about Autism has invited you to access the training portal.</p>
     <p><a class="btn" href="${params.activationUrl}">Set my password</a></p>
     <p class="footer">If you weren't expecting this invite, you can ignore this email. This link expires in 7 days.</p>
   `
   const text = [
-    greeting,
+    plainGreeting,
     '',
     'An admin at Ambitious about Autism has invited you to access the training portal.',
     '',
@@ -37,15 +39,16 @@ export function renderSsoInviteEmail(params: {
   name: string | null
   loginUrl: string
 }): RenderResult {
-  const greeting = params.name ? `Hi ${params.name},` : 'Hi there,'
+  const plainGreeting = params.name ? `Hi ${params.name},` : 'Hi there,'
+  const htmlGreeting = params.name ? `Hi ${escapeHtml(params.name)},` : 'Hi there,'
   const innerHtml = `
-    <p>${greeting}</p>
+    <p>${htmlGreeting}</p>
     <p>You've been invited to Ambitious about Autism Training. Sign in using your work account to get started.</p>
     <p><a class="btn" href="${params.loginUrl}">Sign in</a></p>
     <p class="footer">If you weren't expecting this invite, you can ignore this email.</p>
   `
   const text = [
-    greeting,
+    plainGreeting,
     '',
     "You've been invited to Ambitious about Autism Training.",
     'Sign in using your work account to get started:',
