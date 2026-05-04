@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { upload } from '@vercel/blob/client'
 import JSZip from 'jszip'
 import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
+import { CollectionActionsPanel } from '@/components/super-admin/library/collection-actions-panel'
+import { CollectionThemePicker } from '@/components/super-admin/library/collection-theme-picker'
 import {
   ArrowLeft,
   FolderOpen,
@@ -59,16 +61,6 @@ interface Collection {
   publishedToToolkit: boolean
   documents: LibraryDoc[]
 }
-
-// Mirror of the learner palette so the picker shows the same swatches.
-const COLLECTION_THEMES = [
-  { key: 'orange', label: 'Orange', bg: '#FFEDD2', accent: '#F5821F' },
-  { key: 'green',  label: 'Green',  bg: '#E0F6E5', accent: '#34B44A' },
-  { key: 'blue',   label: 'Blue',   bg: '#DDEEF8', accent: '#056BB0' },
-  { key: 'pink',   label: 'Pink',   bg: '#FCE3F2', accent: '#E13CAF' },
-  { key: 'yellow', label: 'Yellow', bg: '#FFF3CC', accent: '#FCAF17' },
-  { key: 'cyan',   label: 'Cyan',   bg: '#E0F4FB', accent: '#44C7EE' },
-] as const
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -590,119 +582,22 @@ export default function CollectionDetailPage() {
                     required
                   />
                 </div>
-                <div>
-                  <label className="label">Tile colour on the learner library</label>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setColEditThemeKey(null)}
-                      className={clsx(
-                        'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors',
-                        colEditThemeKey === null
-                          ? 'border-primary-500 bg-primary-50 text-primary-700 ring-2 ring-primary-200 dark:bg-primary-900/20 dark:text-primary-300'
-                          : 'border-calm-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700'
-                      )}
-                    >
-                      Auto
-                    </button>
-                    {COLLECTION_THEMES.map((t) => (
-                      <button
-                        key={t.key}
-                        type="button"
-                        onClick={() => setColEditThemeKey(t.key)}
-                        title={t.label}
-                        className={clsx(
-                          'h-8 w-8 rounded-full transition-transform hover:scale-110',
-                          colEditThemeKey === t.key
-                            ? 'ring-2 ring-offset-2 ring-slate-900 dark:ring-white'
-                            : 'ring-1 ring-slate-200 dark:ring-slate-600'
-                        )}
-                        style={{ backgroundColor: t.bg, borderColor: t.accent }}
-                      >
-                        <span className="sr-only">{t.label}</span>
-                        <span
-                          className="block h-3 w-3 rounded-full mx-auto"
-                          style={{ backgroundColor: t.accent }}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                    Auto cycles through the palette. Pick a colour to lock this collection&apos;s tile.
-                  </p>
-                </div>
+                <CollectionThemePicker
+                  value={colEditThemeKey}
+                  onChange={setColEditThemeKey}
+                />
 
-                {/* Collection actions — moved here from the page header so the
-                    main view stays focused on document management. */}
                 <div className="border-t border-calm-200 dark:border-slate-700 pt-4">
                   <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
                     Actions
                   </p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleToggleToolkitPublishing}
-                      disabled={actionLoading === collection.id + '-publish'}
-                      className={clsx(
-                        'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors disabled:opacity-50',
-                        collection.publishedToToolkit
-                          ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
-                          : 'border-calm-200 bg-white text-slate-600 hover:bg-calm-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-                      )}
-                    >
-                      <Globe2 className="h-4 w-4" />
-                      {collection.publishedToToolkit ? 'Live on Toolkit — click to unpublish' : 'Publish to Toolkit'}
-                    </button>
-                    <Link
-                      href={`/library?c=${collection.id}`}
-                      target="_blank"
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Preview as learner
-                    </Link>
-                    {collection.publishedToToolkit && (
-                      <Link
-                        href={`/toolkit/${collection.id}`}
-                        target="_blank"
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Preview toolkit
-                      </Link>
-                    )}
-                    <label className={clsx(
-                      'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors cursor-pointer',
-                      zipUploading
-                        ? 'opacity-50 cursor-not-allowed border-calm-200 dark:border-slate-600 text-slate-400'
-                        : 'border-calm-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-calm-50 dark:hover:bg-slate-700'
-                    )}>
-                      <Archive className="h-4 w-4" />
-                      {zipUploading ? 'Uploading ZIP…' : 'Upload ZIP'}
-                      <input
-                        type="file"
-                        accept=".zip,application/zip,application/x-zip-compressed"
-                        className="hidden"
-                        disabled={zipUploading}
-                        onChange={handleZipUpload}
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleClearAllDocs}
-                      disabled={clearingDocs || zipUploading || !collection.documents?.length}
-                      className={clsx(
-                        'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-colors',
-                        clearingDocs || !collection.documents?.length
-                          ? 'opacity-50 cursor-not-allowed border-calm-200 dark:border-slate-600 text-slate-400'
-                          : 'border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20',
-                      )}
-                      title="Delete all documents but keep the collection"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      {clearingDocs ? 'Clearing…' : 'Clear all documents'}
-                    </button>
-                  </div>
+                  <CollectionActionsPanel
+                    collectionId={collection.id}
+                    publishedToToolkit={collection.publishedToToolkit}
+                    documentCount={collection.documents?.length ?? 0}
+                    onUpdate={fetchCollection}
+                    onToast={showToast}
+                  />
                 </div>
 
                 <div className="flex gap-2 pt-2">
