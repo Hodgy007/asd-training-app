@@ -57,6 +57,9 @@ describe('GET /api/scorm/[lessonId]/[...path]', () => {
     )
     expect(res.headers.get('content-type')).toBe('video/mp4')
     expect(res.headers.get('accept-ranges')).toBe('bytes')
+    expect(res.headers.get('content-security-policy')).toContain('https://player.vimeo.com')
+    expect(res.headers.get('content-security-policy')).toContain('https://fonts.googleapis.com')
+    expect(res.headers.get('content-security-policy')).toContain('https://fonts.gstatic.com')
     expect(res.headers.get('content-range')).toBe('bytes 0-99/1000')
     expect(res.headers.get('content-length')).toBe('100')
     expect((await res.arrayBuffer()).byteLength).toBe(100)
@@ -67,6 +70,32 @@ describe('GET /api/scorm/[lessonId]/[...path]', () => {
 
     expect(res.status).toBe(416)
     expect(res.headers.get('content-range')).toBe('bytes */1000')
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('serves known Captivate runtime image fallbacks when the package omitted them', async () => {
+    vi.mocked(head).mockRejectedValueOnce(new Error('missing from blob'))
+
+    const res = await GET(
+      makeReq('assets/htmlimages/checkBox_normal.png'),
+      ctx(['assets', 'htmlimages', 'checkBox_normal.png']),
+    )
+
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toBe('image/svg+xml')
+    expect(await res.text()).toContain('<svg')
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('keeps returning 404 for unknown missing package assets', async () => {
+    vi.mocked(head).mockRejectedValueOnce(new Error('missing from blob'))
+
+    const res = await GET(
+      makeReq('assets/missing-real-content.png'),
+      ctx(['assets', 'missing-real-content.png']),
+    )
+
+    expect(res.status).toBe(404)
     expect(global.fetch).not.toHaveBeenCalled()
   })
 })

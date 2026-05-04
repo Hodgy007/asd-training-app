@@ -1,4 +1,5 @@
 export type CmiState = Record<string, string>
+export type CmiInput = Record<string, unknown>
 
 export interface ScormProgressUpdate {
   completed: boolean
@@ -18,6 +19,65 @@ function parseNumber(value: string | undefined): number | null {
   if (value === undefined || value === '') return null
   const n = Number(value)
   return Number.isFinite(n) ? n : null
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function writeFlattenedCmi(
+  out: CmiState,
+  prefix: string,
+  value: unknown,
+): void {
+  if (value === undefined || value === null) return
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    out[prefix] = String(value)
+    return
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => writeFlattenedCmi(out, `${prefix}.${index}`, item))
+    return
+  }
+  if (isPlainRecord(value)) {
+    for (const [key, child] of Object.entries(value)) {
+      writeFlattenedCmi(out, prefix ? `${prefix}.${key}` : key, child)
+    }
+  }
+}
+
+function setIfPresent(out: CmiState, key: string, value: unknown): void {
+  if (value === undefined || value === null) return
+  out[key] = String(value)
+}
+
+export function normaliseCmiState(input: CmiInput): CmiState {
+  const flattened: CmiState = {}
+  writeFlattenedCmi(flattened, '', input)
+
+  const out: CmiState = {}
+  for (const [key, value] of Object.entries(flattened)) {
+    if (key.startsWith('runtimeData.cmi.')) {
+      out[key.replace(/^runtimeData\./, '')] = value
+    } else if (key.startsWith('runtimeData.adl.')) {
+      out[key.replace(/^runtimeData\./, '')] = value
+    } else if (key.startsWith('cmi.') || key.startsWith('adl.')) {
+      out[key] = value
+    }
+  }
+
+  setIfPresent(out, 'cmi.completion_status', out['cmi.completion_status'] ?? input.completionStatus)
+  setIfPresent(out, 'cmi.success_status', out['cmi.success_status'] ?? input.successStatus)
+
+  if (isPlainRecord(input.score)) {
+    setIfPresent(out, 'cmi.score.scaled', out['cmi.score.scaled'] ?? input.score.scaled)
+    setIfPresent(out, 'cmi.score.raw', out['cmi.score.raw'] ?? input.score.raw)
+    setIfPresent(out, 'cmi.score.max', out['cmi.score.max'] ?? input.score.max)
+  } else {
+    setIfPresent(out, 'cmi.score.raw', out['cmi.score.raw'] ?? input.score)
+  }
+
+  return out
 }
 
 /**

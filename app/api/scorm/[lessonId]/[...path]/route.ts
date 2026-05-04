@@ -19,6 +19,20 @@ interface ByteRange {
   end: number
 }
 
+const CAPTIVATE_RUNTIME_FALLBACKS = new Set([
+  'answer_checkbox_hover.png',
+  'checkbox_normal.png',
+  'checkbox_selected.png',
+  'expand_icon.png',
+  'hotspotquestionoverlays.png',
+  'radiochecked.png',
+  'radiounchecked.png',
+  'threed_hotspotdefaultglow.png',
+  'threed_hotspotglow.png',
+  'vr_move_left.png',
+  'assessmenthotspotvisited.svg',
+])
+
 function parseRangeHeader(rangeHeader: string | null, size: number): ByteRange | null | 'invalid' {
   if (!rangeHeader) return null
   if (!Number.isFinite(size) || size <= 0) return 'invalid'
@@ -61,10 +75,40 @@ function buildScormHeaders(contentType: string): Headers {
   headers.set(
     'content-security-policy',
     "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-      "img-src 'self' data: blob:; media-src 'self' blob:; " +
-      "connect-src 'self'; frame-ancestors 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://player.vimeo.com; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      "font-src 'self' data: https://fonts.gstatic.com; " +
+      "img-src 'self' data: blob: https:; " +
+      "media-src 'self' blob: https://player.vimeo.com https://*.vimeocdn.com; " +
+      "frame-src 'self' https://player.vimeo.com; " +
+      "connect-src 'self' https://player.vimeo.com https://*.vimeo.com https://*.vimeocdn.com; " +
+      "frame-ancestors 'self'",
   )
   return headers
+}
+
+function getCaptivateRuntimeFallback(relPath: string): string | null {
+  const normalised = relPath.replace(/\\/g, '/').toLowerCase()
+  if (!normalised.startsWith('assets/htmlimages/')) return null
+  const name = normalised.split('/').pop()
+  if (!name || !CAPTIVATE_RUNTIME_FALLBACKS.has(name)) return null
+
+  if (name.includes('radio')) {
+    const checked = name.includes('checked') && !name.includes('unchecked')
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="#fff" stroke="#334155" stroke-width="2"/>${checked ? '<circle cx="14" cy="14" r="5" fill="#2563eb"/>' : ''}</svg>`
+  }
+
+  if (name.includes('checkbox')) {
+    const selected = name.includes('selected')
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><rect x="5" y="5" width="18" height="18" rx="3" fill="#fff" stroke="#334155" stroke-width="2"/>${selected ? '<path d="M9 14.5l3.2 3.2L19.5 10" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' : ''}</svg>`
+  }
+
+  if (name.includes('expand')) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M12 5H5v7M20 5h7v7M12 27H5v-7M20 27h7v-7" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  }
+
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#2563eb" stroke-width="3" opacity=".55"/></svg>'
 }
 
 export async function GET(
@@ -98,6 +142,12 @@ export async function GET(
     blobSize = metadata.size
     blobContentType = metadata.contentType
   } catch {
+    const fallbackSvg = getCaptivateRuntimeFallback(relPath)
+    if (fallbackSvg) {
+      const headers = buildScormHeaders('image/svg+xml')
+      headers.set('content-length', String(new TextEncoder().encode(fallbackSvg).byteLength))
+      return new NextResponse(fallbackSvg, { status: 200, headers })
+    }
     return new NextResponse('Not found', { status: 404 })
   }
 
