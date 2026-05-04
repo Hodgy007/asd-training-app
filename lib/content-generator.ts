@@ -188,5 +188,20 @@ export async function generateQuizForLesson(
   })
   if (text === AI_FEATURE_UNAVAILABLE) throw new Error(AI_FEATURE_UNAVAILABLE)
   const jsonString = extractJson(text)
-  return JSON.parse(jsonString) as GeneratedQuizQuestion[]
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(jsonString)
+  } catch (err) {
+    const snippet = jsonString.slice(0, 200).replace(/\s+/g, ' ').trim()
+    const reason = err instanceof Error ? err.message : 'unknown parse error'
+    throw new Error(
+      `Quiz response was not valid JSON (${reason}). Model returned: "${snippet}${jsonString.length > 200 ? '…' : ''}"`,
+    )
+  }
+  if (!Array.isArray(parsed)) {
+    throw new Error(
+      `Quiz response was not a JSON array (got ${typeof parsed}). Try regenerating, or shorten the lesson source material.`,
+    )
+  }
+  return parsed as GeneratedQuizQuestion[]
 }

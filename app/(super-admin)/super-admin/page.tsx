@@ -14,6 +14,7 @@ import {
   ArrowRight,
   CheckCircle2,
   ClipboardList,
+  BookOpen,
 } from 'lucide-react'
 import { isCharityLevel, hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { HowToPanel } from '@/components/howto/panel'
@@ -68,6 +69,8 @@ export default async function SuperAdminPage() {
     recentUsers,
     recentOrgs,
     recentCompletions,
+    recentPrograms,
+    recentModules,
   ] = await Promise.all([
     canManageOrgs
       ? prisma.organisation.count({ where: { pendingApproval: true } })
@@ -167,6 +170,28 @@ export default async function SuperAdminPage() {
           take: 5,
         })
       : Promise.resolve([]),
+    prisma.trainingProgram.findMany({
+      where: { createdAt: { gte: sevenDaysAgo } },
+      select: { id: true, name: true, status: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }),
+    prisma.module.findMany({
+      where: {
+        createdAt: { gte: sevenDaysAgo },
+        // Exclude modules created at the same instant as their parent program
+        // (avoids duplicate "program created" + "module added" rows for fresh imports).
+        program: { createdAt: { lt: sevenDaysAgo } },
+      },
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
+        program: { select: { name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }),
   ])
 
   const activeUsers30 = activeUsersLast30.length
@@ -179,7 +204,7 @@ export default async function SuperAdminPage() {
   type ActivityEvent = {
     id: string
     when: Date
-    icon: 'user' | 'org' | 'completion'
+    icon: 'user' | 'org' | 'completion' | 'training'
     primary: string
     secondary?: string
   }
@@ -210,6 +235,25 @@ export default async function SuperAdminPage() {
       icon: 'completion',
       primary: `${c.user.name || c.user.email} completed a lesson`,
       secondary: c.user.organisation?.name,
+    })
+  }
+  for (const p of recentPrograms) {
+    const statusLabel = p.status === 'APPROVED' ? 'published' : p.status.toLowerCase()
+    activity.push({
+      id: `program-${p.id}`,
+      when: p.createdAt,
+      icon: 'training',
+      primary: `Training program "${p.name}" created`,
+      secondary: statusLabel,
+    })
+  }
+  for (const m of recentModules) {
+    activity.push({
+      id: `module-${m.id}`,
+      when: m.createdAt,
+      icon: 'training',
+      primary: `Module "${m.title}" added`,
+      secondary: m.program?.name,
     })
   }
   activity.sort((a, b) => b.when.getTime() - a.when.getTime())
@@ -431,13 +475,21 @@ export default async function SuperAdminPage() {
               <ul className="divide-y divide-calm-100 dark:divide-slate-700">
                 {recentActivity.map((event) => {
                   const Icon =
-                    event.icon === 'user' ? Users : event.icon === 'org' ? Building2 : CheckCircle2
+                    event.icon === 'user'
+                      ? Users
+                      : event.icon === 'org'
+                        ? Building2
+                        : event.icon === 'training'
+                          ? BookOpen
+                          : CheckCircle2
                   const iconColor =
                     event.icon === 'user'
                       ? 'text-sage-600 dark:text-sage-400'
                       : event.icon === 'org'
                         ? 'text-primary-600 dark:text-primary-400'
-                        : 'text-warm-500 dark:text-warm-400'
+                        : event.icon === 'training'
+                          ? 'text-indigo-600 dark:text-indigo-400'
+                          : 'text-warm-500 dark:text-warm-400'
                   return (
                     <li key={event.id} className="px-4 py-3 flex items-start gap-3">
                       <div className="w-8 h-8 bg-calm-100 dark:bg-slate-800 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">

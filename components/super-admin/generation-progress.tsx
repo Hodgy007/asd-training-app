@@ -137,10 +137,19 @@ export function GenerationProgress({
       {errors.length > 0 && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-700/50 dark:bg-amber-900/20">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
-          <p className="text-sm text-amber-700 dark:text-amber-300">
-            {errors.length} lesson{errors.length !== 1 ? 's' : ''} had issues — You can retry or
-            upload additional files in the next step.
-          </p>
+          <div className="min-w-0 flex-1 space-y-2">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              {errors.length} lesson{errors.length !== 1 ? 's' : ''} failed to generate. You can hit
+              <span className="font-semibold"> Retry</span> on each one in the preview step.
+            </p>
+            <ul className="space-y-1 text-xs text-amber-700 dark:text-amber-300">
+              {errors.map((err, idx) => (
+                <li key={idx} className="break-words font-mono leading-snug">
+                  • {err}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
     </div>
