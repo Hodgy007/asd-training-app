@@ -11,6 +11,10 @@ const requestSchema = z.object({
   fileName: z.string().min(1),
   collectionTitle: z.string().optional(),
   generateImage: z.boolean().default(false),
+  // Optional caller-supplied description. When present, the image prompt is
+  // built from this rather than the (filename-derived) title — descriptions
+  // are richer input than filenames so the generated image is more relevant.
+  description: z.string().optional(),
 })
 
 const IMAGE_MODEL = 'google/gemini-3.1-flash-image-preview'
@@ -28,7 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  const { fileName, collectionTitle, generateImage: doGenerateImage } = parsed.data
+  const { fileName, collectionTitle, generateImage: doGenerateImage, description: callerDescription } = parsed.data
 
   const collectionContext = collectionTitle ? `under the collection "${collectionTitle}"` : ''
 
@@ -52,7 +56,10 @@ export async function POST(req: NextRequest) {
   let imageError: string | undefined
 
   if (doGenerateImage) {
-    const imagePrompt = `Create a simple, friendly, colourful illustration for a training document titled "${title}". The image should be a clean, modern flat illustration style with bright welcoming colours. No text in the image. Professional but approachable.`
+    // Prefer the caller's description (richer signal than a filename); fall
+    // back to the AI-generated description, then the title.
+    const subject = (callerDescription?.trim() || description || title).slice(0, 600)
+    const imagePrompt = `Create a simple, friendly, colourful illustration that represents the following training resource:\n\n${subject}\n\nUse a clean, modern flat illustration style with bright welcoming colours. No text in the image. Professional but approachable.`
 
     // Try multimodal Gemini image generation
     try {

@@ -456,14 +456,24 @@ export default function CollectionDetailPage() {
     setEditThumbnailUrl(null)
   }
 
-  /** AI-regenerate the description and/or image for an existing document. */
+  /** AI-regenerate the description and/or image for an existing document.
+   *  Image generation uses the current description as the prompt source —
+   *  filenames are too thin to make a useful illustration from. */
   async function handleEditAiGenerate(doc: LibraryDoc, generateImage: boolean) {
+    if (generateImage && !editDescription.trim()) {
+      showToast('Add or generate a description first — the AI image is built from it.', 'error')
+      return
+    }
     setEditAiGenerating(true)
     try {
       const res = await fetch('/api/super-admin/library/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: doc.fileName, generateImage }),
+        body: JSON.stringify({
+          fileName: doc.fileName,
+          generateImage,
+          ...(generateImage ? { description: editDescription } : {}),
+        }),
       })
       if (res.ok) {
         const data = await res.json()
