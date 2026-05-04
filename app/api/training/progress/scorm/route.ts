@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isCharityLevel } from '@/lib/rbac'
 import { mapScormStateToProgress, normaliseCmiState } from '@/lib/scorm/progress'
 
 const bodySchema = z.object({
@@ -35,10 +36,27 @@ export async function POST(req: NextRequest) {
   // interaction data.
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
-    select: { type: true, moduleId: true },
+    select: {
+      type: true,
+      moduleId: true,
+      module: { select: { programId: true } },
+    },
   })
   if (!lesson || lesson.type !== 'SCORM' || lesson.moduleId !== moduleId) {
     return NextResponse.json({ error: 'Not a SCORM lesson' }, { status: 404 })
+  }
+
+  // Only learners with the lesson's program in their effectivePrograms can
+  // write progress. Without this any logged-in user could fabricate
+  // "completed" rows for SCORM lessons in programs their org isn't
+  // entitled to, polluting per-question quiz analytics and inflating
+  // completion reports.
+  const programId = lesson.module.programId
+  const hasProgramAccess =
+    isCharityLevel(session) ||
+    (session.user.effectivePrograms ?? []).some((p) => p.id === programId)
+  if (!hasProgramAccess) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const update = mapScormStateToProgress(cmi, navLocation)
