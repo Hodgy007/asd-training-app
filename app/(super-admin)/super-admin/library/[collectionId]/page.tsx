@@ -9,6 +9,7 @@ import JSZip from 'jszip'
 import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
 import { CollectionActionsPanel } from '@/components/super-admin/library/collection-actions-panel'
 import { CollectionThemePicker } from '@/components/super-admin/library/collection-theme-picker'
+import { ImageLightbox } from '@/components/ui/image-lightbox'
 import {
   ArrowLeft,
   FolderOpen,
@@ -1125,27 +1126,7 @@ export default function CollectionDetailPage() {
         )}
       </div>
 
-      {/* Image zoom lightbox */}
-      {zoomedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 cursor-pointer"
-          onClick={() => setZoomedImage(null)}
-        >
-          <div className="relative max-w-3xl max-h-[80vh] mx-4">
-            <img
-              src={zoomedImage}
-              alt="Zoomed thumbnail"
-              className="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain"
-            />
-            <button
-              onClick={() => setZoomedImage(null)}
-              className="absolute -top-3 -right-3 h-8 w-8 rounded-full bg-white dark:bg-slate-700 shadow-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
+      <ImageLightbox src={zoomedImage} onClose={() => setZoomedImage(null)} alt="Zoomed thumbnail" />
     </div>
   )
 }
