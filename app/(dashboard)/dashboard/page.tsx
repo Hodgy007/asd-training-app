@@ -12,7 +12,7 @@ import { LearningJourney } from '@/components/training/learning-journey'
 import { DashboardAnnouncements } from '@/components/dashboard/announcements'
 import { UpcomingSessions } from '@/components/dashboard/upcoming-sessions'
 import { PendingSurveys } from '@/components/dashboard/pending-surveys'
-import { isCharityLevel, isParticipant } from '@/lib/rbac'
+import { isCharityLevel, isParticipant, isFamilyCarer } from '@/lib/rbac'
 import { getUserPrograms } from '@/lib/modules'
 import { HowToPanel } from '@/components/howto/panel'
 import DashboardHowTo from '@/components/howto/learner/dashboard'
@@ -36,6 +36,24 @@ export default async function DashboardPage() {
           </p>
         </div>
         <CohortHub userId={session.user.id} />
+      </div>
+    )
+  }
+
+  // FAMILY_CARER — parent/friend/relative/carer (typically self-registered
+  // via the public toolkit). Stripped-back surface: greeting + announcements
+  // only. They reach the library via sidebar collection links.
+  if (isFamilyCarer(session)) {
+    const firstName = session.user.name?.split(' ')[0] || 'there'
+    return (
+      <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Welcome, {firstName}</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Browse the document library to find resources for parents, friends, relatives and carers.
+          </p>
+        </div>
+        <DashboardAnnouncements />
       </div>
     )
   }

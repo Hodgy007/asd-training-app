@@ -28,6 +28,7 @@ interface DocumentStat {
   fileName: string
   views: number
   downloads: number
+  registrantDownloads: number
 }
 
 interface CollectionStat {
@@ -53,6 +54,17 @@ interface Totals {
   toolkitDownloads: number
   anonymousToolkitViews: number
   anonymousToolkitDownloads: number
+  registrantDownloads: number
+}
+
+interface RegistrantStats {
+  total: number
+  inRange: number
+  registeredAccounts: number
+  leadOnly: number
+  marketingConsent: number
+  formRoleCounts: Record<string, number>
+  topOrganisations: Array<{ name: string; count: number }>
 }
 
 interface Organisation {
@@ -70,6 +82,7 @@ interface TopToolkitDocument {
   downloads: number
   anonymousViews: number
   anonymousDownloads: number
+  registrantDownloads: number
   totalEvents: number
 }
 
@@ -187,6 +200,7 @@ export default function LibraryReportPage() {
   const [collections, setCollections] = useState<CollectionStat[]>([])
   const [orgs, setOrgs] = useState<Organisation[]>([])
   const [topToolkitDocuments, setTopToolkitDocuments] = useState<TopToolkitDocument[]>([])
+  const [registrantStats, setRegistrantStats] = useState<RegistrantStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedCollection, setExpandedCollection] = useState<string | null>(null)
   const [filterOrg, setFilterOrg] = useState<string>('')
@@ -202,6 +216,7 @@ export default function LibraryReportPage() {
         setCollections(data.collections)
         setOrgs(data.organisations)
         setTopToolkitDocuments(data.topToolkitDocuments ?? [])
+        setRegistrantStats(data.registrantStats ?? null)
       }
     } finally {
       setLoading(false)
@@ -329,12 +344,13 @@ export default function LibraryReportPage() {
                     <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Views</th>
                     <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Downloads</th>
                     <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Anonymous downloads</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Registrant downloads</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topToolkitDocuments.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">
+                      <td colSpan={6} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">
                         No Toolkit activity recorded for this range.
                       </td>
                     </tr>
@@ -347,8 +363,9 @@ export default function LibraryReportPage() {
                         </td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{doc.collectionTitle}</td>
                         <td className="px-4 py-3 text-center font-semibold text-blue-600 dark:text-blue-300">{doc.views + doc.anonymousViews}</td>
-                        <td className="px-4 py-3 text-center font-semibold text-emerald-600 dark:text-emerald-300">{doc.downloads + doc.anonymousDownloads}</td>
+                        <td className="px-4 py-3 text-center font-semibold text-emerald-600 dark:text-emerald-300">{doc.downloads + doc.anonymousDownloads + doc.registrantDownloads}</td>
                         <td className="px-4 py-3 text-center font-semibold text-slate-700 dark:text-slate-200">{doc.anonymousDownloads}</td>
+                        <td className="px-4 py-3 text-center font-semibold text-aaa-orange dark:text-amber-300">{doc.registrantDownloads}</td>
                       </tr>
                     ))
                   )}
@@ -356,6 +373,67 @@ export default function LibraryReportPage() {
               </table>
             </div>
           </div>
+
+          {registrantStats ? (
+            <div className="card">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h2 className="font-semibold text-slate-900 dark:text-slate-100">Toolkit registrants</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Lead-capture from the public toolkit download form.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div className="rounded-xl border border-calm-200 dark:border-slate-700 p-3 text-center">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{registrantStats.total}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Total registrants</p>
+                </div>
+                <div className="rounded-xl border border-calm-200 dark:border-slate-700 p-3 text-center">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{registrantStats.inRange}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">In selected range</p>
+                </div>
+                <div className="rounded-xl border border-calm-200 dark:border-slate-700 p-3 text-center">
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">{registrantStats.registeredAccounts}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Created an account</p>
+                </div>
+                <div className="rounded-xl border border-calm-200 dark:border-slate-700 p-3 text-center">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{registrantStats.leadOnly}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Lead-only (no account)</p>
+                </div>
+                <div className="rounded-xl border border-calm-200 dark:border-slate-700 p-3 text-center">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{registrantStats.marketingConsent}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Marketing opt-ins</p>
+                </div>
+              </div>
+
+              {Object.keys(registrantStats.formRoleCounts).length > 0 ? (
+                <div className="mt-4">
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">By role</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(registrantStats.formRoleCounts).map(([role, count]) => (
+                      <span key={role} className="inline-flex items-center gap-1 rounded-full bg-calm-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-200">
+                        {role.replace(/_/g, ' ')}
+                        <span className="font-bold text-slate-900 dark:text-slate-100">{count}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {registrantStats.topOrganisations.length > 0 ? (
+                <div className="mt-4">
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Top organisations (free-text)</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {registrantStats.topOrganisations.map((o, idx) => (
+                      <div key={`${o.name}-${idx}`} className="flex items-center justify-between bg-calm-50 dark:bg-slate-800 rounded-lg px-3 py-2 border border-calm-200 dark:border-slate-700">
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate mr-3">{o.name}</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex-shrink-0">{o.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="flex items-center gap-3">
             <Building2 className="h-4 w-4 text-slate-400" />

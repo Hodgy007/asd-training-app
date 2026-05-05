@@ -43,6 +43,7 @@ interface LibraryCollection {
 
 const ROLE_OPTIONS = [
   { value: 'CAREGIVER', label: 'Practitioner' },
+  { value: 'FAMILY_CARER', label: 'Parent/Friend/Relative/Carer' },
   { value: 'CAREER_DEV_OFFICER', label: 'Careers Professional' },
   { value: 'STUDENT', label: 'Student' },
   { value: 'INTERN', label: 'Intern' },

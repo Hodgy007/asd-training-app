@@ -21,6 +21,7 @@ import { ORG_TYPES, ORG_TYPE_LABELS } from '@/lib/rbac'
 
 const ROLE_LABELS: Record<string, string> = {
   CAREGIVER: 'Practitioner',
+  FAMILY_CARER: 'Parent/Friend/Relative/Carer',
   CAREER_DEV_OFFICER: 'Careers Professional',
   STUDENT: 'Student',
   INTERN: 'Intern',

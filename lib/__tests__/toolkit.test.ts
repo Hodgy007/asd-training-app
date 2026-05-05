@@ -23,8 +23,8 @@ describe('getLibraryReportRangeSince', () => {
 })
 
 describe('recordToolkitDocumentEvent', () => {
-  it('records signed-in users in LibraryDocumentEvent after checking Toolkit eligibility', async () => {
-    const prisma = {
+  function makePrisma() {
+    return {
       libraryDocument: {
         findFirst: vi.fn().mockResolvedValue({ id: 'doc_1' }),
       },
@@ -32,10 +32,16 @@ describe('recordToolkitDocumentEvent', () => {
         create: vi.fn().mockResolvedValue({ id: 'event_1' }),
       },
       toolkitAnonymousDocumentEvent: {
-        create: vi.fn(),
+        create: vi.fn().mockResolvedValue({ id: 'anon_event_1' }),
+      },
+      toolkitDownload: {
+        create: vi.fn().mockResolvedValue({ id: 'reg_dl_1' }),
       },
     }
+  }
 
+  it('records signed-in users in LibraryDocumentEvent after checking Toolkit eligibility', async () => {
+    const prisma = makePrisma()
     const result = await recordToolkitDocumentEvent(prisma, {
       documentId: 'doc_1',
       action: 'download',
@@ -47,10 +53,7 @@ describe('recordToolkitDocumentEvent', () => {
       where: {
         id: 'doc_1',
         active: true,
-        collection: {
-          active: true,
-          publishedToToolkit: true,
-        },
+        collection: { active: true, publishedToToolkit: true },
       },
       select: { id: true },
     })
@@ -63,21 +66,27 @@ describe('recordToolkitDocumentEvent', () => {
       },
     })
     expect(prisma.toolkitAnonymousDocumentEvent.create).not.toHaveBeenCalled()
+    expect(prisma.toolkitDownload.create).not.toHaveBeenCalled()
   })
 
-  it('records anonymous users in ToolkitAnonymousDocumentEvent', async () => {
-    const prisma = {
-      libraryDocument: {
-        findFirst: vi.fn().mockResolvedValue({ id: 'doc_1' }),
-      },
-      libraryDocumentEvent: {
-        create: vi.fn(),
-      },
-      toolkitAnonymousDocumentEvent: {
-        create: vi.fn().mockResolvedValue({ id: 'anon_event_1' }),
-      },
-    }
+  it('records identified registrants in ToolkitDownload (not the anonymous table)', async () => {
+    const prisma = makePrisma()
+    const result = await recordToolkitDocumentEvent(prisma, {
+      documentId: 'doc_1',
+      action: 'download',
+      registrantId: 'reg_1',
+    })
 
+    expect(result).toEqual({ recorded: true })
+    expect(prisma.toolkitDownload.create).toHaveBeenCalledWith({
+      data: { documentId: 'doc_1', registrantId: 'reg_1' },
+    })
+    expect(prisma.libraryDocumentEvent.create).not.toHaveBeenCalled()
+    expect(prisma.toolkitAnonymousDocumentEvent.create).not.toHaveBeenCalled()
+  })
+
+  it('falls back to ToolkitAnonymousDocumentEvent when no user and no registrant', async () => {
+    const prisma = makePrisma()
     const result = await recordToolkitDocumentEvent(prisma, {
       documentId: 'doc_1',
       action: 'view',
@@ -86,26 +95,15 @@ describe('recordToolkitDocumentEvent', () => {
 
     expect(result).toEqual({ recorded: true })
     expect(prisma.toolkitAnonymousDocumentEvent.create).toHaveBeenCalledWith({
-      data: {
-        documentId: 'doc_1',
-        action: 'view',
-      },
+      data: { documentId: 'doc_1', action: 'view' },
     })
     expect(prisma.libraryDocumentEvent.create).not.toHaveBeenCalled()
+    expect(prisma.toolkitDownload.create).not.toHaveBeenCalled()
   })
 
   it('does not record events for inactive or unpublished Toolkit documents', async () => {
-    const prisma = {
-      libraryDocument: {
-        findFirst: vi.fn().mockResolvedValue(null),
-      },
-      libraryDocumentEvent: {
-        create: vi.fn(),
-      },
-      toolkitAnonymousDocumentEvent: {
-        create: vi.fn(),
-      },
-    }
+    const prisma = makePrisma()
+    prisma.libraryDocument.findFirst.mockResolvedValueOnce(null)
 
     const result = await recordToolkitDocumentEvent(prisma, {
       documentId: 'doc_1',
@@ -116,11 +114,12 @@ describe('recordToolkitDocumentEvent', () => {
     expect(result).toEqual({ recorded: false, reason: 'not-found' })
     expect(prisma.libraryDocumentEvent.create).not.toHaveBeenCalled()
     expect(prisma.toolkitAnonymousDocumentEvent.create).not.toHaveBeenCalled()
+    expect(prisma.toolkitDownload.create).not.toHaveBeenCalled()
   })
 })
 
 describe('getToolkitLibraryReport', () => {
-  it('returns range-filtered signed-in and anonymous Toolkit totals', async () => {
+  it('returns range-filtered signed-in, anonymous, and registrant Toolkit totals', async () => {
     const prisma = {
       libraryCollection: {
         findMany: vi.fn().mockResolvedValue([
@@ -147,6 +146,10 @@ describe('getToolkitLibraryReport', () => {
                   { action: 'download' },
                   { action: 'download' },
                 ],
+                toolkitDownloads: [
+                  { registrantId: 'reg_1' },
+                  { registrantId: 'reg_2' },
+                ],
               },
             ],
           },
@@ -154,6 +157,17 @@ describe('getToolkitLibraryReport', () => {
       },
       organisation: {
         findMany: vi.fn().mockResolvedValue([{ id: 'org_1', name: 'Example School' }]),
+      },
+      toolkitRegistrant: {
+        findMany: vi.fn().mockResolvedValue([
+          { id: 'reg_1', formRole: 'parent', organisation: 'School A', userId: null, marketingConsent: true, createdAt: new Date('2026-04-25') },
+          { id: 'reg_2', formRole: 'parent', organisation: 'School A', userId: 'user_x', marketingConsent: false, createdAt: new Date('2026-04-26') },
+          { id: 'reg_3', formRole: 'teacher', organisation: null, userId: null, marketingConsent: true, createdAt: new Date('2026-04-27') },
+        ]),
+        count: vi.fn().mockImplementation(({ where }: { where: any }) => {
+          if (where?.marketingConsent === true) return Promise.resolve(2)
+          return Promise.resolve(3)
+        }),
       },
     }
 
@@ -175,6 +189,10 @@ describe('getToolkitLibraryReport', () => {
                 where: { createdAt: { gte: new Date('2026-04-23T12:00:00.000Z') } },
                 select: { action: true },
               },
+              toolkitDownloads: {
+                where: { createdAt: { gte: new Date('2026-04-23T12:00:00.000Z') } },
+                select: { registrantId: true },
+              },
             },
           }),
         }),
@@ -184,6 +202,8 @@ describe('getToolkitLibraryReport', () => {
     expect(report.totals.toolkitDownloads).toBe(1)
     expect(report.totals.anonymousToolkitViews).toBe(1)
     expect(report.totals.anonymousToolkitDownloads).toBe(2)
+    expect(report.totals.registrantDownloads).toBe(2)
+
     expect(report.topToolkitDocuments).toEqual([
       {
         id: 'doc_1',
@@ -195,8 +215,16 @@ describe('getToolkitLibraryReport', () => {
         downloads: 1,
         anonymousViews: 1,
         anonymousDownloads: 2,
-        totalEvents: 5,
+        registrantDownloads: 2,
+        totalEvents: 7,
       },
     ])
+
+    expect(report.registrantStats.total).toBe(3)
+    expect(report.registrantStats.registeredAccounts).toBe(1)
+    expect(report.registrantStats.leadOnly).toBe(2)
+    expect(report.registrantStats.marketingConsent).toBe(2)
+    expect(report.registrantStats.formRoleCounts).toEqual({ parent: 2, teacher: 1 })
+    expect(report.registrantStats.topOrganisations[0]).toEqual({ name: 'school a', count: 2 })
   })
 })

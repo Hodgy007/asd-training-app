@@ -16,6 +16,9 @@ type ToolkitEventPrisma = {
   toolkitAnonymousDocumentEvent: {
     create: (args: any) => Promise<unknown>
   }
+  toolkitDownload: {
+    create: (args: any) => Promise<unknown>
+  }
 }
 
 type LibraryReportEvent = {
@@ -27,6 +30,10 @@ type AnonymousLibraryReportEvent = {
   action: string
 }
 
+type ToolkitDownloadReportEvent = {
+  registrantId: string
+}
+
 type LibraryReportDocument = {
   id: string
   title: string
@@ -34,6 +41,7 @@ type LibraryReportDocument = {
   active?: boolean
   events: LibraryReportEvent[]
   anonymousEvents?: AnonymousLibraryReportEvent[]
+  toolkitDownloads?: ToolkitDownloadReportEvent[]
 }
 
 type LibraryReportCollection = {
@@ -55,6 +63,10 @@ type LibraryReportPrisma = {
   organisation: {
     findMany: (args: any) => Promise<Array<{ id: string; name: string }>>
   }
+  toolkitRegistrant: {
+    findMany: (args: any) => Promise<any[]>
+    count: (args?: any) => Promise<number>
+  }
 }
 
 export function getLibraryReportRangeSince(range: LibraryReportRange, now = new Date()): Date | null {
@@ -70,6 +82,7 @@ export async function recordToolkitDocumentEvent(
     documentId: string
     action: ToolkitEventAction
     user?: ToolkitSessionUser | null
+    registrantId?: string | null
   },
 ): Promise<{ recorded: true } | { recorded: false; reason: 'not-found' }> {
   const document = await prisma.libraryDocument.findFirst({
@@ -97,6 +110,15 @@ export async function recordToolkitDocumentEvent(
         action: input.action,
       },
     })
+  } else if (input.registrantId) {
+    // Toolkit registrants get their own table so reports can split
+    // identified-lead downloads from auth'd-user downloads cleanly.
+    await prisma.toolkitDownload.create({
+      data: {
+        documentId: input.documentId,
+        registrantId: input.registrantId,
+      },
+    })
   } else {
     await prisma.toolkitAnonymousDocumentEvent.create({
       data: {
@@ -117,7 +139,8 @@ export async function getToolkitLibraryReport(
   prisma: LibraryReportPrisma,
   options: { range?: LibraryReportRange; now?: Date } = {},
 ) {
-  const since = getLibraryReportRangeSince(options.range ?? 'all', options.now ?? new Date())
+  const now = options.now ?? new Date()
+  const since = getLibraryReportRangeSince(options.range ?? 'all', now)
   const eventWhere = since ? { createdAt: { gte: since } } : undefined
 
   const collections = await prisma.libraryCollection.findMany({
@@ -134,6 +157,10 @@ export async function getToolkitLibraryReport(
             where: eventWhere,
             select: { action: true },
           },
+          toolkitDownloads: {
+            where: eventWhere,
+            select: { registrantId: true },
+          },
         },
       },
     },
@@ -146,6 +173,7 @@ export async function getToolkitLibraryReport(
   let toolkitDownloads = 0
   let anonymousToolkitViews = 0
   let anonymousToolkitDownloads = 0
+  let registrantDownloads = 0
 
   const collectionStats = collections.map((collection) => {
     let totalDownloads = 0
@@ -187,6 +215,7 @@ export async function getToolkitLibraryReport(
         fileName: document.fileName,
         views: countAction(document.events, 'view'),
         downloads: countAction(document.events, 'download'),
+        registrantDownloads: (document.toolkitDownloads ?? []).length,
       })),
     }
   })
@@ -202,11 +231,13 @@ export async function getToolkitLibraryReport(
           const anonymousEvents = document.anonymousEvents ?? []
           const anonymousViews = countAction(anonymousEvents, 'view')
           const anonymousDownloads = countAction(anonymousEvents, 'download')
+          const registrantDls = (document.toolkitDownloads ?? []).length
 
           toolkitViews += views
           toolkitDownloads += downloads
           anonymousToolkitViews += anonymousViews
           anonymousToolkitDownloads += anonymousDownloads
+          registrantDownloads += registrantDls
 
           return {
             id: document.id,
@@ -218,12 +249,53 @@ export async function getToolkitLibraryReport(
             downloads,
             anonymousViews,
             anonymousDownloads,
-            totalEvents: views + downloads + anonymousViews + anonymousDownloads,
+            registrantDownloads: registrantDls,
+            totalEvents: views + downloads + anonymousViews + anonymousDownloads + registrantDls,
           }
         })
     ))
     .filter((document) => document.totalEvents > 0)
     .sort((a, b) => b.totalEvents - a.totalEvents)
+
+  // Lead-capture stats (across all time + last-30-days). Doesn't use the
+  // range filter for views/downloads so the section always answers "how
+  // many people have we captured so far"; the range affects download counts
+  // (which use eventWhere above) but not lifetime registrant totals.
+  const registrantWhere: any = since ? { createdAt: { gte: since } } : undefined
+  const [registrantsAll, registrantsInRange, registrantsRoleSplit, marketingOptInTotal] = await Promise.all([
+    prisma.toolkitRegistrant.findMany({
+      select: {
+        id: true,
+        formRole: true,
+        organisation: true,
+        userId: true,
+        marketingConsent: true,
+        createdAt: true,
+      },
+    }),
+    registrantWhere
+      ? prisma.toolkitRegistrant.count({ where: registrantWhere })
+      : prisma.toolkitRegistrant.count(),
+    Promise.resolve([]) as Promise<unknown[]>,
+    prisma.toolkitRegistrant.count({ where: { marketingConsent: true } }),
+  ])
+
+  const formRoleCounts: Record<string, number> = {}
+  const orgCounts: Record<string, number> = {}
+  let registeredAccountCount = 0
+  for (const reg of registrantsAll as Array<{ formRole: string; organisation: string | null; userId: string | null }>) {
+    formRoleCounts[reg.formRole] = (formRoleCounts[reg.formRole] ?? 0) + 1
+    if (reg.organisation) {
+      const k = reg.organisation.trim().toLowerCase()
+      orgCounts[k] = (orgCounts[k] ?? 0) + 1
+    }
+    if (reg.userId) registeredAccountCount++
+  }
+
+  const topRegistrantOrgs = Object.entries(orgCounts)
+    .map(([key, count]) => ({ name: key, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10)
 
   const totals = {
     totalCollections: collections.length,
@@ -234,6 +306,17 @@ export async function getToolkitLibraryReport(
     toolkitDownloads,
     anonymousToolkitViews,
     anonymousToolkitDownloads,
+    registrantDownloads,
+  }
+
+  const registrantStats = {
+    total: registrantsAll.length,
+    inRange: registrantsInRange,
+    registeredAccounts: registeredAccountCount,
+    leadOnly: registrantsAll.length - registeredAccountCount,
+    marketingConsent: marketingOptInTotal,
+    formRoleCounts,
+    topOrganisations: topRegistrantOrgs,
   }
 
   return {
@@ -241,5 +324,6 @@ export async function getToolkitLibraryReport(
     collections: collectionStats,
     organisations: orgs,
     topToolkitDocuments,
+    registrantStats,
   }
 }

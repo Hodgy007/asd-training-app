@@ -74,7 +74,13 @@ function getNavItems(
     items.push({ href: '/library', label: 'Document Library', icon: FolderOpen })
   }
 
-  items.push({ href: '/sessions', label: 'Workshops', icon: Calendar })
+  // FAMILY_CARER (parent/friend/relative/carer) gets a deliberately
+  // stripped surface — Dashboard + Library + How-to + Settings only.
+  // No Workshops, no training programs. They're typically self-registered
+  // via the public toolkit and don't have a cohort or training plan.
+  if (role !== 'FAMILY_CARER') {
+    items.push({ href: '/sessions', label: 'Workshops', icon: Calendar })
+  }
 
   // Sort everything after Dashboard alphabetically
   const dashboard = items[0]
@@ -89,6 +95,7 @@ const ROLE_LABELS: Record<string, string> = {
   INTERN: 'Intern',
   EMPLOYEE: 'Employee',
   PARTICIPANT: 'Workshop Participant',
+  FAMILY_CARER: 'Parent/Friend/Relative/Carer',
 }
 
 const ROLE_BADGE_STYLES: Record<string, string> = {
@@ -98,6 +105,7 @@ const ROLE_BADGE_STYLES: Record<string, string> = {
   INTERN: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
   EMPLOYEE: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300',
   PARTICIPANT: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  FAMILY_CARER: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
 }
 
 interface SidebarProps {

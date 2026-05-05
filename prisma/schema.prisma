@@ -72,6 +72,7 @@ model User {
   feedbackSubmissions   FeedbackSubmission[]   @relation("FeedbackSubmitter")
   resolvedFeedback      FeedbackSubmission[]   @relation("FeedbackResolver")
   purchases             Purchase[]
+  toolkitRegistrant     ToolkitRegistrant?     @relation("ToolkitRegistrantUser")
 
   @@index([organisationId])
 }
@@ -597,6 +598,7 @@ enum Role {
   INTERN
   EMPLOYEE
   PARTICIPANT
+  FAMILY_CARER
 }
 
 enum OrgLifecycleStatus {
@@ -698,10 +700,11 @@ model LibraryDocument {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  collection      LibraryCollection               @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  uploadedBy      User                            @relation("UploadedDocuments", fields: [uploadedById], references: [id])
-  events          LibraryDocumentEvent[]
-  anonymousEvents ToolkitAnonymousDocumentEvent[]
+  collection        LibraryCollection               @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  uploadedBy        User                            @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+  events            LibraryDocumentEvent[]
+  anonymousEvents   ToolkitAnonymousDocumentEvent[]
+  toolkitDownloads  ToolkitDownload[]               @relation("ToolkitDownloads")
 }
 
 model LibraryDocumentEvent {
@@ -729,6 +732,43 @@ model ToolkitAnonymousDocumentEvent {
   document LibraryDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId, action])
+  @@index([createdAt])
+}
+
+// Lead-capture record for the public /toolkit download flow. One row per
+// unique email. `userId` is set if the visitor opted to also create a real
+// platform account from the form (which lives in the Public Toolkit Users
+// org). Without `userId` they're a lead-only — we know who they are but
+// they have no platform sign-in.
+model ToolkitRegistrant {
+  id               String            @id @default(cuid())
+  name             String
+  email            String            @unique
+  formRole         String
+  organisation     String?
+  postcode         String?
+  marketingConsent Boolean           @default(false)
+  userId           String?           @unique
+  createdAt        DateTime          @default(now())
+  lastSeenAt       DateTime          @default(now())
+
+  user      User?             @relation("ToolkitRegistrantUser", fields: [userId], references: [id], onDelete: SetNull)
+  downloads ToolkitDownload[]
+
+  @@index([email])
+}
+
+model ToolkitDownload {
+  id           String   @id @default(cuid())
+  registrantId String
+  documentId   String
+  createdAt    DateTime @default(now())
+
+  registrant ToolkitRegistrant @relation(fields: [registrantId], references: [id], onDelete: Cascade)
+  document   LibraryDocument   @relation("ToolkitDownloads", fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([registrantId])
   @@index([createdAt])
 }
 

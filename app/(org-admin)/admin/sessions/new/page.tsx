@@ -30,6 +30,7 @@ interface MeetingConfig {
 
 const ROLE_LABELS: Record<string, string> = {
   CAREGIVER: 'Practitioner',
+  FAMILY_CARER: 'Parent/Friend/Relative/Carer',
   CAREER_DEV_OFFICER: 'Careers Professional',
   STUDENT: 'Student',
   INTERN: 'Intern',

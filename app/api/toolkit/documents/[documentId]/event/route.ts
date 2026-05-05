@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { recordToolkitDocumentEvent } from '@/lib/toolkit'
+import { getToolkitRegistrant } from '@/lib/toolkit-session'
 
 const eventSchema = z.object({
   action: z.enum(['view', 'download']),
@@ -17,6 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: { documentId:
   }
 
   const session = await getServerSession(authOptions)
+  const registrant = session?.user?.id ? null : await getToolkitRegistrant()
   const result = await recordToolkitDocumentEvent(prisma, {
     documentId: params.documentId,
     action: parsed.data.action,
@@ -26,6 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: { documentId:
           organisationId: session.user.organisationId ?? null,
         }
       : null,
+    registrantId: registrant?.id ?? null,
   })
 
   if (!result.recorded) {

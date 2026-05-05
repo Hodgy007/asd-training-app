@@ -90,6 +90,7 @@ const ROLE_STYLES: Record<string, string> = {
 
 const ROLE_LABELS: Record<string, string> = {
   CAREGIVER: 'Practitioner',
+  FAMILY_CARER: 'Parent/Friend/Relative/Carer',
   CAREER_DEV_OFFICER: 'Careers',
   STUDENT: 'Student',
   INTERN: 'Intern',

@@ -8,6 +8,7 @@ export type Role =
   | 'INTERN'
   | 'EMPLOYEE'
   | 'PARTICIPANT'
+  | 'FAMILY_CARER'
 
 export const LEAF_ROLES: Role[] = [
   'CAREGIVER',
@@ -16,6 +17,7 @@ export const LEAF_ROLES: Role[] = [
   'INTERN',
   'EMPLOYEE',
   'PARTICIPANT',
+  'FAMILY_CARER',
 ]
 
 export interface Organisation {
