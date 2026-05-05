@@ -91,20 +91,32 @@ async function getUserSubscriptionInfo(
   }
 }
 
+// Google + Azure AD OAuth SSO are gated behind ENABLE_OAUTH_SSO. Default off:
+// the providers aren't registered with NextAuth at all when disabled, so direct
+// hits on /api/auth/callback/google or /api/auth/callback/azure-ad return 404.
+// To re-enable, set ENABLE_OAUTH_SSO=true on Vercel and provide the OAuth
+// credentials (GOOGLE_CLIENT_ID/SECRET, AZURE_AD_CLIENT_ID/SECRET/TENANT_ID).
+// SAML SSO and credentials login are unaffected.
+const OAUTH_SSO_ENABLED = process.env.ENABLE_OAUTH_SSO === 'true'
+
 export const authOptions: NextAuthOptions = {
   // No adapter — we use JWT sessions and handle SSO linking manually in signIn callback
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
-      allowDangerousEmailAccountLinking: true,
-    }),
-    AzureADProvider({
-      clientId: process.env.AZURE_AD_CLIENT_ID ?? '',
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET ?? '',
-      tenantId: process.env.AZURE_AD_TENANT_ID ?? 'common',
-      allowDangerousEmailAccountLinking: true,
-    }),
+    ...(OAUTH_SSO_ENABLED
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+            allowDangerousEmailAccountLinking: true,
+          }),
+          AzureADProvider({
+            clientId: process.env.AZURE_AD_CLIENT_ID ?? '',
+            clientSecret: process.env.AZURE_AD_CLIENT_SECRET ?? '',
+            tenantId: process.env.AZURE_AD_TENANT_ID ?? 'common',
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: 'credentials',
       credentials: {

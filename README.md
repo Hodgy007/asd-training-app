@@ -303,11 +303,11 @@ Secure programmatic access to platform data for external systems.
 
 1. **Email and Password** — credentials-based login with bcrypt password hashing. Password complexity is enforced (minimum length, mixed characters). Forgot-password flow sends a reset link via Resend email.
 
-2. **Google SSO** — OAuth 2.0 via Google. Users must be pre-created by an admin — Google SSO does not allow self-registration. The `signIn` callback checks for an existing user by email, creates an `Account` link record if missing, and rejects unknown emails.
+2. **Google SSO** — *Currently disabled.* OAuth 2.0 via Google. Gated behind the `ENABLE_OAUTH_SSO` env var; when off the provider is not registered with NextAuth and the login page hides the button. The implementation is preserved in `lib/auth.ts` (conditional provider array) and `/api/auth/sso-providers` so the feature can be re-enabled later by setting `ENABLE_OAUTH_SSO="true"` and providing `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. When enabled: users must be pre-created by an admin (no self-registration); the `signIn` callback links by email and rejects unknown accounts.
 
-3. **Microsoft Azure AD SSO** — same flow as Google. Supports both personal Microsoft accounts and work/school accounts (configured with `signInAudience: AzureADandPersonalMicrosoftAccount`).
+3. **Microsoft Azure AD SSO** — *Currently disabled.* Same gate as Google (`ENABLE_OAUTH_SSO`). Re-enabling requires `AZURE_AD_CLIENT_ID`, `AZURE_AD_CLIENT_SECRET`, and `AZURE_AD_TENANT_ID` (use `common` for personal + work/school accounts; the Azure app manifest needs `signInAudience: AzureADandPersonalMicrosoftAccount`).
 
-4. **SAML SSO** — per-organisation SAML configuration for enterprise identity providers. Org Admins configure SAML at `/admin/settings/sso` with entity ID, SSO URL, and certificate. Charity-level SAML is configured at `/super-admin/settings/sso` with an option to enforce SSO for all charity users.
+4. **SAML SSO** — per-organisation SAML configuration for enterprise identity providers. **Not affected by the OAuth SSO toggle.** Org Admins configure SAML at `/admin/settings/sso` with entity ID, SSO URL, and certificate. Charity-level SAML is configured at `/super-admin/settings/sso` with an option to enforce SSO for all charity users.
 
 ### Multi-Factor Authentication (MFA)
 
@@ -555,11 +555,12 @@ Copy `.env.example` to `.env.local` for local development. For production (Verce
 | `NEXTAUTH_URL` | Yes | Deployed URL (`https://asd-training-app-v2.vercel.app`) — no trailing slash |
 | `GEMINI_API_KEY` | Legacy | Direct Google Gemini API key. Kept for backwards compatibility — `AI_GATEWAY_API_KEY` is the canonical path now. |
 | `RESEND_API_KEY` | Yes | Resend API key for forgot-password emails |
-| `GOOGLE_CLIENT_ID` | No | Google OAuth client ID (Google SSO disabled if absent) |
-| `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret |
-| `AZURE_AD_CLIENT_ID` | No | Azure AD app client ID (Microsoft SSO disabled if absent) |
-| `AZURE_AD_CLIENT_SECRET` | No | Azure AD client secret |
-| `AZURE_AD_TENANT_ID` | No | `common` for all account types, or a specific tenant ID |
+| `ENABLE_OAUTH_SSO` | No | Master switch for Google + Microsoft OAuth SSO. **Currently disabled** (default `false`). Set to `"true"` to re-enable; the providers aren't registered with NextAuth at all when off. SAML SSO and credentials login are unaffected. |
+| `GOOGLE_CLIENT_ID` | No | Google OAuth client ID. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
+| `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
+| `AZURE_AD_CLIENT_ID` | No | Azure AD app client ID. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
+| `AZURE_AD_CLIENT_SECRET` | No | Azure AD client secret. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
+| `AZURE_AD_TENANT_ID` | No | `common` for all account types, or a specific tenant ID. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
 | `BLOB_READ_WRITE_TOKEN` | Yes | Vercel Blob storage token for document uploads, AI thumbnails, and SCORM packages |
 | `AI_GATEWAY_API_KEY` | Yes | Vercel AI Gateway key. AI features route through the gateway using provider/model strings (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`). Replaces direct provider keys at runtime. |
 | `ELEVENLABS_API_KEY` | No | ElevenLabs API key for the lesson read-aloud player (Lily voice). Synthesised MP3s are cached on Blob under `tts/<voiceId>/<sha256>.mp3`. |

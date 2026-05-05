@@ -60,7 +60,7 @@ This is not optional — you will be redirected to the MFA setup page automatica
 
 ### Signing in
 
-The login page has a toggle at the top to switch between **Email & Password** and **Single Sign-On** (Google / Microsoft). Super Admins typically sign in with email and password, since MFA is required after login regardless.
+The login page has a toggle at the top to switch between **Email & Password** and **Single Sign-On** (Google / Microsoft). **Google and Microsoft SSO are currently disabled** — when the user opens the Single Sign-On tab they see "Single Sign-On is not yet configured. Please sign in with email and password." See section 15 for how to re-enable. Super Admins should sign in with email and password; MFA is required after login regardless.
 
 ### Setting up MFA — step by step
 
@@ -747,7 +747,19 @@ Super Admins (Charity Admins) have implicit access to every feature regardless o
 
 ## 15. Single Sign-On (SSO) Setup
 
+> **Status: Currently disabled.** Google and Microsoft OAuth login are turned off on the live site. Users sign in with email and password (or via per-org SAML SSO if their organisation has it configured). The feature is preserved in code and can be switched back on at any time — the steps below describe how to re-enable it.
+
 SSO allows users across all organisations to sign in with their existing Google or Microsoft account instead of a platform-specific password. SSO is a one-time setup performed by the super admin or app owner — once configured, all organisations benefit automatically.
+
+### Re-enabling OAuth SSO
+
+OAuth SSO is gated behind a single Vercel environment variable, `ENABLE_OAUTH_SSO`. While it is set to `false` (or unset) the Google and Microsoft sign-in buttons are hidden on the login page and the providers are not registered with NextAuth.
+
+To turn the feature back on:
+
+1. In the Vercel project (`asd-training-app-v2`) → **Settings → Environment Variables**, set `ENABLE_OAUTH_SSO` to `true` for the Production environment (and Preview/Development if you want to test there too).
+2. Make sure the OAuth credentials below are still populated (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `AZURE_AD_CLIENT_ID`, `AZURE_AD_CLIENT_SECRET`, `AZURE_AD_TENANT_ID`). If they were removed during the disable step, re-create the OAuth apps using the steps below.
+3. Redeploy. The login page will show the Google and Microsoft buttons under the **Single Sign-On** tab again.
 
 ### Google SSO
 
@@ -770,7 +782,7 @@ SSO allows users across all organisations to sign in with their existing Google 
 4. Copy the **Application (client) ID** and **Client Secret** into the Vercel environment variables `AZURE_AD_CLIENT_ID` and `AZURE_AD_CLIENT_SECRET`.
 5. Set `AZURE_AD_TENANT_ID` to `common` (to allow both personal and work/school Microsoft accounts) or to your specific tenant ID.
 
-Once these environment variables are deployed, the login page will show Google and Microsoft options under the **Single Sign-On** tab. Users must still be pre-created by an admin before they can sign in via SSO — the platform does not allow self-registration through SSO.
+Once `ENABLE_OAUTH_SSO="true"` is deployed alongside these credentials, the login page will show Google and Microsoft options under the **Single Sign-On** tab. Users must still be pre-created by an admin before they can sign in via SSO — the platform does not allow self-registration through SSO.
 
 ---
 
