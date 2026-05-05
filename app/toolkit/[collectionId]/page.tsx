@@ -54,7 +54,6 @@ export default async function ToolkitCollectionPage({
           id: true,
           title: true,
           description: true,
-          fileUrl: true,
           fileName: true,
           fileSize: true,
           fileType: true,
@@ -196,7 +195,7 @@ export default async function ToolkitCollectionPage({
                     </p>
 
                     <div className="mt-auto pt-2">
-                      <ToolkitDocumentActions documentId={doc.id} fileUrl={doc.fileUrl} fileName={doc.fileName} />
+                      <ToolkitDocumentActions documentId={doc.id} documentTitle={doc.title} fileName={doc.fileName} />
                     </div>
                   </div>
                 </article>

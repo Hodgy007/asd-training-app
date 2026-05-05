@@ -11,6 +11,7 @@ const ROLE_LABELS: Record<string, string> = {
   INTERN: 'Intern',
   EMPLOYEE: 'Employee',
   CAREGIVER: 'Practitioner',
+  FAMILY_CARER: 'Parent/Friend/Relative/Carer',
 }
 
 export default function SettingsAccountPage() {

@@ -45,6 +45,7 @@ export const ROLE_LABELS: Record<string, string> = {
   INTERN: 'Intern',
   EMPLOYEE: 'Employee',
   PARTICIPANT: 'Workshop Participant',
+  FAMILY_CARER: 'Parent/Friend/Relative/Carer',
 }
 
 /** Get the display label for a role. Falls back to the raw role string. */
@@ -118,8 +119,14 @@ export function isLeafRole(session: Session | null): boolean {
     'STUDENT',
     'INTERN',
     'EMPLOYEE',
-    'PARTICIPANT'
+    'PARTICIPANT',
+    'FAMILY_CARER'
   )
+}
+
+/** FAMILY_CARER — parent/friend/relative/carer (stripped-back surface; no training/careers/sessions). */
+export function isFamilyCarer(session: Session | null): boolean {
+  return hasRole(session, 'FAMILY_CARER')
 }
 
 /** PARTICIPANT — joined a cohort via invite link, no formal org affiliation */

@@ -130,6 +130,7 @@ interface SurveySummary {
 const ROLE_LABELS: Record<string, string> = {
   ORG_ADMIN: 'Org Admin',
   CAREGIVER: 'Practitioner',
+  FAMILY_CARER: 'Parent/Friend/Relative/Carer',
   CAREER_DEV_OFFICER: 'Careers Professional',
   STUDENT: 'Student',
   INTERN: 'Intern',
@@ -1520,6 +1521,7 @@ function OrgDetailsView({
   const roleLabels: Record<string, string> = {
     ORG_ADMIN: 'Org Admin',
     CAREGIVER: 'Practitioner',
+    FAMILY_CARER: 'Parent/Friend/Relative/Carer',
     CAREER_DEV_OFFICER: 'Careers Professional',
     STUDENT: 'Student',
     INTERN: 'Intern',

@@ -174,6 +174,17 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // FAMILY_CARER — parent/friend/relative/carer users (typically self-
+  // registered via the public toolkit) get an even more stripped surface
+  // than PARTICIPANT: no Workshops, no training, no careers tooling.
+  // Dashboard + Library + How-to + Settings only.
+  if (role === 'FAMILY_CARER') {
+    const blockedForFamilyCarer = ['/cv-builder', '/careers-advisor', '/jobs', '/students', '/careers', '/training', '/sessions']
+    if (blockedForFamilyCarer.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+      return redirect(new URL(homeForRole(role), req.url), 'role_blocked_family_carer', { userId })
+    }
+  }
+
   // Post-login redirect: if landing on root /, redirect to role home
   if (pathname === '/') {
     return redirect(new URL(homeForRole(role), req.url), 'root_to_home', { userId, role })

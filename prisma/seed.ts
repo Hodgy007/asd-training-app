@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { seedPublicToolkitOrg } from './seed-public-toolkit-org'
 
 const prisma = new PrismaClient()
 
@@ -713,6 +714,8 @@ A diagnosis does not change who a child is. It can open doors to support, provid
 
 async function main() {
   console.log('Seeding database...')
+
+  await seedPublicToolkitOrg(prisma)
 
   // Create admin user
   const adminPassword = await bcrypt.hash('admin123', 12)

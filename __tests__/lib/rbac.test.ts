@@ -135,7 +135,7 @@ describe('isOrgAdmin', () => {
 })
 
 describe('isLeafRole', () => {
-  const leafRoles = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE', 'PARTICIPANT']
+  const leafRoles = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE', 'PARTICIPANT', 'FAMILY_CARER']
   const nonLeafRoles = ['SUPER_ADMIN', 'CHARITY_EMPLOYEE', 'ORG_ADMIN']
 
   it.each(leafRoles)('returns true for %s', (role) => {
@@ -218,6 +218,10 @@ describe('canCreateSessions', () => {
     expect(canCreateSessions(makeSession('EMPLOYEE'))).toBe(false)
   })
 
+  it('returns false for FAMILY_CARER (stripped-back surface — no Workshops)', () => {
+    expect(canCreateSessions(makeSession('FAMILY_CARER'))).toBe(false)
+  })
+
   it('returns false for null session', () => {
     expect(canCreateSessions(null)).toBe(false)
   })
@@ -283,6 +287,7 @@ describe('getRoleLabel', () => {
     expect(getRoleLabel('STUDENT')).toBe('Student')
     expect(getRoleLabel('INTERN')).toBe('Intern')
     expect(getRoleLabel('EMPLOYEE')).toBe('Employee')
+    expect(getRoleLabel('FAMILY_CARER')).toBe('Parent/Friend/Relative/Carer')
   })
 
   it('returns the raw string for unknown roles', () => {
@@ -307,8 +312,9 @@ describe('CHARITY_PERMISSIONS constant', () => {
 })
 
 describe('ROLE_LABELS constant', () => {
-  it('has labels for all nine roles', () => {
-    expect(Object.keys(ROLE_LABELS)).toHaveLength(9)
+  it('has labels for all ten roles', () => {
+    expect(Object.keys(ROLE_LABELS)).toHaveLength(10)
     expect(ROLE_LABELS.PARTICIPANT).toBe('Workshop Participant')
+    expect(ROLE_LABELS.FAMILY_CARER).toBe('Parent/Friend/Relative/Carer')
   })
 })

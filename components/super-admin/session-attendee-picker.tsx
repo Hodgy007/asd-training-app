@@ -38,6 +38,7 @@ interface SessionAttendeePickerProps {
 
 const LEAF_ROLES: { value: string; label: string }[] = [
   { value: 'CAREGIVER', label: 'Practitioner' },
+  { value: 'FAMILY_CARER', label: 'Parent/Friend/Relative/Carer' },
   { value: 'CAREER_DEV_OFFICER', label: 'Career Dev Officer' },
   { value: 'STUDENT', label: 'Student' },
   { value: 'INTERN', label: 'Intern' },

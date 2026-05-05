@@ -144,6 +144,11 @@ export const introspectLimiter = createRateLimiter('introspect', 5 * 60 * 1000, 
 // Cohort join: 10 per 15 minutes per IP — public, so a real ceiling matters
 export const joinLimiter = createRateLimiter('cohort-join', 15 * 60 * 1000, 10)
 
+// Public toolkit lead capture: 20 per 15 minutes per IP. The form is the only
+// gate before downloading a public file, so we want a real ceiling without
+// frustrating a household where two siblings download in quick succession.
+export const toolkitLeadLimiter = createRateLimiter('toolkit-lead', 15 * 60 * 1000, 20)
+
 // ─── Backward-compat: simple sync API used by legacy tests ────────────────────
 
 const simpleStore = new Map<string, { count: number; resetAt: number }>()

@@ -39,10 +39,11 @@ interface Module {
   _count: { lessons: number }
 }
 
-type LeafRole = 'CAREGIVER' | 'CAREER_DEV_OFFICER' | 'STUDENT' | 'INTERN' | 'EMPLOYEE'
+type LeafRole = 'CAREGIVER' | 'FAMILY_CARER' | 'CAREER_DEV_OFFICER' | 'STUDENT' | 'INTERN' | 'EMPLOYEE'
 
 const LEAF_ROLE_LABELS: Record<LeafRole, string> = {
   CAREGIVER: 'Practitioner (Caregiver)',
+  FAMILY_CARER: 'Parent/Friend/Relative/Carer (Family Carer)',
   CAREER_DEV_OFFICER: 'Careers Professional',
   STUDENT: 'Student',
   INTERN: 'Intern',

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { ToolkitSessionStatus } from '@/components/toolkit/toolkit-session-status'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -211,8 +212,9 @@ export default async function ToolkitPage() {
           </div>
         </div>
         <div className="border-t border-white/10">
-          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-2 px-6 py-6 text-xs text-slate-400 sm:flex-row sm:items-center">
+          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-6 py-6 text-xs text-slate-400 sm:flex-row sm:items-center">
             <p>© Ambitious about Autism. Registered charity 1063184.</p>
+            <ToolkitSessionStatus />
             <p>Free resources. No payment required.</p>
           </div>
         </div>
