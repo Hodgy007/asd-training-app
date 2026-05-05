@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, X } from 'lucide-react'
 import { TOOLKIT_FORM_ROLES, TOOLKIT_FORM_ROLE_LABELS, type ToolkitFormRole } from '@/lib/toolkit-registration'
@@ -61,7 +62,20 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
     return () => document.removeEventListener('keydown', onKey)
   }, [open, submitting, onClose])
 
+  // Lock background scroll while the modal is open. Without this the
+  // toolkit page behind the dialog scrolls when users hit the down-arrow
+  // on the password field, which feels broken.
+  useEffect(() => {
+    if (!open) return
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [open])
+
   if (!open) return null
+  if (typeof window === 'undefined') return null
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((s) => ({ ...s, [key]: value }))
@@ -132,14 +146,14 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
     }
   }
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby={headingId}
       className="fixed inset-0 z-[100] flex items-end justify-center bg-[#001522]/55 p-4 sm:items-center"
     >
-      <div className="relative w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+      <div className="relative flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -181,7 +195,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
             </div>
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="space-y-4 px-6 pb-7 pt-4 sm:px-8 sm:pb-8">
+          <form onSubmit={onSubmit} className="space-y-4 overflow-y-auto px-6 pb-7 pt-4 sm:px-8 sm:pb-8">
             {error ? (
               <div className="flex items-start gap-3 rounded-2xl bg-rose-50 p-4 text-rose-900">
                 <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-rose-600" aria-hidden="true" />
@@ -344,6 +358,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
