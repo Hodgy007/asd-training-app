@@ -9,6 +9,7 @@ import JSZip from 'jszip'
 import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
 import { CollectionActionsPanel } from '@/components/super-admin/library/collection-actions-panel'
 import { CollectionThemePicker } from '@/components/super-admin/library/collection-theme-picker'
+import { SectionsManager } from '@/components/super-admin/library/sections-manager'
 import { ImageLightbox } from '@/components/ui/image-lightbox'
 import {
   ArrowLeft,
@@ -45,9 +46,19 @@ interface LibraryDoc {
   thumbnailUrl: string | null
   videoUrl: string | null
   active: boolean
+  sectionId: string | null
+  order: number
   createdAt: string
   uploadedBy: { name: string | null }
   _count: { events: number }
+}
+
+interface LibrarySectionLite {
+  id: string
+  title: string
+  description: string | null
+  order: number
+  _count?: { documents: number }
 }
 
 interface Collection {
@@ -61,6 +72,7 @@ interface Collection {
   active: boolean
   publishedToToolkit: boolean
   documents: LibraryDoc[]
+  sections: LibrarySectionLite[]
 }
 
 function formatFileSize(bytes: number): string {
@@ -437,6 +449,69 @@ export default function CollectionDetailPage() {
         showToast(`Document ${!doc.active ? 'activated' : 'deactivated'}.`, 'success')
         fetchCollection()
       }
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  // Move a document to a different section (or to "no section"). Server
+  // verifies the section belongs to this collection. We don't reset
+  // `order` on move — the doc inherits whatever order it had, which
+  // generally puts it at the head of its new bucket; admin can then
+  // reorder within the section using the up/down arrows.
+  async function handleChangeSection(doc: LibraryDoc, sectionId: string | null) {
+    setActionLoading(doc.id + '-section')
+    try {
+      const res = await fetch(`/api/super-admin/library/${collectionId}/documents/${doc.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sectionId }),
+      })
+      if (res.ok) {
+        await fetchCollection()
+      } else {
+        showToast('Failed to move document.', 'error')
+      }
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  // Swap a document's order with its neighbour within the same section /
+  // unsectioned bucket. Mirrors the swapModuleOrder pattern used in
+  // /super-admin/training: two PATCH requests, sequential ints, no
+  // server-side helper.
+  async function handleSwapDocOrder(doc: LibraryDoc, direction: -1 | 1) {
+    if (!collection) return
+    // Pick the neighbour from the same bucket (same sectionId) only —
+    // up/down should not move a doc out of its section.
+    const peers = collection.documents
+      .filter((d) => d.sectionId === doc.sectionId)
+      .sort((a, b) => {
+        if (a.order !== b.order) return a.order - b.order
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      })
+    const idx = peers.findIndex((d) => d.id === doc.id)
+    const neighbour = peers[idx + direction]
+    if (!neighbour) return
+    setActionLoading(doc.id + '-reorder')
+    try {
+      const [r1, r2] = await Promise.all([
+        fetch(`/api/super-admin/library/${collectionId}/documents/${doc.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: neighbour.order }),
+        }),
+        fetch(`/api/super-admin/library/${collectionId}/documents/${neighbour.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: doc.order }),
+        }),
+      ])
+      if (!r1.ok || !r2.ok) {
+        showToast('Failed to reorder documents.', 'error')
+      }
+      await fetchCollection()
     } finally {
       setActionLoading(null)
     }
@@ -894,6 +969,14 @@ export default function CollectionDetailPage() {
         </div>
       )}
 
+      {/* Sections manager — optional grouping for the collection */}
+      <SectionsManager
+        collectionId={collection.id}
+        sections={collection.sections}
+        onChanged={fetchCollection}
+        onError={(msg) => showToast(msg, 'error')}
+      />
+
       {/* Documents list */}
       <div className="card overflow-hidden p-0">
         <div className="flex items-center justify-between px-4 py-3 border-b border-calm-200 dark:border-slate-700">
@@ -1073,6 +1156,44 @@ export default function CollectionDetailPage() {
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                       {doc.fileName} · {formatFileSize(doc.fileSize)} · {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
+                  </div>
+
+                  {/* Section dropdown — only render once a section exists */}
+                  {collection.sections.length > 0 && (
+                    <select
+                      value={doc.sectionId ?? ''}
+                      disabled={actionLoading === doc.id + '-section'}
+                      onChange={(e) => handleChangeSection(doc, e.target.value || null)}
+                      className="text-xs rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1 max-w-[12rem] truncate"
+                      title="Move to section"
+                    >
+                      <option value="">No section</option>
+                      {collection.sections.map((s) => (
+                        <option key={s.id} value={s.id}>{s.title}</option>
+                      ))}
+                    </select>
+                  )}
+
+                  {/* Reorder within section / unsectioned bucket */}
+                  <div className="flex flex-col gap-0.5 flex-shrink-0">
+                    <button
+                      type="button"
+                      disabled={actionLoading === doc.id + '-reorder'}
+                      onClick={() => handleSwapDocOrder(doc, -1)}
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-700 disabled:opacity-25"
+                      title="Move up within section"
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={actionLoading === doc.id + '-reorder'}
+                      onClick={() => handleSwapDocOrder(doc, 1)}
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-700 disabled:opacity-25"
+                      title="Move down within section"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
                   </div>
 
                   {/* Actions */}

@@ -682,11 +682,39 @@ model LibraryCollection {
 
   createdBy User              @relation("CollectionsCreated", fields: [createdById], references: [id])
   documents LibraryDocument[]
+  sections  LibrarySection[]
+}
+
+// Optional grouping inside a LibraryCollection. When zero sections exist the
+// collection's documents render as a flat grid (back-compat). When sections
+// exist the read-only views group documents by section, ordered by
+// LibrarySection.order then LibraryDocument.order. Documents whose
+// sectionId is null fall through to a final "Other resources" group.
+model LibrarySection {
+  id           String   @id @default(cuid())
+  collectionId String
+  title        String
+  description  String?  @db.Text
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  collection LibraryCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  documents  LibraryDocument[]
+
+  @@index([collectionId, order])
 }
 
 model LibraryDocument {
   id           String   @id @default(cuid())
   collectionId String
+  // Optional grouping inside the parent collection. Null = unsectioned
+  // (rendered under an "Other resources" heading once any sections exist).
+  sectionId    String?
+  // Position within the section (or within the unsectioned bucket).
+  // Sequential ints, mutated directly by PATCH like Module.order /
+  // Lesson.order — no swap helper / fractional indexing.
+  order        Int      @default(0)
   title        String
   description  String   @db.Text
   fileUrl      String
@@ -701,10 +729,13 @@ model LibraryDocument {
   updatedAt    DateTime @updatedAt
 
   collection        LibraryCollection               @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  section           LibrarySection?                 @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   uploadedBy        User                            @relation("UploadedDocuments", fields: [uploadedById], references: [id])
   events            LibraryDocumentEvent[]
   anonymousEvents   ToolkitAnonymousDocumentEvent[]
   toolkitDownloads  ToolkitDownload[]               @relation("ToolkitDownloads")
+
+  @@index([collectionId, sectionId, order])
 }
 
 model LibraryDocumentEvent {

@@ -29,12 +29,20 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     where: { id: params.id },
     include: {
       createdBy: { select: { name: true } },
+      // Ordered to match the read-only render: section.order then doc.order
+      // then createdAt DESC. The flat fallback (no sections defined) sorts
+      // by `order` first too — defaults to 0, so older docs preserve
+      // their createdAt-DESC tie-break visually.
       documents: {
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
         include: {
           uploadedBy: { select: { name: true } },
           _count: { select: { events: true } },
         },
+      },
+      sections: {
+        orderBy: { order: 'asc' },
+        include: { _count: { select: { documents: true } } },
       },
     },
   })

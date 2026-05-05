@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { ToolkitDocumentActions } from '@/components/toolkit/toolkit-document-actions'
 import { ToolkitLeadModalHost } from '@/components/toolkit/toolkit-lead-modal-host'
+import { groupDocumentsBySection, isSectionedCollection, UNSECTIONED_GROUP_TITLE } from '@/lib/library-sections'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -49,6 +50,10 @@ export default async function ToolkitCollectionPage({
       title: true,
       description: true,
       thumbnailUrl: true,
+      sections: {
+        orderBy: { order: 'asc' },
+        select: { id: true, title: true, description: true, order: true },
+      },
       documents: {
         where: { active: true },
         select: {
@@ -60,8 +65,10 @@ export default async function ToolkitCollectionPage({
           fileType: true,
           thumbnailUrl: true,
           createdAt: true,
+          sectionId: true,
+          order: true,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
       },
     },
   })
@@ -147,63 +154,97 @@ export default async function ToolkitCollectionPage({
             </p>
           </div>
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {collection.documents.map((doc, index) => {
-              const theme = TILE_THEMES[index % TILE_THEMES.length]
-              const typeLabel = fileTypeLabel(doc.fileType, doc.fileName)
-              return (
-                <article
-                  key={doc.id}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-[24px] bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
-                >
-                  {/* Cover */}
-                  <div className="relative aspect-[4/3] w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
-                    <div className="pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full opacity-60" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
-                    <div className="pointer-events-none absolute -top-6 -left-6 h-16 w-16 rounded-full opacity-40" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
+          {(() => {
+            const sectioned = isSectionedCollection(collection.sections)
+            const groups = sectioned
+              ? groupDocumentsBySection(collection.sections, collection.documents, { includeEmptySections: false })
+              : [{ section: null, documents: collection.documents }]
+            // Theme cycles globally across all groups so colours don't reset at
+            // each section boundary — keeps the visual rhythm of the page.
+            let themeCounter = 0
 
-                    {doc.thumbnailUrl ? (
-                      <img
-                        src={doc.thumbnailUrl}
-                        alt=""
-                        className="relative h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="relative flex h-full w-full items-center justify-center">
-                        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/85 shadow-sm">
-                          <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke={theme.accent} strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
+            return (
+              <div className="mt-10 space-y-12">
+                {groups.map((group, gi) => {
+                  if (group.documents.length === 0) return null
+                  const heading = group.section
+                    ? group.section.title
+                    : sectioned
+                      ? UNSECTIONED_GROUP_TITLE
+                      : null
+                  return (
+                    <div key={group.section?.id ?? `group-${gi}`}>
+                      {heading ? (
+                        <div className="mb-6">
+                          <h3 className="text-2xl font-extrabold text-[#001522] sm:text-3xl">{heading}</h3>
+                          {group.section?.description ? (
+                            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569]">{group.section.description}</p>
+                          ) : null}
                         </div>
+                      ) : null}
+                      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {group.documents.map((doc) => {
+                          const theme = TILE_THEMES[themeCounter % TILE_THEMES.length]
+                          themeCounter++
+                          const typeLabel = fileTypeLabel(doc.fileType, doc.fileName)
+                          return (
+                            <article
+                              key={doc.id}
+                              className="group relative flex h-full flex-col overflow-hidden rounded-[24px] bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+                            >
+                              {/* Cover */}
+                              <div className="relative aspect-[4/3] w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
+                                <div className="pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full opacity-60" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
+                                <div className="pointer-events-none absolute -top-6 -left-6 h-16 w-16 rounded-full opacity-40" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
+
+                                {doc.thumbnailUrl ? (
+                                  <img
+                                    src={doc.thumbnailUrl}
+                                    alt=""
+                                    className="relative h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                  />
+                                ) : (
+                                  <div className="relative flex h-full w-full items-center justify-center">
+                                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/85 shadow-sm">
+                                      <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke={theme.accent} strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <span
+                                  className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold shadow-sm backdrop-blur"
+                                  style={{ color: theme.accent }}
+                                >
+                                  {typeLabel}
+                                </span>
+                              </div>
+
+                              <div className="flex flex-1 flex-col gap-3 p-5">
+                                <h3 className="text-lg font-extrabold leading-snug text-[#001522]">{doc.title}</h3>
+                                {doc.description ? (
+                                  <p className="line-clamp-3 text-sm leading-relaxed text-[#475569]">{doc.description}</p>
+                                ) : null}
+
+                                <p className="text-xs font-medium text-[#64748b]">
+                                  {doc.fileName} · {formatFileSize(doc.fileSize)}
+                                </p>
+
+                                <div className="mt-auto pt-2">
+                                  <ToolkitDocumentActions documentId={doc.id} documentTitle={doc.title} fileName={doc.fileName} />
+                                </div>
+                              </div>
+                            </article>
+                          )
+                        })}
                       </div>
-                    )}
-
-                    {/* File-type badge */}
-                    <span
-                      className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold shadow-sm backdrop-blur"
-                      style={{ color: theme.accent }}
-                    >
-                      {typeLabel}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-1 flex-col gap-3 p-5">
-                    <h3 className="text-lg font-extrabold leading-snug text-[#001522]">{doc.title}</h3>
-                    {doc.description ? (
-                      <p className="line-clamp-3 text-sm leading-relaxed text-[#475569]">{doc.description}</p>
-                    ) : null}
-
-                    <p className="text-xs font-medium text-[#64748b]">
-                      {doc.fileName} · {formatFileSize(doc.fileSize)}
-                    </p>
-
-                    <div className="mt-auto pt-2">
-                      <ToolkitDocumentActions documentId={doc.id} documentTitle={doc.title} fileName={doc.fileName} />
                     </div>
-                  </div>
-                </article>
-              )
-            })}
-          </div>
+                  )
+                })}
+              </div>
+            )
+          })()}
         </div>
       </section>
 

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { HowToPanel } from '@/components/howto/panel'
 import LibraryHowTo from '@/components/howto/org-admin/library'
+import { groupDocumentsBySection, isSectionedCollection, UNSECTIONED_GROUP_TITLE } from '@/lib/library-sections'
 
 interface LibraryDoc {
   id: string
@@ -30,7 +31,16 @@ interface LibraryDoc {
   fileName: string
   fileSize: number
   fileType: string
+  sectionId: string | null
+  order: number
   createdAt: string
+}
+
+interface LibrarySectionLite {
+  id: string
+  title: string
+  description: string | null
+  order: number
 }
 
 interface LibraryCollection {
@@ -40,6 +50,7 @@ interface LibraryCollection {
   thumbnailUrl: string | null
   _count: { documents: number }
   documents: LibraryDoc[]
+  sections: LibrarySectionLite[]
 }
 
 function formatFileSize(bytes: number): string {
@@ -261,9 +272,35 @@ export default function OrgAdminLibraryPage() {
               {search ? 'No documents match your search.' : 'No documents in this collection yet.'}
             </p>
           </div>
-        ) : (
-          <div className="space-y-2">
-            {docs.map((doc) => {
+        ) : (() => {
+          // Group by section. Empty sections hidden from org admins (same
+          // rule as the learner view). With no sections defined we render a
+          // single ungrouped list — back-compat with the legacy view.
+          const sectioned = isSectionedCollection(selectedCollection.sections)
+          const groups = sectioned
+            ? groupDocumentsBySection(selectedCollection.sections, docs, { includeEmptySections: false })
+            : [{ section: null, documents: docs }]
+          return (
+            <div className="space-y-8">
+              {groups.map((group, gi) => {
+                if (group.documents.length === 0) return null
+                const heading = group.section
+                  ? group.section.title
+                  : sectioned
+                    ? UNSECTIONED_GROUP_TITLE
+                    : null
+                return (
+                  <div key={group.section?.id ?? `group-${gi}`}>
+                    {heading ? (
+                      <div className="mb-3">
+                        <h2 className="text-base font-extrabold text-slate-900 dark:text-slate-100">{heading}</h2>
+                        {group.section?.description ? (
+                          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{group.section.description}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    <div className="space-y-2">
+                      {group.documents.map((doc) => {
               const FileIcon = getFileIcon(doc.fileType)
               const typeBadge = getFileTypeBadge(doc.fileType)
               return (
@@ -312,9 +349,14 @@ export default function OrgAdminLibraryPage() {
                   </div>
                 </div>
               )
-            })}
-          </div>
-        )}
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         <HowToPanel>
           <LibraryHowTo />

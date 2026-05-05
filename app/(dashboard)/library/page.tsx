@@ -21,6 +21,7 @@ import {
 import { HowToPanel } from '@/components/howto/panel'
 import LibraryHowTo from '@/components/howto/learner/library'
 import { ImageLightbox } from '@/components/ui/image-lightbox'
+import { groupDocumentsBySection, isSectionedCollection, UNSECTIONED_GROUP_TITLE } from '@/lib/library-sections'
 
 interface LibraryDoc {
   id: string
@@ -32,7 +33,16 @@ interface LibraryDoc {
   fileType: string
   thumbnailUrl: string | null
   videoUrl: string | null
+  sectionId: string | null
+  order: number
   createdAt: string
+}
+
+interface LibrarySectionLite {
+  id: string
+  title: string
+  description: string | null
+  order: number
 }
 
 // Toolkit-style colour palette — cycled through tiles so the wall feels lively
@@ -91,6 +101,7 @@ interface LibraryCollection {
   themeKey: string | null
   _count: { documents: number }
   documents: LibraryDoc[]
+  sections: LibrarySectionLite[]
 }
 
 function formatFileSize(bytes: number): string {
@@ -241,9 +252,40 @@ function LibraryPage() {
               {search ? 'No documents match your search.' : 'No documents in this collection yet.'}
             </p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
-            {docs.map((doc, idx) => {
+        ) : (() => {
+          // Sections-aware render. With no sections we keep the legacy flat
+          // grid (single group, no heading). With sections we render labelled
+          // groups; the unsectioned bucket falls through to a final "Other
+          // resources" heading. Empty sections are hidden from learners.
+          const sectioned = isSectionedCollection(selectedCollection.sections)
+          const groups = sectioned
+            ? groupDocumentsBySection(selectedCollection.sections, docs, { includeEmptySections: false })
+            : [{ section: null, documents: docs }]
+          // Theme cycles globally across all groups (not per-group) so the
+          // colour rhythm is preserved when sections are introduced.
+          let tileIdx = 0
+          return (
+            <div className="space-y-10">
+              {groups.map((group, gi) => {
+                if (group.documents.length === 0) return null
+                const heading = group.section
+                  ? group.section.title
+                  : sectioned
+                    ? UNSECTIONED_GROUP_TITLE
+                    : null
+                return (
+                  <div key={group.section?.id ?? `group-${gi}`}>
+                    {heading ? (
+                      <div className="mb-4">
+                        <h2 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">{heading}</h2>
+                        {group.section?.description ? (
+                          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{group.section.description}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
+                      {group.documents.map((doc) => {
+                        const idx = tileIdx++
               const FileIcon = getFileIcon(doc.fileType)
               const typeBadge = getFileTypeBadge(doc.fileType)
               const embedUrl = doc.videoUrl ? toEmbedUrl(doc.videoUrl) : null
@@ -360,9 +402,14 @@ function LibraryPage() {
                   </div>
                 </div>
               )
-            })}
-          </div>
-        )}
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         <ImageLightbox src={zoomedImage} onClose={() => setZoomedImage(null)} alt="Zoomed thumbnail" />
 
