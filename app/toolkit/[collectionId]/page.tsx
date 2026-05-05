@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { ToolkitDocumentActions } from '@/components/toolkit/toolkit-document-actions'
+import { ToolkitLeadModalHost } from '@/components/toolkit/toolkit-lead-modal-host'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -70,6 +71,7 @@ export default async function ToolkitCollectionPage({
   }
 
   return (
+    <ToolkitLeadModalHost>
     <div className="min-h-screen bg-[#FFFBF4] text-[#001522]">
       <header className="sticky top-0 z-30 border-b border-[#FFE5C2] bg-[#FFFBF4]/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
@@ -218,5 +220,6 @@ export default async function ToolkitCollectionPage({
         </div>
       </footer>
     </div>
+    </ToolkitLeadModalHost>
   )
 }
