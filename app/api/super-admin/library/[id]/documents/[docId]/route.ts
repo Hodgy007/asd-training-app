@@ -12,6 +12,10 @@ const updateSchema = z.object({
   thumbnailUrl: z.string().url().nullable().optional(),
   videoUrl: z.string().url().nullable().optional().or(z.literal('')),
   active: z.boolean().optional(),
+  // Move between sections (or set null = unsectioned).
+  sectionId: z.string().min(1).nullable().optional(),
+  // Reorder within a section. Sequential ints (matches Module / Lesson).
+  order: z.number().int().nonnegative().optional(),
 })
 
 // PATCH — update a document's title, description, thumbnail, or active status
@@ -40,6 +44,18 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   // Normalise empty-string videoUrl to null
   const data: typeof parsed.data = { ...parsed.data }
   if (data.videoUrl === '') data.videoUrl = null
+
+  // If moving into a section, verify it belongs to the same collection.
+  // Avoids leaking a doc into another collection's tile via a forged id.
+  if (data.sectionId) {
+    const section = await prisma.librarySection.findUnique({
+      where: { id: data.sectionId },
+      select: { collectionId: true },
+    })
+    if (!section || section.collectionId !== params.id) {
+      return NextResponse.json({ error: 'Invalid sectionId' }, { status: 400 })
+    }
+  }
 
   const updated = await prisma.libraryDocument.update({
     where: { id: params.docId },

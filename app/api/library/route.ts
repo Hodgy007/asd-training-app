@@ -48,7 +48,10 @@ export async function GET() {
       // (themeKey + thumbnailUrl are top-level fields — included automatically)
       documents: {
         where: { active: true },
-        orderBy: { createdAt: 'desc' },
+        // Order matches lib/library-sections.ts: order ASC then createdAt DESC.
+        // Existing rows have order=0 so the legacy createdAt-DESC ordering
+        // is preserved for collections without sections.
+        orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
         select: {
           id: true,
           title: true,
@@ -59,8 +62,14 @@ export async function GET() {
           fileType: true,
           thumbnailUrl: true,
           videoUrl: true,
+          sectionId: true,
+          order: true,
           createdAt: true,
         },
+      },
+      sections: {
+        orderBy: { order: 'asc' },
+        select: { id: true, title: true, description: true, order: true },
       },
       _count: {
         select: { documents: { where: { active: true } } },

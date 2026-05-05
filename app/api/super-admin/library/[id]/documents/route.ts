@@ -15,6 +15,10 @@ const createSchema = z.object({
   fileType: z.string().min(1),
   thumbnailUrl: z.string().url().nullable().optional(),
   videoUrl: z.string().url().nullable().optional().or(z.literal('')),
+  // Optional grouping. sectionId must belong to this collection — verified
+  // server-side. order defaults to 0 (head of bucket).
+  sectionId: z.string().min(1).nullable().optional(),
+  order: z.number().int().nonnegative().optional(),
 })
 
 // POST — add a document to a collection
@@ -36,6 +40,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
   }
 
+  // Verify the requested section belongs to this collection. Cross-collection
+  // section ids would otherwise leak documents into the wrong tile.
+  if (parsed.data.sectionId) {
+    const section = await prisma.librarySection.findUnique({
+      where: { id: parsed.data.sectionId },
+      select: { collectionId: true },
+    })
+    if (!section || section.collectionId !== params.id) {
+      return NextResponse.json({ error: 'Invalid sectionId' }, { status: 400 })
+    }
+  }
+
   const document = await prisma.libraryDocument.create({
     data: {
       collectionId: params.id,
@@ -47,6 +63,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       fileType: parsed.data.fileType,
       thumbnailUrl: parsed.data.thumbnailUrl ?? null,
       videoUrl: parsed.data.videoUrl ? parsed.data.videoUrl : null,
+      sectionId: parsed.data.sectionId ?? null,
+      order: parsed.data.order ?? 0,
       uploadedById: session.user.id,
     },
   })
