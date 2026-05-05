@@ -24,7 +24,11 @@ describe('signToolkitSession + verifyToolkitSession', () => {
     const { signToolkitSession, verifyToolkitSession } = await import('@/lib/toolkit-session')
     const token = signToolkitSession('reg_abc')
     const [body, sig] = token.split('.')
-    const tamperedBody = body.slice(0, -1) + (body.slice(-1) === 'A' ? 'B' : 'A')
+    // Tamper the FIRST char so all 6 base64 bits are significant — the last
+    // char of an unpadded base64url string can have unused trailing bits
+    // (depending on byte-count mod 3), making last-char swaps a no-op when
+    // the chars share the same significant prefix.
+    const tamperedBody = (body.charAt(0) === 'A' ? 'B' : 'A') + body.slice(1)
     expect(verifyToolkitSession(`${tamperedBody}.${sig}`)).toBeNull()
   })
 
@@ -32,7 +36,7 @@ describe('signToolkitSession + verifyToolkitSession', () => {
     const { signToolkitSession, verifyToolkitSession } = await import('@/lib/toolkit-session')
     const token = signToolkitSession('reg_abc')
     const [body, sig] = token.split('.')
-    const tamperedSig = sig.slice(0, -1) + (sig.slice(-1) === 'A' ? 'B' : 'A')
+    const tamperedSig = (sig.charAt(0) === 'A' ? 'B' : 'A') + sig.slice(1)
     expect(verifyToolkitSession(`${body}.${tamperedSig}`)).toBeNull()
   })
 
