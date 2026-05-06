@@ -631,8 +631,8 @@ export default function CohortDetailPage() {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-calm-200 dark:border-slate-700">
-        <nav className="flex gap-1 -mb-px">
+      <div className="border-b border-calm-200 dark:border-slate-700 overflow-x-auto">
+        <nav className="flex gap-0.5 -mb-px min-w-max">
           {tabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -640,7 +640,7 @@ export default function CohortDetailPage() {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={clsx(
-                  'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+                  'flex items-center gap-1.5 px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
                   activeTab === tab.key
                     ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
