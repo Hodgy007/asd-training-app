@@ -220,7 +220,7 @@ export default function SessionListPage() {
                 href={`/admin/sessions/${s.id}`}
                 className="block bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-600 transition-all"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">
                       {s.title}
@@ -245,7 +245,7 @@ export default function SessionListPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 sm:flex-shrink-0">
                     <span className={clsx('inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full', PLATFORM_STYLES[s.platform])}>
                       <PlatformIcon className="h-3 w-3" />
                       {PLATFORM_LABELS[s.platform]}

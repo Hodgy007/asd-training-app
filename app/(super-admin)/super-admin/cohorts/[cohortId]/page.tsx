@@ -509,7 +509,7 @@ export default function CohortDetailPage() {
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <UsersRound className="h-6 w-6 text-emerald-600" />
@@ -566,7 +566,7 @@ export default function CohortDetailPage() {
       {/* Invite link panel — only for active cohorts */}
       {cohort.lifecycleStatus === 'ACTIVE' && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-5 shadow-sm">
-          <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-3">
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <Link2 className="h-4 w-4 text-emerald-600" />
@@ -593,11 +593,11 @@ export default function CohortDetailPage() {
           </div>
 
           {invite?.code ? (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <input
                 readOnly
                 value={`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${invite.code}`}
-                className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm font-mono bg-calm-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm font-mono bg-calm-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300"
                 onClick={(e) => (e.target as HTMLInputElement).select()}
               />
               <button
@@ -804,6 +804,7 @@ export default function CohortDetailPage() {
             </div>
           ) : (
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-calm-100 dark:border-slate-700 bg-calm-50 dark:bg-slate-900/30">
@@ -857,6 +858,7 @@ export default function CohortDetailPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>

@@ -381,7 +381,7 @@ export default function SurveysPage() {
               key={survey.id}
               className="bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 shadow-sm p-5"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 {/* Info */}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
@@ -413,7 +413,7 @@ export default function SurveysPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-1 sm:flex-shrink-0">
                   <button
                     onClick={() => viewSurvey(survey.id)}
                     title="View survey"
