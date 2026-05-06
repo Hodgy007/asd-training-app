@@ -106,7 +106,7 @@ export default function CohortsPage() {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <UsersRound className="h-6 w-6 text-emerald-600" />
@@ -119,7 +119,7 @@ export default function CohortsPage() {
         {canManage && (
           <Link
             href="/super-admin/cohorts/new"
-            className="btn-primary flex items-center gap-2"
+            className="btn-primary flex items-center gap-2 self-start sm:self-auto"
           >
             <Plus className="h-4 w-4" />
             New Cohort
@@ -167,7 +167,7 @@ export default function CohortsPage() {
           {cohorts.map((cohort) => (
             <div
               key={cohort.id}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-5 shadow-sm flex items-center justify-between gap-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-5 shadow-sm flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex items-center gap-4 min-w-0">
                 <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
@@ -184,7 +184,7 @@ export default function CohortsPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-4 mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-slate-500 dark:text-slate-400">
                     <span className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
                       {cohort._count.users} {cohort._count.users === 1 ? 'member' : 'members'}
@@ -201,7 +201,7 @@ export default function CohortsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 sm:flex-shrink-0">
                 <Link
                   href={`/super-admin/cohorts/${cohort.id}`}
                   className="px-4 py-2 rounded-xl text-sm font-medium border border-calm-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition"
