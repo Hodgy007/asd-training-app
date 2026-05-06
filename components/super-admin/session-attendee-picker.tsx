@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Users, Building2, Check, X, Search, UserPlus } from 'lucide-react'
+import { Users, Building2, X, Search, UserPlus, Check } from 'lucide-react'
 import { clsx } from 'clsx'
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -9,13 +9,19 @@ import { clsx } from 'clsx'
 export interface AttendeePickerConfig {
   allOrgs: boolean
   selectedOrgIds: string[]
-  allRoles: boolean
-  selectedRoles: string[]
+  cohortIds: string[]
   userIds: string[]
   includeCharityStaff: boolean
 }
 
 interface Organisation {
+  id: string
+  name: string
+  slug: string
+  active: boolean
+}
+
+interface Cohort {
   id: string
   name: string
   slug: string
@@ -34,16 +40,14 @@ interface SessionAttendeePickerProps {
   onChange: (config: AttendeePickerConfig) => void
 }
 
-// ─── Constants ──────────────────────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
-const LEAF_ROLES: { value: string; label: string }[] = [
-  { value: 'CAREGIVER', label: 'Practitioner' },
-  { value: 'FAMILY_CARER', label: 'Parent/Friend/Relative/Carer' },
-  { value: 'CAREER_DEV_OFFICER', label: 'Career Dev Officer' },
-  { value: 'STUDENT', label: 'Student' },
-  { value: 'INTERN', label: 'Intern' },
-  { value: 'EMPLOYEE', label: 'Employee' },
-]
+function arraysEqual(a: string[], b: string[]): boolean {
+  if (a === b) return true
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false
+  return true
+}
 
 // ─── Toggle button ───────────────────────────────────────────────────────────
 
@@ -78,27 +82,29 @@ function ToggleButton({
 export function SessionAttendeePicker({ value, onChange }: SessionAttendeePickerProps) {
   const [organisations, setOrganisations] = useState<Organisation[]>([])
   const [loadingOrgs, setLoadingOrgs] = useState(true)
+  const [cohorts, setCohorts] = useState<Cohort[]>([])
+  const [loadingCohorts, setLoadingCohorts] = useState(true)
 
   // ─── Internal state (independent per dimension) ───────────────────────────
   const [allOrgs, setAllOrgs] = useState(value.allOrgs)
   const [selectedOrgIds, setSelectedOrgIds] = useState<string[]>(value.selectedOrgIds)
-  const [allRoles, setAllRoles] = useState(value.allRoles)
-  const [selectedRoles, setSelectedRoles] = useState<string[]>(value.selectedRoles)
+  const [cohortIds, setCohortIds] = useState<string[]>(value.cohortIds)
   const [includeCharityStaff, setIncludeCharityStaff] = useState(value.includeCharityStaff)
   const [userIds, setUserIds] = useState<string[]>(value.userIds)
 
-  // Seed internal state from value prop on mount only
-  const initialised = useRef(false)
+  // Re-seed when the parent's value changes (e.g. async cohort pre-fill).
+  // We diff each dimension to avoid clobbering local interactions.
   useEffect(() => {
-    if (!initialised.current) {
-      setAllOrgs(value.allOrgs)
-      setSelectedOrgIds(value.selectedOrgIds)
-      setAllRoles(value.allRoles)
-      setSelectedRoles(value.selectedRoles)
-      setIncludeCharityStaff(value.includeCharityStaff)
-      setUserIds(value.userIds)
-      initialised.current = true
-    }
+    setAllOrgs((prev) => (prev === value.allOrgs ? prev : value.allOrgs))
+    setSelectedOrgIds((prev) =>
+      arraysEqual(prev, value.selectedOrgIds) ? prev : value.selectedOrgIds
+    )
+    setCohortIds((prev) => (arraysEqual(prev, value.cohortIds) ? prev : value.cohortIds))
+    setIncludeCharityStaff((prev) =>
+      prev === value.includeCharityStaff ? prev : value.includeCharityStaff
+    )
+    setUserIds((prev) => (arraysEqual(prev, value.userIds) ? prev : value.userIds))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   // ─── User search state ────────────────────────────────────────────────────
@@ -116,12 +122,17 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
     (
       ao: boolean,
       so: string[],
-      ar: boolean,
-      sr: string[],
+      cs: string[],
       ids: string[],
       ics: boolean
     ) => {
-      onChange({ allOrgs: ao, selectedOrgIds: so, allRoles: ar, selectedRoles: sr, userIds: ids, includeCharityStaff: ics })
+      onChange({
+        allOrgs: ao,
+        selectedOrgIds: so,
+        cohortIds: cs,
+        userIds: ids,
+        includeCharityStaff: ics,
+      })
     },
     [onChange]
   )
@@ -141,6 +152,26 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
       })
       .finally(() => {
         if (!cancelled) setLoadingOrgs(false)
+      })
+
+    return () => { cancelled = true }
+  }, [])
+
+  // ─── Fetch cohorts on mount ───────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false
+    setLoadingCohorts(true)
+
+    fetch('/api/super-admin/cohorts?status=ACTIVE')
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((data: Cohort[]) => {
+        if (!cancelled) setCohorts(data.filter((c) => c.active))
+      })
+      .catch(() => {
+        if (!cancelled) setCohorts([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingCohorts(false)
       })
 
     return () => { cancelled = true }
@@ -206,7 +237,7 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
     const nextSelectedOrgIds = nextAllOrgs ? [] : selectedOrgIds
     setAllOrgs(nextAllOrgs)
     if (nextAllOrgs) setSelectedOrgIds([])
-    emit(nextAllOrgs, nextSelectedOrgIds, allRoles, selectedRoles, userIds, includeCharityStaff)
+    emit(nextAllOrgs, nextSelectedOrgIds, cohortIds, userIds, includeCharityStaff)
   }
 
   const handleToggleOrg = (orgId: string) => {
@@ -215,32 +246,23 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
       : [...selectedOrgIds, orgId]
     setAllOrgs(false)
     setSelectedOrgIds(nextSelected)
-    emit(false, nextSelected, allRoles, selectedRoles, userIds, includeCharityStaff)
+    emit(false, nextSelected, cohortIds, userIds, includeCharityStaff)
   }
 
-  // ─── Role handlers ────────────────────────────────────────────────────────
-  const handleToggleAllRoles = () => {
-    const nextAllRoles = !allRoles
-    const nextSelectedRoles = nextAllRoles ? [] : selectedRoles
-    setAllRoles(nextAllRoles)
-    if (nextAllRoles) setSelectedRoles([])
-    emit(allOrgs, selectedOrgIds, nextAllRoles, nextSelectedRoles, userIds, includeCharityStaff)
-  }
-
-  const handleToggleRole = (role: string) => {
-    const nextSelected = selectedRoles.includes(role)
-      ? selectedRoles.filter((r) => r !== role)
-      : [...selectedRoles, role]
-    setAllRoles(false)
-    setSelectedRoles(nextSelected)
-    emit(allOrgs, selectedOrgIds, false, nextSelected, userIds, includeCharityStaff)
+  // ─── Cohort handlers ──────────────────────────────────────────────────────
+  const handleToggleCohort = (cohortId: string) => {
+    const nextSelected = cohortIds.includes(cohortId)
+      ? cohortIds.filter((c) => c !== cohortId)
+      : [...cohortIds, cohortId]
+    setCohortIds(nextSelected)
+    emit(allOrgs, selectedOrgIds, nextSelected, userIds, includeCharityStaff)
   }
 
   // ─── Charity staff handler ────────────────────────────────────────────────
   const handleToggleCharityStaff = () => {
     const next = !includeCharityStaff
     setIncludeCharityStaff(next)
-    emit(allOrgs, selectedOrgIds, allRoles, selectedRoles, userIds, next)
+    emit(allOrgs, selectedOrgIds, cohortIds, userIds, next)
   }
 
   // ─── User selection handlers ──────────────────────────────────────────────
@@ -253,7 +275,7 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
     setSearchQuery('')
     setSearchResults([])
     setShowDropdown(false)
-    emit(allOrgs, selectedOrgIds, allRoles, selectedRoles, nextUserIds, includeCharityStaff)
+    emit(allOrgs, selectedOrgIds, cohortIds, nextUserIds, includeCharityStaff)
   }
 
   const handleRemoveUser = (userId: string) => {
@@ -261,21 +283,24 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
     const nextSelectedUsers = selectedUsers.filter((u) => u.id !== userId)
     setUserIds(nextUserIds)
     setSelectedUsers(nextSelectedUsers)
-    emit(allOrgs, selectedOrgIds, allRoles, selectedRoles, nextUserIds, includeCharityStaff)
+    emit(allOrgs, selectedOrgIds, cohortIds, nextUserIds, includeCharityStaff)
   }
 
   // ─── Derived summary ──────────────────────────────────────────────────────
   const hasOrgSelection = allOrgs || selectedOrgIds.length > 0
-  const hasRoleSelection = allRoles || selectedRoles.length > 0
-  const hasAnySelection = hasOrgSelection || hasRoleSelection || userIds.length > 0 || includeCharityStaff
+  const hasCohortSelection = cohortIds.length > 0
+  const hasAnySelection =
+    hasOrgSelection ||
+    hasCohortSelection ||
+    userIds.length > 0 ||
+    includeCharityStaff
 
   function buildSummary(): string {
     const parts: string[] = []
     if (allOrgs) parts.push('all organisations')
     else if (selectedOrgIds.length > 0) parts.push(`${selectedOrgIds.length} org${selectedOrgIds.length > 1 ? 's' : ''}`)
 
-    if (allRoles) parts.push('all roles')
-    else if (selectedRoles.length > 0) parts.push(`${selectedRoles.length} role${selectedRoles.length > 1 ? 's' : ''}`)
+    if (cohortIds.length > 0) parts.push(`${cohortIds.length} cohort${cohortIds.length > 1 ? 's' : ''}`)
 
     if (includeCharityStaff) parts.push('charity staff')
     if (userIds.length > 0) parts.push(`${userIds.length} individual user${userIds.length > 1 ? 's' : ''}`)
@@ -317,43 +342,36 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
           </div>
         )}
 
-        {!hasOrgSelection && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
-            Select at least one organisation (or add individual users below).
-          </p>
-        )}
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+          Selecting an organisation invites all its active members.
+        </p>
       </div>
 
-      {/* ── Target Roles ──────────────────────────────────────────────────── */}
+      {/* ── Target Cohorts ────────────────────────────────────────────────── */}
       <div>
         <div className="mb-2 flex items-center gap-2">
           <Users className="h-4 w-4 text-slate-500 dark:text-slate-400" />
           <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Target Roles
+            Target Cohorts
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <ToggleButton selected={allRoles} onClick={handleToggleAllRoles}>
-            All roles
-          </ToggleButton>
-
-          {!allRoles &&
-            LEAF_ROLES.map((r) => (
+        {loadingCohorts ? (
+          <p className="text-sm text-slate-400 dark:text-slate-500">Loading cohorts…</p>
+        ) : cohorts.length === 0 ? (
+          <p className="text-sm text-slate-400 dark:text-slate-500">No active cohorts.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {cohorts.map((cohort) => (
               <ToggleButton
-                key={r.value}
-                selected={selectedRoles.includes(r.value)}
-                onClick={() => handleToggleRole(r.value)}
+                key={cohort.id}
+                selected={cohortIds.includes(cohort.id)}
+                onClick={() => handleToggleCohort(cohort.id)}
               >
-                {r.label}
+                {cohort.name}
               </ToggleButton>
             ))}
-        </div>
-
-        {hasOrgSelection && !hasRoleSelection && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
-            Select at least one role.
-          </p>
+          </div>
         )}
       </div>
 

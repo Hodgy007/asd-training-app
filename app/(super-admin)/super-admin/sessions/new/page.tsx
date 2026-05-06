@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -11,6 +11,7 @@ import {
   RefreshCw,
   CheckCircle,
   XCircle,
+  Users as UsersIcon,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import {
@@ -26,8 +27,7 @@ interface MeetingConfig {
 const DEFAULT_ATTENDEE_CONFIG: AttendeePickerConfig = {
   allOrgs: false,
   selectedOrgIds: [],
-  allRoles: false,
-  selectedRoles: [],
+  cohortIds: [],
   userIds: [],
   includeCharityStaff: false,
 }
@@ -45,6 +45,8 @@ function canManageSessions(session: ReturnType<typeof useSession>['data']): bool
 export default function CreateCharitySessionPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const cohortIdParam = searchParams?.get('cohortId') ?? null
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -54,7 +56,15 @@ export default function CreateCharitySessionPage() {
   const [meetingUrl, setMeetingUrl] = useState('')
   const [meetingConfig, setMeetingConfig] = useState<MeetingConfig | null>(null)
 
-  const [attendeeConfig, setAttendeeConfig] = useState<AttendeePickerConfig>(DEFAULT_ATTENDEE_CONFIG)
+  const [attendeeConfig, setAttendeeConfig] = useState<AttendeePickerConfig>(() => {
+    if (cohortIdParam) {
+      return { ...DEFAULT_ATTENDEE_CONFIG, cohortIds: [cohortIdParam] }
+    }
+    return DEFAULT_ATTENDEE_CONFIG
+  })
+
+  const [cohortName, setCohortName] = useState<string | null>(null)
+  const [cohortBannerDismissed, setCohortBannerDismissed] = useState(false)
 
   const [submitting, setSubmitting] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -62,6 +72,42 @@ export default function CreateCharitySessionPage() {
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
+
+  // Look up the cohort name for the pre-fill banner. If the id doesn't match
+  // any active cohort, scrub it from the picker so submission isn't silently
+  // carrying a phantom selection.
+  useEffect(() => {
+    if (!cohortIdParam || status !== 'authenticated') return
+    let cancelled = false
+
+    fetch(`/api/super-admin/cohorts?status=ACTIVE`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data: { id: string; name: string }[]) => {
+        if (cancelled) return
+        const match = data.find((c) => c.id === cohortIdParam)
+        if (match) {
+          setCohortName(match.name)
+        } else {
+          setCohortName(null)
+          setAttendeeConfig((prev) => ({
+            ...prev,
+            cohortIds: prev.cohortIds.filter((id) => id !== cohortIdParam),
+          }))
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setCohortName(null)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [cohortIdParam, status])
+
+  // If the user removes the cohort from the picker, drop the banner.
+  const cohortStillSelected = cohortIdParam !== null && attendeeConfig.cohortIds.includes(cohortIdParam)
+  const showCohortBanner =
+    cohortIdParam !== null && cohortName !== null && cohortStillSelected && !cohortBannerDismissed
 
   // Fetch meeting config on mount
   useEffect(() => {
@@ -94,8 +140,7 @@ export default function CreateCharitySessionPage() {
       const attendeePayload = {
         allOrgs: attendeeConfig.allOrgs,
         organisationIds: attendeeConfig.selectedOrgIds,
-        allRoles: attendeeConfig.allRoles,
-        roles: attendeeConfig.selectedRoles,
+        cohortIds: attendeeConfig.cohortIds,
         userIds: attendeeConfig.userIds,
         includeCharityStaff: attendeeConfig.includeCharityStaff,
       }
@@ -163,6 +208,29 @@ export default function CreateCharitySessionPage() {
           Schedule a new virtual classroom session across organisations.
         </p>
       </div>
+
+      {/* Cohort pre-fill banner */}
+      {showCohortBanner && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20 px-4 py-3 flex items-start gap-3">
+          <UsersIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-emerald-900 dark:text-emerald-200">
+              Attendees pre-selected from cohort &lsquo;{cohortName}&rsquo;.
+            </p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
+              Edit the attendee list below if you want to add or remove people.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCohortBannerDismissed(true)}
+            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+            aria-label="Dismiss cohort banner"
+          >
+            <XCircle className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
