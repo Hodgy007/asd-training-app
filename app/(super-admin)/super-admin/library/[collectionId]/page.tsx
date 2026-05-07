@@ -126,7 +126,12 @@ export default function CollectionDetailPage() {
   const [colEditTitle, setColEditTitle] = useState('')
   const [colEditDescription, setColEditDescription] = useState('')
   const [colEditThemeKey, setColEditThemeKey] = useState<string | null>(null)
+  const [colEditThumbnailUrl, setColEditThumbnailUrl] = useState<string | null>(null)
   const [colEditSaving, setColEditSaving] = useState(false)
+  // AI Assist for collection metadata (title + description from documents,
+  // optional thumbnail generated from the resulting description).
+  const [aiCollectionTopic, setAiCollectionTopic] = useState('')
+  const [aiCollectionGenerating, setAiCollectionGenerating] = useState<null | 'text' | 'image'>(null)
 
   const fetchCollection = useCallback(async () => {
     setLoading(true)
@@ -152,7 +157,50 @@ export default function CollectionDetailPage() {
     setColEditTitle(collection.title)
     setColEditDescription(collection.description)
     setColEditThemeKey(collection.themeKey)
+    setColEditThumbnailUrl(collection.thumbnailUrl ?? null)
+    setAiCollectionTopic('')
     setEditingCollection(true)
+  }
+
+  // AI Assist: generate title + description from the documents already in
+  // this collection (or from a topic seed). includeImage chains a thumbnail
+  // generation FROM the resulting description so the artwork matches.
+  async function handleAiGenerateCollection(includeImage: boolean) {
+    if (!collection) return
+    setAiCollectionGenerating(includeImage ? 'image' : 'text')
+    try {
+      const res = await fetch('/api/super-admin/library/generate-collection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          collectionId: collection.id,
+          topicSeed: aiCollectionTopic.trim() || undefined,
+          currentTitle: colEditTitle.trim() || undefined,
+          currentDescription: colEditDescription.trim() || undefined,
+          generateImage: includeImage,
+        }),
+      })
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}))
+        showToast(j?.error ?? 'AI generation failed.', 'error')
+        return
+      }
+      const j = await res.json() as { title: string; description: string; thumbnailUrl: string | null; imageError?: string; source: string }
+      setColEditTitle(j.title)
+      setColEditDescription(j.description)
+      if (includeImage && j.thumbnailUrl) {
+        setColEditThumbnailUrl(j.thumbnailUrl)
+      }
+      if (includeImage && !j.thumbnailUrl) {
+        showToast(j.imageError ? 'Thumbnail generation failed.' : 'Thumbnail not returned.', 'error')
+      } else {
+        showToast(j.source === 'ai' ? 'AI suggestions applied.' : 'Used fallback (no AI prompt configured).', 'success')
+      }
+    } catch {
+      showToast('AI generation failed.', 'error')
+    } finally {
+      setAiCollectionGenerating(null)
+    }
   }
 
   async function handleSaveCollection() {
@@ -165,6 +213,7 @@ export default function CollectionDetailPage() {
           title: colEditTitle,
           description: colEditDescription,
           themeKey: colEditThemeKey,
+          thumbnailUrl: colEditThumbnailUrl,
         }),
       })
       if (res.ok) {
@@ -648,6 +697,40 @@ export default function CollectionDetailPage() {
             </Link>
             {editingCollection ? (
               <div className="flex-1 space-y-3">
+                {/* AI Assist — generate title + description from the docs in
+                    this collection, with optional thumbnail chained off the
+                    description. */}
+                <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                  <Sparkles className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                  <span className="text-xs text-primary-700 dark:text-primary-300 font-medium mr-1">AI Assist:</span>
+                  <button
+                    type="button"
+                    disabled={aiCollectionGenerating !== null}
+                    onClick={() => handleAiGenerateCollection(false)}
+                    className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"
+                    title="Generate title + description from the documents already in this collection"
+                  >
+                    {aiCollectionGenerating === 'text' ? 'Generating…' : 'Generate from documents'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={aiCollectionGenerating !== null}
+                    onClick={() => handleAiGenerateCollection(true)}
+                    className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"
+                    title="Generate title + description AND a matching thumbnail"
+                  >
+                    <ImageIcon className="h-3 w-3 inline mr-1" />
+                    {aiCollectionGenerating === 'image' ? 'Generating…' : 'Generate with thumbnail'}
+                  </button>
+                  <input
+                    type="text"
+                    placeholder="Optional topic seed (e.g. autistic young people in the workplace)"
+                    value={aiCollectionTopic}
+                    onChange={(e) => setAiCollectionTopic(e.target.value)}
+                    className="flex-1 min-w-[12rem] text-xs rounded-md border border-primary-200 dark:border-primary-800 bg-white dark:bg-slate-700 px-2 py-1"
+                  />
+                </div>
+
                 <div>
                   <label className="label">Collection Name</label>
                   <input
@@ -669,6 +752,56 @@ export default function CollectionDetailPage() {
                     required
                   />
                 </div>
+
+                {/* Thumbnail preview + remove. AI-generated thumbnails land
+                    here; admins can also clear or upload manually. */}
+                <div>
+                  <label className="label">Collection thumbnail</label>
+                  {colEditThumbnailUrl ? (
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={colEditThumbnailUrl}
+                        alt="Collection thumbnail preview"
+                        className="h-24 w-24 rounded-lg object-cover border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setZoomedImage(colEditThumbnailUrl)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setColEditThumbnailUrl(null)}
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Remove thumbnail
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
+                      <ImageIcon className="h-3.5 w-3.5" />
+                      Upload thumbnail
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/png,image/jpeg,image/webp"
+                        onChange={async (e) => {
+                          const imgFile = e.target.files?.[0]
+                          if (!imgFile) return
+                          try {
+                            const blob = await upload(`library/thumbnails/${imgFile.name}`, imgFile, {
+                              access: 'public',
+                              handleUploadUrl: '/api/super-admin/library/upload/upload-url',
+                            })
+                            setColEditThumbnailUrl(blob.url)
+                          } catch {
+                            showToast('Thumbnail upload failed.', 'error')
+                          } finally {
+                            e.target.value = ''
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+
                 <CollectionThemePicker
                   value={colEditThemeKey}
                   onChange={setColEditThemeKey}

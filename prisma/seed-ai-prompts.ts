@@ -315,6 +315,23 @@ Use numeric values for fileIndex and sectionIndices.`,
     inputVariables: ['collectionContext', 'fileName'],
     responseFormat: 'Return ONLY valid JSON, no markdown: {"title": "...", "description": "..."}',
   },
+
+  {
+    key: 'library.collection.metadata',
+    name: 'Library — Collection Metadata',
+    purpose: 'Generate a coherent title and a 2-3 sentence description for a Library collection by synthesising the list of document filenames it contains. The description should explain what the collection is about and who it is for, in plain English.',
+    category: 'library',
+    tone: 'Clear, friendly, plain-English. Suitable for autistic young people, parents, carers, and training practitioners. Use UK English.',
+    requirements: [
+      'Title should be a short human-readable phrase (under 60 chars), not the raw filenames.',
+      'Description should be 2-3 sentences describing what the collection covers and who it helps.',
+      'If a topic seed is provided alongside the filenames, weight the seed heavily — the admin is steering the framing.',
+      'Never diagnose or suggest autism. Strengths-focused. UK English.',
+      'If no filenames and no seed are provided, return a generic but useful description rather than failing.',
+    ],
+    inputVariables: ['fileNames', 'topicSeed', 'currentTitle', 'currentDescription'],
+    responseFormat: 'Return ONLY valid JSON, no markdown: {"title": "...", "description": "..."}',
+  },
 ]
 
 async function main() {
