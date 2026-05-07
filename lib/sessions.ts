@@ -257,12 +257,10 @@ export async function getCharitySessions(
 interface CharityAttendeeSelection {
   /** Include all active organisations */
   allOrgs?: boolean
-  /** Include these specific organisation IDs */
+  /** Include these specific organisation IDs (active non-admin users only) */
   organisationIds?: string[]
-  /** Include all non-admin roles across selected orgs */
-  allRoles?: boolean
-  /** Include these specific roles across selected orgs */
-  roles?: Role[]
+  /** Include active members of these cohorts */
+  cohortIds?: string[]
   /** Include specific user IDs */
   userIds?: string[]
   /** Also include charity-level users (SUPER_ADMIN + CHARITY_EMPLOYEE) */
@@ -270,8 +268,8 @@ interface CharityAttendeeSelection {
 }
 
 /**
- * Resolves attendees for a charity-level session across multiple organisations.
- * Supports org × role cartesian product plus explicit user IDs.
+ * Resolves attendees for a charity-level session.
+ * Unions members of selected organisations, cohorts, and explicit user IDs.
  */
 export async function resolveCharitySessionAttendees(
   selection: CharityAttendeeSelection
@@ -279,7 +277,7 @@ export async function resolveCharitySessionAttendees(
   const ADMIN_ROLES: Role[] = ['SUPER_ADMIN', 'CHARITY_EMPLOYEE', 'ORG_ADMIN']
   const idSet = new Set<string>()
 
-  // Determine target org filter
+  // Determine target org filter (active non-admin users in selected orgs)
   let orgFilter: { organisationId: { in: string[] } } | { organisationId: { not: null } } | undefined
 
   if (selection.allOrgs) {
@@ -288,26 +286,12 @@ export async function resolveCharitySessionAttendees(
     orgFilter = { organisationId: { in: selection.organisationIds } }
   }
 
-  // Fetch by all non-admin roles across target orgs
-  if (orgFilter && selection.allRoles) {
+  if (orgFilter) {
     const users = await prisma.user.findMany({
       where: {
         ...orgFilter,
         active: true,
         role: { notIn: ADMIN_ROLES },
-      },
-      select: { id: true },
-    })
-    users.forEach((u) => idSet.add(u.id))
-  }
-
-  // Fetch by specific roles across target orgs
-  if (orgFilter && selection.roles && selection.roles.length > 0) {
-    const users = await prisma.user.findMany({
-      where: {
-        ...orgFilter,
-        active: true,
-        role: { in: selection.roles },
       },
       select: { id: true },
     })
@@ -329,6 +313,19 @@ export async function resolveCharitySessionAttendees(
   // Add explicit user IDs
   if (selection.userIds && selection.userIds.length > 0) {
     await addExplicitActiveUsers(selection.userIds, idSet)
+  }
+
+  // Add active members of selected cohorts
+  if (selection.cohortIds && selection.cohortIds.length > 0) {
+    const memberships = await prisma.cohortMembership.findMany({
+      where: {
+        cohortId: { in: selection.cohortIds },
+        status: 'ACTIVE',
+        user: { active: true },
+      },
+      select: { userId: true },
+    })
+    memberships.forEach((m) => idSet.add(m.userId))
   }
 
   return Array.from(idSet)

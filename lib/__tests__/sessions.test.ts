@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const prismaMock = vi.hoisted(() => ({
   classSession: { findMany: vi.fn(), findUnique: vi.fn() },
   user: { findMany: vi.fn(), findFirst: vi.fn() },
+  cohortMembership: { findMany: vi.fn() },
 }))
 
 vi.mock('@/lib/prisma', () => ({
@@ -24,6 +25,7 @@ describe('workshop session helpers', () => {
     prismaMock.classSession.findMany.mockResolvedValue([])
     prismaMock.user.findMany.mockResolvedValue([])
     prismaMock.user.findFirst.mockResolvedValue(null)
+    prismaMock.cohortMembership.findMany.mockResolvedValue([])
   })
 
   it('keeps in-progress workshops visible after their scheduled start time', async () => {
@@ -81,6 +83,71 @@ describe('workshop session helpers', () => {
       where: { id: 'host-1', organisationId: 'org-1', active: true },
       select: { id: true },
     })
+  })
+
+  it('resolves charity cohort attendees from active CohortMembership rows', async () => {
+    prismaMock.cohortMembership.findMany.mockResolvedValueOnce([
+      { userId: 'user-a' },
+      { userId: 'user-b' },
+    ])
+
+    const result = await resolveCharitySessionAttendees({
+      cohortIds: ['cohort-1', 'cohort-2'],
+    })
+
+    expect(result.sort()).toEqual(['user-a', 'user-b'])
+    expect(prismaMock.cohortMembership.findMany).toHaveBeenCalledWith({
+      where: {
+        cohortId: { in: ['cohort-1', 'cohort-2'] },
+        status: 'ACTIVE',
+        user: { active: true },
+      },
+      select: { userId: true },
+    })
+  })
+
+  it('unions cohort members with org members and explicit users without duplicates', async () => {
+    prismaMock.user.findMany
+      // org branch — active non-admin users in the org
+      .mockResolvedValueOnce([{ id: 'shared-user' }, { id: 'org-only' }])
+      // explicit userIds branch
+      .mockResolvedValueOnce([{ id: 'explicit-user' }])
+    prismaMock.cohortMembership.findMany.mockResolvedValueOnce([
+      { userId: 'shared-user' },
+      { userId: 'cohort-only' },
+    ])
+
+    const result = await resolveCharitySessionAttendees({
+      organisationIds: ['org-1'],
+      cohortIds: ['cohort-1'],
+      userIds: ['explicit-user'],
+    })
+
+    expect(result.sort()).toEqual(['cohort-only', 'explicit-user', 'org-only', 'shared-user'])
+  })
+
+  it('selects all active non-admin users when only an organisation is chosen', async () => {
+    prismaMock.user.findMany.mockResolvedValueOnce([{ id: 'u1' }, { id: 'u2' }])
+
+    const result = await resolveCharitySessionAttendees({
+      organisationIds: ['org-1'],
+    })
+
+    expect(result.sort()).toEqual(['u1', 'u2'])
+    expect(prismaMock.user.findMany).toHaveBeenCalledWith({
+      where: {
+        organisationId: { in: ['org-1'] },
+        active: true,
+        role: { notIn: ['SUPER_ADMIN', 'CHARITY_EMPLOYEE', 'ORG_ADMIN'] },
+      },
+      select: { id: true },
+    })
+  })
+
+  it('treats empty cohortIds as a no-op', async () => {
+    const result = await resolveCharitySessionAttendees({ cohortIds: [] })
+    expect(result).toEqual([])
+    expect(prismaMock.cohortMembership.findMany).not.toHaveBeenCalled()
   })
 
   it('allows parent org admins to manage child org workshops', async () => {

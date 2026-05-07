@@ -22,7 +22,9 @@ function slugify(name: string): string {
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
+  const canManageCohorts = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)
+  const canManageSessions = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SESSIONS)
+  if (!session || (!canManageCohorts && !canManageSessions)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -32,6 +34,17 @@ export async function GET(req: NextRequest) {
   }
   if (status === 'ACTIVE' || status === 'ARCHIVED') {
     where.lifecycleStatus = status
+  }
+
+  // Picker-only callers (MANAGE_SESSIONS without MANAGE_COHORTS) get a slim
+  // payload — same pattern as /api/super-admin/organisations.
+  if (!canManageCohorts && canManageSessions) {
+    const cohorts = await prisma.organisation.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, name: true, slug: true, active: true, lifecycleStatus: true },
+    })
+    return NextResponse.json(cohorts)
   }
 
   const cohorts = await prisma.organisation.findMany({

@@ -553,7 +553,7 @@ export default function CohortDetailPage() {
           </button>
           {cohort.lifecycleStatus === 'ACTIVE' && (
             <Link
-              href={`/super-admin/sessions/new`}
+              href={`/super-admin/sessions/new?cohortId=${cohort.id}`}
               className="btn-primary flex items-center gap-2 text-sm"
             >
               <Calendar className="h-4 w-4" />
@@ -1143,10 +1143,10 @@ export default function CohortDetailPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Workshops created for all organisations (include cohorts when targeting). Create a new workshop and select this cohort as an attendee group.
+              Workshops targeted at this cohort. Creating one here pre-fills attendees with the cohort&rsquo;s active members.
             </p>
             <Link
-              href="/super-admin/sessions/new"
+              href={`/super-admin/sessions/new?cohortId=${cohort.id}`}
               className="btn-primary flex items-center gap-2 text-sm"
             >
               <Plus className="h-4 w-4" />
