@@ -329,7 +329,7 @@ Use numeric values for fileIndex and sectionIndices.`,
       'Never diagnose or suggest autism. Strengths-focused. UK English.',
       'If no filenames and no seed are provided, return a generic but useful description rather than failing.',
     ],
-    inputVariables: ['fileNames', 'topicSeed', 'currentTitle', 'currentDescription'],
+    inputVariables: ['fileNames', 'topicSeed', 'currentTitle', 'currentDescription', 'brandContext'],
     responseFormat: 'Return ONLY valid JSON, no markdown: {"title": "...", "description": "..."}',
   },
 ]

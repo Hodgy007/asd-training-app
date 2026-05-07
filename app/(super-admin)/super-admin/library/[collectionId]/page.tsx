@@ -10,6 +10,7 @@ import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
 import { CollectionActionsPanel } from '@/components/super-admin/library/collection-actions-panel'
 import { CollectionThemePicker } from '@/components/super-admin/library/collection-theme-picker'
 import { SectionsManager } from '@/components/super-admin/library/sections-manager'
+import { BrandAssetPicker } from '@/components/super-admin/library/brand-asset-picker'
 import { ImageLightbox } from '@/components/ui/image-lightbox'
 import {
   ArrowLeft,
@@ -132,6 +133,7 @@ export default function CollectionDetailPage() {
   // optional thumbnail generated from the resulting description).
   const [aiCollectionTopic, setAiCollectionTopic] = useState('')
   const [aiCollectionGenerating, setAiCollectionGenerating] = useState<null | 'text' | 'image'>(null)
+  const [aiUseBrandStore, setAiUseBrandStore] = useState(true)
 
   const fetchCollection = useCallback(async () => {
     setLoading(true)
@@ -178,6 +180,7 @@ export default function CollectionDetailPage() {
           currentTitle: colEditTitle.trim() || undefined,
           currentDescription: colEditDescription.trim() || undefined,
           generateImage: includeImage,
+          useBrandStore: aiUseBrandStore,
         }),
       })
       if (!res.ok) {
@@ -729,6 +732,10 @@ export default function CollectionDetailPage() {
                     onChange={(e) => setAiCollectionTopic(e.target.value)}
                     className="flex-1 min-w-[12rem] text-xs rounded-md border border-primary-200 dark:border-primary-800 bg-white dark:bg-slate-700 px-2 py-1"
                   />
+                  <label className="inline-flex items-center gap-1.5 text-xs text-primary-700 dark:text-primary-300 cursor-pointer select-none">
+                    <input type="checkbox" checked={aiUseBrandStore} onChange={(e) => setAiUseBrandStore(e.target.checked)} className="rounded border-primary-300 text-primary-600 focus:ring-primary-500 h-3.5 w-3.5" />
+                    Use brand store
+                  </label>
                 </div>
 
                 <div>
@@ -775,30 +782,33 @@ export default function CollectionDetailPage() {
                       </button>
                     </div>
                   ) : (
-                    <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
-                      <ImageIcon className="h-3.5 w-3.5" />
-                      Upload thumbnail
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/png,image/jpeg,image/webp"
-                        onChange={async (e) => {
-                          const imgFile = e.target.files?.[0]
-                          if (!imgFile) return
-                          try {
-                            const blob = await upload(`library/thumbnails/${imgFile.name}`, imgFile, {
-                              access: 'public',
-                              handleUploadUrl: '/api/super-admin/library/upload/upload-url',
-                            })
-                            setColEditThumbnailUrl(blob.url)
-                          } catch {
-                            showToast('Thumbnail upload failed.', 'error')
-                          } finally {
-                            e.target.value = ''
-                          }
-                        }}
-                      />
-                    </label>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
+                        <ImageIcon className="h-3.5 w-3.5" />
+                        Upload thumbnail
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/png,image/jpeg,image/webp"
+                          onChange={async (e) => {
+                            const imgFile = e.target.files?.[0]
+                            if (!imgFile) return
+                            try {
+                              const blob = await upload(`library/thumbnails/${imgFile.name}`, imgFile, {
+                                access: 'public',
+                                handleUploadUrl: '/api/super-admin/library/upload/upload-url',
+                              })
+                              setColEditThumbnailUrl(blob.url)
+                            } catch {
+                              showToast('Thumbnail upload failed.', 'error')
+                            } finally {
+                              e.target.value = ''
+                            }
+                          }}
+                        />
+                      </label>
+                      <BrandAssetPicker imageOnly onPick={(asset) => setColEditThumbnailUrl(asset.fileUrl)} />
+                    </div>
                   )}
                 </div>
 
@@ -1206,30 +1216,33 @@ export default function CollectionDetailPage() {
                           </button>
                         </div>
                       ) : (
-                        <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
-                          <ImageIcon className="h-3.5 w-3.5" />
-                          Upload thumbnail
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/png,image/jpeg,image/webp"
-                            onChange={async (e) => {
-                              const imgFile = e.target.files?.[0]
-                              if (!imgFile) return
-                              try {
-                                const blob = await upload(`library/thumbnails/${imgFile.name}`, imgFile, {
-                                  access: 'public',
-                                  handleUploadUrl: '/api/super-admin/library/upload/upload-url',
-                                })
-                                setEditThumbnailUrl(blob.url)
-                              } catch {
-                                showToast('Thumbnail upload failed.', 'error')
-                              } finally {
-                                e.target.value = ''
-                              }
-                            }}
-                          />
-                        </label>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
+                            <ImageIcon className="h-3.5 w-3.5" />
+                            Upload thumbnail
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/png,image/jpeg,image/webp"
+                              onChange={async (e) => {
+                                const imgFile = e.target.files?.[0]
+                                if (!imgFile) return
+                                try {
+                                  const blob = await upload(`library/thumbnails/${imgFile.name}`, imgFile, {
+                                    access: 'public',
+                                    handleUploadUrl: '/api/super-admin/library/upload/upload-url',
+                                  })
+                                  setEditThumbnailUrl(blob.url)
+                                } catch {
+                                  showToast('Thumbnail upload failed.', 'error')
+                                } finally {
+                                  e.target.value = ''
+                                }
+                              }}
+                            />
+                          </label>
+                          <BrandAssetPicker imageOnly onPick={(asset) => setEditThumbnailUrl(asset.fileUrl)} />
+                        </div>
                       )}
                     </div>
 

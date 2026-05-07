@@ -52,6 +52,15 @@ const TILES: Tile[] = [
     permission: CHARITY_PERMISSIONS.MANAGE_ANNOUNCEMENTS,
   },
   {
+    href: '/super-admin/brand-assets',
+    title: 'Brand Assets',
+    description: 'Charity branding (logos, guidelines, imagery, palette, tone-of-voice). Pickable in image fields and feedable to AI.',
+    icon: Sparkles,
+    iconColor: 'text-fuchsia-600 dark:text-fuchsia-400',
+    iconBg: 'bg-fuchsia-100 dark:bg-fuchsia-900/40',
+    permission: CHARITY_PERMISSIONS.MANAGE_LIBRARY,
+  },
+  {
     href: '/careers-advisor',
     title: 'Careers Advisor',
     description: 'Self-test the AI careers advisor as a learner.',
