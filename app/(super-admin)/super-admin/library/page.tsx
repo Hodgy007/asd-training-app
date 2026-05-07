@@ -81,13 +81,20 @@ export default function LibraryPage() {
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [editThemeKey, setEditThemeKey] = useState<string | null>(null)
+  const [editThumbnailUrl, setEditThumbnailUrl] = useState<string | null>(null)
   const [editSaving, setEditSaving] = useState(false)
+  // AI Assist for the list-page inline edit (mirrors the detail-page edit
+  // panel — same UX so admins don't have to remember which pencil to click).
+  const [aiEditTopic, setAiEditTopic] = useState('')
+  const [aiEditGenerating, setAiEditGenerating] = useState<null | 'text' | 'image'>(null)
 
   function startEditing(col: LibraryCollection) {
     setEditingId(col.id)
     setEditTitle(col.title)
     setEditDescription(col.description)
     setEditThemeKey(col.themeKey ?? null)
+    setEditThumbnailUrl(col.thumbnailUrl ?? null)
+    setAiEditTopic('')
   }
 
   async function handleSaveEdit() {
@@ -101,6 +108,7 @@ export default function LibraryPage() {
           title: editTitle,
           description: editDescription,
           themeKey: editThemeKey,
+          thumbnailUrl: editThumbnailUrl,
         }),
       })
       if (res.ok) {
@@ -113,6 +121,47 @@ export default function LibraryPage() {
       }
     } finally {
       setEditSaving(false)
+    }
+  }
+
+  // AI Assist for the list-page edit. Same handler shape as the detail-page
+  // version: generates title + description from the collection's existing
+  // documents, optionally chains a thumbnail off the resulting description.
+  async function handleAiGenerateEdit(includeImage: boolean) {
+    if (!editingId) return
+    setAiEditGenerating(includeImage ? 'image' : 'text')
+    try {
+      const res = await fetch('/api/super-admin/library/generate-collection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          collectionId: editingId,
+          topicSeed: aiEditTopic.trim() || undefined,
+          currentTitle: editTitle.trim() || undefined,
+          currentDescription: editDescription.trim() || undefined,
+          generateImage: includeImage,
+        }),
+      })
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}))
+        showToast(j?.error ?? 'AI generation failed.', 'error')
+        return
+      }
+      const j = await res.json() as { title: string; description: string; thumbnailUrl: string | null; imageError?: string; source: string }
+      setEditTitle(j.title)
+      setEditDescription(j.description)
+      if (includeImage && j.thumbnailUrl) {
+        setEditThumbnailUrl(j.thumbnailUrl)
+      }
+      if (includeImage && !j.thumbnailUrl) {
+        showToast(j.imageError ? 'Thumbnail generation failed.' : 'Thumbnail not returned.', 'error')
+      } else {
+        showToast(j.source === 'ai' ? 'AI suggestions applied.' : 'Used fallback (no AI prompt configured).', 'success')
+      }
+    } catch {
+      showToast('AI generation failed.', 'error')
+    } finally {
+      setAiEditGenerating(null)
     }
   }
 
@@ -301,6 +350,41 @@ export default function LibraryPage() {
           return (
             <div className="card space-y-4">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Edit collection</h2>
+
+              {/* AI Assist — same row as the detail-page edit panel. Generates
+                  title + description from the docs already in this collection;
+                  thumbnail is chained off the resulting AI description. */}
+              <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                <Sparkles className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                <span className="text-xs text-primary-700 dark:text-primary-300 font-medium mr-1">AI Assist:</span>
+                <button
+                  type="button"
+                  disabled={aiEditGenerating !== null}
+                  onClick={() => handleAiGenerateEdit(false)}
+                  className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"
+                  title="Generate title + description from the documents already in this collection"
+                >
+                  {aiEditGenerating === 'text' ? 'Generating…' : 'Generate from documents'}
+                </button>
+                <button
+                  type="button"
+                  disabled={aiEditGenerating !== null}
+                  onClick={() => handleAiGenerateEdit(true)}
+                  className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"
+                  title="Generate title + description AND a matching thumbnail"
+                >
+                  <ImageIcon className="h-3 w-3 inline mr-1" />
+                  {aiEditGenerating === 'image' ? 'Generating…' : 'Generate with thumbnail'}
+                </button>
+                <input
+                  type="text"
+                  placeholder="Optional topic seed (e.g. autistic young people in the workplace)"
+                  value={aiEditTopic}
+                  onChange={(e) => setAiEditTopic(e.target.value)}
+                  className="flex-1 min-w-[12rem] text-xs rounded-md border border-primary-200 dark:border-primary-800 bg-white dark:bg-slate-700 px-2 py-1"
+                />
+              </div>
+
               <div>
                 <label className="label">Collection name</label>
                 <input
@@ -321,6 +405,54 @@ export default function LibraryPage() {
                   onChange={(e) => setEditDescription(e.target.value)}
                   placeholder="Description"
                 />
+              </div>
+
+              {/* Thumbnail — preview, manual upload, or clear. AI thumbnails
+                  generated above land here automatically. */}
+              <div>
+                <label className="label">Collection thumbnail</label>
+                {editThumbnailUrl ? (
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={editThumbnailUrl}
+                      alt="Collection thumbnail preview"
+                      className="h-24 w-24 rounded-lg object-cover border border-calm-200 dark:border-slate-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditThumbnailUrl(null)}
+                      className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Remove thumbnail
+                    </button>
+                  </div>
+                ) : (
+                  <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors">
+                    <ImageIcon className="h-3.5 w-3.5" />
+                    Upload thumbnail
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={async (e) => {
+                        const imgFile = e.target.files?.[0]
+                        if (!imgFile) return
+                        try {
+                          const blob = await upload(`library/thumbnails/${imgFile.name}`, imgFile, {
+                            access: 'public',
+                            handleUploadUrl: '/api/super-admin/library/upload/upload-url',
+                          })
+                          setEditThumbnailUrl(blob.url)
+                        } catch {
+                          showToast('Thumbnail upload failed.', 'error')
+                        } finally {
+                          e.target.value = ''
+                        }
+                      }}
+                    />
+                  </label>
+                )}
               </div>
 
               <CollectionThemePicker value={editThemeKey} onChange={setEditThemeKey} />
