@@ -7,6 +7,7 @@ import { put } from '@vercel/blob'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { runPrompt, AI_FEATURE_UNAVAILABLE } from '@/lib/ai-runner'
+import { getActiveBrandAssets, assembleBrandTextContext } from '@/lib/brand-assets'
 
 // Collection-level companion to /api/super-admin/library/generate (which is
 // per-document). Generates a title + 2-3 sentence description by feeding the
@@ -29,6 +30,12 @@ const requestSchema = z.object({
   currentTitle: z.string().max(200).optional(),
   currentDescription: z.string().max(2000).optional(),
   generateImage: z.boolean().default(false),
+  // When true, fetch the active Brand Store and inject:
+  //   - text-y assets (guidelines + messaging titles/descriptions) into
+  //     the title/description prompt
+  //   - the synthesised brand context into the image prompt so generated
+  //     thumbnails align with the charity's look
+  useBrandStore: z.boolean().default(false),
 })
 
 const IMAGE_MODEL = 'google/gemini-3.1-flash-image-preview'
@@ -55,7 +62,13 @@ export async function POST(req: NextRequest): Promise<NextResponse<Generated | {
   }
 
   let { sampleFilenames } = parsed.data
-  const { collectionId, topicSeed, currentTitle, currentDescription, generateImage: doGenerateImage } = parsed.data
+  const { collectionId, topicSeed, currentTitle, currentDescription, generateImage: doGenerateImage, useBrandStore } = parsed.data
+
+  // Optional brand-store context. Loaded once and reused for both the
+  // title/description prompt and the image prompt below.
+  const brandContext = useBrandStore
+    ? assembleBrandTextContext(await getActiveBrandAssets(prisma))
+    : ''
 
   // Fetch filenames from the collection if the caller didn't pass them.
   if (collectionId && (!sampleFilenames || sampleFilenames.length === 0)) {
@@ -95,6 +108,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<Generated | {
       topicSeed: seed,
       currentTitle: currentTitle ?? '',
       currentDescription: currentDescription ?? '',
+      brandContext,
     })
     if (text !== AI_FEATURE_UNAVAILABLE) {
       const jsonMatch = text.match(/\{[\s\S]*\}/)
@@ -120,7 +134,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<Generated | {
 
   if (doGenerateImage) {
     const subject = (description || title).slice(0, 600)
-    const imagePrompt = `Create a simple, friendly, colourful illustration that represents the following Library collection:\n\n${subject}\n\nUse a clean, modern flat illustration style with bright welcoming colours. No text in the image. Professional but approachable. Suitable as a tile cover for a young-person-friendly resource library.`
+    const brandPreamble = brandContext ? `\n\nBrand context to align with:\n${brandContext}\n` : ''
+    const imagePrompt = `Create a simple, friendly, colourful illustration that represents the following Library collection:\n\n${subject}${brandPreamble}\n\nUse a clean, modern flat illustration style with bright welcoming colours. No text in the image. Professional but approachable. Suitable as a tile cover for a young-person-friendly resource library.`
 
     try {
       const result = await generateText({ model: IMAGE_MODEL, prompt: imagePrompt, maxRetries: 2 })

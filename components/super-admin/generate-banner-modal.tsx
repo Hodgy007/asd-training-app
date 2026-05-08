@@ -33,6 +33,9 @@ export function GenerateBannerModal({
   const [prompt, setPrompt] = useState('')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
+  // Default ON — most banners should match charity branding. Untick for
+  // a neutral / off-brand experiment.
+  const [useBrandStore, setUseBrandStore] = useState(true)
 
   useEffect(() => {
     if (!open) return
@@ -79,7 +82,7 @@ export function GenerateBannerModal({
       const res = await fetch('/api/super-admin/home/hero-image/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, aspectRatio }),
+        body: JSON.stringify({ prompt, aspectRatio, useBrandStore }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -141,8 +144,17 @@ export function GenerateBannerModal({
                 placeholder="Describe the banner you want — colors, shapes, mood. No people, no text."
                 className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
-              <div className="text-xs text-slate-500 dark:text-slate-500 text-right">
-                {prompt.length}/500
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <label className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={useBrandStore}
+                    onChange={(e) => setUseBrandStore(e.target.checked)}
+                    className="rounded border-slate-300 text-primary-600 focus:ring-primary-500 h-3.5 w-3.5"
+                  />
+                  Use brand store as context
+                </label>
+                <span className="text-slate-500 dark:text-slate-500">{prompt.length}/500</span>
               </div>
               {errorMessage ? (
                 <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>

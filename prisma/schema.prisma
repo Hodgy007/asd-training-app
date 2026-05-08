@@ -73,6 +73,7 @@ model User {
   resolvedFeedback      FeedbackSubmission[]   @relation("FeedbackResolver")
   purchases             Purchase[]
   toolkitRegistrant     ToolkitRegistrant?     @relation("ToolkitRegistrantUser")
+  brandAssetsUploaded   BrandAsset[]           @relation("BrandAssetsUploaded")
 
   @@index([organisationId])
 }
@@ -764,6 +765,45 @@ model ToolkitAnonymousDocumentEvent {
 
   @@index([documentId, action])
   @@index([createdAt])
+}
+
+// Charity-owned brand asset store. Distinct from LibraryCollection (which
+// is consumer-facing). These rows are admin-only — logos, brand
+// guidelines, sample imagery, palette references, copy/tone-of-voice docs
+// — and feed two integration points:
+//   1. AI generators that opt in to "use brand store as context" prepend
+//      text-y assets to the prompt and pass image URLs as style refs.
+//   2. Image upload fields offer "pick from brand store" as an alternative
+//      to file upload, so admins can reuse the canonical logo/imagery.
+model BrandAsset {
+  id           String         @id @default(cuid())
+  type         BrandAssetType @default(OTHER)
+  title        String
+  description  String?        @db.Text
+  fileUrl      String
+  fileName     String
+  fileSize     Int
+  fileType     String
+  // Active=false hides it from the picker / AI context but keeps the row
+  // (and the Blob) so historical references stay resolvable.
+  active       Boolean        @default(true)
+  uploadedById String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  uploadedBy User @relation("BrandAssetsUploaded", fields: [uploadedById], references: [id])
+
+  @@index([type, active])
+  @@index([createdAt])
+}
+
+enum BrandAssetType {
+  LOGO
+  BRAND_GUIDELINES
+  IMAGERY
+  COLOUR_PALETTE
+  MESSAGING
+  OTHER
 }
 
 // Lead-capture record for the public /toolkit download flow. One row per
