@@ -7,6 +7,12 @@ import { z } from 'zod'
 
 const ALLOWED_THEME_KEYS = ['orange', 'green', 'blue', 'pink', 'yellow', 'cyan'] as const
 
+// Empty strings come from text inputs when the admin clears the override.
+// Treat them as null so the public toolkit page falls back to the defaults
+// (or hides the section when both are empty).
+const emptyToNull = (v: unknown) =>
+  typeof v === 'string' && v.trim() === '' ? null : v
+
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().min(1).optional(),
@@ -16,6 +22,8 @@ const updateSchema = z.object({
   targetRoles: z.array(z.string()).optional(),
   active: z.boolean().optional(),
   publishedToToolkit: z.boolean().optional(),
+  toolkitResourcesHeading: z.preprocess(emptyToNull, z.string().max(120).nullable().optional()),
+  toolkitResourcesIntro: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
 })
 
 // GET — single collection with its documents

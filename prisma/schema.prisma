@@ -677,6 +677,10 @@ model LibraryCollection {
   targetRoles        String[]
   active             Boolean  @default(true)
   publishedToToolkit Boolean  @default(false)
+  // Per-collection overrides for the public /toolkit/[id] page's "Resources"
+  // intro block. Both null/empty -> the entire intro block is hidden.
+  toolkitResourcesHeading String?
+  toolkitResourcesIntro   String? @db.Text
   createdById        String
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt

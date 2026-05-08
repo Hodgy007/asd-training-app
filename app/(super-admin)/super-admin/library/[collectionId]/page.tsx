@@ -72,6 +72,8 @@ interface Collection {
   targetRoles: string[]
   active: boolean
   publishedToToolkit: boolean
+  toolkitResourcesHeading: string | null
+  toolkitResourcesIntro: string | null
   documents: LibraryDoc[]
   sections: LibrarySectionLite[]
 }
@@ -128,6 +130,8 @@ export default function CollectionDetailPage() {
   const [colEditDescription, setColEditDescription] = useState('')
   const [colEditThemeKey, setColEditThemeKey] = useState<string | null>(null)
   const [colEditThumbnailUrl, setColEditThumbnailUrl] = useState<string | null>(null)
+  const [colEditToolkitHeading, setColEditToolkitHeading] = useState('')
+  const [colEditToolkitIntro, setColEditToolkitIntro] = useState('')
   const [colEditSaving, setColEditSaving] = useState(false)
   // AI Assist for collection metadata (title + description from documents,
   // optional thumbnail generated from the resulting description).
@@ -160,6 +164,8 @@ export default function CollectionDetailPage() {
     setColEditDescription(collection.description)
     setColEditThemeKey(collection.themeKey)
     setColEditThumbnailUrl(collection.thumbnailUrl ?? null)
+    setColEditToolkitHeading(collection.toolkitResourcesHeading ?? '')
+    setColEditToolkitIntro(collection.toolkitResourcesIntro ?? '')
     setAiCollectionTopic('')
     setEditingCollection(true)
   }
@@ -217,6 +223,8 @@ export default function CollectionDetailPage() {
           description: colEditDescription,
           themeKey: colEditThemeKey,
           thumbnailUrl: colEditThumbnailUrl,
+          toolkitResourcesHeading: colEditToolkitHeading,
+          toolkitResourcesIntro: colEditToolkitIntro,
         }),
       })
       if (res.ok) {
@@ -816,6 +824,39 @@ export default function CollectionDetailPage() {
                   value={colEditThemeKey}
                   onChange={setColEditThemeKey}
                 />
+
+                <div className="border-t border-calm-200 dark:border-slate-700 pt-4">
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                    Public toolkit page wording
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                    Customise the heading and intro shown above the documents on the public toolkit page. Leave both blank to hide the section completely.
+                  </p>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="label">Heading</label>
+                      <input
+                        className="input w-full"
+                        type="text"
+                        maxLength={120}
+                        placeholder="Have a look around"
+                        value={colEditToolkitHeading}
+                        onChange={(e) => setColEditToolkitHeading(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="label">Intro text</label>
+                      <textarea
+                        className="input w-full"
+                        rows={2}
+                        maxLength={500}
+                        placeholder="Pick anything that looks interesting. You can read it here or save it to your device."
+                        value={colEditToolkitIntro}
+                        onChange={(e) => setColEditToolkitIntro(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
 
                 <div className="border-t border-calm-200 dark:border-slate-700 pt-4">
                   <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">

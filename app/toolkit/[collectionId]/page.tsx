@@ -54,6 +54,8 @@ export default async function ToolkitCollectionPage({
         orderBy: { order: 'asc' },
         select: { id: true, title: true, description: true, order: true },
       },
+      toolkitResourcesHeading: true,
+      toolkitResourcesIntro: true,
       documents: {
         where: { active: true },
         select: {
@@ -146,13 +148,21 @@ export default async function ToolkitCollectionPage({
       {/* Documents grid */}
       <section className="bg-gradient-to-b from-[#FFFBF4] to-[#FFF5E1]">
         <div className="mx-auto max-w-6xl px-6 py-16">
-          <div className="max-w-2xl">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-aaa-orange">Resources</p>
-            <h2 className="mt-3 text-3xl font-extrabold text-[#001522] sm:text-4xl">Have a look around</h2>
-            <p className="mt-3 text-base leading-relaxed text-[#475569]">
-              Pick anything that looks interesting. You can read it here or save it to your device.
-            </p>
-          </div>
+          {(collection.toolkitResourcesHeading || collection.toolkitResourcesIntro) && (
+            <div className="max-w-2xl">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-aaa-orange">Resources</p>
+              {collection.toolkitResourcesHeading && (
+                <h2 className="mt-3 text-3xl font-extrabold text-[#001522] sm:text-4xl">
+                  {collection.toolkitResourcesHeading}
+                </h2>
+              )}
+              {collection.toolkitResourcesIntro && (
+                <p className="mt-3 text-base leading-relaxed text-[#475569]">
+                  {collection.toolkitResourcesIntro}
+                </p>
+              )}
+            </div>
+          )}
 
           {(() => {
             const sectioned = isSectionedCollection(collection.sections)
