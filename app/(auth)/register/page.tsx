@@ -17,8 +17,32 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 
-type Mode = 'existing' | 'new-org' | 'family-carer'
+type Mode = 'existing' | 'new-org' | 'no-org'
 type Credential = 'CAREGIVER' | 'CAREER_DEV_OFFICER' | 'EMPLOYEE'
+type NoOrgFormRole = 'autistic' | 'parent_carer' | 'supporter' | 'practitioner'
+
+const NO_ORG_FORM_ROLES: { value: NoOrgFormRole; label: string; sub: string }[] = [
+  {
+    value: 'autistic',
+    label: 'I am autistic',
+    sub: 'Access training and tools to support your own learning and development.',
+  },
+  {
+    value: 'parent_carer',
+    label: 'I am the parent, carer, or relative of an autistic young person',
+    sub: 'Access the parent/carer toolkit and resources for families.',
+  },
+  {
+    value: 'supporter',
+    label: 'I am a supporter',
+    sub: 'Follow the cause and access general resources.',
+  },
+  {
+    value: 'practitioner',
+    label: 'I am a professional working with autistic people',
+    sub: 'Independent practitioner — not part of a registered organisation.',
+  },
+]
 
 const ROLE_LABELS: Record<string, string> = {
   CAREGIVER: 'Practitioner',
@@ -85,6 +109,9 @@ function RegisterForm() {
   const [credential, setCredential] = useState<Credential | ''>('')
   const [orgName, setOrgName] = useState('')
   const [orgType, setOrgType] = useState<string>('SCHOOL')
+
+  // No-org (catchall) branch state
+  const [noOrgFormRole, setNoOrgFormRole] = useState<NoOrgFormRole | ''>('')
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -214,6 +241,9 @@ function RegisterForm() {
       if (!orgName.trim()) return 'Please enter your organisation name.'
       if (!orgType) return 'Please choose an organisation type.'
     }
+    if (mode === 'no-org') {
+      if (!noOrgFormRole) return 'Please tell us which option describes you best.'
+    }
     return null
   }
 
@@ -248,6 +278,8 @@ function RegisterForm() {
           organisationType: orgType,
           professionalCredential: credential,
         }
+      } else if (mode === 'no-org') {
+        payload = { ...payload, formRole: noOrgFormRole }
       }
 
       const res = await fetch('/api/auth/register', {
@@ -319,10 +351,10 @@ function RegisterForm() {
             />
             <ModeOption
               icon={<Heart className="h-5 w-5" />}
-              title="I'm a parent, carer, friend, or relative"
-              description="Get access to the parent/carer toolkit and resources for families. No organisation needed."
-              active={mode === 'family-carer'}
-              onClick={() => selectMode('family-carer')}
+              title="I don't have an organisation"
+              description="For parents, carers, autistic individuals, supporters, and independent professionals."
+              active={mode === 'no-org'}
+              onClick={() => selectMode('no-org')}
             />
           </fieldset>
 
@@ -629,6 +661,54 @@ function RegisterForm() {
                       </p>
                     </>
                   )}
+                </div>
+              )}
+
+              {mode === 'no-org' && !ssoActive && (
+                <div className="space-y-3">
+                  <p className="label">
+                    Which option describes you best? <span className="text-red-500">*</span>
+                  </p>
+                  <div className="space-y-2">
+                    {NO_ORG_FORM_ROLES.map((opt) => (
+                      <label
+                        key={opt.value}
+                        className={`flex items-start gap-3 cursor-pointer rounded-xl border p-3 transition ${
+                          noOrgFormRole === opt.value
+                            ? 'border-warm-500 bg-warm-50 dark:bg-warm-900/20 ring-2 ring-warm-200'
+                            : 'border-calm-200 dark:border-slate-700 hover:border-warm-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="no-org-form-role"
+                          value={opt.value}
+                          checked={noOrgFormRole === opt.value}
+                          onChange={() => setNoOrgFormRole(opt.value)}
+                          className="sr-only"
+                        />
+                        <span
+                          className={`mt-0.5 h-4 w-4 rounded-full border flex-shrink-0 ${
+                            noOrgFormRole === opt.value
+                              ? 'border-warm-500 bg-warm-500 ring-2 ring-warm-200'
+                              : 'border-slate-300 dark:border-slate-600'
+                          }`}
+                          aria-hidden="true"
+                        />
+                        <span className="flex-1">
+                          <span className="block text-sm font-medium text-slate-900 dark:text-white">
+                            {opt.label}
+                          </span>
+                          <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {opt.sub}
+                          </span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    You&apos;ll be added to our public area with access tailored to your role.
+                  </p>
                 </div>
               )}
 

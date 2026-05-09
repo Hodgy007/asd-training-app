@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { validatePassword } from '@/lib/password-validation'
 import { registerLimiter, getClientIp } from '@/lib/rate-limit'
 import { getEffectiveOrgSettings } from '@/lib/org-hierarchy'
-import { getPublicToolkitOrgId } from '@/lib/toolkit-registration'
+import { getPublicToolkitOrgId, mapFormRoleToPlatformRole } from '@/lib/toolkit-registration'
 import { LEAF_ROLES } from '@/types'
 import { ORG_TYPES } from '@/lib/rbac'
 import type { Role } from '@/types'
@@ -35,11 +35,19 @@ const newOrgSchema = baseSchema.extend({
   professionalCredential: z.enum(['CAREGIVER', 'CAREER_DEV_OFFICER', 'EMPLOYEE']),
 })
 
-const familyCarerSchema = baseSchema.extend({
-  mode: z.literal('family-carer'),
+// Catchall ("no organisation") branch. We deliberately exclude `'employer'`
+// from the existing TOOLKIT_FORM_ROLES enum — anyone interested in the cause
+// without an actual employer organisation is a `'supporter'` instead. Mapping:
+//   autistic     → STUDENT
+//   parent_carer → FAMILY_CARER
+//   supporter    → FAMILY_CARER
+//   practitioner → CAREGIVER
+const noOrgSchema = baseSchema.extend({
+  mode: z.literal('no-org'),
+  formRole: z.enum(['autistic', 'parent_carer', 'supporter', 'practitioner']),
 })
 
-const schema = z.discriminatedUnion('mode', [existingSchema, newOrgSchema, familyCarerSchema])
+const schema = z.discriminatedUnion('mode', [existingSchema, newOrgSchema, noOrgSchema])
 
 function slugify(name: string): string {
   return name
@@ -224,7 +232,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, redirect })
   }
 
-  // mode === 'family-carer'
+  // mode === 'no-org'
   const publicOrgId = await getPublicToolkitOrgId()
   if (!publicOrgId) {
     console.error(
@@ -236,12 +244,14 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  const platformRole = mapFormRoleToPlatformRole(data.formRole)
+
   await prisma.user.create({
     data: {
       email,
       name: data.name,
       password: passwordHash,
-      role: 'FAMILY_CARER',
+      role: platformRole,
       organisationId: publicOrgId,
       active: true,
       pendingApproval: false,

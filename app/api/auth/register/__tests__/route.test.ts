@@ -15,6 +15,12 @@ vi.mock('@/lib/org-hierarchy', () => ({
 }))
 vi.mock('@/lib/toolkit-registration', () => ({
   getPublicToolkitOrgId: vi.fn(),
+  mapFormRoleToPlatformRole: (formRole: string) => {
+    if (formRole === 'autistic') return 'STUDENT'
+    if (formRole === 'practitioner') return 'CAREGIVER'
+    // parent_carer + supporter
+    return 'FAMILY_CARER'
+  },
 }))
 vi.mock('bcryptjs', () => ({
   default: { hash: vi.fn(async () => 'HASH') },
@@ -63,32 +69,32 @@ beforeEach(() => {
 describe('POST /api/auth/register — common', () => {
   it('429 on rate limit', async () => {
     vi.mocked(registerLimiter.check).mockResolvedValue({ success: false, retryAfterMs: 60_000 })
-    const res = await POST(req({ mode: 'family-carer', name: 'A', email: 'a@b.com', password: STRONG }))
+    const res = await POST(req({ mode: 'no-org', formRole: 'parent_carer', name: 'A', email: 'a@b.com', password: STRONG }))
     expect(res.status).toBe(429)
   })
 
   it('400 on weak password', async () => {
-    const res = await POST(req({ mode: 'family-carer', name: 'A', email: 'a@b.com', password: 'short' }))
+    const res = await POST(req({ mode: 'no-org', formRole: 'parent_carer', name: 'A', email: 'a@b.com', password: 'short' }))
     expect(res.status).toBe(400)
   })
 
   it('400 SSO_REQUIRED when domain has org SSO configured', async () => {
     vi.mocked(prisma.orgSsoConfig.findFirst).mockResolvedValue({ id: 'sso1' } as any)
     vi.mocked(getPublicToolkitOrgId).mockResolvedValue('public-org')
-    const res = await POST(req({ mode: 'family-carer', name: 'A', email: 'a@school.edu', password: STRONG }))
+    const res = await POST(req({ mode: 'no-org', formRole: 'parent_carer', name: 'A', email: 'a@school.edu', password: STRONG }))
     expect(res.status).toBe(400)
     expect(await res.json()).toEqual({ error: 'SSO_REQUIRED' })
   })
 
   it('400 SSO_REQUIRED when charity SSO is enforced', async () => {
     vi.mocked(prisma.charitySsoConfig.findFirst).mockResolvedValue({ id: 'csso' } as any)
-    const res = await POST(req({ mode: 'family-carer', name: 'A', email: 'a@b.com', password: STRONG }))
+    const res = await POST(req({ mode: 'no-org', formRole: 'parent_carer', name: 'A', email: 'a@b.com', password: STRONG }))
     expect(res.status).toBe(400)
   })
 
   it('409 EMAIL_EXISTS when email already in use', async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: 'u1' } as any)
-    const res = await POST(req({ mode: 'family-carer', name: 'A', email: 'a@b.com', password: STRONG }))
+    const res = await POST(req({ mode: 'no-org', formRole: 'parent_carer', name: 'A', email: 'a@b.com', password: STRONG }))
     expect(res.status).toBe(409)
   })
 
@@ -271,13 +277,19 @@ describe('POST /api/auth/register — new org', () => {
   })
 })
 
-describe('POST /api/auth/register — family carer', () => {
-  it('happy path → user attached to public toolkit org, redirect to login', async () => {
+describe('POST /api/auth/register — no-org (catchall)', () => {
+  it.each([
+    { formRole: 'autistic',     expectedRole: 'STUDENT' },
+    { formRole: 'parent_carer', expectedRole: 'FAMILY_CARER' },
+    { formRole: 'supporter',    expectedRole: 'FAMILY_CARER' },
+    { formRole: 'practitioner', expectedRole: 'CAREGIVER' },
+  ])('formRole=$formRole → role=$expectedRole, attached to public-toolkit', async ({ formRole, expectedRole }) => {
     vi.mocked(getPublicToolkitOrgId).mockResolvedValue('public-org')
-    vi.mocked(prisma.user.create).mockResolvedValue({ id: 'fc' } as any)
+    vi.mocked(prisma.user.create).mockResolvedValue({ id: 'no' } as any)
 
     const res = await POST(req({
-      mode: 'family-carer', name: 'Cara', email: 'cara@home.com', password: STRONG,
+      mode: 'no-org', formRole,
+      name: 'Sam', email: `sam-${formRole}@home.com`, password: STRONG,
     }))
 
     expect(res.status).toBe(200)
@@ -285,7 +297,7 @@ describe('POST /api/auth/register — family carer', () => {
     expect(data.redirect).toMatch(/^\/login\?registered=1/)
     expect(prisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
-        role: 'FAMILY_CARER',
+        role: expectedRole,
         organisationId: 'public-org',
         active: true,
         pendingApproval: false,
@@ -294,10 +306,21 @@ describe('POST /api/auth/register — family carer', () => {
     }))
   })
 
+  it('400 on disallowed formRole=employer (defence-in-depth — employer is not a catchall option)', async () => {
+    vi.mocked(getPublicToolkitOrgId).mockResolvedValue('public-org')
+    const res = await POST(req({
+      mode: 'no-org', formRole: 'employer',
+      name: 'X', email: 'x@home.com', password: STRONG,
+    }))
+    expect(res.status).toBe(400)
+    expect(prisma.user.create).not.toHaveBeenCalled()
+  })
+
   it('503 CATCHALL_UNAVAILABLE when public-toolkit org missing', async () => {
     vi.mocked(getPublicToolkitOrgId).mockResolvedValue(null)
     const res = await POST(req({
-      mode: 'family-carer', name: 'Cara', email: 'cara@home.com', password: STRONG,
+      mode: 'no-org', formRole: 'parent_carer',
+      name: 'Cara', email: 'cara@home.com', password: STRONG,
     }))
     expect(res.status).toBe(503)
     expect(await res.json()).toEqual({ error: 'CATCHALL_UNAVAILABLE' })
