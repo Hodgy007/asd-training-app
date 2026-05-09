@@ -144,6 +144,10 @@ export const introspectLimiter = createRateLimiter('introspect', 5 * 60 * 1000, 
 // Cohort join: 10 per 15 minutes per IP — public, so a real ceiling matters
 export const joinLimiter = createRateLimiter('cohort-join', 15 * 60 * 1000, 10)
 
+// Public self-registration: 5 per 15 minutes per IP. Form has three branches
+// (existing-org, new-org, family-carer) — same ceiling for all.
+export const registerLimiter = createRateLimiter('register', 15 * 60 * 1000, 5)
+
 // Public toolkit lead capture: 20 per 15 minutes per IP. The form is the only
 // gate before downloading a public file, so we want a real ceiling without
 // frustrating a household where two siblings download in quick succession.

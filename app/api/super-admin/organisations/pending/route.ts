@@ -44,13 +44,20 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (action === 'approve') {
-    await prisma.organisation.update({
-      where: { id: orgId },
-      data: {
-        pendingApproval: false,
-        active: true,
-      },
-    })
+    // When the org came from the public /register flow it carries a pending
+    // ORG_ADMIN user too. Flip both in one transaction so the new admin can
+    // sign in immediately after approval — otherwise their `pendingApproval`
+    // stays true and they keep getting bounced at the auth.ts signIn check.
+    await prisma.$transaction([
+      prisma.organisation.update({
+        where: { id: orgId },
+        data: { pendingApproval: false, active: true },
+      }),
+      prisma.user.updateMany({
+        where: { organisationId: orgId, pendingApproval: true },
+        data: { pendingApproval: false },
+      }),
+    ])
     return NextResponse.json({ message: `${org.name} has been approved and activated.` })
   } else {
     await prisma.organisation.delete({ where: { id: orgId } })
