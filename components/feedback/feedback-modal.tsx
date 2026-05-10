@@ -75,7 +75,7 @@ export function FeedbackModal({ open, onClose, defaultType, documentContext }: F
     try {
       const logs = getBufferedLogs()
       const composedMessage = documentContext
-        ? `Re: ${documentContext.title} (document id: ${documentContext.id})\n\n${message.trim()}`
+        ? `${message.trim()}\n\n---\nDocument: ${documentContext.title} (id: ${documentContext.id})`
         : message.trim()
       const res = await fetch('/api/feedback', {
         method: 'POST',
