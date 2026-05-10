@@ -153,8 +153,8 @@ model Organisation {
   createdAt                    DateTime           @default(now())
   updatedAt                    DateTime           @updatedAt
 
-  parentOrg         Organisation?        @relation("OrgHierarchy", fields: [parentOrgId], references: [id])
-  childOrgs         Organisation[]       @relation("OrgHierarchy")
+  parentOrg         Organisation?          @relation("OrgHierarchy", fields: [parentOrgId], references: [id])
+  childOrgs         Organisation[]         @relation("OrgHierarchy")
   users             User[]
   cohortMemberships CohortMembership[]
   announcements     Announcement[]
@@ -162,22 +162,28 @@ model Organisation {
   meetingConfig     OrgMeetingConfig?
   ssoConfig         OrgSsoConfig?
   surveyTargets     SurveyTarget[]
-  feedback          FeedbackSubmission[] @relation("OrgFeedback")
+  feedback          FeedbackSubmission[]   @relation("OrgFeedback")
   purchases         Purchase[]
+  eventbriteEvent   CohortEventbriteEvent?
 
   @@index([parentOrgId])
   @@index([orgType, lifecycleStatus])
 }
 
 model CohortMembership {
-  id        String                 @id @default(cuid())
-  userId    String
-  cohortId  String
-  status    CohortMembershipStatus @default(ACTIVE)
-  joinedAt  DateTime               @default(now())
-  leftAt    DateTime?
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
+  id                 String                 @id @default(cuid())
+  userId             String
+  cohortId           String
+  status             CohortMembershipStatus @default(ACTIVE)
+  joinedAt           DateTime               @default(now())
+  leftAt             DateTime?
+  // Provenance for the row — distinguishes admin-added from Eventbrite-synced.
+  // Default MANUAL keeps existing rows unchanged.
+  source             String?                @default("MANUAL")
+  externalOrderId    String?
+  externalAttendeeId String?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 
   user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   cohort Organisation @relation(fields: [cohortId], references: [id], onDelete: Cascade)
@@ -186,6 +192,7 @@ model CohortMembership {
   @@index([userId])
   @@index([cohortId])
   @@index([status])
+  @@index([externalAttendeeId])
 }
 
 model Announcement {
@@ -679,25 +686,25 @@ enum CVStatus {
 }
 
 model LibraryCollection {
-  id                 String   @id @default(cuid())
-  title              String
-  description        String   @db.Text
-  thumbnailUrl       String?
+  id                      String   @id @default(cuid())
+  title                   String
+  description             String   @db.Text
+  thumbnailUrl            String?
   // Visual theme on the learner-facing library tile. Null = auto-cycle from
   // the palette by collection id. Set to one of the palette keys (orange,
   // green, blue, pink, yellow, cyan) to lock the colour.
-  themeKey           String?
-  targetOrgIds       String[]
-  targetRoles        String[]
-  active             Boolean  @default(true)
-  publishedToToolkit Boolean  @default(false)
+  themeKey                String?
+  targetOrgIds            String[]
+  targetRoles             String[]
+  active                  Boolean  @default(true)
+  publishedToToolkit      Boolean  @default(false)
   // Per-collection overrides for the public /toolkit/[id] page's "Resources"
   // intro block. Both null/empty -> the entire intro block is hidden.
   toolkitResourcesHeading String?
-  toolkitResourcesIntro   String? @db.Text
-  createdById        String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  toolkitResourcesIntro   String?  @db.Text
+  createdById             String
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
   createdBy User              @relation("CollectionsCreated", fields: [createdById], references: [id])
   documents LibraryDocument[]
@@ -747,12 +754,12 @@ model LibraryDocument {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  collection        LibraryCollection               @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  section           LibrarySection?                 @relation(fields: [sectionId], references: [id], onDelete: SetNull)
-  uploadedBy        User                            @relation("UploadedDocuments", fields: [uploadedById], references: [id])
-  events            LibraryDocumentEvent[]
-  anonymousEvents   ToolkitAnonymousDocumentEvent[]
-  toolkitDownloads  ToolkitDownload[]               @relation("ToolkitDownloads")
+  collection       LibraryCollection               @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  section          LibrarySection?                 @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  uploadedBy       User                            @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+  events           LibraryDocumentEvent[]
+  anonymousEvents  ToolkitAnonymousDocumentEvent[]
+  toolkitDownloads ToolkitDownload[]               @relation("ToolkitDownloads")
 
   @@index([collectionId, sectionId, order])
 }
@@ -830,16 +837,16 @@ enum BrandAssetType {
 // org). Without `userId` they're a lead-only — we know who they are but
 // they have no platform sign-in.
 model ToolkitRegistrant {
-  id               String            @id @default(cuid())
+  id               String   @id @default(cuid())
   name             String
-  email            String            @unique
+  email            String   @unique
   formRole         String
   organisation     String?
   postcode         String?
-  marketingConsent Boolean           @default(false)
-  userId           String?           @unique
-  createdAt        DateTime          @default(now())
-  lastSeenAt       DateTime          @default(now())
+  marketingConsent Boolean  @default(false)
+  userId           String?  @unique
+  createdAt        DateTime @default(now())
+  lastSeenAt       DateTime @default(now())
 
   user      User?             @relation("ToolkitRegistrantUser", fields: [userId], references: [id], onDelete: SetNull)
   downloads ToolkitDownload[]
@@ -1211,4 +1218,71 @@ model FeedbackSubmission {
 
   @@index([status, createdAt])
   @@index([userId])
+}
+
+// ─── Eventbrite / External Workshops ─────────────────────────────────────────
+
+// Single-row config for the charity's Eventbrite account integration. The
+// Private Token is the account-owner OAuth token from Eventbrite Account
+// Settings → Developer Links → API Keys. Stored as plaintext to match the
+// existing CharityMeetingConfig pattern; rotate via the settings UI.
+model CharityEventbriteConfig {
+  id               String    @id @default(cuid())
+  privateToken     String?
+  // Id of the webhook subscription we registered on the charity's Eventbrite
+  // account, so we can revoke and re-register cleanly when the token rotates
+  // or the integration is disabled.
+  webhookId        String?
+  // AUTO_INVITE (default): auto-create User in Public Toolkit org + send a
+  //   booking-confirmation email with a magic-link to set a password. This is
+  //   the right default for charity training events — booking on Eventbrite is
+  //   itself an opt-in, so the bookee won't be surprised by an account email.
+  // STRICT: ignore unknown emails — only count bookings from existing users.
+  // CLAIM_LINK: email a "claim your booking" link to /register without
+  //   pre-creating an account.
+  emailMatchPolicy String    @default("AUTO_INVITE")
+  configured       Boolean   @default(false)
+  lastSyncAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// Eventbrite event metadata, cached 1:1 against a Cohort (Organisation row
+// where orgType = COHORT). One row per Eventbrite-sourced cohort. Refreshed
+// by webhook (event.updated / event.unpublished), nightly cron, and the
+// manual "Refresh" button on the cohort detail page — never fetched at
+// page-render time.
+//
+// The cohort itself is the durable concept (members, programs, surveys);
+// this table just holds the Eventbrite-specific metadata we don't want to
+// pollute the Organisation table with.
+model CohortEventbriteEvent {
+  id              String          @id @default(cuid())
+  cohortId        String          @unique
+  externalEventId String          @unique
+  name            String
+  description     String?         @db.Text
+  imageUrl        String?
+  startsAt        DateTime
+  endsAt          DateTime?
+  venue           String?
+  // Public Eventbrite URL — what the catalogue card links out to.
+  ticketUrl       String
+  // Free-form display string ("Free", "£25", "£25 – £75") — Eventbrite tickets
+  // can have multiple price tiers; we don't try to model them all.
+  priceText       String?
+  capacity        Int?
+  soldOut         Boolean         @default(false)
+  // Mirrors Eventbrite event status: LIVE | DRAFT | CANCELLED | COMPLETED.
+  status          String          @default("LIVE")
+  audience        ProgramAudience @default(EDUCATION)
+  // Catalogue visibility. Defaults off so admins can stage before publishing.
+  purchasable     Boolean         @default(false)
+  lastSyncedAt    DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  cohort Organisation @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+
+  @@index([startsAt])
 }

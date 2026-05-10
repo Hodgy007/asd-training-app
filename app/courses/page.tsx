@@ -8,6 +8,7 @@ import {
 } from '@/lib/stripe'
 import { ProgramCard } from '@/components/courses/program-card'
 import { SubscriptionCard } from '@/components/courses/subscription-card'
+import { WorkshopCard } from '@/components/courses/workshop-card'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -123,6 +124,20 @@ export default async function CoursesPage({
       stripePriceId: true,
     },
     orderBy: { name: 'asc' },
+  })
+
+  // Eventbrite-sourced workshops live on Cohort organisations via the
+  // CohortEventbriteEvent metadata table. We surface ones the admin has
+  // toggled `purchasable` on, that are still LIVE on Eventbrite, and whose
+  // start time hasn't passed.
+  const workshops = await prisma.cohortEventbriteEvent.findMany({
+    where: {
+      purchasable: true,
+      status: 'LIVE',
+      startsAt: { gte: new Date() },
+      ...(audienceFilter ? { audience: audienceFilter } : {}),
+    },
+    orderBy: { startsAt: 'asc' },
   })
 
   const yearlyPrice = await formatStripePrice(STRIPE_SUBSCRIPTION_PRICE_YEARLY)
@@ -270,13 +285,46 @@ export default async function CoursesPage({
         </section>
       ) : null}
 
+      {workshops.length > 0 ? (
+        <section
+          id="workshops"
+          className={`bg-[#ffffff] ${subscriptionConfigured ? '' : 'border-t border-slate-200'}`}
+        >
+          <div className="mx-auto max-w-6xl px-6 py-20">
+            <SectionHeader
+              eyebrow="Live workshops"
+              title="Upcoming live sessions"
+              description="In-person and online workshops booked directly through Eventbrite. Limited places — book early."
+            />
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {workshops.map((w, index) => (
+                <WorkshopCard
+                  key={w.id}
+                  name={w.name}
+                  description={w.description}
+                  imageUrl={w.imageUrl}
+                  startsAt={w.startsAt}
+                  venue={w.venue}
+                  ticketUrl={w.ticketUrl}
+                  priceText={w.priceText}
+                  soldOut={w.soldOut}
+                  accentHex={ACCENT_CYCLE[index % ACCENT_CYCLE.length]}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section
         id="courses"
-        className={`bg-[#f8fafc] ${subscriptionConfigured ? '' : 'border-t border-slate-200'}`}
+        className={`bg-[#f8fafc] ${
+          subscriptionConfigured || workshops.length > 0 ? '' : 'border-t border-slate-200'
+        }`}
       >
         <div className="mx-auto max-w-6xl px-6 py-20">
           <SectionHeader
-            eyebrow="Individual courses"
+            eyebrow="Self-paced courses"
             title="Buy a single course"
             description="Lifetime access to the modules you need — paid once, no subscription required."
           />

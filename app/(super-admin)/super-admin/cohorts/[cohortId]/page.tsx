@@ -28,6 +28,10 @@ import {
 import { clsx } from 'clsx'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
 import { SendInviteButton } from '@/components/ui/send-invite-button'
+import {
+  CohortEventbriteSection,
+  type CohortEventbriteEvent,
+} from '@/components/super-admin/cohort-eventbrite-section'
 
 interface TrainingProgram {
   id: string
@@ -83,6 +87,7 @@ interface Cohort {
   createdAt: string
   _count: { users: number }
   users: CohortMember[]
+  eventbriteEvent?: CohortEventbriteEvent | null
 }
 
 interface InviteState {
@@ -507,6 +512,14 @@ export default function CohortDetailPage() {
         <ArrowLeft className="h-4 w-4" />
         Back to Cohorts
       </Link>
+
+      {cohort.eventbriteEvent && (
+        <CohortEventbriteSection
+          cohortId={cohort.id}
+          event={cohort.eventbriteEvent}
+          onChange={(updated) => setCohort({ ...cohort, eventbriteEvent: updated })}
+        />
+      )}
 
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">

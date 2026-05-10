@@ -7,6 +7,7 @@ import {
   Video,
   Shield,
   Plug,
+  Ticket,
   ChevronRight,
   Settings as SettingsIcon,
 } from 'lucide-react'
@@ -52,6 +53,14 @@ const TILES: Tile[] = [
     icon: Plug,
     iconColor: 'text-amber-600 dark:text-amber-400',
     iconBg: 'bg-amber-100 dark:bg-amber-900/40',
+  },
+  {
+    href: '/super-admin/settings/eventbrite',
+    title: 'Eventbrite',
+    description: 'Pull external workshops onto the catalogue and auto-sync attendees.',
+    icon: Ticket,
+    iconColor: 'text-orange-600 dark:text-orange-400',
+    iconBg: 'bg-orange-100 dark:bg-orange-900/40',
   },
 ]
 
