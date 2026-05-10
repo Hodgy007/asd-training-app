@@ -59,9 +59,9 @@ export default function FeedbackDetailPage() {
     setSaving(true)
     setError(null)
     // Capture the prior status before the round-trip so we only redirect when
-    // this save is the action that flipped the item to RESOLVED — re-saving
-    // an already-resolved item (e.g. tweaking notes) keeps the admin in place.
-    const wasResolvedBefore = item?.status === 'RESOLVED'
+    // this save actually changed the triage state — note-only edits on an
+    // unchanged status keep the admin in place.
+    const previousStatus = item?.status
     try {
       const res = await fetch(`/api/super-admin/feedback/${id}`, {
         method: 'PATCH',
@@ -74,7 +74,7 @@ export default function FeedbackDetailPage() {
       }
       const updated: Detail = await res.json()
       setItem(updated)
-      if (updated.status === 'RESOLVED' && !wasResolvedBefore) {
+      if (updated.status !== previousStatus) {
         router.push('/super-admin/feedback')
       }
     } finally {
@@ -181,8 +181,8 @@ export default function FeedbackDetailPage() {
           >
             {saving
               ? 'Saving...'
-              : status === 'RESOLVED' && item.status !== 'RESOLVED'
-                ? 'Resolve and close'
+              : status !== item.status
+                ? 'Save and close'
                 : 'Save'}
           </button>
         </div>
