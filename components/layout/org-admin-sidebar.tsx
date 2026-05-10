@@ -19,6 +19,8 @@ import {
   CreditCard,
   Home,
   ShoppingBag,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
@@ -57,9 +59,11 @@ const MIDDLE_NAV_ITEMS: NavItem[] = [
 interface OrgAdminSidebarProps {
   onClose?: () => void
   mobile?: boolean
+  collapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
-export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
+export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCollapse }: OrgAdminSidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const { colorTheme } = useColorTheme()
@@ -104,15 +108,28 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
     signOut: 'text-white/80 hover:bg-red-500/20 hover:text-red-200',
   }
 
+  // Collapse hides labels on desktop only.
+  const isCollapsed = collapsed && !mobile
+
+  const linkRowClass = isCollapsed
+    ? 'flex items-center justify-center px-2 py-2.5 rounded-xl text-sm font-bold transition-all'
+    : 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all'
+
   return (
     <div className={clsx('flex flex-col h-full', chrome.sidebar)}>
       {/* Logo */}
-      <div className={clsx('flex items-center justify-between h-20 px-5 flex-shrink-0', chrome.logoBorder)}>
+      <div
+        className={clsx(
+          'flex items-center h-20 flex-shrink-0',
+          isCollapsed ? 'justify-center px-2' : 'justify-between px-5',
+          chrome.logoBorder,
+        )}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/logo-aaa.svg"
+          src={isCollapsed ? '/logo-aaa-mark.svg' : '/logo-aaa.svg'}
           alt="Ambitious about Autism"
-          className={clsx('h-16 w-auto', isDark && 'invert brightness-125')}
+          className={clsx(isCollapsed ? 'h-10 w-10' : 'h-16 w-auto', isDark && 'invert brightness-125')}
         />
         {mobile && (
           <button
@@ -125,7 +142,10 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 min-h-0 overflow-y-auto p-4 space-y-1" aria-label="Org admin navigation">
+      <nav
+        className={clsx('flex-1 min-h-0 overflow-y-auto space-y-1', isCollapsed ? 'p-2' : 'p-4')}
+        aria-label="Org admin navigation"
+      >
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = item.exact
@@ -139,40 +159,59 @@ export function OrgAdminSidebar({ onClose, mobile }: OrgAdminSidebarProps) {
               onClick={onClose}
               target={item.openInNewTab ? '_blank' : undefined}
               rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
-              className={clsx(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all',
-                isActive ? chrome.navActive : chrome.navInactive,
-              )}
+              title={isCollapsed ? item.label : undefined}
+              aria-label={isCollapsed ? item.label : undefined}
+              className={clsx(linkRowClass, isActive ? chrome.navActive : chrome.navInactive)}
             >
               <Icon
                 className={clsx('h-5 w-5 flex-shrink-0', isActive ? chrome.iconActive : chrome.iconInactive)}
               />
-              {item.label}
+              {!isCollapsed && <span className="truncate">{item.label}</span>}
             </Link>
           )
         })}
       </nav>
 
       {/* Bottom section */}
-      <div className={clsx('p-4 border-t space-y-2', chrome.divider)}>
+      <div className={clsx('border-t space-y-2', chrome.divider, isCollapsed ? 'p-2' : 'p-4')}>
         <Link
           href="/admin/settings"
           onClick={onClose}
-          className={clsx(
-            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all w-full',
-            pathname === '/admin/settings' ? chrome.navActive : chrome.navInactive,
-          )}
+          title={isCollapsed ? 'Settings' : undefined}
+          aria-label={isCollapsed ? 'Settings' : undefined}
+          className={clsx(linkRowClass, 'w-full', pathname === '/admin/settings' ? chrome.navActive : chrome.navInactive)}
         >
-          <Settings className={clsx('h-5 w-5 flex-shrink-0', pathname === '/admin/settings' ? chrome.iconActive : chrome.iconInactive)} />
-          Settings
+          <Settings
+            className={clsx('h-5 w-5 flex-shrink-0', pathname === '/admin/settings' ? chrome.iconActive : chrome.iconInactive)}
+          />
+          {!isCollapsed && <span className="truncate">Settings</span>}
         </Link>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className={clsx('flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all w-full', chrome.signOut)}
+          title={isCollapsed ? 'Sign out' : undefined}
+          aria-label={isCollapsed ? 'Sign out' : undefined}
+          className={clsx(linkRowClass, 'w-full', chrome.signOut)}
         >
-          <LogOut className={clsx('h-5 w-5', chrome.iconInactive)} />
-          Sign out
+          <LogOut className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
+          {!isCollapsed && <span className="truncate">Sign out</span>}
         </button>
+        {onToggleCollapse && !mobile && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-pressed={isCollapsed}
+            className={clsx(linkRowClass, 'w-full', chrome.navInactive)}
+          >
+            {isCollapsed ? (
+              <ChevronsRight className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
+            ) : (
+              <ChevronsLeft className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
+            )}
+            {!isCollapsed && <span className="truncate">Collapse</span>}
+          </button>
+        )}
       </div>
     </div>
   )

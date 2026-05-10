@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { usePathname } from 'next/navigation'
 import { clsx } from 'clsx'
 import { Sidebar } from '@/components/layout/sidebar'
@@ -9,38 +9,13 @@ import { OrgAdminSidebar } from '@/components/layout/org-admin-sidebar'
 import { Topbar } from '@/components/layout/topbar'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
-
-const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed'
+import { useSidebarCollapse } from '@/lib/use-sidebar-collapse'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, toggleCollapsed] = useSidebarCollapse()
   const pathname = usePathname()
   const { data: session, status } = useSession()
-
-  // Restore collapse preference on mount. Stored as a string so the lookup
-  // returns null for first-time users (default = expanded).
-  useEffect(() => {
-    try {
-      if (window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true') {
-        setCollapsed(true)
-      }
-    } catch {
-      // ignore
-    }
-  }, [])
-
-  const toggleCollapsed = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev
-      try {
-        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next))
-      } catch {
-        // ignore
-      }
-      return next
-    })
-  }, [])
 
   if (status === 'unauthenticated') {
     redirect('/login')
@@ -78,14 +53,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         ? OrgAdminSidebar
         : Sidebar
 
-  // Only the leaf-role Sidebar supports collapse / a tighter resting width.
-  // Admin sidebars keep their existing layout to avoid scope-creep changes.
-  const isLeafSidebar = SidebarComponent === Sidebar
-  const desktopSidebarWidth = !isLeafSidebar
-    ? 'w-64'
-    : collapsed
-      ? 'w-16'
-      : 'w-56'
+  // All three sidebar variants now support collapse, so the wrapper width
+  // tracks the shared collapse state regardless of which one is rendered.
+  const desktopSidebarWidth = collapsed ? 'w-16' : 'w-56'
 
   return (
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900">
@@ -96,11 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
       >
         <Suspense>
-          {isLeafSidebar ? (
-            <Sidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
-          ) : (
-            <SidebarComponent />
-          )}
+          <SidebarComponent collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
         </Suspense>
       </div>
 

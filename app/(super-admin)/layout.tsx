@@ -1,13 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { clsx } from 'clsx'
 import { SuperAdminSidebar } from '@/components/layout/super-admin-sidebar'
 import { Topbar } from '@/components/layout/topbar'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
+import { useSidebarCollapse } from '@/lib/use-sidebar-collapse'
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [collapsed, toggleCollapsed] = useSidebarCollapse()
   const { data: session, status } = useSession()
 
   if (status === 'unauthenticated') redirect('/login')
@@ -15,8 +18,13 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900 overflow-hidden">
-      <div className="hidden md:flex w-64 flex-shrink-0 flex-col">
-        <SuperAdminSidebar />
+      <div
+        className={clsx(
+          'hidden md:flex flex-shrink-0 flex-col transition-[width] duration-200 ease-in-out',
+          collapsed ? 'w-16' : 'w-56',
+        )}
+      >
+        <SuperAdminSidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
       </div>
 
       {sidebarOpen && (
