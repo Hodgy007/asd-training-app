@@ -171,10 +171,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           // MFA verified — apply the same post-auth checks that the password
-          // path runs (deactivation / pending approval) before issuing a token.
-          if (user.pendingApproval) {
-            throw new Error('Your account is pending approval by your organisation admin. You will be able to sign in once approved.')
-          }
+          // path runs (deactivation) before issuing a token.
           if (!user.active) {
             throw new Error('Your account has been deactivated. Please contact an administrator.')
           }
@@ -211,9 +208,6 @@ export const authOptions: NextAuthOptions = {
         // Password verified — only NOW reveal account-state errors. These
         // are not enumeration vectors because the attacker already had to
         // present the correct password to get here.
-        if (user.pendingApproval) {
-          throw new Error('Your account is pending approval by your organisation admin. You will be able to sign in once approved.')
-        }
         if (!user.active) {
           throw new Error('Your account has been deactivated. Please contact an administrator.')
         }
@@ -290,10 +284,6 @@ export const authOptions: NextAuthOptions = {
             return `/register/sso-complete?token=${encodeURIComponent(intentToken)}`
           }
           return '/login?error=Account not found. Contact your organisation administrator.'
-        }
-
-        if (dbUser.pendingApproval) {
-          return '/login?error=Your+account+is+pending+approval+by+your+organisation+admin.'
         }
 
         if (!dbUser.active) {

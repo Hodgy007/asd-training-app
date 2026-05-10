@@ -63,20 +63,6 @@ export async function POST(req: NextRequest) {
     slug = `${slug}-${Date.now().toString(36)}`
   }
 
-  // Check for duplicate pending registrations with same contact email
-  const existingPending = await prisma.organisation.findFirst({
-    where: {
-      contactEmail,
-      pendingApproval: true,
-    },
-  })
-  if (existingPending) {
-    return NextResponse.json(
-      { error: 'A registration with this email is already pending approval.' },
-      { status: 409 }
-    )
-  }
-
   const org = await prisma.organisation.create({
     data: {
       name,
@@ -91,15 +77,17 @@ export async function POST(req: NextRequest) {
       county: county || undefined,
       postcode: postcode || undefined,
       country: country || 'United Kingdom',
-      pendingApproval: true,
-      active: false,
+      // Free self-registration — no admin approval gate. Orgs can be
+      // re-deactivated by a super-admin if abuse is detected.
+      pendingApproval: false,
+      active: true,
       allowedRoles: [],
       allowedProgramIds: [],
     },
   })
 
   return NextResponse.json(
-    { message: 'Registration submitted. A charity admin will review your application.', id: org.id },
+    { message: 'Registration submitted.', id: org.id },
     { status: 201 }
   )
 }

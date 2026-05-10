@@ -18,8 +18,6 @@ import {
   X,
   GraduationCap,
   Layers,
-  Clock,
-  UserCheck,
   RotateCcw,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -75,14 +73,6 @@ interface UsersResponse {
   totalPages: number
 }
 
-interface PendingUser {
-  id: string
-  name: string | null
-  email: string
-  role: string
-  createdAt: string
-}
-
 interface CreateForm {
   name: string
   email: string
@@ -113,12 +103,6 @@ export default function OrgAdminUsersPage() {
     id: string; name: string; email: string; password: string
   } | null>(null)
 
-  const [activeTab, setActiveTab] = useState<'users' | 'pending'>('users')
-  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
-  const [pendingCount, setPendingCount] = useState<number | null>(null)
-  const [pendingLoading, setPendingLoading] = useState(false)
-  const [pendingActionLoading, setPendingActionLoading] = useState<string | null>(null)
-
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
     if (status === 'authenticated' && session?.user?.role !== 'ORG_ADMIN') router.push('/dashboard')
@@ -133,48 +117,7 @@ export default function OrgAdminUsersPage() {
         setOrg(o)
         setCreateForm((f) => ({ ...f, role: o.allowedRoles[0] ?? '' }))
       })
-    // Fetch pending count for banner
-    fetch('/api/admin/users/pending')
-      .then((r) => r.json())
-      .then((d) => setPendingCount(d.count ?? 0))
-      .catch(() => {})
   }, [status])
-
-  const fetchPending = async () => {
-    setPendingLoading(true)
-    try {
-      const res = await fetch('/api/admin/users/pending')
-      if (res.ok) {
-        const d = await res.json()
-        setPendingUsers(d.users)
-        setPendingCount(d.count)
-      }
-    } finally {
-      setPendingLoading(false)
-    }
-  }
-
-  async function handlePendingAction(userId: string, action: 'approve' | 'reject', name: string | null) {
-    if (action === 'reject' && !confirm(`Reject and delete ${name ?? 'this user'}? This cannot be undone.`)) return
-    setPendingActionLoading(userId)
-    try {
-      const res = await fetch('/api/admin/users/pending', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, action }),
-      })
-      if (res.ok) {
-        showToast(action === 'approve' ? 'User approved — they can now sign in.' : 'User rejected and removed.', 'success')
-        fetchPending()
-        if (action === 'approve') fetchUsers()
-      } else {
-        const d = await res.json()
-        showToast(d.error || 'Action failed.', 'error')
-      }
-    } finally {
-      setPendingActionLoading(null)
-    }
-  }
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -348,120 +291,8 @@ export default function OrgAdminUsersPage() {
         </div>
       </div>
 
-      {/* Pending approval banner */}
-      {pendingCount !== null && pendingCount > 0 && activeTab === 'users' && (
-        <div className="flex items-center justify-between gap-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-amber-500 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-                {pendingCount} user{pendingCount !== 1 ? 's' : ''} awaiting approval
-              </p>
-              <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                Self-registered users need your approval before they can sign in.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => { setActiveTab('pending'); fetchPending() }}
-            className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium transition-colors"
-          >
-            Review now
-          </button>
-        </div>
-      )}
-
-      {/* Tab switcher */}
-      <div className="flex gap-1 p-1 bg-calm-100 dark:bg-slate-700 rounded-xl w-fit">
-        <button
-          onClick={() => setActiveTab('users')}
-          className={clsx(
-            'px-4 py-1.5 rounded-lg text-sm font-medium transition-colors',
-            activeTab === 'users'
-              ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-          )}
-        >
-          All Users {data && `(${data.total})`}
-        </button>
-        <button
-          onClick={() => { setActiveTab('pending'); fetchPending() }}
-          className={clsx(
-            'px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5',
-            activeTab === 'pending'
-              ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-          )}
-        >
-          Pending Approval
-          {pendingCount !== null && pendingCount > 0 && (
-            <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-amber-500 text-white text-[10px] font-bold">
-              {pendingCount}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Pending approval list */}
-      {activeTab === 'pending' && (
-        <div className="card overflow-hidden p-0">
-          {pendingLoading ? (
-            <div className="flex items-center justify-center py-12 text-slate-400">
-              <RefreshCw className="h-5 w-5 animate-spin mr-2" />
-              Loading pending users...
-            </div>
-          ) : pendingUsers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-              <UserCheck className="h-10 w-10 mb-3 opacity-30" />
-              <p className="text-sm font-medium">No pending approvals</p>
-              <p className="text-xs mt-1">All caught up — no self-registered users awaiting review.</p>
-            </div>
-          ) : (
-            <ul className="divide-y divide-calm-100 dark:divide-slate-700">
-              {pendingUsers.map((user) => (
-                <li key={user.id} className="flex items-center justify-between gap-4 px-4 py-4">
-                  <div className="min-w-0">
-                    <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
-                      {user.name ?? '—'}
-                    </p>
-                    <p className="text-xs text-slate-400 truncate">{user.email}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Registered {new Date(user.createdAt).toLocaleDateString('en-GB', {
-                        day: 'numeric', month: 'short', year: 'numeric',
-                      })}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <button
-                      disabled={pendingActionLoading === user.id}
-                      onClick={() => handlePendingAction(user.id, 'approve', user.name)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-medium transition-colors"
-                    >
-                      {pendingActionLoading === user.id ? (
-                        <RefreshCw className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <CheckCircle className="h-3 w-3" />
-                      )}
-                      Approve
-                    </button>
-                    <button
-                      disabled={pendingActionLoading === user.id}
-                      onClick={() => handlePendingAction(user.id, 'reject', user.name)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 disabled:opacity-60 text-red-600 text-xs font-medium transition-colors"
-                    >
-                      <XCircle className="h-3 w-3" />
-                      Reject
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
       {/* Create User Form */}
-      {activeTab === 'users' && showCreate && (
+      {showCreate && (
         <div className="card border-2 border-emerald-200 bg-emerald-50/40 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-slate-800 flex items-center gap-2">
@@ -585,7 +416,7 @@ export default function OrgAdminUsersPage() {
       )}
 
       {/* Role stats — users tab only */}
-      {activeTab === 'users' && data && allowedRoles.length > 0 && (
+      {data && allowedRoles.length > 0 && (
         <div className={clsx('grid gap-4', allowedRoles.length <= 3 ? `grid-cols-${allowedRoles.length}` : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4')}>
           {allowedRoles.map((role) => {
             const count = data.users.filter((u) => u.role === role).length
@@ -616,7 +447,7 @@ export default function OrgAdminUsersPage() {
       )}
 
       {/* Filters — users tab only */}
-      {activeTab === 'users' && <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
@@ -647,10 +478,10 @@ export default function OrgAdminUsersPage() {
         >
           <RefreshCw className={clsx('h-4 w-4', loading && 'animate-spin')} />
         </button>
-      </div>}
+      </div>
 
-      {/* Table — users tab only */}
-      {activeTab === 'users' && <div className="card overflow-hidden p-0">
+      {/* Table */}
+      <div className="card overflow-hidden p-0">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -829,7 +660,7 @@ export default function OrgAdminUsersPage() {
             </div>
           </div>
         )}
-      </div>}
+      </div>
 
       {credentialCard && (
         <CredentialCardModal
