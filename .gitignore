@@ -40,8 +40,3 @@ backups/
 __pycache__/
 *.pyc
 screenshots/
-
-# Fake SAML IdP — generated cert/key for local testing
-scripts/fake-saml-idp/cert.pem
-scripts/fake-saml-idp/key.pem
-scripts/fake-saml-idp/idp-config.js
