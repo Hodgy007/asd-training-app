@@ -35,14 +35,18 @@ type TileSize = 'small' | 'medium' | 'large'
 
 const TILE_SIZE_STORAGE_KEY = 'library-tile-size'
 
+// Small is now a compressed list view (icon + title + description rows for
+// fast scanning, mirroring the admin upload-store layout). Medium and large
+// remain grids — pulled tighter so the resting "large" still shows three
+// columns instead of two.
 const TILE_SIZE_GRID: Record<TileSize, string> = {
-  small: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
-  medium: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-  large: 'grid-cols-1 sm:grid-cols-2',
+  small: '',
+  medium: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
+  large: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
 }
 
 const TILE_SIZE_OPTIONS: { value: TileSize; label: string; title: string }[] = [
-  { value: 'small', label: 'S', title: 'Small tiles' },
+  { value: 'small', label: 'S', title: 'Compact list view' },
   { value: 'medium', label: 'M', title: 'Medium tiles' },
   { value: 'large', label: 'L', title: 'Large tiles' },
 ]
@@ -366,6 +370,96 @@ function LibraryPage() {
                         ) : null}
                       </div>
                     ) : null}
+                    {tileSize === 'small' ? (
+                      <div className="divide-y divide-calm-100 dark:divide-slate-700 bg-white dark:bg-slate-800 rounded-2xl shadow-md overflow-hidden">
+                        {group.documents.map((doc) => {
+                          const idx = tileIdx++
+                          const FileIcon = getFileIcon(doc.fileType)
+                          const typeBadge = getFileTypeBadge(doc.fileType)
+                          const theme = themeFor(idx)
+                          return (
+                            <div
+                              key={doc.id}
+                              className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-calm-50 dark:hover:bg-slate-800/50"
+                            >
+                              {doc.thumbnailUrl ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setZoomedImage(doc.thumbnailUrl)}
+                                  className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
+                                  title="Zoom thumbnail"
+                                >
+                                  <img src={doc.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                                </button>
+                              ) : (
+                                <div
+                                  className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                                  style={{ backgroundColor: theme.bg, color: theme.accent }}
+                                  aria-hidden="true"
+                                >
+                                  <FileIcon className="h-5 w-5" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">
+                                    {doc.title}
+                                  </p>
+                                  <span
+                                    className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider flex-shrink-0"
+                                    style={{ backgroundColor: `${theme.accent}1A`, color: theme.accent }}
+                                  >
+                                    {typeBadge}
+                                  </span>
+                                  <span className="text-[11px] text-slate-400 dark:text-slate-500 flex-shrink-0">
+                                    {formatFileSize(doc.fileSize)}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                                  {doc.description}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                {isViewable(doc.fileType) && (
+                                  <a
+                                    href={`/api/library/documents/${doc.id}/file?disposition=inline`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => trackEvent(doc.id, 'view')}
+                                    className="p-2 rounded-lg text-slate-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors"
+                                    title="View"
+                                    aria-label={`View ${doc.title}`}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </a>
+                                )}
+                                <a
+                                  href={`/api/library/documents/${doc.id}/file`}
+                                  download={doc.fileName}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={() => trackEvent(doc.id, 'download')}
+                                  className="p-2 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-400 transition-colors"
+                                  title="Download"
+                                  aria-label={`Download ${doc.title}`}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={() => openDocumentFeedback(doc)}
+                                  className="p-2 rounded-lg text-slate-400 hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/20 dark:hover:text-primary-400 transition-colors"
+                                  title="Suggest a change to this document"
+                                  aria-label={`Suggest a change to ${doc.title}`}
+                                >
+                                  <MessageSquarePlus className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
                     <div className={clsx('grid gap-5 animate-stagger', TILE_SIZE_GRID[tileSize])}>
                       {group.documents.map((doc) => {
                         const idx = tileIdx++
@@ -503,6 +597,7 @@ function LibraryPage() {
               )
                       })}
                     </div>
+                    )}
                   </div>
                 )
               })}
@@ -564,6 +659,42 @@ function LibraryPage() {
           <p className="text-slate-500 dark:text-slate-400 font-medium">
             {search ? 'No collections match your search.' : 'No document collections available yet.'}
           </p>
+        </div>
+      ) : tileSize === 'small' ? (
+        <div className="divide-y divide-calm-100 dark:divide-slate-700 bg-white dark:bg-slate-800 rounded-2xl shadow-md overflow-hidden">
+          {filteredCollections.map((col, idx) => {
+            const theme = themeFor(col.id || idx, col.themeKey)
+            return (
+              <button
+                key={col.id}
+                onClick={() => { setSelectedCollection(col); setSearch('') }}
+                className="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors hover:bg-calm-50 dark:hover:bg-slate-800/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ outlineColor: theme.accent }}
+              >
+                {col.thumbnailUrl ? (
+                  <div className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600">
+                    <img src={col.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                  </div>
+                ) : (
+                  <div
+                    className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: theme.bg, color: theme.accent }}
+                    aria-hidden="true"
+                  >
+                    <FolderOpen className="h-5 w-5" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">{col.title}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{col.description}</p>
+                </div>
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex-shrink-0">
+                  {col._count.documents} {col._count.documents === 1 ? 'doc' : 'docs'}
+                </span>
+                <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: theme.accent }} />
+              </button>
+            )
+          })}
         </div>
       ) : (
         <div className={clsx('grid gap-5 animate-stagger', TILE_SIZE_GRID[tileSize])}>
