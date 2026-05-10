@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 
 type Status = 'NEW' | 'IN_PROGRESS' | 'RESOLVED'
 type Type = 'BUG' | 'SUGGESTION' | 'QUESTION' | 'OTHER'
@@ -34,6 +34,7 @@ const STATUS_BADGE: Record<Status, string> = {
 
 export default function FeedbackDetailPage() {
   const params = useParams<{ id: string }>()
+  const router = useRouter()
   const id = params?.id
 
   const [item, setItem] = useState<Detail | null>(null)
@@ -57,6 +58,10 @@ export default function FeedbackDetailPage() {
   async function save() {
     setSaving(true)
     setError(null)
+    // Capture the prior status before the round-trip so we only redirect when
+    // this save is the action that flipped the item to RESOLVED — re-saving
+    // an already-resolved item (e.g. tweaking notes) keeps the admin in place.
+    const wasResolvedBefore = item?.status === 'RESOLVED'
     try {
       const res = await fetch(`/api/super-admin/feedback/${id}`, {
         method: 'PATCH',
@@ -65,9 +70,12 @@ export default function FeedbackDetailPage() {
       })
       if (!res.ok) {
         setError('Failed to save')
-      } else {
-        const updated: Detail = await res.json()
-        setItem(updated)
+        return
+      }
+      const updated: Detail = await res.json()
+      setItem(updated)
+      if (updated.status === 'RESOLVED' && !wasResolvedBefore) {
+        router.push('/super-admin/feedback')
       }
     } finally {
       setSaving(false)
@@ -171,7 +179,11 @@ export default function FeedbackDetailPage() {
             disabled={saving}
             className="w-full px-4 py-2 rounded-xl text-sm font-semibold bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50"
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving
+              ? 'Saving...'
+              : status === 'RESOLVED' && item.status !== 'RESOLVED'
+                ? 'Resolve and close'
+                : 'Save'}
           </button>
         </div>
       </div>
