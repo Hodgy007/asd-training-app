@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useCallback, useEffect, useState, Suspense } from 'react'
 import { usePathname } from 'next/navigation'
+import { clsx } from 'clsx'
 import { Sidebar } from '@/components/layout/sidebar'
 import { SuperAdminSidebar } from '@/components/layout/super-admin-sidebar'
 import { OrgAdminSidebar } from '@/components/layout/org-admin-sidebar'
@@ -9,10 +10,37 @@ import { Topbar } from '@/components/layout/topbar'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 
+const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed'
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
   const { data: session, status } = useSession()
+
+  // Restore collapse preference on mount. Stored as a string so the lookup
+  // returns null for first-time users (default = expanded).
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true') {
+        setCollapsed(true)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next))
+      } catch {
+        // ignore
+      }
+      return next
+    })
+  }, [])
 
   if (status === 'unauthenticated') {
     redirect('/login')
@@ -50,10 +78,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         ? OrgAdminSidebar
         : Sidebar
 
+  // Only the leaf-role Sidebar supports collapse / a tighter resting width.
+  // Admin sidebars keep their existing layout to avoid scope-creep changes.
+  const isLeafSidebar = SidebarComponent === Sidebar
+  const desktopSidebarWidth = !isLeafSidebar
+    ? 'w-64'
+    : collapsed
+      ? 'w-16'
+      : 'w-56'
+
   return (
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900">
-      <div className="hidden md:flex w-64 flex-shrink-0 flex-col">
-        <Suspense><SidebarComponent /></Suspense>
+      <div
+        className={clsx(
+          'hidden md:flex flex-shrink-0 flex-col transition-[width] duration-200 ease-in-out',
+          desktopSidebarWidth,
+        )}
+      >
+        <Suspense>
+          {isLeafSidebar ? (
+            <Sidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
+          ) : (
+            <SidebarComponent />
+          )}
+        </Suspense>
       </div>
 
       {sidebarOpen && (
