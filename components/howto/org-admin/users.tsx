@@ -41,9 +41,18 @@ export default function UsersHowTo() {
       </ul>
 
       <Tip>
-        <strong>SSO users must be pre-created.</strong> If your organisation uses Google or Microsoft SSO,
-        you must create the user account first with their email address. Only then can the user sign in
-        via SSO. The system will not auto-create accounts for unknown emails.
+        <strong>Sign-up routes vary by provider.</strong> If your organisation uses <em>SAML SSO</em> (Enterprise SSO),
+        users still need to be pre-created here unless your SSO config has auto-provisioning enabled.
+        If your platform has <em>Google or Microsoft OAuth</em> turned on by the charity, a first-time user
+        with an unknown email will be routed through a one-question self-registration page instead of
+        being rejected.
+      </Tip>
+
+      <Tip>
+        <strong>Self-registration via magic link.</strong> Users who register themselves at <em>/register</em>
+        and join your organisation no longer choose a password during sign-up. They receive a welcome
+        email and pick their password the first time they sign in. You&apos;ll see them appear in the
+        Users list as soon as they complete the welcome step.
       </Tip>
 
       <Tip>

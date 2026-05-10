@@ -43,13 +43,19 @@ If you have not received your credentials, contact your organisation administrat
 
 Navigate to the platform at [https://asd-training-app-v2.vercel.app](https://asd-training-app-v2.vercel.app).
 
-The login page has a toggle at the top with two options:
+The login page auto-detects the sign-in method from your email — no toggle to flip.
 
 **Email & Password**
-Enter the email address and temporary password provided by your administrator, then select **Sign in**. You will be prompted to change your password on first sign-in if your administrator has set one for you. If you forget your password at any time, select **Forgot password?** on the login page and a reset link will be sent to your email inbox.
+Enter the email address and password provided by your administrator (or chosen via the welcome email if you self-registered), then select **Sign in**. You will be prompted to change your password on first sign-in if your administrator set a temporary one for you. If you forget your password at any time, select **Forgot password?** on the login page and a reset link will be sent to your email inbox.
 
-**Single Sign-On**
-If your organisation has configured SSO, select **Google** or **Microsoft** to sign in with your existing work account. Your account must already exist in the system — SSO will not create a new account automatically. If you receive an "access denied" message when attempting SSO, contact your organisation administrator to confirm your account has been set up.
+**Single Sign-On (corporate IdP)**
+If your organisation has configured enterprise SSO, a **Sign in with [your organisation]** button appears once you type your email. Click it to sign in through your usual corporate identity provider.
+
+**Google or Microsoft**
+If the charity has enabled Google or Microsoft sign-in, those buttons appear inline above the password form. If you sign in this way and don't have an account yet, you will be taken to a brief one-question registration page to finish setting up. No "access denied" — first-time OAuth users can self-register.
+
+**Self-registering as a Careers Professional**
+If your organisation already exists on the platform but you don't have an account, you can register yourself at `/register`. Choose **I work for or study at an existing organisation**, find your organisation in the list, and select the **Careers Professional** role. You will receive a welcome email with a link to set your password.
 
 ### 2.3 Multi-factor authentication (MFA)
 

@@ -32,23 +32,29 @@ This guide explains how to use each part of the platform. You do not need any te
 
 ### Your account
 
-Accounts on this platform are created by your organisation's administrator. You will receive your login credentials — an email address and a temporary password — directly from your admin. There is no self-registration option on the platform.
+There are two ways to get an account:
 
-If you have not received your credentials, please contact your organisation administrator rather than trying to sign up independently.
+1. **Created by your organisation's administrator.** You receive an email or a printable QR card with your credentials. If your admin set a temporary password, you will be asked to change it on your first sign-in.
+2. **You register yourself.** Visit `/register`, choose **I work for or study at an existing organisation**, fill in your name, email, and pick your role. You will then receive a welcome email with a link to choose a password and sign in — no password to make up at the registration form itself. The link expires in 24 hours.
+
+If you have not received the welcome email after self-registering, check your spam folder first. If it still hasn't arrived, ask your organisation's administrator.
 
 ### Logging in
 
-Visit https://asd-training-app-v2.vercel.app and you will see the login page with a toggle at the top to switch between two sign-in methods:
+Visit https://asd-training-app-v2.vercel.app and enter your email address. The login page detects how you should sign in based on your email:
 
-**Email and Password**
-Enter the email address and password provided by your administrator, then click **Sign in**. If this is your first login, you may be prompted to change your password.
+**Email and password (most common)**
+Enter your password and click **Sign in**. If this is your first login after self-registration or an admin reset, you may be prompted to change your password.
 
 **Single Sign-On (SSO)**
-If your organisation has enabled Google or Microsoft sign-in, click the **Single Sign-On** tab and then click the **Google** or **Microsoft** button. You will be taken through the usual sign-in flow for that provider. If you are not sure whether this applies to you, ask your organisation administrator.
+If your organisation uses corporate SSO, a **Sign in with [your provider]** button appears after you type your email. Click it and you will be taken through your organisation's normal sign-in process.
+
+**Google or Microsoft**
+If the charity has enabled Google or Microsoft sign-in, those buttons also appear inline. You can use them whether or not your organisation has its own SSO.
 
 ### Forgotten your password?
 
-Click **Forgot password** on the Email and Password tab. Enter your email address and a password-reset link will be sent to your inbox. The link expires after a short time, so use it promptly. If you do not receive the email, check your spam folder and contact your admin if it still does not arrive.
+Click **Forgot password** below the password field. Enter your email address and a password-reset link will be sent to your inbox. The link expires after one hour, so use it promptly. If you do not receive the email, check your spam folder and contact your admin if it still does not arrive.
 
 ### Staying signed in
 

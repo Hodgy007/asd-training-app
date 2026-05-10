@@ -58,17 +58,23 @@ export default function UsersHowTo() {
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">SSO setup (Google OAuth &amp; Azure AD)</h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        Single Sign-On is configured at the application level (not per-organisation). Both Google OAuth and Microsoft Azure AD are supported.
+        OAuth Single Sign-On is configured at the platform level. Both Google and Microsoft Azure AD are supported, and each can be turned on or off independently from the <strong>Settings → SSO</strong> page.
       </p>
       <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
         <li>Configure the OAuth provider in the respective cloud console (Google Cloud Console or Azure Portal).</li>
-        <li>Set the redirect URIs to the appropriate callback URLs for the platform.</li>
-        <li>Add the client ID, client secret, and tenant ID (Azure only) to the platform environment variables.</li>
+        <li>Set the redirect URIs to the platform callback URLs (\`/api/auth/callback/google\` and \`/api/auth/callback/azure-ad\`).</li>
+        <li>Add the client ID, client secret, and tenant ID (Azure only) to the platform environment variables on Vercel.</li>
+        <li>Open <strong>Settings → SSO</strong>, scroll to the <strong>OAuth Sign-in Providers</strong> card, and flip the toggle for the provider you want to enable. If credentials are missing, the toggle is locked off and an amber warning lists the env vars that still need setting.</li>
       </ol>
 
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Pre-creating users for SSO</h3>
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">First-time OAuth users</h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        SSO login requires that user accounts already exist in the platform. Users who attempt to sign in via SSO without a pre-existing account will be rejected. Org Admins must create the user account first (with the matching email address), after which the user can sign in via Google or Microsoft.
+        Users who sign in via Google or Microsoft with an email that&apos;s not in the platform are now routed to a one-question self-registration page (<em>/register/sso-complete</em>). They pick the role that best describes them and finish sign-up automatically under the public user pool. No pre-creation needed for OAuth — only for SAML SSO if auto-provisioning is off.
+      </p>
+
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Self-registration via magic link</h3>
+      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+        Learners can register at <em>/register</em> without pre-approval. The existing-org and no-org paths skip the password field and email a welcome link instead; recipients click through, choose a password, and sign in. The new-org path is for someone registering their own organisation and still asks for a password during sign-up.
       </p>
 
       <Tip>Always ensure Org Admins have MFA configured before granting them access. The platform enforces this automatically, but it is good practice to communicate the requirement during onboarding.</Tip>

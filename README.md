@@ -301,13 +301,15 @@ Secure programmatic access to platform data for external systems.
 
 ### Login Methods
 
-1. **Email and Password** — credentials-based login with bcrypt password hashing. Password complexity is enforced (minimum length, mixed characters). Forgot-password flow sends a reset link via Resend email.
+1. **Email and Password** — credentials-based login with bcrypt password hashing (cost factor 12). Forgot-password flow sends a reset link via Resend email.
 
-2. **Google SSO** — *Currently disabled.* OAuth 2.0 via Google. Gated behind the `ENABLE_OAUTH_SSO` env var; when off the provider is not registered with NextAuth and the login page hides the button. The implementation is preserved in `lib/auth.ts` (conditional provider array) and `/api/auth/sso-providers` so the feature can be re-enabled later by setting `ENABLE_OAUTH_SSO="true"` and providing `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. When enabled: users must be pre-created by an admin (no self-registration); the `signIn` callback links by email and rejects unknown accounts.
+2. **Magic-link self-registration** — `/register` `existing-org` and `no-org` paths don't ask for a password during sign-up. The platform creates the user, generates a 24h `PasswordResetToken`, and emails a welcome link via Resend. The recipient clicks the link, lands on `/welcome`, picks a password, and is signed in immediately. The `new-org` path keeps inline password entry because the new ORG_ADMIN needs immediate access.
 
-3. **Microsoft Azure AD SSO** — *Currently disabled.* Same gate as Google (`ENABLE_OAUTH_SSO`). Re-enabling requires `AZURE_AD_CLIENT_ID`, `AZURE_AD_CLIENT_SECRET`, and `AZURE_AD_TENANT_ID` (use `common` for personal + work/school accounts; the Azure app manifest needs `signInAudience: AzureADandPersonalMicrosoftAccount`).
+3. **Google OAuth** — toggled per-environment by a charity admin in `/super-admin/settings/sso` (DB-backed `OAuthSsoConfig.googleEnabled`, defaults off). The provider registers with NextAuth whenever `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` are set; the `signIn` callback rejects the actual login if the DB toggle is off, so direct hits on `/api/auth/signin/google` also fail. Unknown OAuth users are NOT rejected — they're routed through `/register/sso-complete` to self-register under the Public Toolkit org.
 
-4. **SAML SSO** — per-organisation SAML configuration for enterprise identity providers. **Not affected by the OAuth SSO toggle.** Org Admins configure SAML at `/admin/settings/sso` with entity ID, SSO URL, and certificate. Charity-level SAML is configured at `/super-admin/settings/sso` with an option to enforce SSO for all charity users.
+4. **Microsoft Azure AD OAuth** — same toggle pattern as Google (`OAuthSsoConfig.microsoftEnabled`). Requires `AZURE_AD_CLIENT_ID`, `AZURE_AD_CLIENT_SECRET`, and `AZURE_AD_TENANT_ID` (use `common` for personal + work/school accounts; the Azure app manifest needs `signInAudience: AzureADandPersonalMicrosoftAccount`).
+
+5. **SAML SSO** — per-organisation SAML configuration for enterprise identity providers. **Not affected by the OAuth toggles.** Org Admins configure SAML at `/admin/settings/sso` with entity ID, SSO URL, and certificate. Charity-level SAML is configured at `/super-admin/settings/sso` with an option to enforce SSO for all charity users. Unlike OAuth, SAML users still need to be pre-created (or per-org `autoProvision` enabled) — there's no `/register/sso-complete` equivalent for SAML.
 
 ### Multi-Factor Authentication (MFA)
 
@@ -554,13 +556,12 @@ Copy `.env.example` to `.env.local` for local development. For production (Verce
 | `NEXTAUTH_SECRET` | Yes | JWT signing secret (32+ random characters) |
 | `NEXTAUTH_URL` | Yes | Deployed URL (`https://asd-training-app-v2.vercel.app`) — no trailing slash |
 | `GEMINI_API_KEY` | Legacy | Direct Google Gemini API key. Kept for backwards compatibility — `AI_GATEWAY_API_KEY` is the canonical path now. |
-| `RESEND_API_KEY` | Yes | Resend API key for forgot-password emails |
-| `ENABLE_OAUTH_SSO` | No | Master switch for Google + Microsoft OAuth SSO. **Currently disabled** (default `false`). Set to `"true"` to re-enable; the providers aren't registered with NextAuth at all when off. SAML SSO and credentials login are unaffected. |
-| `GOOGLE_CLIENT_ID` | No | Google OAuth client ID. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
-| `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
-| `AZURE_AD_CLIENT_ID` | No | Azure AD app client ID. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
-| `AZURE_AD_CLIENT_SECRET` | No | Azure AD client secret. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
-| `AZURE_AD_TENANT_ID` | No | `common` for all account types, or a specific tenant ID. Only consumed when `ENABLE_OAUTH_SSO="true"`. |
+| `RESEND_API_KEY` | Yes | Resend API key for forgot-password and welcome (magic-link self-registration) emails |
+| `GOOGLE_CLIENT_ID` | No | Google OAuth client ID. Provider registers with NextAuth when set; whether the login button shows / logins are accepted is controlled by the DB toggle at `/super-admin/settings/sso`. |
+| `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret. Pairs with `GOOGLE_CLIENT_ID`. |
+| `AZURE_AD_CLIENT_ID` | No | Azure AD app client ID. Same DB-toggle behaviour as Google. |
+| `AZURE_AD_CLIENT_SECRET` | No | Azure AD client secret. |
+| `AZURE_AD_TENANT_ID` | No | `common` for all account types, or a specific tenant ID. |
 | `BLOB_READ_WRITE_TOKEN` | Yes | Vercel Blob storage token for document uploads, AI thumbnails, and SCORM packages |
 | `AI_GATEWAY_API_KEY` | Yes | Vercel AI Gateway key. AI features route through the gateway using provider/model strings (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`). Replaces direct provider keys at runtime. |
 | `ELEVENLABS_API_KEY` | No | ElevenLabs API key for the lesson read-aloud player (Lily voice). Synthesised MP3s are cached on Blob under `tts/<voiceId>/<sha256>.mp3`. |
