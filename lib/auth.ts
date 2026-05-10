@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import AzureADProvider from 'next-auth/providers/azure-ad'
+import { encode } from 'next-auth/jwt'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 import { getUserPrograms } from './modules'
@@ -91,24 +92,30 @@ async function getUserSubscriptionInfo(
   }
 }
 
-// Google + Azure AD OAuth SSO are gated behind ENABLE_OAUTH_SSO. Default off:
-// the providers aren't registered with NextAuth at all when disabled, so direct
-// hits on /api/auth/callback/google or /api/auth/callback/azure-ad return 404.
-// To re-enable, set ENABLE_OAUTH_SSO=true on Vercel and provide the OAuth
-// credentials (GOOGLE_CLIENT_ID/SECRET, AZURE_AD_CLIENT_ID/SECRET/TENANT_ID).
-// SAML SSO and credentials login are unaffected.
-const OAUTH_SSO_ENABLED = process.env.ENABLE_OAUTH_SSO === 'true'
+// OAuth providers (Google / Microsoft) are registered with NextAuth whenever
+// their env credentials are present, so the callback URLs work without a
+// redeploy when the admin flips the DB toggle. Whether the provider is
+// actually allowed to sign a user in is enforced in the signIn callback by
+// looking up the OAuthSsoConfig row — that gate is what makes the per-tenant
+// admin toggle effective. The login UI separately reads the same toggle via
+// /api/auth/sso-providers to decide whether to render the buttons.
+const HAS_GOOGLE_CREDENTIALS = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+const HAS_AZURE_CREDENTIALS = !!(process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET)
 
 export const authOptions: NextAuthOptions = {
   // No adapter — we use JWT sessions and handle SSO linking manually in signIn callback
   providers: [
-    ...(OAUTH_SSO_ENABLED
+    ...(HAS_GOOGLE_CREDENTIALS
       ? [
           GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID ?? '',
             clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
             allowDangerousEmailAccountLinking: true,
           }),
+        ]
+      : []),
+    ...(HAS_AZURE_CREDENTIALS
+      ? [
           AzureADProvider({
             clientId: process.env.AZURE_AD_CLIENT_ID ?? '',
             clientSecret: process.env.AZURE_AD_CLIENT_SECRET ?? '',
@@ -236,6 +243,20 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
+      // OAuth providers — even though they're registered with NextAuth, the
+      // DB toggle gates whether logins are accepted. Without this an admin
+      // who turned Google off in the UI could still be impersonated by
+      // anyone hitting /api/auth/signin/google directly.
+      if (account?.provider === 'google' || account?.provider === 'azure-ad') {
+        const oauthConfig = await prisma.oAuthSsoConfig.findFirst()
+        if (account.provider === 'google' && !oauthConfig?.googleEnabled) {
+          return '/login?error=Google+sign-in+is+not+enabled'
+        }
+        if (account.provider === 'azure-ad' && !oauthConfig?.microsoftEnabled) {
+          return '/login?error=Microsoft+sign-in+is+not+enabled'
+        }
+      }
+
       if (account?.provider !== 'credentials') {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email ?? '' },
@@ -243,6 +264,31 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!dbUser) {
+          // OAuth-first sign-up: an SSO-authenticated visitor with no DB
+          // record gets redirected to /register/sso-complete to pick the
+          // self-registration role that mirrors the no-org path on /register.
+          // The JWT carries the IdP-verified email + provider link so the
+          // completion page can't be forged from a hand-crafted URL.
+          if (account?.provider === 'google' || account?.provider === 'azure-ad') {
+            // Intent JWT — NOT a full session token. The encode helper's
+            // generic type insists on the JWT (session) shape; we cast
+            // because the on-disk format is just JSON and we re-verify
+            // both `purpose` and the embedded fields on the consuming end
+            // (app/api/auth/register/sso-complete).
+            const intentPayload = {
+              purpose: 'sso-register' as const,
+              email: (user.email ?? '').toLowerCase(),
+              name: user.name ?? null,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            }
+            const intentToken = await encode({
+              token: intentPayload as unknown as import('next-auth/jwt').JWT,
+              secret: process.env.NEXTAUTH_SECRET!,
+              maxAge: 10 * 60,
+            })
+            return `/register/sso-complete?token=${encodeURIComponent(intentToken)}`
+          }
           return '/login?error=Account not found. Contact your organisation administrator.'
         }
 

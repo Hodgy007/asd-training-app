@@ -5,11 +5,13 @@ import Link from 'next/link'
 import {
   ArrowLeft,
   Shield,
+  ShieldCheck,
   RefreshCw,
   CheckCircle,
   XCircle,
   Save,
   Loader2,
+  AlertTriangle,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -21,6 +23,13 @@ interface SsoConfig {
   certificate: string | null
   enforceForCharityUsers: boolean
   configured: boolean
+}
+
+interface OAuthSsoConfig {
+  googleEnabled: boolean
+  microsoftEnabled: boolean
+  googleAvailable: boolean
+  microsoftAvailable: boolean
 }
 
 export default function SsoSettingsPage() {
@@ -39,27 +48,61 @@ export default function SsoSettingsPage() {
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
 
+  const [oauth, setOauth] = useState<OAuthSsoConfig | null>(null)
+  const [savingOauth, setSavingOauth] = useState(false)
+
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
   }
 
   useEffect(() => {
-    fetch('/api/super-admin/settings/sso')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: SsoConfig | null) => {
-        if (data) {
-          setDisplayName(data.displayName ?? '')
-          setMetadataUrl(data.metadataUrl ?? '')
-          setEntityId(data.entityId ?? '')
-          setSsoUrl(data.ssoUrl ?? '')
-          setCertificate(data.certificate ?? '')
-          setEnforceForCharityUsers(data.enforceForCharityUsers ?? false)
-          setConfigured(data.configured)
+    Promise.all([
+      fetch('/api/super-admin/settings/sso').then((r) => (r.ok ? r.json() : null)),
+      fetch('/api/super-admin/settings/oauth-sso').then((r) => (r.ok ? r.json() : null)),
+    ])
+      .then(([saml, oauthData]: [SsoConfig | null, OAuthSsoConfig | null]) => {
+        if (saml) {
+          setDisplayName(saml.displayName ?? '')
+          setMetadataUrl(saml.metadataUrl ?? '')
+          setEntityId(saml.entityId ?? '')
+          setSsoUrl(saml.ssoUrl ?? '')
+          setCertificate(saml.certificate ?? '')
+          setEnforceForCharityUsers(saml.enforceForCharityUsers ?? false)
+          setConfigured(saml.configured)
         }
+        if (oauthData) setOauth(oauthData)
       })
       .finally(() => setLoading(false))
   }, [])
+
+  async function handleSaveOauth(next: { googleEnabled: boolean; microsoftEnabled: boolean }) {
+    if (!oauth) return
+    setSavingOauth(true)
+    // Optimistic update so the toggle feels instant; revert on error.
+    const prev = oauth
+    setOauth({ ...oauth, ...next })
+    try {
+      const res = await fetch('/api/super-admin/settings/oauth-sso', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(next),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setOauth(data)
+        showToast('OAuth providers updated.', 'success')
+      } else {
+        setOauth(prev)
+        showToast(data.error || 'Failed to update OAuth providers.', 'error')
+      }
+    } catch {
+      setOauth(prev)
+      showToast('Network error.', 'error')
+    } finally {
+      setSavingOauth(false)
+    }
+  }
 
   async function handleParseMetadata() {
     if (!metadataUrl.trim()) {
@@ -348,6 +391,119 @@ export default function SsoSettingsPage() {
           </button>
         </div>
       </div>
+
+      {/* OAuth providers card */}
+      {oauth && (
+        <div className={cardCls}>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" />
+              OAuth Sign-in Providers
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Allow users to sign in with a Google or Microsoft account. Both default off.
+              Provider credentials must be set as environment variables on Vercel before
+              a toggle can be turned on.
+            </p>
+          </div>
+
+          {/* Google */}
+          <ProviderToggle
+            name="Google"
+            enabled={oauth.googleEnabled}
+            available={oauth.googleAvailable}
+            saving={savingOauth}
+            credentialEnvVars={['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET']}
+            onToggle={(next) =>
+              handleSaveOauth({
+                googleEnabled: next,
+                microsoftEnabled: oauth.microsoftEnabled,
+              })
+            }
+          />
+
+          <div className="h-px bg-calm-200 dark:bg-slate-700" />
+
+          {/* Microsoft */}
+          <ProviderToggle
+            name="Microsoft"
+            enabled={oauth.microsoftEnabled}
+            available={oauth.microsoftAvailable}
+            saving={savingOauth}
+            credentialEnvVars={['AZURE_AD_CLIENT_ID', 'AZURE_AD_CLIENT_SECRET', 'AZURE_AD_TENANT_ID']}
+            onToggle={(next) =>
+              handleSaveOauth({
+                googleEnabled: oauth.googleEnabled,
+                microsoftEnabled: next,
+              })
+            }
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ProviderToggle({
+  name,
+  enabled,
+  available,
+  saving,
+  credentialEnvVars,
+  onToggle,
+}: {
+  name: string
+  enabled: boolean
+  available: boolean
+  saving: boolean
+  credentialEnvVars: string[]
+  onToggle: (next: boolean) => void
+}) {
+  const disabled = saving || !available
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            Sign in with {name}
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {enabled
+              ? `${name} sign-in button is shown on the login page.`
+              : `${name} sign-in is disabled. Users won't see this option.`}
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          aria-label={`Toggle ${name} sign-in`}
+          disabled={disabled}
+          onClick={() => onToggle(!enabled)}
+          className={clsx(
+            'relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300',
+            enabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600',
+            disabled && 'opacity-50 cursor-not-allowed',
+          )}
+        >
+          <span
+            className={clsx(
+              'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+              enabled ? 'translate-x-6' : 'translate-x-1',
+            )}
+          />
+        </button>
+      </div>
+
+      {!available && (
+        <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+          <span>
+            Credentials missing. Set <span className="font-mono">{credentialEnvVars.join(', ')}</span> on Vercel,
+            redeploy, then return here to enable.
+          </span>
+        </div>
+      )}
     </div>
   )
 }

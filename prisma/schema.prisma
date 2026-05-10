@@ -445,6 +445,20 @@ model CharitySsoConfig {
   updatedAt              DateTime @updatedAt
 }
 
+// OAuth SSO toggle (Google / Microsoft consumer-style sign-in). Single-row
+// config — both providers default OFF. Replaces the legacy `ENABLE_OAUTH_SSO`
+// env flag so charity admins can flip the buttons on/off from the UI without
+// a redeploy. Provider credentials still come from env vars; this row gates
+// whether the providers' callbacks accept logins and whether the buttons are
+// shown on /login.
+model OAuthSsoConfig {
+  id               String   @id @default(cuid())
+  googleEnabled    Boolean  @default(false)
+  microsoftEnabled Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
 // Server-side nonce store for SAML AuthnRequest IDs. The IdP echoes our
 // request ID back as InResponseTo on the SAML Response; we mark the row
 // `consumed` on first use to prevent replay. Rows expire after 1 hour.
