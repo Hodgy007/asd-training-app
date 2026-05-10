@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { X } from 'lucide-react'
+import { FileText, X } from 'lucide-react'
 import { getBufferedLogs } from '@/lib/client-log-buffer'
 
 type FeedbackType = 'BUG' | 'SUGGESTION' | 'QUESTION' | 'OTHER'
@@ -13,13 +13,20 @@ const TYPES: { value: FeedbackType; label: string }[] = [
   { value: 'OTHER', label: 'Other' },
 ]
 
+export interface FeedbackDocumentContext {
+  id: string
+  title: string
+}
+
 interface FeedbackModalProps {
   open: boolean
   onClose: () => void
+  defaultType?: FeedbackType
+  documentContext?: FeedbackDocumentContext | null
 }
 
-export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
-  const [type, setType] = useState<FeedbackType>('BUG')
+export function FeedbackModal({ open, onClose, defaultType, documentContext }: FeedbackModalProps) {
+  const [type, setType] = useState<FeedbackType>(defaultType ?? 'BUG')
   const [message, setMessage] = useState('')
   const [showContext, setShowContext] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -31,10 +38,20 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
     if (timerRef.current) clearTimeout(timerRef.current)
   }, [])
 
+  // Re-sync the chosen type whenever the modal is (re)opened with a different
+  // defaultType — e.g. "Send feedback" topbar button vs. a per-document
+  // suggestion button on the library page.
+  useEffect(() => {
+    if (open) {
+      setType(defaultType ?? 'BUG')
+      setError(null)
+    }
+  }, [open, defaultType, documentContext?.id])
+
   if (!open) return null
 
   function reset() {
-    setType('BUG')
+    setType(defaultType ?? 'BUG')
     setMessage('')
     setShowContext(false)
     setError(null)
@@ -50,12 +67,15 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
     setSubmitting(true)
     try {
       const logs = getBufferedLogs()
+      const composedMessage = documentContext
+        ? `Re: ${documentContext.title} (document id: ${documentContext.id})\n\n${message.trim()}`
+        : message.trim()
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           type,
-          message: message.trim(),
+          message: composedMessage,
           url: window.location.href,
           userAgent: navigator.userAgent,
           viewport: `${window.innerWidth}x${window.innerHeight}`,
@@ -93,7 +113,9 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-start justify-between mb-4">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Send feedback</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            {documentContext ? 'Suggest a change' : 'Send feedback'}
+          </h2>
           <button
             onClick={onClose}
             aria-label="Close"
@@ -102,6 +124,20 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        {documentContext && !submittedToast && (
+          <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary-200 dark:border-primary-700/40 bg-primary-50 dark:bg-primary-900/20 p-3">
+            <FileText className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary-600 dark:text-primary-300" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-primary-700 dark:text-primary-300">
+                About this document
+              </p>
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                {documentContext.title}
+              </p>
+            </div>
+          </div>
+        )}
 
         {submittedToast ? (
           <p className="text-emerald-700 dark:text-emerald-300 font-medium py-8 text-center">
@@ -140,7 +176,11 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="Describe what happened, what you expected, or your suggestion..."
+              placeholder={
+                documentContext
+                  ? 'What would you change about this document? Any errors, missing info, or suggestions?'
+                  : 'Describe what happened, what you expected, or your suggestion...'
+              }
             />
             <div className="text-right text-xs text-slate-500 dark:text-slate-400 mb-3">{message.length}/5000</div>
 

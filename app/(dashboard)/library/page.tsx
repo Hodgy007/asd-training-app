@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { clsx } from 'clsx'
 import {
   FolderOpen,
@@ -16,12 +17,66 @@ import {
   Presentation,
   ArrowLeft,
   ChevronRight,
+  MessageSquarePlus,
   X,
 } from 'lucide-react'
 import { HowToPanel } from '@/components/howto/panel'
 import LibraryHowTo from '@/components/howto/learner/library'
 import { ImageLightbox } from '@/components/ui/image-lightbox'
 import { groupDocumentsBySection, isSectionedCollection, UNSECTIONED_GROUP_TITLE } from '@/lib/library-sections'
+import type { FeedbackDocumentContext } from '@/components/feedback/feedback-modal'
+
+const FeedbackModal = dynamic(
+  () => import('@/components/feedback/feedback-modal').then((m) => m.FeedbackModal),
+  { ssr: false }
+)
+
+type TileSize = 'small' | 'medium' | 'large'
+
+const TILE_SIZE_STORAGE_KEY = 'library-tile-size'
+
+const TILE_SIZE_GRID: Record<TileSize, string> = {
+  small: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
+  medium: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+  large: 'grid-cols-1 sm:grid-cols-2',
+}
+
+const TILE_SIZE_OPTIONS: { value: TileSize; label: string; title: string }[] = [
+  { value: 'small', label: 'S', title: 'Small tiles' },
+  { value: 'medium', label: 'M', title: 'Medium tiles' },
+  { value: 'large', label: 'L', title: 'Large tiles' },
+]
+
+function SizeToggle({ value, onChange }: { value: TileSize; onChange: (s: TileSize) => void }) {
+  return (
+    <div
+      role="group"
+      aria-label="Tile size"
+      className="inline-flex items-center rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-800 p-0.5"
+    >
+      {TILE_SIZE_OPTIONS.map((opt) => {
+        const active = value === opt.value
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            aria-pressed={active}
+            title={opt.title}
+            className={clsx(
+              'h-7 w-8 rounded-lg text-xs font-bold transition-colors',
+              active
+                ? 'bg-primary-500 text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
+            )}
+          >
+            {opt.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 interface LibraryDoc {
   id: string
@@ -146,6 +201,33 @@ function LibraryPage() {
   const [search, setSearch] = useState('')
   const [selectedCollection, setSelectedCollection] = useState<LibraryCollection | null>(null)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
+  const [tileSize, setTileSize] = useState<TileSize>('medium')
+  const [feedbackDoc, setFeedbackDoc] = useState<FeedbackDocumentContext | null>(null)
+
+  // Restore the user's preferred tile size on mount.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(TILE_SIZE_STORAGE_KEY)
+      if (saved === 'small' || saved === 'medium' || saved === 'large') {
+        setTileSize(saved)
+      }
+    } catch {
+      // ignore storage failures (private browsing, etc.)
+    }
+  }, [])
+
+  const changeTileSize = useCallback((size: TileSize) => {
+    setTileSize(size)
+    try {
+      window.localStorage.setItem(TILE_SIZE_STORAGE_KEY, size)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  function openDocumentFeedback(doc: LibraryDoc) {
+    setFeedbackDoc({ id: doc.id, title: doc.title })
+  }
 
   const fetchCollections = useCallback(async () => {
     setLoading(true)
@@ -237,11 +319,12 @@ function LibraryPage() {
           <p className="text-slate-500 dark:text-slate-400 mt-1">{selectedCollection.description}</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input className="input w-full pl-9" type="text" placeholder="Search documents…" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
+          <SizeToggle value={tileSize} onChange={changeTileSize} />
           <span className="text-sm text-slate-400 dark:text-slate-500">{docs.length} document{docs.length !== 1 ? 's' : ''}</span>
         </div>
 
@@ -283,7 +366,7 @@ function LibraryPage() {
                         ) : null}
                       </div>
                     ) : null}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
+                    <div className={clsx('grid gap-5 animate-stagger', TILE_SIZE_GRID[tileSize])}>
                       {group.documents.map((doc) => {
                         const idx = tileIdx++
               const FileIcon = getFileIcon(doc.fileType)
@@ -319,6 +402,22 @@ function LibraryPage() {
                         </div>
                       </div>
                     )}
+                    {/* Per-document feedback button — opens the standard
+                        feedback modal pre-set to "Suggestion" and tagged with
+                        this document's id/title. */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openDocumentFeedback(doc)
+                      }}
+                      aria-label={`Suggest a change to ${doc.title}`}
+                      title="Suggest a change to this document"
+                      className="absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm transition-all hover:scale-105 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:bg-slate-900/80 dark:hover:bg-slate-900"
+                      style={{ color: theme.accent, outlineColor: theme.accent }}
+                    >
+                      <MessageSquarePlus className="h-4 w-4" />
+                    </button>
                   </div>
 
                   {/* Body */}
@@ -413,6 +512,13 @@ function LibraryPage() {
 
         <ImageLightbox src={zoomedImage} onClose={() => setZoomedImage(null)} alt="Zoomed thumbnail" />
 
+        <FeedbackModal
+          open={feedbackDoc !== null}
+          onClose={() => setFeedbackDoc(null)}
+          defaultType="SUGGESTION"
+          documentContext={feedbackDoc}
+        />
+
         <HowToPanel>
           <LibraryHowTo />
         </HowToPanel>
@@ -431,11 +537,12 @@ function LibraryPage() {
         <p className="text-slate-500 dark:text-slate-400 mt-1">Browse document collections and download resources.</p>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input className="input w-full pl-9" type="text" placeholder="Search collections…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+        <SizeToggle value={tileSize} onChange={changeTileSize} />
         <button
           onClick={fetchCollections}
           className="p-2 rounded-xl border border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors text-slate-500 dark:text-slate-400"
@@ -459,7 +566,7 @@ function LibraryPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-stagger">
+        <div className={clsx('grid gap-5 animate-stagger', TILE_SIZE_GRID[tileSize])}>
           {filteredCollections.map((col, idx) => {
             const theme = themeFor(col.id || idx, col.themeKey)
             return (
