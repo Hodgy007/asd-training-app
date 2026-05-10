@@ -751,7 +751,7 @@ function RegisterForm() {
           <div className="mt-6 pt-5 border-t border-calm-200 dark:border-slate-700 text-center">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+              className="inline-flex items-center gap-2 text-sm text-warm-600 hover:text-warm-700 dark:text-warm-400 font-medium"
             >
               <ArrowLeft className="h-4 w-4" />
               Already have an account? Sign in
