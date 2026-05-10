@@ -31,7 +31,7 @@ export async function GET(
   const cohort = await prisma.organisation.findFirst({
     where: { id: params.cohortId, orgType: 'COHORT' },
     include: {
-      _count: { select: { users: true } },
+      _count: { select: { users: true, cohortMemberships: true } },
       users: {
         select: {
           id: true,
@@ -44,6 +44,7 @@ export async function GET(
         },
         orderBy: { createdAt: 'desc' },
       },
+      eventbriteEvent: true,
     },
   })
 
