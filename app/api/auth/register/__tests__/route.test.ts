@@ -7,9 +7,14 @@ vi.mock('@/lib/prisma', () => ({
     organisation: { findUnique: vi.fn(), create: vi.fn() },
     orgSsoConfig: { findFirst: vi.fn() },
     charitySsoConfig: { findFirst: vi.fn() },
+    // Welcome-flow (magic-link) self-registration writes a SHA-256-hashed
+    // token to PasswordResetToken alongside the user create.
+    passwordResetToken: { deleteMany: vi.fn(), create: vi.fn() },
     $transaction: vi.fn(),
   },
 }))
+// sendWelcomeEmail short-circuits when RESEND_API_KEY isn't set in env,
+// so we don't need to mock Resend itself for these unit tests.
 vi.mock('@/lib/org-hierarchy', () => ({
   getEffectiveOrgSettings: vi.fn(),
 }))
@@ -73,8 +78,12 @@ describe('POST /api/auth/register — common', () => {
     expect(res.status).toBe(429)
   })
 
-  it('400 on weak password', async () => {
-    const res = await POST(req({ mode: 'no-org', formRole: 'parent_carer', name: 'A', email: 'a@b.com', password: 'short' }))
+  it('400 on weak password (new-org — the only path that takes a password)', async () => {
+    const res = await POST(req({
+      mode: 'new-org', name: 'A', email: 'a@b.com', password: 'short',
+      orgName: 'Sunrise', organisationType: 'SCHOOL',
+      professionalCredential: 'CAREGIVER',
+    }))
     expect(res.status).toBe(400)
   })
 
@@ -105,9 +114,9 @@ describe('POST /api/auth/register — common', () => {
 })
 
 describe('POST /api/auth/register — existing org', () => {
-  it('happy path → user created and redirect URL set', async () => {
+  it('happy path → user created (password=null, magic-link), redirect to /register/check-email', async () => {
     vi.mocked(prisma.organisation.findUnique).mockResolvedValue({
-      id: 'o1', active: true, pendingApproval: false, orgType: 'ORGANISATION',
+      id: 'o1', name: 'Sunrise', active: true, orgType: 'ORGANISATION',
     } as any)
     vi.mocked(getEffectiveOrgSettings).mockResolvedValue({
       allowedRoles: ['STUDENT', 'CAREGIVER'],
@@ -118,29 +127,33 @@ describe('POST /api/auth/register — existing org', () => {
     vi.mocked(prisma.user.create).mockResolvedValue({ id: 'u1' } as any)
 
     const res = await POST(req({
-      mode: 'existing', name: 'Jane', email: 'jane@school.com', password: STRONG,
+      mode: 'existing', name: 'Jane', email: 'jane@school.com',
       organisationId: 'o1', role: 'STUDENT',
     }))
 
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.ok).toBe(true)
-    expect(data.redirect).toMatch(/^\/login\?registered=1&email=/)
+    // existing-org no longer takes a password — user lands on /register/check-email
+    // and finishes via the welcome email link.
+    expect(data.redirect).toMatch(/^\/register\/check-email\?email=/)
     expect(prisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         email: 'jane@school.com',
         role: 'STUDENT',
         organisationId: 'o1',
+        password: null,
         active: true,
         pendingApproval: false,
         mustChangePassword: false,
       }),
     }))
+    expect(prisma.passwordResetToken.create).toHaveBeenCalled()
   })
 
   it('400 when role not in allowedRoles', async () => {
     vi.mocked(prisma.organisation.findUnique).mockResolvedValue({
-      id: 'o1', active: true, pendingApproval: false, orgType: 'ORGANISATION',
+      id: 'o1', name: 'Sunrise', active: true, orgType: 'ORGANISATION',
     } as any)
     vi.mocked(getEffectiveOrgSettings).mockResolvedValue({
       allowedRoles: ['STUDENT'],
@@ -149,18 +162,18 @@ describe('POST /api/auth/register — existing org', () => {
       careersAdvisorEnabled: true,
     })
     const res = await POST(req({
-      mode: 'existing', name: 'Jane', email: 'jane@school.com', password: STRONG,
+      mode: 'existing', name: 'Jane', email: 'jane@school.com',
       organisationId: 'o1', role: 'CAREGIVER',
     }))
     expect(res.status).toBe(400)
   })
 
-  it('404 when org pending', async () => {
+  it('404 when org is inactive', async () => {
     vi.mocked(prisma.organisation.findUnique).mockResolvedValue({
-      id: 'o1', active: true, pendingApproval: true, orgType: 'ORGANISATION',
+      id: 'o1', name: 'Sunrise', active: false, orgType: 'ORGANISATION',
     } as any)
     const res = await POST(req({
-      mode: 'existing', name: 'Jane', email: 'jane@school.com', password: STRONG,
+      mode: 'existing', name: 'Jane', email: 'jane@school.com',
       organisationId: 'o1', role: 'STUDENT',
     }))
     expect(res.status).toBe(404)
@@ -168,10 +181,10 @@ describe('POST /api/auth/register — existing org', () => {
 
   it('404 when org is a COHORT', async () => {
     vi.mocked(prisma.organisation.findUnique).mockResolvedValue({
-      id: 'o1', active: true, pendingApproval: false, orgType: 'COHORT',
+      id: 'o1', name: 'Cohort', active: true, orgType: 'COHORT',
     } as any)
     const res = await POST(req({
-      mode: 'existing', name: 'Jane', email: 'jane@school.com', password: STRONG,
+      mode: 'existing', name: 'Jane', email: 'jane@school.com',
       organisationId: 'o1', role: 'STUDENT',
     }))
     expect(res.status).toBe(404)
@@ -179,7 +192,7 @@ describe('POST /api/auth/register — existing org', () => {
 })
 
 describe('POST /api/auth/register — new org', () => {
-  it('happy path → org + ORG_ADMIN created (Practitioner)', async () => {
+  it('happy path → org + ORG_ADMIN created (Practitioner) with no pending gate', async () => {
     vi.mocked(prisma.organisation.create).mockResolvedValue({ id: 'new-org' } as any)
     vi.mocked(prisma.user.create).mockResolvedValue({ id: 'admin' } as any)
 
@@ -191,14 +204,15 @@ describe('POST /api/auth/register — new org', () => {
 
     expect(res.status).toBe(200)
     const data = await res.json()
-    expect(data.redirect).toBe('/register/pending-school')
+    // Pending-approval gate is gone — new-org admins sign in immediately at /login.
+    expect(data.redirect).toMatch(/^\/login\?registered=1&email=/)
     expect(prisma.$transaction).toHaveBeenCalled()
     expect(prisma.organisation.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         name: 'Sunrise Academy',
         organisationType: 'SCHOOL',
-        pendingApproval: true,
-        active: false,
+        pendingApproval: false,
+        active: true,
         addressLine2: 'Registered as: Practitioner',
       }),
     }))
@@ -206,13 +220,13 @@ describe('POST /api/auth/register — new org', () => {
       data: expect.objectContaining({
         role: 'ORG_ADMIN',
         organisationId: 'new-org',
-        pendingApproval: true,
+        pendingApproval: false,
         active: true,
       }),
     }))
   })
 
-  it('Employee + EMPLOYER → /register/pending-business', async () => {
+  it('Employee + EMPLOYER → /login (no pending-business intermediate page)', async () => {
     vi.mocked(prisma.organisation.create).mockResolvedValue({ id: 'biz' } as any)
     vi.mocked(prisma.user.create).mockResolvedValue({ id: 'admin' } as any)
     const res = await POST(req({
@@ -221,7 +235,7 @@ describe('POST /api/auth/register — new org', () => {
       professionalCredential: 'EMPLOYEE',
     }))
     expect(res.status).toBe(200)
-    expect((await res.json()).redirect).toBe('/register/pending-business')
+    expect((await res.json()).redirect).toMatch(/^\/login\?registered=1&email=/)
   })
 
   it('400 when Practitioner picks EMPLOYER (credential/type mismatch)', async () => {
@@ -283,34 +297,37 @@ describe('POST /api/auth/register — no-org (catchall)', () => {
     { formRole: 'parent_carer', expectedRole: 'FAMILY_CARER' },
     { formRole: 'supporter',    expectedRole: 'FAMILY_CARER' },
     { formRole: 'practitioner', expectedRole: 'CAREGIVER' },
-  ])('formRole=$formRole → role=$expectedRole, attached to public-toolkit', async ({ formRole, expectedRole }) => {
+  ])('formRole=$formRole → role=$expectedRole, attached to public-toolkit (magic-link)', async ({ formRole, expectedRole }) => {
     vi.mocked(getPublicToolkitOrgId).mockResolvedValue('public-org')
     vi.mocked(prisma.user.create).mockResolvedValue({ id: 'no' } as any)
 
     const res = await POST(req({
       mode: 'no-org', formRole,
-      name: 'Sam', email: `sam-${formRole}@home.com`, password: STRONG,
+      name: 'Sam', email: `sam-${formRole}@home.com`,
     }))
 
     expect(res.status).toBe(200)
     const data = await res.json()
-    expect(data.redirect).toMatch(/^\/login\?registered=1/)
+    // no-org no longer takes a password — user lands on /register/check-email.
+    expect(data.redirect).toMatch(/^\/register\/check-email\?email=/)
     expect(prisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         role: expectedRole,
         organisationId: 'public-org',
+        password: null,
         active: true,
         pendingApproval: false,
         mustChangePassword: false,
       }),
     }))
+    expect(prisma.passwordResetToken.create).toHaveBeenCalled()
   })
 
   it('400 on disallowed formRole=employer (defence-in-depth — employer is not a catchall option)', async () => {
     vi.mocked(getPublicToolkitOrgId).mockResolvedValue('public-org')
     const res = await POST(req({
       mode: 'no-org', formRole: 'employer',
-      name: 'X', email: 'x@home.com', password: STRONG,
+      name: 'X', email: 'x@home.com',
     }))
     expect(res.status).toBe(400)
     expect(prisma.user.create).not.toHaveBeenCalled()
@@ -320,7 +337,7 @@ describe('POST /api/auth/register — no-org (catchall)', () => {
     vi.mocked(getPublicToolkitOrgId).mockResolvedValue(null)
     const res = await POST(req({
       mode: 'no-org', formRole: 'parent_carer',
-      name: 'Cara', email: 'cara@home.com', password: STRONG,
+      name: 'Cara', email: 'cara@home.com',
     }))
     expect(res.status).toBe(503)
     expect(await res.json()).toEqual({ error: 'CATCHALL_UNAVAILABLE' })
