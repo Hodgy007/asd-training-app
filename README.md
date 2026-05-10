@@ -18,6 +18,7 @@ A multi-tenant SaaS platform for ASD awareness training, virtual workshops, and 
   - [AI Careers Advisor](#ai-careers-advisor)
   - [Virtual Workshops](#virtual-workshops)
   - [Cohorts (Charity-Run Workshops)](#cohorts-charity-run-workshops)
+  - [Eventbrite Integration](#eventbrite-integration)
   - [Document Library](#document-library)
   - [Surveys](#surveys)
   - [Announcements](#announcements)
@@ -222,6 +223,50 @@ A lightweight way for the charity to run in-person workshops for people who are 
 **Filtering:** Cohorts are excluded from the Organisations list and organisation reports via a `where: { orgType: 'ORGANISATION' }` filter, so they do not pollute the registered-organisation views.
 
 **Lifecycle:** Cohorts can be deactivated when finished — this sets the cohort and all member accounts to inactive but preserves the data for reporting.
+
+### Eventbrite Integration
+
+Eventbrite events are first-class cohort sources. When a charity admin links an Eventbrite event to the platform, every booking on that event auto-enrolls the attendee as a member of the matching cohort — no manual roster management.
+
+**Setup (one-time):**
+1. Charity admin grabs their Private Token at Eventbrite → Account Settings → Developer Links → API Keys.
+2. Visit `/super-admin/settings/eventbrite` → paste the token → Test → Save.
+3. Pick the **email-match policy** (default **Auto-invite**, recommended):
+   - **Auto-invite** — when someone books with an email that isn't on the platform yet, we auto-create them an account in the Public Toolkit org and email them a magic-link to set a password.
+   - **Strict** — only count bookings whose email matches an existing platform user; ignore the rest.
+   - **Claim link** — email an unknown booker a "claim your booking" link pointing at `/register`, without pre-creating an account.
+
+**Per-event flow:**
+1. Charity admin opens `/super-admin/cohorts` → clicks **"From Eventbrite"** → pastes the public Eventbrite event URL.
+2. We fetch the event (via `lib/eventbrite.ts`), create a cohort with the event's name, and cache the metadata in a `CohortEventbriteEvent` row.
+3. In production, we auto-register a single account-level webhook so future bookings flow in real-time.
+4. The cohort detail page shows an **Eventbrite section** above the existing tabs: status badge, "Show on catalogue" toggle, audience picker, "Sync now" button.
+5. Toggle "Show on catalogue" → the workshop appears at `/courses` under "Live workshops" with a date-stamped card linking out to Eventbrite for booking.
+
+**What happens on a booking:**
+1. Eventbrite POSTs to `/api/webhooks/eventbrite` (`order.placed`).
+2. We fetch the order, look up the linked cohort, and for each attendee email run the configured email-match policy.
+3. Attendee becomes a `CohortMembership` row with `source='EVENTBRITE'`, `externalAttendeeId`, `externalOrderId` (so cancel/refund webhooks can later remove them precisely).
+4. They show up immediately in the cohort's Members list and can be assigned the cohort's training programs, document collections, and surveys.
+
+**Reliability:**
+- **Webhook** is the primary path (sub-5-second latency from booking to membership).
+- **Manual "Sync now"** button on the cohort detail page is the recovery path for any individual event we drop.
+- **Nightly cron** at `/api/cron/eventbrite-sync` (03:00 UTC, configured in `vercel.json`) walks every linked cohort and refreshes both metadata and attendee mirror as a backstop.
+
+**Security:**
+- Eventbrite Private Token is stored in `CharityEventbriteConfig.privateToken` (DB), not an env var. Same trust pattern as `CharityMeetingConfig` (Zoom/Teams credentials).
+- Eventbrite doesn't sign webhook payloads — we trust the request only if the incoming `webhook_id` matches the id we registered (acts as shared secret) and the `api_url` lives on `eventbriteapi.com`.
+- The token grants read-only access to the charity's Eventbrite events, orders, and attendees. Cannot create events or move money.
+
+**Where things live:**
+- `lib/eventbrite.ts` — REST client (events, orders, attendees, webhooks)
+- `lib/eventbrite-sync.ts` — DB sync helpers (cohort upsert, attendee → membership, webhook lifecycle)
+- `lib/email-templates/workshop-booking.ts` — booking-confirmation email with magic-link
+- `app/api/webhooks/eventbrite/route.ts` — webhook receiver
+- `app/api/cron/eventbrite-sync/route.ts` — nightly resync
+- `components/super-admin/cohort-eventbrite-section.tsx` — cohort detail page section
+- `components/courses/workshop-card.tsx` — public catalogue card
 
 ### Document Library
 
@@ -565,6 +610,7 @@ Copy `.env.example` to `.env.local` for local development. For production (Verce
 | `BLOB_READ_WRITE_TOKEN` | Yes | Vercel Blob storage token for document uploads, AI thumbnails, and SCORM packages |
 | `AI_GATEWAY_API_KEY` | Yes | Vercel AI Gateway key. AI features route through the gateway using provider/model strings (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`). Replaces direct provider keys at runtime. |
 | `ELEVENLABS_API_KEY` | No | ElevenLabs API key for the lesson read-aloud player (Lily voice). Synthesised MP3s are cached on Blob under `tts/<voiceId>/<sha256>.mp3`. |
+| `CRON_SECRET` | No | Optional bearer token for `/api/cron/*` routes. When set, cron endpoints accept either `Authorization: Bearer <CRON_SECRET>` or Vercel's auto-injected `x-vercel-cron: 1` header. When unset, only Vercel cron invocations are accepted. **Note:** the Eventbrite Private Token is **not** an env var — it's stored in the database via `/super-admin/settings/eventbrite`. |
 
 **Important:** `DATABASE_URL` must use the Neon connection pooler (port 6543) in production. Using the direct connection (port 5432) exhausts connection limits under serverless execution. `DIRECT_URL` is only used by Prisma CLI commands for schema changes.
 
