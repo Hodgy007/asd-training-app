@@ -226,12 +226,19 @@ function RegisterForm() {
     }
   }
 
+  // Only the new-org path requires a password during registration.
+  // Existing-org and no-org users get a welcome email and pick their
+  // password on /welcome.
+  const needsPassword = mode === 'new-org'
+
   function validateBeforeSubmit(): string | null {
     if (!name.trim()) return 'Please enter your name.'
     if (!email.trim()) return 'Please enter your email.'
-    if (password.length < 10)
-      return 'Password must be at least 10 characters and include upper, lower, number, and symbol.'
-    if (!passwordsMatch) return 'Passwords do not match.'
+    if (needsPassword) {
+      if (password.length < 10)
+        return 'Password must be at least 10 characters and include upper, lower, number, and symbol.'
+      if (!passwordsMatch) return 'Passwords do not match.'
+    }
     if (mode === 'existing') {
       if (!selectedOrg) return 'Please choose an organisation from the list.'
       if (!role) return 'Please choose a role.'
@@ -263,17 +270,19 @@ function RegisterForm() {
 
     setSubmitting(true)
     try {
+      // existing + no-org submit no password — they pick one on /welcome
+      // after clicking the magic link in their email.
       let payload: Record<string, unknown> = {
         mode,
         name: name.trim(),
         email: email.trim().toLowerCase(),
-        password,
       }
       if (mode === 'existing') {
         payload = { ...payload, organisationId: selectedOrg!.id, role }
       } else if (mode === 'new-org') {
         payload = {
           ...payload,
+          password,
           orgName: orgName.trim(),
           organisationType: orgType,
           professionalCredential: credential,
@@ -416,7 +425,7 @@ function RegisterForm() {
                       : `Sign in with ${ssoState?.orgName || 'SSO'}`}
                   </button>
                 </div>
-              ) : (
+              ) : needsPassword ? (
                 <>
                   <div>
                     <label htmlFor="password" className="label">
@@ -468,6 +477,12 @@ function RegisterForm() {
                     )}
                   </div>
                 </>
+              ) : (
+                <div className="rounded-xl border border-primary-200 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-800 p-3">
+                  <p className="text-sm text-slate-700 dark:text-slate-200">
+                    We&apos;ll email you a link to choose a password and sign in. No password to remember up front.
+                  </p>
+                </div>
               )}
 
               {mode === 'existing' && !ssoActive && (
@@ -723,8 +738,10 @@ function RegisterForm() {
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Submitting…
                     </span>
-                  ) : (
+                  ) : needsPassword ? (
                     'Create account'
+                  ) : (
+                    'Send me a sign-up link'
                   )}
                 </button>
               )}

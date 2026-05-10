@@ -58,7 +58,6 @@ export default async function SuperAdminPage() {
   const canManageSessions = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SESSIONS)
 
   const [
-    pendingOrgCount,
     draftSurveyCount,
     expiringJobCount,
     deactivatedUserCount,
@@ -72,9 +71,6 @@ export default async function SuperAdminPage() {
     recentPrograms,
     recentModules,
   ] = await Promise.all([
-    canManageOrgs
-      ? prisma.organisation.count({ where: { pendingApproval: true } })
-      : Promise.resolve(0),
     canManageSurveys
       ? prisma.survey.count({ where: { status: 'DRAFT' } })
       : Promise.resolve(0),
@@ -146,7 +142,7 @@ export default async function SuperAdminPage() {
       : Promise.resolve([]),
     canViewReports
       ? prisma.organisation.findMany({
-          where: { createdAt: { gte: sevenDaysAgo }, pendingApproval: false },
+          where: { createdAt: { gte: sevenDaysAgo } },
           select: { id: true, name: true, createdAt: true },
           orderBy: { createdAt: 'desc' },
           take: 5,
@@ -268,16 +264,6 @@ export default async function SuperAdminPage() {
     href: string
   }> = []
 
-  if (canManageOrgs) {
-    attentionCards.push({
-      key: 'pending-orgs',
-      label: 'Pending organisations',
-      count: pendingOrgCount,
-      icon: Building2,
-      tone: 'amber',
-      href: '/super-admin/organisations?tab=pending',
-    })
-  }
   if (canManageSurveys) {
     attentionCards.push({
       key: 'draft-surveys',

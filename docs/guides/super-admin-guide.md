@@ -141,7 +141,7 @@ Once an organisation is marked as a parent, its Org Admin will see a **Schools**
 
 **How settings inheritance works:**
 
-Child organisations can inherit their parent's settings (allowed training programs, allowed roles, CV Builder and Careers Advisor feature flags). This is controlled by the **Inherit Settings** toggle on each child school:
+Child organisations can inherit their parent's settings (allowed training programs and allowed roles). This is controlled by the **Inherit Settings** toggle on each child school:
 
 - **Inherit Settings ON (default):** The child uses whatever training programs, roles, and feature flags the parent has. If you update the parent's settings, all inheriting children automatically pick up the changes.
 - **Inherit Settings OFF:** The child has its own independent settings. The Org Admin can configure programs, roles, and feature flags separately for that school.
@@ -545,8 +545,6 @@ Click the circular arrow icon to refresh the report data.
 Below the training completion table, the Reports page includes several further sections:
 
 - **Session Attendance** — counts of workshops held and attendance per organisation
-- **CV Builder** — total CVs created across the platform, broken down by status (Draft / Complete), by template (Accessible / Modern / Classic), and per organisation; also shows CVs created in the last 30 days
-- **Careers Advisor** — total AI Careers Advisor sessions, broken down by status (In Progress / Complete) and per organisation; also shows sessions started in the last 30 days
 - **Document Library** — download counts per document and per organisation, showing which resources are most used
 - **Surveys** — response rates per survey, including how many targeted users have responded
 - **SCORM Quiz Analytics** — per-question performance aggregated across all learners (anonymised — no per-learner data is shown). Questions are sorted worst-performing first so you can quickly see which material may need updating. Access this section at `/super-admin/reports/scorm-quizzes` (requires View Reports permission)
@@ -639,7 +637,7 @@ Insights are saved to the survey and can be re-generated at any time.
 
 Navigate to **AI Prompts** in the left-hand sidebar (requires the **Manage AI Prompts** permission).
 
-All AI features on the platform — quiz generation, CV suggestions, the Careers Advisor, survey insights, and document thumbnails — are powered by prompt rows stored in the database. This page lets you view and edit those prompts.
+All AI features on the platform — quiz generation, survey insights, and document thumbnails — are powered by prompt rows stored in the database. This page lets you view and edit those prompts.
 
 ### How prompts work
 
@@ -747,21 +745,21 @@ Super Admins (Charity Admins) have implicit access to every feature regardless o
 
 ## 15. Single Sign-On (SSO) Setup
 
-> **Status: Currently disabled.** Google and Microsoft OAuth login are turned off on the live site. Users sign in with email and password (or via per-org SAML SSO if their organisation has it configured). The feature is preserved in code and can be switched back on at any time — the steps below describe how to re-enable it.
+SSO lets users across all organisations sign in with their existing Google or Microsoft account instead of a platform-specific password. The setup is a two-part process:
 
-SSO allows users across all organisations to sign in with their existing Google or Microsoft account instead of a platform-specific password. SSO is a one-time setup performed by the super admin or app owner — once configured, all organisations benefit automatically.
+1. **Configure the OAuth provider** in Google Cloud Console / Azure Portal and add the credentials to Vercel env vars (one-off, technical).
+2. **Turn the toggle on** in `/super-admin/settings/sso` (any-time, no redeploy).
 
-### Re-enabling OAuth SSO
+Both providers default to **off**. The toggle UI locks the switch off and shows an amber "credentials missing" warning if the env vars aren't set, so you can't accidentally enable a button that would fail on click.
 
-OAuth SSO is gated behind a single Vercel environment variable, `ENABLE_OAUTH_SSO`. While it is set to `false` (or unset) the Google and Microsoft sign-in buttons are hidden on the login page and the providers are not registered with NextAuth.
+### Toggling OAuth providers on or off
 
-To turn the feature back on:
+1. Sign in as a Charity Admin and go to **Settings → SSO**.
+2. Scroll to the **OAuth Sign-in Providers** card below the SAML configuration.
+3. Use the switches to enable Google and/or Microsoft. Save is automatic.
+4. Refresh `/login` to see the buttons appear inline above the password form. To turn them off again, flip the same switches back.
 
-1. In the Vercel project (`asd-training-app-v2`) → **Settings → Environment Variables**, set `ENABLE_OAUTH_SSO` to `true` for the Production environment (and Preview/Development if you want to test there too).
-2. Make sure the OAuth credentials below are still populated (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `AZURE_AD_CLIENT_ID`, `AZURE_AD_CLIENT_SECRET`, `AZURE_AD_TENANT_ID`). If they were removed during the disable step, re-create the OAuth apps using the steps below.
-3. Redeploy. The login page will show the Google and Microsoft buttons under the **Single Sign-On** tab again.
-
-### Google SSO
+### Google OAuth setup (one-off)
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and open your project.
 2. Navigate to **APIs & Services > Credentials** and create an OAuth 2.0 Client ID (Web application).
@@ -770,8 +768,10 @@ To turn the feature back on:
    https://asd-training-app-v2.vercel.app/api/auth/callback/google
    ```
 4. Copy the **Client ID** and **Client Secret** into the Vercel environment variables `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+5. Redeploy (or wait for the next push) so the new env vars are loaded.
+6. Once deployed, the Google toggle in **Settings → SSO** becomes available.
 
-### Microsoft (Azure AD) SSO
+### Microsoft (Azure AD) OAuth setup (one-off)
 
 1. Go to the [Azure Portal](https://portal.azure.com/) and open **App registrations**.
 2. Register a new application (or use an existing one).
@@ -781,8 +781,18 @@ To turn the feature back on:
    ```
 4. Copy the **Application (client) ID** and **Client Secret** into the Vercel environment variables `AZURE_AD_CLIENT_ID` and `AZURE_AD_CLIENT_SECRET`.
 5. Set `AZURE_AD_TENANT_ID` to `common` (to allow both personal and work/school Microsoft accounts) or to your specific tenant ID.
+6. In the app's **Manifest editor**, ensure `signInAudience: "AzureADandPersonalMicrosoftAccount"` so both personal and work/school accounts are supported.
+7. Redeploy. The Microsoft toggle in **Settings → SSO** becomes available.
 
-Once `ENABLE_OAUTH_SSO="true"` is deployed alongside these credentials, the login page will show Google and Microsoft options under the **Single Sign-On** tab. Users must still be pre-created by an admin before they can sign in via SSO — the platform does not allow self-registration through SSO.
+### What happens for new vs existing users
+
+- **Existing user, OAuth toggle ON**: clicks Google / Microsoft → lands on `/` signed in. The platform links the OAuth account to their existing record on first sign-in.
+- **New user with no platform account, OAuth toggle ON**: clicks Google / Microsoft → lands on a one-question self-registration page (`/register/sso-complete`) where they pick a role (autistic / parent or carer / supporter / professional) and finish sign-up automatically under the public user pool. No pre-creation needed — the OAuth provider has verified their email, so they're trusted to register themselves.
+- **Toggle OFF**: the button doesn't appear; direct hits on `/api/auth/signin/google` are rejected by the sign-in callback.
+
+### Charity SAML SSO vs OAuth
+
+Charity SAML SSO is a separate feature in the same settings page — for situations where the charity uses an enterprise identity provider (Okta, Azure AD as SAML, Google Workspace as SAML) for its own staff. Configure it in the **SAML Configuration** card above the OAuth toggles. SAML users still need to be pre-created in the platform unless `autoProvision` is set on the per-org SAML config; OAuth is the only path that allows full self-registration.
 
 ---
 

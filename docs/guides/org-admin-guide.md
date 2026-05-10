@@ -54,7 +54,7 @@ The Organisation Admin role requires two-factor authentication (2FA) for securit
 
 **Signing in:**
 
-The login page has a toggle at the top to switch between **Email & Password** and **Single Sign-On** (Google / Microsoft). Org Admins typically sign in with email and password, since MFA is required after login.
+The login page shows an email field, then either the password fields (most common) or a Single Sign-On button if your organisation has SSO configured for your email domain. Sign-in method is auto-detected from your email — there is no toggle to flip. Org Admins typically sign in with email and password, since MFA is required after login.
 
 **Steps to set up 2FA:**
 
