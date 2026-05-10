@@ -4,6 +4,32 @@ The PDF documents in this folder were generated at the original handover. The pl
 
 Re-generate the PDFs from the up-to-date markdown sources when convenient.
 
+## 2026-05-10 — CV Builder + AI Careers Advisor: proof-of-concept, not shipping
+
+### What changed
+
+The **CV Builder** and **AI Careers Advisor** features were built as proofs of concept and are not part of the shipping product. All references to them have been removed from the user-facing markdown guides (`docs/guides/`) and from this handover changelog's coverage tables.
+
+- The features may still appear in the live application code (`/cv-builder`, `/careers-advisor`, the org-level `cvBuilderEnabled` / `careersAdvisorEnabled` feature flags) — they have not been deleted, just unsupported and undocumented for end users.
+- The Charity Admin **Reports** page may still surface CV Builder and Careers Advisor metrics; treat these as internal-only.
+- Engineering reference docs (`CLAUDE.md`, `README.md`) intentionally still describe the implementation so future developers know what they're looking at, but those are for technical hand-over, not user-facing materials.
+
+### Affected handover PDFs
+
+| Document | Outdated sections |
+| --- | --- |
+| `AAA_User_Guide.pdf` | Any section walking learners through `/cv-builder` or `/careers-advisor`. |
+| `AAA_Admin_Guide.pdf` | Any reference to CV Builder / Careers Advisor in the Reports section or in the org-level feature-flag toggles. |
+| `AAA_Training_Materials.pdf` | Any training material that demos the CV Builder wizard or the AI Careers Advisor questionnaire. |
+| `AAA_Self_Registration_Flow.pdf` | Already superseded by the auth overhaul below — also remove any CV Builder / Careers Advisor mentions. |
+
+### Up-to-date sources
+
+- **`docs/guides/super-admin-guide.md`** — CV Builder and Careers Advisor lines removed from inheritance settings, reports section, and AI features list.
+- **`docs/guides/careers-professional-guide.md`** — Sections 5 (CV Builder) and 6 (AI Careers Advisor) deleted; table of contents, sidebar nav table, and dashboard feature tiles updated; subsequent sections renumbered.
+
+---
+
 ## 2026-05-10 — Authentication & registration overhaul
 
 ### What changed

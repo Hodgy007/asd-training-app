@@ -141,7 +141,7 @@ Once an organisation is marked as a parent, its Org Admin will see a **Schools**
 
 **How settings inheritance works:**
 
-Child organisations can inherit their parent's settings (allowed training programs, allowed roles, CV Builder and Careers Advisor feature flags). This is controlled by the **Inherit Settings** toggle on each child school:
+Child organisations can inherit their parent's settings (allowed training programs and allowed roles). This is controlled by the **Inherit Settings** toggle on each child school:
 
 - **Inherit Settings ON (default):** The child uses whatever training programs, roles, and feature flags the parent has. If you update the parent's settings, all inheriting children automatically pick up the changes.
 - **Inherit Settings OFF:** The child has its own independent settings. The Org Admin can configure programs, roles, and feature flags separately for that school.
@@ -545,8 +545,6 @@ Click the circular arrow icon to refresh the report data.
 Below the training completion table, the Reports page includes several further sections:
 
 - **Session Attendance** — counts of workshops held and attendance per organisation
-- **CV Builder** — total CVs created across the platform, broken down by status (Draft / Complete), by template (Accessible / Modern / Classic), and per organisation; also shows CVs created in the last 30 days
-- **Careers Advisor** — total AI Careers Advisor sessions, broken down by status (In Progress / Complete) and per organisation; also shows sessions started in the last 30 days
 - **Document Library** — download counts per document and per organisation, showing which resources are most used
 - **Surveys** — response rates per survey, including how many targeted users have responded
 - **SCORM Quiz Analytics** — per-question performance aggregated across all learners (anonymised — no per-learner data is shown). Questions are sorted worst-performing first so you can quickly see which material may need updating. Access this section at `/super-admin/reports/scorm-quizzes` (requires View Reports permission)
@@ -639,7 +637,7 @@ Insights are saved to the survey and can be re-generated at any time.
 
 Navigate to **AI Prompts** in the left-hand sidebar (requires the **Manage AI Prompts** permission).
 
-All AI features on the platform — quiz generation, CV suggestions, the Careers Advisor, survey insights, and document thumbnails — are powered by prompt rows stored in the database. This page lets you view and edit those prompts.
+All AI features on the platform — quiz generation, survey insights, and document thumbnails — are powered by prompt rows stored in the database. This page lets you view and edit those prompts.
 
 ### How prompts work
 
