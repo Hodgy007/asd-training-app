@@ -53,13 +53,19 @@ interface EventContext {
 
 // ─── Cohort upsert from Eventbrite event ────────────────────────────────────
 
-export async function upsertCohortFromEvent(eventId: string) {
+export async function upsertCohortFromEvent(
+  eventId: string,
+  opts: { purchasable?: boolean } = {},
+) {
   const token = await requireEventbriteToken()
   const event = await fetchEvent(eventId, token)
-  return writeCohortFromEvent(event)
+  return writeCohortFromEvent(event, opts)
 }
 
-async function writeCohortFromEvent(event: EventbriteEvent) {
+async function writeCohortFromEvent(
+  event: EventbriteEvent,
+  opts: { purchasable?: boolean } = {},
+) {
   const eventMetadata = {
     name: event.name.text,
     description: event.description?.text ?? null,
@@ -113,6 +119,7 @@ async function writeCohortFromEvent(event: EventbriteEvent) {
         create: {
           ...eventMetadata,
           externalEventId: event.id,
+          ...(opts.purchasable === true ? { purchasable: true } : {}),
         },
       },
     },
