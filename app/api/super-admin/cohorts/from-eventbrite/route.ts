@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { parseEventbriteUrl, EventbriteError } from '@/lib/eventbrite'
 import {
   upsertCohortFromEvent,
+  syncAttendeesAsCohortMembers,
   ensureWebhookRegistered,
 } from '@/lib/eventbrite-sync'
 import { logger, errMeta } from '@/lib/logger'
@@ -65,7 +66,19 @@ export async function POST(req: NextRequest) {
       try {
         const result = await upsertCohortFromEvent(eventId, { purchasable })
         results.push({ eventId, cohortId: result.cohortId, created: result.created })
-        if (result.created) createdAny = true
+        if (result.created) {
+          createdAny = true
+          // Backfill existing bookings so the cohort isn't empty when the
+          // admin lands on it. Best-effort — webhook handles the steady state.
+          try {
+            await syncAttendeesAsCohortMembers(eventId)
+          } catch (err) {
+            logger.warn('eventbrite.bulk_import.initial_sync_failed', {
+              eventId,
+              ...errMeta(err),
+            })
+          }
+        }
       } catch (error) {
         const message = describeError(error)
         results.push({ eventId, error: message })
@@ -118,6 +131,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await upsertCohortFromEvent(eventId, { purchasable })
+
+    // Backfill existing bookings on first import. Best-effort.
+    if (result.created) {
+      try {
+        await syncAttendeesAsCohortMembers(eventId)
+      } catch (err) {
+        logger.warn('eventbrite.cohort.initial_sync_failed', { eventId, ...errMeta(err) })
+      }
+    }
 
     if (baseUrl && !baseUrl.includes('localhost')) {
       try {

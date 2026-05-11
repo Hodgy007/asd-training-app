@@ -24,6 +24,7 @@ import {
   ArchiveRestore,
   Link2,
   Copy,
+  Ticket,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
@@ -47,6 +48,10 @@ interface CohortMember {
   active: boolean
   mustChangePassword: boolean
   createdAt: string
+  /** "EVENTBRITE" when synced from an Eventbrite booking; "MANUAL" otherwise. */
+  source?: 'MANUAL' | 'EVENTBRITE'
+  /** When the user joined the cohort (from CohortMembership). Null for legacy manual flow. */
+  joinedAt?: string | null
 }
 
 interface CohortDocument {
@@ -838,7 +843,18 @@ export default function CohortDetailPage() {
                       )}
                     >
                       <td className="px-5 py-3 font-medium text-slate-900 dark:text-slate-100">
-                        {member.name || '—'}
+                        <div className="flex items-center gap-2">
+                          <span>{member.name || '—'}</span>
+                          {member.source === 'EVENTBRITE' && (
+                            <span
+                              title="Auto-enrolled from an Eventbrite booking"
+                              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
+                            >
+                              <Ticket className="h-2.5 w-2.5" />
+                              Eventbrite
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-3 text-slate-600 dark:text-slate-400 font-mono text-xs">
                         {member.email}
@@ -851,6 +867,8 @@ export default function CohortDetailPage() {
                       <td className="px-5 py-3">
                         {member.mustChangePassword ? (
                           <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Awaiting first login</span>
+                        ) : !member.active ? (
+                          <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Inactive</span>
                         ) : (
                           <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Active</span>
                         )}
