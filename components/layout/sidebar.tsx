@@ -229,6 +229,23 @@ export function Sidebar({ onClose, mobile, collapsed = false, onToggleCollapse }
             </Link>
           )
         })}
+        {onToggleCollapse && !mobile && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-pressed={isCollapsed}
+            className={clsx(linkRowClass, 'w-full', chrome.navInactive)}
+          >
+            {isCollapsed ? (
+              <ChevronsRight className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
+            ) : (
+              <ChevronsLeft className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
+            )}
+            {!isCollapsed && <span className="truncate">Collapse</span>}
+          </button>
+        )}
       </nav>
 
       {/* Bottom section */}
@@ -254,23 +271,6 @@ export function Sidebar({ onClose, mobile, collapsed = false, onToggleCollapse }
           <LogOut className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
           {!isCollapsed && <span className="truncate">Sign out</span>}
         </button>
-        {onToggleCollapse && !mobile && (
-          <button
-            type="button"
-            onClick={onToggleCollapse}
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-pressed={isCollapsed}
-            className={clsx(linkRowClass, 'w-full', chrome.navInactive)}
-          >
-            {isCollapsed ? (
-              <ChevronsRight className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
-            ) : (
-              <ChevronsLeft className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
-            )}
-            {!isCollapsed && <span className="truncate">Collapse</span>}
-          </button>
-        )}
       </div>
     </div>
   )
