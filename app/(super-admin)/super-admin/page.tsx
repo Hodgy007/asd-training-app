@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   Building2,
   Briefcase,
-  UserX,
+  Download,
   TrendingUp,
   Users,
   Calendar,
@@ -20,7 +20,7 @@ import { isCharityLevel, hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { HowToPanel } from '@/components/howto/panel'
 import OverviewHowTo from '@/components/howto/super-admin/overview'
 
-type AttentionTone = 'amber' | 'sky' | 'rose' | 'slate'
+type AttentionTone = 'amber' | 'sky' | 'rose' | 'slate' | 'sage'
 
 const TONE_STYLES: Record<AttentionTone, { iconBg: string; iconText: string }> = {
   amber: {
@@ -39,6 +39,10 @@ const TONE_STYLES: Record<AttentionTone, { iconBg: string; iconText: string }> =
     iconBg: 'bg-slate-100 dark:bg-slate-700/50',
     iconText: 'text-slate-600 dark:text-slate-300',
   },
+  sage: {
+    iconBg: 'bg-sage-100 dark:bg-sage-900/30',
+    iconText: 'text-sage-600 dark:text-sage-400',
+  },
 }
 
 export default async function SuperAdminPage() {
@@ -50,17 +54,21 @@ export default async function SuperAdminPage() {
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const sevenDaysAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const startOfToday = new Date(now)
+  startOfToday.setHours(0, 0, 0, 0)
 
   const canViewReports = hasPermission(session, CHARITY_PERMISSIONS.VIEW_REPORTS)
   const canManageOrgs = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)
   const canManageSurveys = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SURVEYS)
   const canManageJobs = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_JOBS)
   const canManageSessions = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SESSIONS)
+  const canManageLibrary = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)
 
   const [
-    draftSurveyCount,
-    expiringJobCount,
-    deactivatedUserCount,
+    openSurveyCompletionCount,
+    jobsOpenCount,
+    activeUserCount,
+    dailyToolkitDownloadCount,
     completionsLast30,
     completionsPrev30,
     activeUsersLast30,
@@ -72,18 +80,31 @@ export default async function SuperAdminPage() {
     recentModules,
   ] = await Promise.all([
     canManageSurveys
-      ? prisma.survey.count({ where: { status: 'DRAFT' } })
+      ? prisma.surveyResponse.count({
+          where: {
+            completedAt: { not: null },
+            survey: { status: 'PUBLISHED' },
+          },
+        })
       : Promise.resolve(0),
     canManageJobs
       ? prisma.jobOpening.count({
           where: {
             status: 'PUBLISHED',
-            closingDate: { gte: now, lte: sevenDaysAhead },
+            closingDate: { gte: now },
           },
         })
       : Promise.resolve(0),
     canManageOrgs
-      ? prisma.user.count({ where: { active: false } })
+      ? prisma.user.count({ where: { active: true } })
+      : Promise.resolve(0),
+    canManageLibrary
+      ? prisma.libraryDocumentEvent.count({
+          where: {
+            action: 'download',
+            createdAt: { gte: startOfToday },
+          },
+        })
       : Promise.resolve(0),
     canViewReports
       ? prisma.trainingProgress.count({
@@ -266,9 +287,9 @@ export default async function SuperAdminPage() {
 
   if (canManageSurveys) {
     attentionCards.push({
-      key: 'draft-surveys',
-      label: 'Draft surveys',
-      count: draftSurveyCount,
+      key: 'open-survey-completions',
+      label: 'Open Surveys Completed',
+      count: openSurveyCompletionCount,
       icon: ClipboardList,
       tone: 'sky',
       href: '/super-admin/surveys',
@@ -276,22 +297,32 @@ export default async function SuperAdminPage() {
   }
   if (canManageJobs) {
     attentionCards.push({
-      key: 'expiring-jobs',
-      label: 'Jobs closing in 7 days',
-      count: expiringJobCount,
+      key: 'jobs-open',
+      label: 'Jobs Open',
+      count: jobsOpenCount,
       icon: Briefcase,
-      tone: 'rose',
+      tone: 'sage',
       href: '/super-admin/jobs',
     })
   }
   if (canManageOrgs) {
     attentionCards.push({
-      key: 'deactivated-users',
-      label: 'Deactivated users',
-      count: deactivatedUserCount,
-      icon: UserX,
-      tone: 'slate',
-      href: '/super-admin/users?status=inactive',
+      key: 'active-users',
+      label: 'Active Users',
+      count: activeUserCount,
+      icon: Users,
+      tone: 'sage',
+      href: '/super-admin/users',
+    })
+  }
+  if (canManageLibrary) {
+    attentionCards.push({
+      key: 'daily-toolkit-downloads',
+      label: 'Daily Toolkit Downloads',
+      count: dailyToolkitDownloadCount,
+      icon: Download,
+      tone: 'amber',
+      href: '/super-admin/library',
     })
   }
 
@@ -312,7 +343,7 @@ export default async function SuperAdminPage() {
       {attentionCards.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Needs your attention
+            Platform at a glance
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
             {attentionCards.map((card) => {
