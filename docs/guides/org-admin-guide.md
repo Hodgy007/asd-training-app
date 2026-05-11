@@ -93,6 +93,8 @@ The left-hand sidebar shows:
 | **Enterprise SSO** | Configure SAML SSO for your organisation |
 | **How to Guide** | Access the org admin how-to guide |
 
+The sidebar has a **collapse toggle** at the top — click it to shrink the sidebar to a narrow icon rail, freeing up screen space. The same toggle expands it back to full width.
+
 At the top of the Users page you will see:
 
 - The total number of users in your organisation
@@ -240,7 +242,9 @@ The **Document Library** section (click **Document Library** in the left-hand si
 ### What you can do
 
 - Browse collections targeted to your organisation at `/admin/library`.
+- Switch between **List**, **Small tiles**, and **Large tiles** view using the toggle in the top-right of the collection list.
 - Download any document within a collection.
+- Leave **per-document feedback** (thumbs-up / thumbs-down with an optional comment) — useful for telling the charity which documents are landing well with your team.
 - Edit the **title** and **description** of a collection that is visible to your org — click the collection, then use the Edit button.
 
 ### What is managed by the charity admin

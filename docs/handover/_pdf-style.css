@@ -1,0 +1,149 @@
+/* AAA handover PDF styling. Edit alongside scripts/build-handover-pdfs.mjs. */
+
+@page {
+  size: A4;
+  margin: 25mm 20mm;
+}
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  color: #1e293b;
+  margin: 0;
+}
+
+h1, h2, h3, h4 {
+  color: #0f172a;
+  font-weight: 700;
+  page-break-after: avoid;
+}
+
+h1 {
+  font-size: 24pt;
+  margin: 0 0 16pt 0;
+  padding-bottom: 8pt;
+  border-bottom: 3px solid #f97316;
+}
+
+h2 {
+  font-size: 16pt;
+  margin: 22pt 0 10pt 0;
+  padding: 8pt 12pt;
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: 4px;
+  page-break-before: auto;
+}
+
+h3 {
+  font-size: 13pt;
+  margin: 16pt 0 6pt 0;
+  color: #1e3a8a;
+}
+
+h4 {
+  font-size: 11pt;
+  margin: 12pt 0 4pt 0;
+  color: #334155;
+}
+
+p {
+  margin: 0 0 8pt 0;
+}
+
+ul, ol {
+  margin: 4pt 0 10pt 0;
+  padding-left: 22pt;
+}
+
+li {
+  margin-bottom: 3pt;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8pt 0 12pt 0;
+  font-size: 9.5pt;
+  page-break-inside: auto;
+}
+
+thead th {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  font-weight: 600;
+}
+
+th, td {
+  border: 1px solid #cbd5e1;
+  padding: 6pt 8pt;
+  text-align: left;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+th {
+  background: #0f172a;
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+tbody tr:nth-child(even) {
+  background: #f1f5f9;
+}
+
+code {
+  font-family: 'Consolas', 'Cascadia Code', monospace;
+  background: #f1f5f9;
+  padding: 1pt 4pt;
+  border-radius: 2px;
+  font-size: 9.5pt;
+  color: #be185d;
+}
+
+pre {
+  background: #0f172a;
+  color: #f1f5f9;
+  padding: 10pt;
+  border-radius: 4px;
+  font-size: 9pt;
+  line-height: 1.5;
+  overflow-x: auto;
+  page-break-inside: avoid;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+blockquote {
+  border-left: 4px solid #f97316;
+  margin: 10pt 0;
+  padding: 4pt 12pt;
+  background: #fff7ed;
+  color: #7c2d12;
+  font-style: normal;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #cbd5e1;
+  margin: 14pt 0;
+}
+
+a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.page-break {
+  page-break-before: always;
+  height: 0;
+}
+
+strong {
+  color: #0f172a;
+}

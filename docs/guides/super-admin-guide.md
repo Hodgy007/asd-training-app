@@ -22,6 +22,7 @@
 14. [Charity Employee Accounts](#14-charity-employee-accounts)
 15. [Single Sign-On (SSO) Setup](#15-single-sign-on-sso-setup)
 16. [Security and MFA](#16-security-and-mfa)
+17. [Brand Asset Store](#17-brand-asset-store)
 
 ---
 
@@ -37,7 +38,7 @@ Your responsibilities include:
 - Publishing platform-wide announcements to all users
 - Viewing training progress reports across all organisations
 
-Super Admins access a separate area of the platform at `/super-admin`. You will not see the regular learner dashboard — your navigation includes **Overview**, **Organisations**, **Cohorts**, **Training Content**, **Document Library**, **Surveys**, **Announcements**, **Workshops**, **Reports**, and **Integrations**.
+Super Admins access a separate area of the platform at `/super-admin`. You will not see the regular learner dashboard — your sidebar includes **Overview**, **Users**, **Organisations**, **Cohorts**, **Document Library**, **Training Content**, **Surveys**, **Announcements**, **Workshops**, **Job Openings**, **Reports**, **Impact**, **Integrations**, **AI Prompts**, **Brand Store**, **Settings**, and **How to Guide**. The sidebar can be collapsed to a narrow icon rail using the collapse toggle at the top — useful on smaller laptops or when working in a side-by-side layout. Charity Staff (CHARITY_EMPLOYEE) see a subset of these items based on the permissions a Charity Admin has granted them.
 
 ---
 
@@ -60,7 +61,13 @@ This is not optional — you will be redirected to the MFA setup page automatica
 
 ### Signing in
 
-The login page has a toggle at the top to switch between **Email & Password** and **Single Sign-On** (Google / Microsoft). **Google and Microsoft SSO are currently disabled** — when the user opens the Single Sign-On tab they see "Single Sign-On is not yet configured. Please sign in with email and password." See section 15 for how to re-enable. Super Admins should sign in with email and password; MFA is required after login regardless.
+The login page shows a single email field. Type your email, and the page auto-detects the right sign-in method:
+
+- If your domain has SAML SSO configured, the SSO button replaces the password field.
+- If Charity Admins have turned on Google or Microsoft sign-in in **Settings → SSO** (see section 15), those buttons appear above the password field.
+- Otherwise, the page just shows the password field.
+
+There is no manual "Email & Password / Single Sign-On" toggle — the older segmented toggle was removed in May 2026. Super Admins typically sign in with email and password; MFA is required after the password step regardless of how you signed in.
 
 ### Setting up MFA — step by step
 
@@ -120,9 +127,9 @@ This page lists every organisation on the platform in a table. You can see each 
 1. Click **Create Organisation** in the top-right corner. A form appears below the header.
 2. Fill in the **Name** field (e.g. "Sunrise Care Services"). The **Slug** field will fill in automatically based on the name — you can edit it if needed. The slug must use only lowercase letters, numbers, and hyphens.
 3. Under **Allowed Roles**, tick the types of users this organisation will have. The available roles are:
-   - **Practitioner** — accesses ASD awareness training and can log child observations
-   - **Careers Professional** — accesses careers training only
-   - **Student**, **Intern**, **Employee** — access both ASD and careers training
+   - **Practitioner** — accesses ASD awareness training and workshops
+   - **Careers Professional** — accesses careers training, CV Builder, Careers Advisor, and the jobs board
+   - **Student**, **Intern**, **Employee** — access whichever training programmes the organisation has been assigned, plus CV Builder, Careers Advisor, and jobs (where enabled)
 4. Under **Module Access**, use the **ASD Awareness Training** and **Careers CPD Training** toggles to control which training plans this organisation's users may access.
 5. The **Active** checkbox is ticked by default. Leave it ticked to make the organisation live immediately.
 6. The **Parent Organisation** checkbox is unticked by default. Tick it if this organisation will manage child organisations underneath it (e.g. a Multi-Academy Trust, CEC Careers Hub, or Local Authority that oversees multiple schools). See [Hierarchical Organisations](#hierarchical-organisations-parentchild) below for details.
@@ -276,6 +283,17 @@ The system will:
 - Create the rest of the accounts with `mustChangePassword: true`
 
 After the import completes, you can click **Download Credentials CSV** to export a file containing the name, email, and temporary password for every newly-created account. Use this to print credential cards in bulk, or to email each attendee their login details.
+
+#### Import from Eventbrite
+
+If you run workshops through Eventbrite, you can import the attendee list directly into a cohort rather than re-keying it.
+
+1. First, connect the charity's Eventbrite account: go to **Settings → Eventbrite** in your sidebar and follow the OAuth flow. You only need to do this once per Eventbrite organisation.
+2. On the cohort's **Members** tab, click **Import from Eventbrite**.
+3. Pick the Eventbrite event from the dropdown. The platform fetches the current attendee list — name and email for each ticket holder.
+4. Review the preview, then click **Import**. The system creates accounts for new emails, skips existing ones, and tags the cohort as "synced from Eventbrite" so you can see at a glance where it came from.
+
+You can re-run the import later (e.g. after additional ticket sales) — it always picks up only the new attendees. The connection between the cohort and the Eventbrite event is recorded in the `CohortEventbriteEvent` table.
 
 #### Removing a member
 
@@ -562,7 +580,19 @@ Organisations that wish to auto-generate Zoom or Microsoft Teams meeting links f
 
 Navigate to **Document Library** in the left-hand sidebar.
 
-The Document Library lets you organise and share files (PDFs, Word documents, images) with learners through targetable collections. Each collection appears as a sidebar link for the users it is shared with, and all collections are also accessible at `/library`.
+The Document Library hosts the charity's curated PDFs, images, and resources. You organise documents into **Collections**, each of which is targeted at a specific list of organisations and roles. Targeted collections appear in the recipient's sidebar (each as its own nav link) and on the `/library` page.
+
+### Collection list view & tile sizing
+
+The collection list has three view modes — **List**, **Small tiles**, and **Large tiles**. Use the toggle in the top-right to switch. "Small tiles" is the new compact list view introduced in May 2026 — it's especially useful on smaller screens or when you have many collections to scan.
+
+### Inline edit on the list page
+
+You can edit a collection's title, description, and AI-generated thumbnail without leaving the list page — hover the row, click the pencil icon, and the inline edit panel opens. AI Assist is available on this inline panel: click **Generate** to have the AI propose a title and description from the documents in the collection.
+
+### Per-document feedback
+
+Each document in a collection has a feedback toggle. When enabled, learners viewing the document see thumbs-up / thumbs-down buttons and an optional comment field. Feedback aggregates in the reports panel so you can see which documents are most useful.
 
 ### Creating a collection
 
@@ -821,6 +851,38 @@ If you lose your phone or delete your authenticator app and cannot generate a co
 - If you suspect your account has been compromised, change your password immediately and re-enrol your MFA.
 - Users with a `mustChangePassword` flag on their account are forced to set a new password before they can access anything else — this is applied automatically to new Org Admins created through the platform.
 - Inactive user accounts cannot sign in, even if they have valid credentials. If an organisation is deactivated, all of its users are blocked from signing in as well.
+
+---
+
+## 17. Brand Asset Store
+
+Navigate to **Brand Store** in the left-hand sidebar.
+
+The Brand Store is the charity's central library of brand assets — logos, banners, icons, and illustrations — that the platform's AI features pull from when generating images, banners, and document thumbnails. Keeping a well-curated Brand Store means AI-generated outputs stay on-brand without you needing to upload the AAA logo or palette every time.
+
+### Uploading assets
+
+Two upload modes are supported:
+
+- **Single upload** — click **Upload Asset**, pick a file, choose a type (`Logo`, `Banner`, `Icon`, `Illustration`, `Other`), and optionally add a description. Click **Save**.
+- **Bulk zip upload** — click **Upload Zip**. Drop in a `.zip` archive containing many image files (PNG, JPG, SVG, etc.). The platform extracts the archive, auto-classifies each file by filename and image dimensions (e.g. wide images become Banners, square small images become Icons), and creates a Brand Asset row for each one. You can then move any mis-classified assets in one click.
+
+After upload, the AI scans each new asset and writes auto-generated tags (`aiTags`) so that downstream AI features can find them by topic ("autism awareness", "young people", "blue palette" etc.).
+
+### Using the Brand Store in AI generation
+
+Several AI features can use the Brand Store as context:
+
+- **AI banner generator** in announcements / training programmes — tick **"Use brand store as context"** in the banner modal. The AI is prompted to compose a banner that matches the AAA visual identity.
+- **AI thumbnail generator** in the Document Library — automatic. Library AI thumbnails pull from the Brand Store by default.
+
+### Browsing and moving assets
+
+The list view groups assets by type. Use the filter chips at the top to focus on one type, or the search box to find by filename or tag. Each asset row has a **one-click move** action to change its type without re-uploading.
+
+### Permissions
+
+`MANAGE_LIBRARY` (charity employees) or Charity Admin (`SUPER_ADMIN`) can manage the Brand Store. Org Admins do not see it.
 
 ---
 
