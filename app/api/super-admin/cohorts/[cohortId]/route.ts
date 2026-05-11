@@ -32,25 +32,85 @@ export async function GET(
     where: { id: params.cohortId, orgType: 'COHORT' },
     include: {
       _count: { select: { users: true, cohortMemberships: true } },
-      users: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          active: true,
-          mustChangePassword: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      },
       eventbriteEvent: true,
     },
   })
 
   if (!cohort) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  return NextResponse.json(cohort)
+  // Members = union of legacy manual-flow users (organisationId = cohort.id)
+  // + Eventbrite-synced users joined via CohortMembership. We dedupe by userId
+  // and tag each row with a `source` so the UI can render a badge.
+  const [legacyUsers, memberships] = await Promise.all([
+    prisma.user.findMany({
+      where: { organisationId: params.cohortId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        active: true,
+        mustChangePassword: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.cohortMembership.findMany({
+      where: { cohortId: params.cohortId, status: 'ACTIVE' },
+      select: {
+        source: true,
+        joinedAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            active: true,
+            mustChangePassword: true,
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: { joinedAt: 'desc' },
+    }),
+  ])
+
+  const userMap = new Map<string, {
+    id: string
+    name: string | null
+    email: string
+    role: string
+    active: boolean
+    mustChangePassword: boolean
+    createdAt: Date
+    source: 'MANUAL' | 'EVENTBRITE'
+    joinedAt: Date | null
+  }>()
+
+  for (const u of legacyUsers) {
+    userMap.set(u.id, { ...u, source: 'MANUAL', joinedAt: null })
+  }
+  for (const m of memberships) {
+    const existing = userMap.get(m.user.id)
+    const source = (m.source === 'EVENTBRITE' ? 'EVENTBRITE' : 'MANUAL') as 'MANUAL' | 'EVENTBRITE'
+    if (existing) {
+      // If the legacy row exists, prefer the CohortMembership source so
+      // Eventbrite-sourced primary-org users still get tagged correctly.
+      existing.source = source
+      existing.joinedAt = m.joinedAt
+    } else {
+      userMap.set(m.user.id, { ...m.user, source, joinedAt: m.joinedAt })
+    }
+  }
+
+  const users = Array.from(userMap.values()).sort((a, b) => {
+    const aTime = (a.joinedAt ?? a.createdAt).getTime()
+    const bTime = (b.joinedAt ?? b.createdAt).getTime()
+    return bTime - aTime
+  })
+
+  return NextResponse.json({ ...cohort, users })
 }
 
 export async function PATCH(

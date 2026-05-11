@@ -13,6 +13,12 @@ export default function WorkshopsHowTo() {
         <li>Click &quot;Join Meeting&quot; to join a workshop when it&apos;s live</li>
         <li>Past workshops may include a recording URL if one was added by the host</li>
       </ol>
+
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Workshops you booked on Eventbrite</h3>
+      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+        If you booked a charity workshop via Eventbrite, you&apos;ll also see it here. The booking automatically adds you to the workshop&apos;s cohort, so you get all the related training and resources alongside the live session. You don&apos;t need to do anything extra &mdash; the Eventbrite confirmation email and any reminders still come from Eventbrite as normal.
+      </p>
+
       <Tip>Your dashboard also shows upcoming workshops in a quick-view card for easy access.</Tip>
     </>
   )

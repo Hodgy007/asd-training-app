@@ -239,6 +239,49 @@ export async function fetchEvent(eventId: string, token: string): Promise<Eventb
   })
 }
 
+interface UserEventsResponse {
+  pagination: {
+    object_count: number
+    page_number: number
+    page_size: number
+    page_count: number
+    has_more_items: boolean
+    continuation?: string
+  }
+  events: EventbriteEvent[]
+}
+
+/**
+ * List events owned by the authenticated Eventbrite user. Pages through
+ * Eventbrite's `continuation` cursor; capped at 200 events as a safety net.
+ * Defaults to `status=live` ordered ascending by start date.
+ */
+export async function listOwnEvents(
+  token: string,
+  opts: { status?: 'live' | 'draft' | 'started' | 'ended' | 'all'; orderBy?: 'start_asc' | 'start_desc' } = {},
+): Promise<EventbriteEvent[]> {
+  const status = opts.status ?? 'live'
+  const orderBy = opts.orderBy ?? 'start_asc'
+  const out: EventbriteEvent[] = []
+  let continuation: string | undefined
+  for (let safetyHops = 0; safetyHops < 5; safetyHops++) {
+    const page: UserEventsResponse = await request('/users/me/events/', token, {
+      query: {
+        status,
+        order_by: orderBy,
+        expand: 'venue,logo,ticket_classes',
+        page_size: 50,
+        continuation,
+      },
+    })
+    out.push(...page.events)
+    if (out.length >= 200) break
+    if (!page.pagination.has_more_items || !page.pagination.continuation) break
+    continuation = page.pagination.continuation
+  }
+  return out.slice(0, 200)
+}
+
 /** Fetch ALL attendees for an event, paginating through Eventbrite continuations. */
 export async function fetchAllAttendees(
   eventId: string,
