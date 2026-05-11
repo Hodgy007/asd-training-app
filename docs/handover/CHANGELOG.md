@@ -1,8 +1,68 @@
 # Handover Documentation Changelog
 
-The PDF documents in this folder were generated at the original handover. The platform has been updated since — anything in a PDF that contradicts what's in this changelog is **out of date**; trust the markdown sources in `docs/guides/`, `CLAUDE.md`, and the platform's in-app How To Guide pages instead.
+The PDFs in this folder are **generated artefacts** — every PDF is built from a markdown source (see `README.md` for the source-to-PDF mapping). Edits should always go to the markdown, then a rebuild via `npm run handover:build`.
 
-Re-generate the PDFs from the up-to-date markdown sources when convenient.
+This changelog tracks what's changed since the last rebuild. When you regenerate the PDFs, you can clear entries that are now reflected in the freshly-built PDFs.
+
+## 2026-05-11 — Handover pipeline + cohort, brand, library, sidebar changes
+
+### What changed
+
+This is a consolidation pass covering everything that shipped between 2026-05-10 (the last changelog entry) and 2026-05-11.
+
+**1. Markdown source-of-truth + automated PDF build**
+
+The PDFs are now generated from markdown via `npm run handover:build` (`scripts/build-handover-pdfs.mjs`). Every PDF has a markdown source in this folder or in `docs/guides/`. Styling lives in `docs/handover/_pdf-style.css`. See `docs/handover/README.md` for the full source-to-PDF mapping.
+
+The five PDFs that previously had no markdown source — Data Dictionary, Technical Setup Guide, Self-Registration Flow, Handover Plan, Training Materials — now have markdown sources alongside them in `docs/handover/`. They were reconstructed from the PDF content and updated to reflect the current platform.
+
+**2. Cohorts — Eventbrite as an attendee source** ([PR #81](https://github.com/Hodgy007/asd-training-app/pull/81))
+
+A new cohort import path: Charity Admins can connect the charity's Eventbrite account once in **Settings → Eventbrite**, then on any cohort's Members tab use **Import from Eventbrite** to pull an event's attendee list directly into a cohort. The import is dedup-safe — re-running it picks up only new attendees. Backed by the new `CohortEventbriteEvent` model.
+
+**3. Cohorts as a workshop attendee group** ([PR #71](https://github.com/Hodgy007/asd-training-app/pull/71))
+
+Charity-level workshop creation now exposes **Cohorts** as a first-class attendee group alongside Organisations and individual users. The previous "by role" dimension was dropped (admins were already always inviting specific people). Clicking **Create Workshop** on a cohort detail page (`/super-admin/cohorts/[id]`) navigates with `?cohortId=<id>` and the new-workshop page seeds the picker.
+
+**4. Library — list view, tile sizing, per-document feedback** ([PR #76](https://github.com/Hodgy007/asd-training-app/pull/76), [PR #79](https://github.com/Hodgy007/asd-training-app/pull/79))
+
+The collection list page has three view modes — **List**, **Small tiles**, and **Large tiles**. Per-document feedback (thumbs-up / thumbs-down + comment) is enabled per document; results aggregate in the library reports. AI Assist is available in the inline edit panel on the list page.
+
+**5. Sidebar collapse** ([PR #76](https://github.com/Hodgy007/asd-training-app/pull/76), [PR #78](https://github.com/Hodgy007/asd-training-app/pull/78))
+
+Both the Charity Admin and Org Admin sidebars now have a **collapse toggle** at the top — useful on smaller laptops or for side-by-side workflows. The narrow rail keeps the icons but hides the labels.
+
+**6. Brand Asset Store** ([PR #80](https://github.com/Hodgy007/asd-training-app/pull/80) and earlier commits)
+
+A new **Brand Store** under Charity Admin holds the charity's logos, banners, icons, and illustrations. Two upload modes: single file or bulk-zip with auto-classification by filename + image dimensions, plus one-click move between types. AI banner generation and AI library thumbnails can use the Brand Store as context — tick "Use brand store as context" in the banner-generation modal. Backed by the new `BrandAsset` model.
+
+**7. Compliance documents refreshed** ([PR #83](https://github.com/Hodgy007/asd-training-app/pull/83))
+
+`docs/compliance/ROPA.md`, `DPIA.md`, and `AADC.md` rewritten to v2.0 after the child-observations removal. v1.0 of all three described the removed feature. Not user-facing, but mentioned here because the compliance pack is part of the handover deliverable.
+
+### Affected handover PDFs (regenerated)
+
+| Document | What changed |
+| --- | --- |
+| `AAA_Admin_Guide.pdf` | Super admin guide: sidebar nav updated; SSO toggle copy fixed; Practitioner role description fixed; new Cohorts > Eventbrite import section; Library section updated for list view + per-doc feedback; new **§17 Brand Asset Store**. Org admin guide: sidebar collapse toggle mentioned; Library section updated. |
+| `AAA_User_Guide.pdf` | No content changes; rebuilt to reflect upstream markdown polish. |
+| `AAA_Data_Dictionary.pdf` | Rewritten to v3.0. Added Cohort / CohortMembership / CohortEventbriteEvent / BrandAsset / OAuthSsoConfig / LibrarySection / SamlAuthnRequest / Toolkit models. Flagged `pendingApproval` columns as deprecated. |
+| `AAA_Technical_Setup_Guide.pdf` | Rewritten to v2.0. Removed `ENABLE_OAUTH_SSO` env var; added Eventbrite + brand-asset notes; updated CSP table; troubleshooting expanded. |
+| `AAA_Self_Registration_Flow.pdf` | Fully rewritten to v2.0. Describes the live magic-link + welcome-email flow, no admin approval gate, OAuth completion path. |
+| `AAA_Digital_Platform_Handover_Plan.pdf` | Updated to v2.0. Removed child-profile mention; added Eventbrite to service list; updated env var table; added compliance phase to handover checklist. |
+| `AAA_Training_Materials.pdf` | Updated to v2.0. Fixed the "self-registration disabled" FAQ. Added Charity Employee onboarding checklist. Added FAQs on cohorts and brand assets. |
+
+### Up-to-date sources
+
+- `CLAUDE.md` — canonical engineering reference.
+- `docs/guides/super-admin-guide.md` / `org-admin-guide.md` / `caregiver-guide.md` / `careers-professional-guide.md` — role guides.
+- `docs/handover/data-dictionary.md` / `handover-plan.md` / `self-registration-flow.md` / `technical-setup-guide.md` / `training-materials.md` — handover-only sources.
+- `docs/handover/README.md` — build process + source-to-PDF mapping.
+- `docs/compliance/ROPA.md` / `DPIA.md` / `AADC.md` — compliance pack.
+
+---
+
+## 2026-05-10 — CV Builder + AI Careers Advisor: proof-of-concept, not shipping
 
 ## 2026-05-10 — CV Builder + AI Careers Advisor: proof-of-concept, not shipping
 
