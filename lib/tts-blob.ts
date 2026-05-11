@@ -5,6 +5,12 @@ import crypto from 'crypto'
 // the Blob cache path so swapping voices cleanly invalidates old audio
 // without disturbing it — previous Daniel clips stay on disk, just unused.
 export const DEFAULT_VOICE_ID = 'pFZP5JQG7iQjIQuC4Bku'
+
+// Allowlist of voice IDs that /api/tts will synthesise. Anything outside
+// this set is rejected with 400 so authenticated users can't pump arbitrary
+// ElevenLabs voices through the platform's billing account. Add new voices
+// here when introducing them.
+export const ALLOWED_VOICE_IDS = new Set<string>([DEFAULT_VOICE_ID])
 const ELEVENLABS_MODEL = 'eleven_multilingual_v2'
 
 // Pathname scheme keeps voice clips isolated per voice so swapping voices

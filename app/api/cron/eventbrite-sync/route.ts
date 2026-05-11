@@ -18,15 +18,18 @@ export const maxDuration = 120
  * `x-vercel-cron` header that Vercel injects on cron invocations.
  */
 export async function GET(req: NextRequest) {
+  // Fail closed: CRON_SECRET must be set in every environment that exposes
+  // this route. Vercel cron automatically sends `Authorization: Bearer
+  // ${CRON_SECRET}` when the project env var is set. The previous
+  // `x-vercel-cron` header fallback was removed — that header is not a
+  // credential (it can be set by anyone hitting the route directly; only
+  // Vercel's edge strips it for non-cron traffic).
   const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret) {
+    return NextResponse.json({ error: 'Cron not configured' }, { status: 500 })
+  }
   const authHeader = req.headers.get('authorization')
-  const isVercelCron = req.headers.get('x-vercel-cron') === '1'
-
-  if (cronSecret) {
-    if (authHeader !== `Bearer ${cronSecret}` && !isVercelCron) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  } else if (!isVercelCron) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

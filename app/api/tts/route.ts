@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { z } from 'zod'
 import { createRateLimiter } from '@/lib/rate-limit'
 import {
+  ALLOWED_VOICE_IDS,
   DEFAULT_VOICE_ID,
   generateMp3FromElevenLabs,
   getCachedTtsUrl,
@@ -54,6 +55,9 @@ export async function POST(req: NextRequest) {
   }
 
   const voiceId = parsed.voiceId || DEFAULT_VOICE_ID
+  if (!ALLOWED_VOICE_IDS.has(voiceId)) {
+    return NextResponse.json({ error: 'Voice not available.' }, { status: 400 })
+  }
 
   // Cache-hit fast path: fetch the MP3 from Blob into memory and return the
   // bytes through this route. A 302-redirect to the Blob host is ruled out
