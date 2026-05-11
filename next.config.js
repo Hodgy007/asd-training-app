@@ -36,7 +36,9 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               // Stripe: js.stripe.com serves Stripe.js + Checkout + Billing Portal scripts.
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+              // 'unsafe-eval' dropped — modern Stripe.js doesn't need it. 'unsafe-inline'
+              // stays for now; eliminating it requires nonce-based CSP (separate work).
+              "script-src 'self' 'unsafe-inline' https://js.stripe.com",
               // fonts.googleapis.com — Google Fonts stylesheets (Lexend).
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://via.placeholder.com https://placehold.co https://*.public.blob.vercel-storage.com https://*.stripe.com",
@@ -53,6 +55,8 @@ const nextConfig = {
               "media-src 'self' blob: https://*.public.blob.vercel-storage.com",
               "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://js.stripe.com https://hooks.stripe.com",
               "frame-ancestors 'self'",
+              "object-src 'none'",
+              "base-uri 'self'",
             ].join('; '),
           },
         ],

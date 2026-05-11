@@ -69,7 +69,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const validatedEmail = (result.email || email).toLowerCase().trim()
+    // Trust only the signed SAML assertion's email. The earlier fallback to
+    // the RelayState-supplied email was a vestige — RelayState is UI state,
+    // not a credential, so a missing assertion email should fail closed.
+    if (!result.email) {
+      console.error('SAML assertion missing email', { domain })
+      return NextResponse.redirect(
+        new URL('/login?error=SSO+response+missing+email', req.url)
+      )
+    }
+    const validatedEmail = result.email.toLowerCase().trim()
     const validatedName = result.name
 
     // Find user
