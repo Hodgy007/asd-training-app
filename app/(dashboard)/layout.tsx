@@ -2,15 +2,18 @@
 
 import { useState, Suspense } from 'react'
 import { usePathname } from 'next/navigation'
+import { clsx } from 'clsx'
 import { Sidebar } from '@/components/layout/sidebar'
 import { SuperAdminSidebar } from '@/components/layout/super-admin-sidebar'
 import { OrgAdminSidebar } from '@/components/layout/org-admin-sidebar'
 import { Topbar } from '@/components/layout/topbar'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
+import { useSidebarCollapse } from '@/lib/use-sidebar-collapse'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [collapsed, toggleCollapsed] = useSidebarCollapse()
   const pathname = usePathname()
   const { data: session, status } = useSession()
 
@@ -50,10 +53,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         ? OrgAdminSidebar
         : Sidebar
 
+  // All three sidebar variants now support collapse, so the wrapper width
+  // tracks the shared collapse state regardless of which one is rendered.
+  const desktopSidebarWidth = collapsed ? 'w-16' : 'w-56'
+
   return (
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900">
-      <div className="hidden md:flex w-64 flex-shrink-0 flex-col">
-        <Suspense><SidebarComponent /></Suspense>
+      <div
+        className={clsx(
+          'hidden md:flex flex-shrink-0 flex-col transition-[width] duration-200 ease-in-out',
+          desktopSidebarWidth,
+        )}
+      >
+        <Suspense>
+          <SidebarComponent collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
+        </Suspense>
       </div>
 
       {sidebarOpen && (

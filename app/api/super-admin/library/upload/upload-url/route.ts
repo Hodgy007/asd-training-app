@@ -31,15 +31,29 @@ export async function POST(request: NextRequest) {
           throw new Error('Forbidden')
         }
 
+        const isBrandAssetZip = pathname.startsWith('brand-assets-zips/')
         if (
           !pathname.startsWith('library/documents/') &&
-          !pathname.startsWith('library/thumbnails/')
+          !pathname.startsWith('library/thumbnails/') &&
+          !pathname.startsWith('brand-assets/') &&
+          !isBrandAssetZip
         ) {
           throw new Error('Invalid upload path')
         }
 
         return {
           addRandomSuffix: true,
+          // Bulk-import zips for the brand store are extracted server-side
+          // and then deleted, so restrict the token to zip MIME types.
+          ...(isBrandAssetZip
+            ? {
+                allowedContentTypes: [
+                  'application/zip',
+                  'application/x-zip-compressed',
+                  'application/octet-stream',
+                ],
+              }
+            : {}),
           tokenPayload: JSON.stringify({ userId: session.user.id }),
         }
       },
