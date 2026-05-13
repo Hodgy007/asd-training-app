@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
+import { SidebarLogo } from '@/components/layout/sidebar-logo'
 
 interface NavItem {
   href: string
@@ -188,12 +189,7 @@ export function Sidebar({ onClose, mobile, collapsed = false, onToggleCollapse }
           chrome.logoBorder,
         )}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={isCollapsed ? '/logo-aaa-mark.svg' : '/logo-aaa.svg'}
-          alt="Ambitious about Autism"
-          className={clsx(isCollapsed ? 'h-10 w-10' : 'h-16 w-auto', isDark && 'invert brightness-125')}
-        />
+        <SidebarLogo collapsed={isCollapsed} />
         {mobile && (
           <button
             onClick={onClose}
