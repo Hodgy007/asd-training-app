@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#4F46E5"/>
-  <text x="16" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">AaA</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Ambitious about Autism">
+  <rect width="32" height="32" rx="6" fill="#001522"/>
+  <polygon points="4,10 4,22 12,16" fill="#3bb14a"/>
+  <polygon points="13,10 13,22 21,16" fill="#fdb813"/>
+  <polygon points="22,10 22,22 30,16" fill="#49c7ed"/>
 </svg>
