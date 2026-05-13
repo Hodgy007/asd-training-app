@@ -496,36 +496,35 @@ function LibraryPage() {
                         </div>
                       </div>
                     )}
-                    {/* Per-document feedback button — opens the standard
-                        feedback modal pre-set to "Suggestion" and tagged with
-                        this document's id/title. */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        openDocumentFeedback(doc)
-                      }}
-                      aria-label={`Suggest a change to ${doc.title}`}
-                      title="Suggest a change to this document"
-                      className="absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm transition-all hover:scale-105 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 dark:bg-slate-900/80 dark:hover:bg-slate-900"
-                      style={{ color: theme.accent, outlineColor: theme.accent }}
-                    >
-                      <MessageSquarePlus className="h-4 w-4" />
-                    </button>
                   </div>
 
                   {/* Body */}
                   <div className="flex flex-1 flex-col gap-3 p-5">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
-                        style={{ backgroundColor: `${theme.accent}1A`, color: theme.accent }}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                          style={{ backgroundColor: `${theme.accent}1A`, color: theme.accent }}
+                        >
+                          {typeBadge}
+                        </span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                          {formatFileSize(doc.fileSize)}
+                        </span>
+                      </div>
+                      {/* Per-document feedback button — opens the standard
+                          feedback modal pre-set to "Suggestion" and tagged
+                          with this document's id/title. */}
+                      <button
+                        type="button"
+                        onClick={() => openDocumentFeedback(doc)}
+                        aria-label={`Suggest a change to ${doc.title}`}
+                        title="Suggest a change to this document"
+                        className="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                        style={{ color: theme.accent, outlineColor: theme.accent }}
                       >
-                        {typeBadge}
-                      </span>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                        {formatFileSize(doc.fileSize)}
-                      </span>
+                        <MessageSquarePlus className="h-4 w-4" />
+                      </button>
                     </div>
                     <h3 className="text-base font-extrabold leading-tight text-slate-900 dark:text-slate-100 line-clamp-2">
                       {doc.title}
@@ -572,7 +571,7 @@ function LibraryPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => trackEvent(doc.id, 'view')}
-                          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-2.5 text-sm font-bold shadow-sm transition-all hover:shadow-md"
+                          className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-sm font-bold shadow-sm transition-all hover:shadow-md"
                           style={{ color: theme.accent, borderColor: theme.accent }}
                         >
                           <Eye className="h-4 w-4" />
@@ -585,7 +584,7 @@ function LibraryPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackEvent(doc.id, 'download')}
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md"
+                        className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md"
                         style={{ backgroundColor: theme.accent }}
                       >
                         <Download className="h-4 w-4" />
