@@ -18,6 +18,10 @@ const ALLOWED_ROLES = ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']
 // so the cap holds across Vercel instances; the previous in-memory Map<>
 // was per-Lambda only, giving an effective limit of 10 × instance count.
 const aiLimiter = createRateLimiter('cv-ai', 5 * 60 * 1000, 10)
+// 50 AI requests per 24 hours per user. Hard daily ceiling so a stuck
+// client (or an abusive one that waits out the 5-min window) can't run
+// up the AI Gateway bill indefinitely.
+const aiDailyLimiter = createRateLimiter('cv-ai-daily', 24 * 60 * 60 * 1000, 50)
 
 // ─── POST handler ─────────────────────────────────────────────────────────────
 
@@ -30,7 +34,18 @@ export async function POST(req: NextRequest, { params }: { params: { cvId: strin
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  // Rate limit check
+  // Rate limit check — daily ceiling first so the more meaningful error
+  // ("come back tomorrow") wins over the short-window "wait a few minutes".
+  const daily = await aiDailyLimiter.check(session.user.id)
+  if (!daily.success) {
+    return NextResponse.json(
+      {
+        error: 'You have reached today’s AI usage limit. Please try again tomorrow.',
+        code: 'DAILY_LIMIT',
+      },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(daily.retryAfterMs / 1000)) } }
+    )
+  }
   const rate = await aiLimiter.check(session.user.id)
   if (!rate.success) {
     return NextResponse.json(

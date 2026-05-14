@@ -183,7 +183,15 @@ export function WorkExperienceStep({ cvId, data, onSectionChange }: StepProps) {
           },
         }),
       })
-      if (!res.ok) throw new Error('AI request failed')
+      if (!res.ok) {
+        if (res.status === 429) {
+          const data = await res.json().catch(() => ({}))
+          if (data.code === 'DAILY_LIMIT') {
+            alert(data.error || 'You have reached today’s AI usage limit. Please try again tomorrow.')
+          }
+        }
+        throw new Error('AI request failed')
+      }
       const json = await res.json()
       setAiResult(json.result)
       setShowAiModal(true)
