@@ -175,7 +175,7 @@ Users complete an 11-step wizard:
   - **Next Steps** — actionable things the user can do now (courses, volunteering, research)
   - **Workplace Support** — accommodations and strategies for the workplace
 - All prompts are strength-focused, use UK English, reference UK-specific resources (e.g. Access to Work, National Careers Service), and **never mention autism or disability**
-- Rate limited to 10 report generations per 5 minutes per user
+- Rate limited to 10 report generations per 5 minutes per user, with a hard ceiling of **10 reports per 24 hours** per user (each call is a full structured report — the daily cap exists so a stuck client can't burn through the AI Gateway budget)
 
 **PDF export:** Reports can be downloaded as PDF via `@react-pdf/renderer` with a formatted layout including all four sections and a disclaimer.
 
@@ -373,6 +373,7 @@ Secure programmatic access to platform data for external systems.
 
 **Authentication and account hygiene**
 - Rate limiting on every auth endpoint — login (10/15 min), forgot-password (5/15 min), reset-password (5/15 min), MFA verify (5/5 min), change-password (5/15 min). The limiter is Upstash-backed in production and falls back to in-memory for local dev (single shared `createRateLimiter` factory; `/api/tts` is also per-user rate-limited to stop abuse of paid TTS minutes).
+- AI endpoints carry a **24h daily ceiling** per user on top of their short-window burst limit so a stuck client can't drain the AI Gateway budget — CV Builder 50/day, Careers Advisor 10/day, super-admin training generate 20/day, library doc generate 50/day, library collection generate 30/day. Daily-cap 429s include `code: 'DAILY_LIMIT'` so clients can show a "come back tomorrow" message rather than the generic backoff toast.
 - bcrypt cost factor of 12 across all password hashing call-sites (login, registration, account provisioning, cohort import).
 - Forced password change on first login (`mustChangePassword: true`) and on admin-initiated resets.
 - Cohort self-join, CDO temp-password creation, and forgot-password flows all run through `validatePassword` complexity rules.
@@ -469,13 +470,13 @@ All AI features route through the **Vercel AI Gateway** using the AI SDK v6. Pro
 - `rephraseBulletPoint()` — improves work experience descriptions with stronger action verbs
 - `suggestSkills()` — recommends relevant skills based on the user's experience entries
 - `improveDescription()` — enhances education or experience descriptions
-- Rate limited: 10 AI requests per 5 minutes per user
+- Rate limited: 10 AI requests per 5 minutes **and 50 per 24 hours** per user
 
 ### Careers Report Generation (`lib/careers-advisor-ai.ts`)
 - Takes structured questionnaire answers and generates a comprehensive careers report
 - Output structure: strengths analysis, 3-5 career suggestions with reasoning, actionable next steps, and workplace support strategies
 - References UK-specific resources (Access to Work, National Careers Service, Disability Confident employers)
-- Rate limited: 10 report generations per 5 minutes per user
+- Rate limited: 10 report generations per 5 minutes **and 10 per 24 hours** per user
 
 ### Other AI features
 - **Survey insights** (`lib/survey-ai.ts`): Summary, comparative, and recommendation insights generated from survey responses, surfaced at `/super-admin/surveys/[surveyId]/results`.
