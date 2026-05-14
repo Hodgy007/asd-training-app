@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
+import { createRateLimiter } from '@/lib/rate-limit'
 import { generateLessonContent, generateQuizForLesson } from '@/lib/content-generator'
 import type {
   ParsedFile,
@@ -21,6 +22,14 @@ export const dynamic = 'force-dynamic'
 // Max parallel lesson generations. Higher = faster but more gateway pressure.
 const CONCURRENCY = 3
 
+// Belt-and-braces rate limiting on top of the MANAGE_TRAINING role gate.
+// One full program generation fans out into many AI calls (per-lesson + quiz),
+// so even a single accidental retry storm can cost real money. 10 program
+// generations per 5 minutes covers any sane batch run; 20 per day caps the
+// worst case (compromised admin / runaway script).
+const trainingGenLimiter = createRateLimiter('training-gen', 5 * 60 * 1000, 10)
+const trainingGenDailyLimiter = createRateLimiter('training-gen-daily', 24 * 60 * 60 * 1000, 20)
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
@@ -29,6 +38,24 @@ export async function POST(req: NextRequest) {
 
   if (!process.env.AI_GATEWAY_API_KEY) {
     return new Response(JSON.stringify({ error: 'AI_GATEWAY_API_KEY is not configured' }), { status: 500 })
+  }
+
+  const daily = await trainingGenDailyLimiter.check(session.user.id)
+  if (!daily.success) {
+    return new Response(
+      JSON.stringify({
+        error: 'You have reached today’s AI generation limit. Please try again tomorrow.',
+        code: 'DAILY_LIMIT',
+      }),
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(daily.retryAfterMs / 1000)) } },
+    )
+  }
+  const rate = await trainingGenLimiter.check(session.user.id)
+  if (!rate.success) {
+    return new Response(
+      JSON.stringify({ error: 'Too many generation requests. Please wait a few minutes before trying again.' }),
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    )
   }
 
   let body: {

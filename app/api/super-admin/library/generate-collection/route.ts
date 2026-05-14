@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
+import { createRateLimiter } from '@/lib/rate-limit'
 import { generateText, experimental_generateImage as generateImage } from 'ai'
 import { put } from '@vercel/blob'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { runPrompt, AI_FEATURE_UNAVAILABLE } from '@/lib/ai-runner'
 import { getActiveBrandAssets, assembleBrandTextContext } from '@/lib/brand-assets'
+
+// Belt-and-braces rate limiting on top of the MANAGE_LIBRARY role gate.
+// Collection-level generation is heavier than per-doc (title + description +
+// optional thumbnail across all docs in the collection), so the burst window
+// and daily cap are tighter than the per-document route.
+const libraryCollectionGenLimiter = createRateLimiter('library-collection-gen', 5 * 60 * 1000, 10)
+const libraryCollectionGenDailyLimiter = createRateLimiter('library-collection-gen-daily', 24 * 60 * 60 * 1000, 30)
 
 // Collection-level companion to /api/super-admin/library/generate (which is
 // per-document). Generates a title + 2-3 sentence description by feeding the
@@ -53,6 +61,24 @@ export async function POST(req: NextRequest): Promise<NextResponse<Generated | {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const daily = await libraryCollectionGenDailyLimiter.check(session.user.id)
+  if (!daily.success) {
+    return NextResponse.json(
+      {
+        error: 'You have reached today’s AI generation limit. Please try again tomorrow.',
+        code: 'DAILY_LIMIT',
+      },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(daily.retryAfterMs / 1000)) } },
+    )
+  }
+  const rate = await libraryCollectionGenLimiter.check(session.user.id)
+  if (!rate.success) {
+    return NextResponse.json(
+      { error: 'Too many generation requests. Please wait a few minutes before trying again.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    )
   }
 
   const body = await req.json().catch(() => ({}))

@@ -156,7 +156,15 @@ export function SkillsStep({ cvId, data, onSectionChange }: StepProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'skills' }),
       })
-      if (!res.ok) throw new Error('AI request failed')
+      if (!res.ok) {
+        if (res.status === 429) {
+          const data = await res.json().catch(() => ({}))
+          if (data.code === 'DAILY_LIMIT') {
+            alert(data.error || 'You have reached today’s AI usage limit. Please try again tomorrow.')
+          }
+        }
+        throw new Error('AI request failed')
+      }
       const json = await res.json()
       // Filter out skills already in the list
       const existing = new Set(skills.map((s) => s.name.toLowerCase()))

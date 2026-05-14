@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
+import { createRateLimiter } from '@/lib/rate-limit'
 import { generateText, experimental_generateImage as generateImage } from 'ai'
 import { put } from '@vercel/blob'
 import { z } from 'zod'
@@ -20,10 +21,34 @@ const requestSchema = z.object({
 const IMAGE_MODEL = 'google/gemini-3.1-flash-image-preview'
 const IMAGEN_FALLBACK = 'google/imagen-4.0-generate-001'
 
+// Belt-and-braces rate limiting on top of the MANAGE_LIBRARY role gate.
+// Per-document metadata + optional thumbnail is the lighter of the library
+// AI surfaces, but it can be triggered in a tight loop during a bulk import.
+const libraryGenLimiter = createRateLimiter('library-gen', 5 * 60 * 1000, 20)
+const libraryGenDailyLimiter = createRateLimiter('library-gen-daily', 24 * 60 * 60 * 1000, 50)
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const daily = await libraryGenDailyLimiter.check(session.user.id)
+  if (!daily.success) {
+    return NextResponse.json(
+      {
+        error: 'You have reached today’s AI generation limit. Please try again tomorrow.',
+        code: 'DAILY_LIMIT',
+      },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(daily.retryAfterMs / 1000)) } },
+    )
+  }
+  const rate = await libraryGenLimiter.check(session.user.id)
+  if (!rate.success) {
+    return NextResponse.json(
+      { error: 'Too many generation requests. Please wait a few minutes before trying again.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    )
   }
 
   const body = await req.json()

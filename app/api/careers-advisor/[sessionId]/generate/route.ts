@@ -11,6 +11,10 @@ import type { AdvisorAnswers } from '@/types'
 // 10 reports per 5 minutes per user. Backed by Upstash when configured —
 // the previous Map<> was per-Lambda only.
 const generateLimiter = createRateLimiter('careers-advisor-generate', 5 * 60 * 1000, 10)
+// 10 full reports per 24 hours per user. Each generation is a single
+// expensive call (full structured report) — the daily cap is tighter than
+// CV AI because the per-call cost is meaningfully higher.
+const generateDailyLimiter = createRateLimiter('careers-advisor-generate-daily', 24 * 60 * 60 * 1000, 10)
 
 export async function POST(
   _req: NextRequest,
@@ -23,6 +27,18 @@ export async function POST(
 
   const userId = session!.user.id
 
+  // Daily ceiling first so the user gets the more meaningful error message
+  // when they've genuinely exhausted their quota for today.
+  const daily = await generateDailyLimiter.check(userId)
+  if (!daily.success) {
+    return NextResponse.json(
+      {
+        error: 'You have reached today’s AI usage limit. Please try again tomorrow.',
+        code: 'DAILY_LIMIT',
+      },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(daily.retryAfterMs / 1000)) } }
+    )
+  }
   const rate = await generateLimiter.check(userId)
   if (!rate.success) {
     return NextResponse.json(
