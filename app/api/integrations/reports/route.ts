@@ -1,151 +1,85 @@
+/**
+ * External integration reports endpoint.
+ *
+ * Designed for Power BI, Dynamics 365 (Custom Connector), Power Automate,
+ * and any BI / iPaaS tool that consumes the platform's data.
+ *
+ * Authentication: Bearer token (SHA-256 hashed at rest, managed at
+ * `/super-admin/integrations`). Per-key rate limit: 60 req/min.
+ *
+ * Query parameters:
+ *   ?section=training|library|surveys|cv|careers|all   (default: all)
+ *   ?format=nested|flat                                (default: nested)
+ *       - `nested`: v1 response shape (back-compat).
+ *       - `flat`:   one row per measurement. BI-friendly long format,
+ *                   every row carries a stable `rowId` for Dynamics'
+ *                   Custom Connector primary-key mapping.
+ *   ?since=<ISO 8601 datetime>                         (incremental refresh)
+ *       - Applies to event-shaped sections (library, surveys, cv, careers).
+ *       - Training aggregates are full-population; `since` is ignored
+ *         and `incrementalSupported: false` appears in the response.
+ *   ?limit=<n>     (surveys only, default 1000, max 5000)
+ *   ?cursor=<id>   (surveys only, opaque cursor for next page)
+ *
+ * Response shape (single section):
+ *   {
+ *     apiVersion: 'v1',
+ *     generatedAt: '<ISO>',
+ *     section: '<id>',
+ *     format: 'nested' | 'flat',
+ *     incrementalSupported: boolean,
+ *     since: '<ISO>' | null,
+ *     // nested mode: <section>: [...]
+ *     // flat mode:   rows: [...], rowCount: n, nextCursor?: string | null
+ *   }
+ *
+ * Response shape (section=all):
+ *   {
+ *     apiVersion, generatedAt, format,
+ *     training: { ... },
+ *     library:  { ... },
+ *     surveys:  { ... },
+ *     cv:       { ... },
+ *     careers:  { ... },
+ *   }
+ *
+ * ETag / 304: every successful response carries a weak ETag derived from
+ * the dataset's max-watermark and row counts. Pass `If-None-Match: <etag>`
+ * on subsequent polls; the server returns 304 if nothing has changed.
+ *
+ * Schema (OpenAPI 3.0): GET /api/integrations/reports/schema
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
 import { validateApiKey } from '@/lib/integration-auth'
-import { prisma } from '@/lib/prisma'
 import { logger, errMeta } from '@/lib/logger'
 import { createRateLimiter } from '@/lib/rate-limit'
+import {
+  API_VERSION,
+  ALL_SECTIONS,
+  type Format,
+  type SectionId,
+  computeEtag,
+  fetchCV,
+  fetchCareers,
+  fetchLibrary,
+  fetchSurveys,
+  fetchTraining,
+  parseCursor,
+  parseLimit,
+  parseSince,
+} from '@/lib/integration-reports'
 
 // 60 requests per minute per API key. Survey responses contain personal
 // data (pseudonymised but still per-respondent), so we cap bulk-extract.
 const integrationsLimiter = createRateLimiter('integrations.reports', 60_000, 60)
 
-async function fetchTraining() {
-  const allModules = await prisma.module.findMany({
-    where: { active: true },
-    orderBy: [{ programId: 'asc' }, { order: 'asc' }],
-    select: {
-      id: true,
-      title: true,
-      programId: true,
-      gatsbyBenchmarks: true,
-      program: { select: { name: true } },
-    },
-  })
-
-  const orgs = await prisma.organisation.findMany({
-    select: {
-      id: true, name: true, slug: true, allowedProgramIds: true,
-      users: {
-        where: { role: { notIn: ['SUPER_ADMIN', 'ORG_ADMIN'] } },
-        select: {
-          id: true,
-          trainingProgress: { where: { completed: true }, select: { moduleId: true } },
-        },
-      },
-    },
-    orderBy: { name: 'asc' },
-  })
-
-  return orgs.map((org) => {
-    const totalUsers = org.users.length
-    const orgModuleIds = allModules
-      .filter((m) => org.allowedProgramIds.includes(m.programId))
-      .map((m) => m.id)
-
-    const modules = orgModuleIds.map((moduleId) => {
-      const mod = allModules.find((m) => m.id === moduleId)
-      const completions = org.users.filter((u) =>
-        u.trainingProgress.some((p) => p.moduleId === moduleId)
-      ).length
-      return {
-        moduleId,
-        moduleName: mod?.title ?? moduleId,
-        programName: mod?.program?.name ?? 'Unknown',
-        gatsbyBenchmarks: mod?.gatsbyBenchmarks ?? [],
-        completions,
-        totalUsers,
-        completionRate: totalUsers > 0 ? Math.round((completions / totalUsers) * 100) : 0,
-      }
-    })
-    return { organisationId: org.id, organisationName: org.name, slug: org.slug, totalUsers, modules }
-  })
+function isValidSection(value: string): value is SectionId | 'all' {
+  return value === 'all' || (ALL_SECTIONS as string[]).includes(value)
 }
 
-async function fetchLibrary() {
-  const collections = await prisma.libraryCollection.findMany({
-    include: {
-      _count: { select: { documents: true } },
-      documents: {
-        include: { events: { where: { action: 'download' } } },
-      },
-    },
-  })
-
-  return collections.map((col) => ({
-    collectionId: col.id,
-    collectionTitle: col.title,
-    active: col.active,
-    documentCount: col._count.documents,
-    totalDownloads: col.documents.reduce((s, d) => s + d.events.length, 0),
-    documents: col.documents.map((doc) => ({
-      documentId: doc.id,
-      title: doc.title,
-      fileName: doc.fileName,
-      downloads: doc.events.length,
-    })),
-  }))
-}
-
-// Pseudonymise a user id for export: HMAC-SHA-256 truncated to 16 hex chars.
-// Stable per-(user, survey) so analytics can correlate responses across
-// questions, but not reversible without the secret. We salt with a fixed
-// per-deployment value (NEXTAUTH_SECRET, which already has to exist) so
-// the same user gets the same pseudonym across runs but it can't be
-// guessed from a leaked report alone.
-function pseudonymiseRespondent(userId: string, surveyId: string): string {
-  const secret = process.env.NEXTAUTH_SECRET ?? ''
-  return crypto
-    .createHmac('sha256', secret)
-    .update(`${surveyId}:${userId}`)
-    .digest('hex')
-    .slice(0, 16)
-}
-
-async function fetchSurveys() {
-  const surveys = await prisma.survey.findMany({
-    include: {
-      questions: { orderBy: { order: 'asc' } },
-      responses: {
-        where: { completedAt: { not: null } },
-        include: {
-          answers: true,
-          user: {
-            select: {
-              id: true,
-              role: true,
-              organisation: { select: { name: true } },
-            },
-          },
-        },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
-
-  return surveys.map((survey) => ({
-    surveyId: survey.id,
-    title: survey.title,
-    status: survey.status,
-    createdAt: survey.createdAt,
-    closesAt: survey.closesAt,
-    questionCount: survey.questions.length,
-    responseCount: survey.responses.length,
-    responses: survey.responses.map((r) => ({
-      // Pseudonym instead of full name. Charity-issued integration keys
-      // are platform-wide (read every org) — exposing real names would
-      // leak GDPR personal data cross-tenant. Aggregate role/org context
-      // is preserved so reports can still segment.
-      respondentId: pseudonymiseRespondent(r.user.id, survey.id),
-      role: r.user.role,
-      organisation: r.user.organisation?.name ?? '',
-      completedAt: r.completedAt,
-      answers: survey.questions.map((q) => ({
-        question: q.question,
-        type: q.type,
-        answer: r.answers.find((a) => a.questionId === q.id)?.value ?? '',
-      })),
-    })),
-  }))
+function parseFormat(value: string | null): Format {
+  return value === 'flat' ? 'flat' : 'nested'
 }
 
 export async function GET(req: NextRequest) {
@@ -170,70 +104,204 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const section = req.nextUrl.searchParams.get('section') ?? 'all'
+  const sectionParam = req.nextUrl.searchParams.get('section') ?? 'all'
+  if (!isValidSection(sectionParam)) {
+    return NextResponse.json(
+      { error: `Invalid section. Allowed: ${ALL_SECTIONS.join(', ')}, all` },
+      { status: 400 },
+    )
+  }
 
-  logger.info('integrations.reports.request', { requestId, keyPrefix, section })
+  const format = parseFormat(req.nextUrl.searchParams.get('format'))
+  const since = parseSince(req.nextUrl.searchParams.get('since'))
+  const limit = parseLimit(req.nextUrl.searchParams.get('limit'))
+  const cursor = parseCursor(req.nextUrl.searchParams.get('cursor'))
+  const ifNoneMatch = req.headers.get('if-none-match')
+
+  logger.info('integrations.reports.request', {
+    requestId,
+    keyPrefix,
+    section: sectionParam,
+    format,
+    since: since?.toISOString() ?? null,
+  })
 
   try {
-    if (section === 'training') {
-      const training = await fetchTraining()
+    const generatedAt = new Date().toISOString()
+
+    // ── Single-section path ──────────────────────────────────────────
+    if (sectionParam !== 'all') {
+      const result = await fetchSection(sectionParam, { since, limit, cursor })
+      const etag = computeEtag([
+        sectionParam,
+        format,
+        result.watermark?.toISOString() ?? null,
+        result.rowCount,
+        result.nextCursor ?? null,
+      ])
+
+      if (ifNoneMatch && ifNoneMatch === etag) {
+        return new NextResponse(null, { status: 304, headers: { ETag: etag } })
+      }
+
+      const baseResponse = {
+        apiVersion: API_VERSION,
+        generatedAt,
+        section: sectionParam,
+        format,
+        incrementalSupported: result.incrementalSupported,
+        since: since?.toISOString() ?? null,
+      }
+
+      const payload: Record<string, unknown> =
+        format === 'flat'
+          ? {
+              ...baseResponse,
+              rows: result.flat,
+              rowCount: result.rowCount,
+              ...(sectionParam === 'surveys' ? { nextCursor: result.nextCursor } : {}),
+            }
+          : {
+              ...baseResponse,
+              [sectionParam]: result.nested,
+              ...(sectionParam === 'surveys' ? { nextCursor: result.nextCursor } : {}),
+            }
+
       logger.info('integrations.reports.success', {
         requestId,
         keyPrefix,
-        section,
+        section: sectionParam,
+        format,
+        rowCount: result.rowCount,
         durationMs: Date.now() - startedAt,
       })
-      return NextResponse.json({ training })
-    }
-    if (section === 'library') {
-      const library = await fetchLibrary()
-      logger.info('integrations.reports.success', {
-        requestId,
-        keyPrefix,
-        section,
-        durationMs: Date.now() - startedAt,
-      })
-      return NextResponse.json({ library })
-    }
-    if (section === 'surveys') {
-      const surveys = await fetchSurveys()
-      logger.info('integrations.reports.success', {
-        requestId,
-        keyPrefix,
-        section,
-        durationMs: Date.now() - startedAt,
-      })
-      return NextResponse.json({ surveys })
+
+      return NextResponse.json(payload, { headers: { ETag: etag } })
     }
 
-    // All sections
-    const [training, library, surveys] = await Promise.all([
-      fetchTraining(),
-      fetchLibrary(),
-      fetchSurveys(),
+    // ── Combined-section path ────────────────────────────────────────
+    const [training, library, surveys, cv, careers] = await Promise.all([
+      fetchSection('training', { since, limit, cursor }),
+      fetchSection('library', { since, limit, cursor }),
+      fetchSection('surveys', { since, limit, cursor }),
+      fetchSection('cv', { since, limit, cursor }),
+      fetchSection('careers', { since, limit, cursor }),
     ])
+
+    const etag = computeEtag([
+      'all',
+      format,
+      training.watermark?.toISOString() ?? null,
+      library.watermark?.toISOString() ?? null,
+      surveys.watermark?.toISOString() ?? null,
+      cv.watermark?.toISOString() ?? null,
+      careers.watermark?.toISOString() ?? null,
+      training.rowCount,
+      library.rowCount,
+      surveys.rowCount,
+      cv.rowCount,
+      careers.rowCount,
+      surveys.nextCursor ?? null,
+    ])
+
+    if (ifNoneMatch && ifNoneMatch === etag) {
+      return new NextResponse(null, { status: 304, headers: { ETag: etag } })
+    }
+
+    function pack(result: SectionResult) {
+      if (format === 'flat') {
+        return {
+          rows: result.flat,
+          rowCount: result.rowCount,
+          incrementalSupported: result.incrementalSupported,
+        }
+      }
+      return {
+        items: result.nested,
+        rowCount: result.rowCount,
+        incrementalSupported: result.incrementalSupported,
+      }
+    }
 
     logger.info('integrations.reports.success', {
       requestId,
       keyPrefix,
       section: 'all',
+      format,
+      rowCount:
+        training.rowCount +
+        library.rowCount +
+        surveys.rowCount +
+        cv.rowCount +
+        careers.rowCount,
       durationMs: Date.now() - startedAt,
     })
 
-    return NextResponse.json({
-      generatedAt: new Date().toISOString(),
-      training,
-      library,
-      surveys,
-    })
+    return NextResponse.json(
+      {
+        apiVersion: API_VERSION,
+        generatedAt,
+        format,
+        since: since?.toISOString() ?? null,
+        training: pack(training),
+        library: pack(library),
+        surveys: { ...pack(surveys), nextCursor: surveys.nextCursor },
+        cv: pack(cv),
+        careers: pack(careers),
+      },
+      { headers: { ETag: etag } },
+    )
   } catch (error) {
     logger.error('integrations.reports.failed', {
       requestId,
       keyPrefix,
-      section,
+      section: sectionParam,
+      format,
       durationMs: Date.now() - startedAt,
       ...errMeta(error),
     })
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+}
+
+// ─── Section dispatcher ──────────────────────────────────────────────────────
+
+interface SectionResult {
+  nested: unknown
+  flat: unknown[]
+  watermark: Date | null
+  incrementalSupported: boolean
+  rowCount: number
+  nextCursor: string | null
+}
+
+interface DispatchOpts {
+  since: Date | null
+  limit: number
+  cursor: string | null
+}
+
+async function fetchSection(section: SectionId, opts: DispatchOpts): Promise<SectionResult> {
+  switch (section) {
+    case 'training': {
+      const r = await fetchTraining()
+      return { ...r, rowCount: r.flat.length, nextCursor: null }
+    }
+    case 'library': {
+      const r = await fetchLibrary(opts.since)
+      return { ...r, rowCount: r.flat.length, nextCursor: null }
+    }
+    case 'surveys': {
+      const r = await fetchSurveys(opts)
+      return { ...r, rowCount: r.flat.length }
+    }
+    case 'cv': {
+      const r = await fetchCV(opts.since)
+      return { ...r, rowCount: r.flat.length, nextCursor: null }
+    }
+    case 'careers': {
+      const r = await fetchCareers(opts.since)
+      return { ...r, rowCount: r.flat.length, nextCursor: null }
+    }
   }
 }

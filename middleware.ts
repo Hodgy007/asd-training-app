@@ -2,7 +2,11 @@
 import { getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/register', '/register-organisation', '/welcome', '/privacy', '/terms', '/api/auth', '/api/organisations/register', '/api/organisations/public', '/api/cron', '/courses', '/toolkit', '/api/toolkit', '/api/checkout/session', '/api/stripe/webhook', '/api/webhooks', '/api/courses/free-claim', '/join', '/api/join']
+const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/register', '/register-organisation', '/welcome', '/privacy', '/terms', '/api/auth', '/api/organisations/register', '/api/organisations/public', '/api/cron', '/courses', '/toolkit', '/api/toolkit', '/api/checkout/session', '/api/stripe/webhook', '/api/webhooks', '/api/courses/free-claim', '/join', '/api/join', '/api/integrations']
+// `/api/integrations/*` is Bearer-token authenticated inside the route via
+// `validateApiKey` (SHA-256 hashed key + rate-limited per key). It's listed
+// here so the middleware doesn't redirect external Bearer clients to /login
+// before the route's own auth has a chance to run.
 
 // Temporary MFA kill-switch. Set `DISABLE_MFA=true` in env to skip all MFA
 // enforcement (verify + setup). Existing TOTP secrets remain intact; users

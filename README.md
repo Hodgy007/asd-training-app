@@ -331,14 +331,60 @@ Both Charity Admins and Org Admins have access to comprehensive analytics dashbo
 
 ### Integration API
 
-Secure programmatic access to platform data for external systems.
+Secure programmatic access to platform data for external systems — designed for **Microsoft Power BI**, **Dynamics 365 (Custom Connector)**, **Power Automate**, and any other BI / iPaaS tool.
 
-**How it works:**
+**Authentication:**
 - Charity Admins generate API keys at `/super-admin/integrations`. Each key has a name, expiry date, and is shown in full only once on creation.
 - Keys are stored as SHA-256 hashes (`keyHash`) with a visible prefix (`keyPrefix`) for identification.
 - External systems authenticate via `Authorization: Bearer <api-key>` headers.
-- The endpoint `GET /api/integrations/reports` returns training, library, and survey data. The `?section=training|library|surveys` parameter filters the response.
-- Last-used timestamps are tracked per key.
+- Per-key rate limit: 60 req/min. Last-used timestamps tracked per key.
+
+**Endpoints:**
+- `GET /api/integrations/reports` — exports the data
+- `GET /api/integrations/reports/schema` — public OpenAPI 3.0 spec (no auth) — drop the URL into a Power BI / Dynamics Custom Connector "Import from URL" flow
+
+**Sections** (`?section=`): `training`, `library`, `surveys`, `cv`, `careers`, or `all` (default).
+
+**Response shape** — every response carries `apiVersion: 'v1'` and `generatedAt: '<ISO>'`. Two formats:
+
+- **`?format=nested`** (default) — original v1 shape; preserved for back-compat
+- **`?format=flat`** — BI-friendly long format; one row per measurement with a stable `rowId` primary key, ideal for Power BI tables and Dynamics Custom Connector mapping
+
+Example flat survey row (one row per response × question):
+```json
+{
+  "rowId": "<responseId>:<questionId>",
+  "surveyId": "...", "surveyTitle": "...", "surveyStatus": "PUBLISHED",
+  "respondentId": "9c4e0b71d3a18d2f",   // pseudonymised, stable per (user, survey)
+  "role": "STUDENT", "organisation": "Example School",
+  "completedAt": "2026-05-15T14:32:00.000Z",
+  "questionId": "...", "question": "How was the workshop?", "questionType": "FREE_TEXT",
+  "answer": "It was very useful"
+}
+```
+
+**Incremental refresh** (`?since=<ISO datetime>`):
+- Applies to event-shaped sections (`library`, `surveys`, `cv`, `careers`) — only records updated/completed after the watermark are returned
+- Training stats are full-population aggregates and ignore `since`; the response carries `incrementalSupported: false` so consumers can branch on it
+- Power BI Incremental Refresh maps directly onto this pattern via its `RangeStart` / `RangeEnd` parameters
+
+**Pagination** (surveys only, the largest payload):
+- `?limit=<n>` (default 1000, max 5000)
+- `?cursor=<opaque>` — echo back the `nextCursor` from the previous response
+- Other sections return all rows in one response (sizes are bounded)
+
+**Conditional GET** — every successful response carries a weak `ETag` derived from the dataset's max watermark + row counts. Pass `If-None-Match: <etag>` on subsequent polls; the server returns 304 with no body when nothing has changed.
+
+**PII pseudonymisation** — respondent / user ids are never exposed in plaintext:
+- Survey responses: stable per `(user, survey)` — joinable across questions in the same survey but not across surveys
+- CV Builder: stable per `(user, 'cv')` namespace — a user's multiple CVs map to the same pseudonym
+- Careers Advisor: stable per `(user, 'careers')` namespace
+- Different namespaces never produce the same pseudonym for the same user, so a leaked CV report cannot be cross-referenced against a leaked survey report
+
+**Data caveats** (documented in the OpenAPI schema):
+- Training `totalUsers` excludes `SUPER_ADMIN` and `ORG_ADMIN` roles
+- Training section filters cohort orgs out (matches the in-app super-admin reports)
+- CV / Careers rows don't expose CV personal-detail fields or AI report content — only metadata, status, and counts
 
 ---
 
