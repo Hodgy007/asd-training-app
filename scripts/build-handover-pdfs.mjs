@@ -63,6 +63,11 @@ const DOCS = [
     title: 'AAA Digital Platform — Training Materials',
     sources: [join(handoverDir, 'training-materials.md')],
   },
+  {
+    output: 'AAA_Integration_Reports_Guide.pdf',
+    title: 'AAA Digital Platform — Integration Reports Guide',
+    sources: [join(guidesDir, 'integration-reports-guide.md')],
+  },
 ]
 
 function loadSources(sources) {
