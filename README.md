@@ -386,6 +386,8 @@ Example flat survey row (one row per response × question):
 - Training section filters cohort orgs out (matches the in-app super-admin reports)
 - CV / Careers rows don't expose CV personal-detail fields or AI report content — only metadata, status, and counts
 
+**Full end-user guide for Excel, Power BI, and Dynamics 365:** see [docs/guides/integration-reports-guide.md](docs/guides/integration-reports-guide.md) — step-by-step recipes for Power Query, Power BI Desktop / Service, Power BI incremental refresh, Dynamics Custom Connector, Power Automate flows, and a full data-reference table per section.
+
 ---
 
 ## Authentication and Security
