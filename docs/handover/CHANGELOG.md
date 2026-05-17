@@ -4,6 +4,27 @@ The PDFs in this folder are **generated artefacts** — every PDF is built from 
 
 This changelog tracks what's changed since the last rebuild. When you regenerate the PDFs, you can clear entries that are now reflected in the freshly-built PDFs.
 
+## 2026-05-16 — Integration Reports Guide added; AI usage caps; reports API v2
+
+### What changed
+
+**1. New handover PDF — Integration Reports Guide** ([PR #91](https://github.com/Hodgy007/asd-training-app/pull/91))
+
+A new partner-facing guide for BI teams pulling platform data into Microsoft Excel, Power BI, and Microsoft Dynamics 365. Step-by-step recipes for Power Query, Power BI Desktop / Service, Power BI incremental refresh, Dynamics Custom Connector (from the platform's OpenAPI URL), and Power Automate flows. Includes a per-section data reference and full privacy notes on pseudonymisation. Source markdown at `docs/guides/integration-reports-guide.md`; PDF at `AAA_Integration_Reports_Guide.pdf`. The build script (`scripts/build-handover-pdfs.mjs`) now produces eight PDFs.
+
+**2. Integration Reports API v2** ([PR #91](https://github.com/Hodgy007/asd-training-app/pull/91))
+
+`/api/integrations/reports` was rewritten to be a usable BI source. Adds `?format=flat` (long-format rows with stable `rowId` primary keys for Dynamics Custom Connector mapping), `?since=<ISO>` incremental refresh on event-shaped sections, `?limit=` + `?cursor=` cursor pagination on surveys, weak `ETag` / `If-None-Match` 304s, two new sections (`cv`, `careers`), and a public OpenAPI 3.0 contract at `/api/integrations/reports/schema`. Two latent bugs fixed: training stats were including cohort orgs (mismatched the in-app super-admin reports), and `/api/integrations` wasn't in middleware `PUBLIC_PATHS` so unauthenticated Bearer calls were being redirected to `/login` before the route's own auth could run — external Power Automate / Dynamics clients were effectively broken before this fix.
+
+**3. Daily per-user caps on AI endpoints** ([PR #91](https://github.com/Hodgy007/asd-training-app/pull/91))
+
+Every AI endpoint now enforces a 24h sliding-window ceiling on top of the existing short-window burst limiter, so a stuck client or abusive loop can't run up the AI Gateway bill indefinitely. Caps: CV Builder AI 50/day, Careers Advisor 10/day, super-admin training generate 20/day, library doc generate 50/day, library collection generate 30/day. Daily-cap 429 responses include `code: 'DAILY_LIMIT'` so the client can show a "come back tomorrow" message.
+
+### Affected PDFs
+
+- `AAA_Integration_Reports_Guide.pdf` — **new**
+- The other seven handover PDFs were not affected by this batch and have not been rebuilt. (The text about `/super-admin/integrations` key management was already in the Admin Guide.)
+
 ## 2026-05-11 — Handover pipeline + cohort, brand, library, sidebar changes
 
 ### What changed

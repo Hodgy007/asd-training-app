@@ -1,7 +1,8 @@
 # Handover documentation
 
 This folder is the deliverable bundle for handover to Ambitious About Autism. It contains
-seven PDFs — three role-facing user/admin guides, and four technical / process documents.
+eight PDFs — three role-facing user/admin guides, four technical / process documents, and
+one integration partner guide.
 
 ## Working principles
 
@@ -25,10 +26,12 @@ seven PDFs — three role-facing user/admin guides, and four technical / process
 | `AAA_Self_Registration_Flow.pdf` | `docs/handover/self-registration-flow.md` |
 | `AAA_Digital_Platform_Handover_Plan.pdf` | `docs/handover/handover-plan.md` |
 | `AAA_Training_Materials.pdf` | `docs/handover/training-materials.md` |
+| `AAA_Integration_Reports_Guide.pdf` | `docs/guides/integration-reports-guide.md` |
 
-The role-facing guides live in `docs/guides/` because they're also the canonical
-in-repo user documentation. The four handover-only sources live here in
-`docs/handover/` because they have no purpose outside the PDF bundle.
+The role-facing guides and the integration partner guide live in `docs/guides/`
+because they're also the canonical in-repo user documentation. The four
+handover-only sources live here in `docs/handover/` because they have no
+purpose outside the PDF bundle.
 
 ## Regenerating the PDFs
 
@@ -40,7 +43,7 @@ The build script (`scripts/build-handover-pdfs.mjs`) reads each markdown source,
 concatenates composite sources, and runs them through `md-to-pdf`. Styling lives in
 `docs/handover/_pdf-style.css` — edit that to change the look of every PDF at once.
 
-The output is seven `.pdf` files in this folder. Re-commit them whenever you regenerate.
+The output is eight `.pdf` files in this folder. Re-commit them whenever you regenerate.
 
 ## When to regenerate
 

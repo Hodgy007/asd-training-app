@@ -175,7 +175,7 @@ Users complete an 11-step wizard:
   - **Next Steps** — actionable things the user can do now (courses, volunteering, research)
   - **Workplace Support** — accommodations and strategies for the workplace
 - All prompts are strength-focused, use UK English, reference UK-specific resources (e.g. Access to Work, National Careers Service), and **never mention autism or disability**
-- Rate limited to 10 report generations per 5 minutes per user
+- Rate limited to 10 report generations per 5 minutes per user, with a hard ceiling of **10 reports per 24 hours** per user (each call is a full structured report — the daily cap exists so a stuck client can't burn through the AI Gateway budget)
 
 **PDF export:** Reports can be downloaded as PDF via `@react-pdf/renderer` with a formatted layout including all four sections and a disclaimer.
 
@@ -331,14 +331,62 @@ Both Charity Admins and Org Admins have access to comprehensive analytics dashbo
 
 ### Integration API
 
-Secure programmatic access to platform data for external systems.
+Secure programmatic access to platform data for external systems — designed for **Microsoft Power BI**, **Dynamics 365 (Custom Connector)**, **Power Automate**, and any other BI / iPaaS tool.
 
-**How it works:**
+**Authentication:**
 - Charity Admins generate API keys at `/super-admin/integrations`. Each key has a name, expiry date, and is shown in full only once on creation.
 - Keys are stored as SHA-256 hashes (`keyHash`) with a visible prefix (`keyPrefix`) for identification.
 - External systems authenticate via `Authorization: Bearer <api-key>` headers.
-- The endpoint `GET /api/integrations/reports` returns training, library, and survey data. The `?section=training|library|surveys` parameter filters the response.
-- Last-used timestamps are tracked per key.
+- Per-key rate limit: 60 req/min. Last-used timestamps tracked per key.
+
+**Endpoints:**
+- `GET /api/integrations/reports` — exports the data
+- `GET /api/integrations/reports/schema` — public OpenAPI 3.0 spec (no auth) — drop the URL into a Power BI / Dynamics Custom Connector "Import from URL" flow
+
+**Sections** (`?section=`): `training`, `library`, `surveys`, `cv`, `careers`, or `all` (default).
+
+**Response shape** — every response carries `apiVersion: 'v1'` and `generatedAt: '<ISO>'`. Two formats:
+
+- **`?format=nested`** (default) — original v1 shape; preserved for back-compat
+- **`?format=flat`** — BI-friendly long format; one row per measurement with a stable `rowId` primary key, ideal for Power BI tables and Dynamics Custom Connector mapping
+
+Example flat survey row (one row per response × question):
+```json
+{
+  "rowId": "<responseId>:<questionId>",
+  "surveyId": "...", "surveyTitle": "...", "surveyStatus": "PUBLISHED",
+  "respondentId": "9c4e0b71d3a18d2f",   // pseudonymised, stable per (user, survey)
+  "role": "STUDENT", "organisation": "Example School",
+  "completedAt": "2026-05-15T14:32:00.000Z",
+  "questionId": "...", "question": "How was the workshop?", "questionType": "FREE_TEXT",
+  "answer": "It was very useful"
+}
+```
+
+**Incremental refresh** (`?since=<ISO datetime>`):
+- Applies to event-shaped sections (`library`, `surveys`, `cv`, `careers`) — only records updated/completed after the watermark are returned
+- Training stats are full-population aggregates and ignore `since`; the response carries `incrementalSupported: false` so consumers can branch on it
+- Power BI Incremental Refresh maps directly onto this pattern via its `RangeStart` / `RangeEnd` parameters
+
+**Pagination** (surveys only, the largest payload):
+- `?limit=<n>` (default 1000, max 5000)
+- `?cursor=<opaque>` — echo back the `nextCursor` from the previous response
+- Other sections return all rows in one response (sizes are bounded)
+
+**Conditional GET** — every successful response carries a weak `ETag` derived from the dataset's max watermark + row counts. Pass `If-None-Match: <etag>` on subsequent polls; the server returns 304 with no body when nothing has changed.
+
+**PII pseudonymisation** — respondent / user ids are never exposed in plaintext:
+- Survey responses: stable per `(user, survey)` — joinable across questions in the same survey but not across surveys
+- CV Builder: stable per `(user, 'cv')` namespace — a user's multiple CVs map to the same pseudonym
+- Careers Advisor: stable per `(user, 'careers')` namespace
+- Different namespaces never produce the same pseudonym for the same user, so a leaked CV report cannot be cross-referenced against a leaked survey report
+
+**Data caveats** (documented in the OpenAPI schema):
+- Training `totalUsers` excludes `SUPER_ADMIN` and `ORG_ADMIN` roles
+- Training section filters cohort orgs out (matches the in-app super-admin reports)
+- CV / Careers rows don't expose CV personal-detail fields or AI report content — only metadata, status, and counts
+
+**Full end-user guide for Excel, Power BI, and Dynamics 365:** see [docs/guides/integration-reports-guide.md](docs/guides/integration-reports-guide.md) — step-by-step recipes for Power Query, Power BI Desktop / Service, Power BI incremental refresh, Dynamics Custom Connector, Power Automate flows, and a full data-reference table per section.
 
 ---
 
@@ -373,6 +421,7 @@ Secure programmatic access to platform data for external systems.
 
 **Authentication and account hygiene**
 - Rate limiting on every auth endpoint — login (10/15 min), forgot-password (5/15 min), reset-password (5/15 min), MFA verify (5/5 min), change-password (5/15 min). The limiter is Upstash-backed in production and falls back to in-memory for local dev (single shared `createRateLimiter` factory; `/api/tts` is also per-user rate-limited to stop abuse of paid TTS minutes).
+- AI endpoints carry a **24h daily ceiling** per user on top of their short-window burst limit so a stuck client can't drain the AI Gateway budget — CV Builder 50/day, Careers Advisor 10/day, super-admin training generate 20/day, library doc generate 50/day, library collection generate 30/day. Daily-cap 429s include `code: 'DAILY_LIMIT'` so clients can show a "come back tomorrow" message rather than the generic backoff toast.
 - bcrypt cost factor of 12 across all password hashing call-sites (login, registration, account provisioning, cohort import).
 - Forced password change on first login (`mustChangePassword: true`) and on admin-initiated resets.
 - Cohort self-join, CDO temp-password creation, and forgot-password flows all run through `validatePassword` complexity rules.
@@ -469,13 +518,13 @@ All AI features route through the **Vercel AI Gateway** using the AI SDK v6. Pro
 - `rephraseBulletPoint()` — improves work experience descriptions with stronger action verbs
 - `suggestSkills()` — recommends relevant skills based on the user's experience entries
 - `improveDescription()` — enhances education or experience descriptions
-- Rate limited: 10 AI requests per 5 minutes per user
+- Rate limited: 10 AI requests per 5 minutes **and 50 per 24 hours** per user
 
 ### Careers Report Generation (`lib/careers-advisor-ai.ts`)
 - Takes structured questionnaire answers and generates a comprehensive careers report
 - Output structure: strengths analysis, 3-5 career suggestions with reasoning, actionable next steps, and workplace support strategies
 - References UK-specific resources (Access to Work, National Careers Service, Disability Confident employers)
-- Rate limited: 10 report generations per 5 minutes per user
+- Rate limited: 10 report generations per 5 minutes **and 10 per 24 hours** per user
 
 ### Other AI features
 - **Survey insights** (`lib/survey-ai.ts`): Summary, comparative, and recommendation insights generated from survey responses, surfaced at `/super-admin/surveys/[surveyId]/results`.
