@@ -3,6 +3,17 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { createRateLimiter } from '@/lib/rate-limit'
+
+// Pin Node runtime + a generous timeout so a 50 MB attachment to a learner
+// on a slow connection isn't cut off mid-stream by the platform default.
+export const runtime = 'nodejs'
+export const maxDuration = 300
+
+// 30 downloads / minute / user. Generous enough for a real session with
+// multiple tabs / resumed downloads, tight enough to stop a runaway client
+// from hammering Blob egress.
+const downloadLimiter = createRateLimiter('library-download', 60_000, 30)
 
 // Auth-gated proxy for library document downloads.
 //
@@ -29,6 +40,17 @@ export async function GET(
 ) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Per-user rate limit applied after auth so unauthenticated traffic can't
+  // probe the limiter's response. Keyed on user id (not IP) so a shared NAT
+  // doesn't penalise legitimate users in the same household / school.
+  const rate = await downloadLimiter.check(session.user.id)
+  if (!rate.success) {
+    return NextResponse.json(
+      { error: 'Too many download requests. Please slow down.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rate.retryAfterMs / 1000)) } },
+    )
+  }
 
   const wantsInline = req.nextUrl.searchParams.get('disposition') === 'inline'
 
