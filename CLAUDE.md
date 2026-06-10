@@ -127,13 +127,12 @@ Module/Lesson/QuizQuestion cascade on parent delete. Survey/Library/Job/CV casca
 - `canAccessCareers(session)` -- CAREER_DEV_OFFICER only
 - `canManageStudents(session)` -- CAREER_DEV_OFFICER (CDOs manage STUDENT/INTERN/EMPLOYEE via `CDO_MANAGED_ROLES`)
 - `canCreateSessions(session)` -- ORG_ADMIN, CAREGIVER, CAREER_DEV_OFFICER, or CHARITY_EMPLOYEE with `MANAGE_SESSIONS` permission
-- `canAccessCVBuilder(session)` -- CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE (also checks org-level `cvBuilderEnabled` flag)
 - `canAccessCareersAdvisor(session)` -- CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE (also checks org-level `careersAdvisorEnabled` flag)
 - `canManageJobs(session)` -- SUPER_ADMIN, or CHARITY_EMPLOYEE with `MANAGE_JOBS` permission
 - `canAccessJobs(session)` -- CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE (learner-side jobs list)
 - `hasPermission(session, permission)` -- permission check; SUPER_ADMIN always returns true, CHARITY_EMPLOYEE checks their `charityPermissions` array, all other roles return false
 - `hasRole(session, ...roles)` -- generic role check helper
-- `isEducationType(orgType)` / `ORG_TYPES` / `ORG_TYPE_LABELS` -- organisation-type helpers (education orgs drive default self-registration role)
+- `ORG_TYPES` / `ORG_TYPE_LABELS` -- organisation-type constants (valid org types for new organisations + display labels)
 
 **Charity permission system:** `CHARITY_PERMISSIONS` defines **ten** permissions: `manage_organisations`, `manage_cohorts`, `manage_training`, `manage_surveys`, `manage_announcements`, `view_reports`, `manage_sessions`, `manage_library`, `manage_ai_prompts`, `manage_jobs`. SUPER_ADMIN has all permissions implicitly. CHARITY_EMPLOYEE users have only those permissions listed in their `charityPermissions` array (stored on the `User` model). The super admin sidebar dynamically shows/hides nav items based on permissions. `PERMISSION_LABELS` provides human-readable labels. `ROLE_LABELS` maps role enums to display names (e.g. `SUPER_ADMIN` -> "Charity Admin"). The RBAC test at `lib/__tests__/` asserts the exact permission count — bump the expected count when adding a permission.
 
