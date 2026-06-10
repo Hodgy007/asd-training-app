@@ -268,14 +268,14 @@ describe('POST /api/auth/register — new org', () => {
   it('slug collision → counter suffix', async () => {
     // First lookup says taken, second says free.
     let call = 0
-    vi.mocked(prisma.organisation.findUnique).mockImplementation(async ({ where }: any) => {
+    vi.mocked(prisma.organisation.findUnique).mockImplementation((async ({ where }: any) => {
       if (where.slug === 'sunrise-academy') return { id: 'taken' } as any
       return null
-    })
-    vi.mocked(prisma.organisation.create).mockImplementation(async (args: any) => {
+    }) as any)
+    vi.mocked(prisma.organisation.create).mockImplementation((async (args: any) => {
       call++
       return { id: 'new-org', slug: args.data.slug } as any
-    })
+    }) as any)
     vi.mocked(prisma.user.create).mockResolvedValue({ id: 'admin' } as any)
 
     await POST(req({

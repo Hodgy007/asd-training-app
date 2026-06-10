@@ -69,14 +69,6 @@ export const ORG_TYPE_LABELS: Record<string, string> = {
 export const ORG_TYPES = ['SCHOOL', 'COLLEGE', 'ACADEMY', 'UNIVERSITY', 'EMPLOYER'] as const
 export type OrgType = (typeof ORG_TYPES)[number]
 
-/** Education-category org types — used to determine default self-registration role. */
-const EDUCATION_ORG_TYPES = new Set<string>(['SCHOOL', 'COLLEGE', 'ACADEMY', 'UNIVERSITY', 'EDUCATION'])
-
-/** Returns true if the org type is an education category (School, College, Academy, University, or legacy Education). */
-export function isEducationType(orgType: string): boolean {
-  return EDUCATION_ORG_TYPES.has(orgType)
-}
-
 // ─── Role checks ───────────────────────────────────────────────────────────────
 
 /**
@@ -162,20 +154,6 @@ export function canCreateSessions(session: Session | null): boolean {
   if (!session?.user?.role) return false
   if (hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SESSIONS)) return true
   return hasRole(session, 'ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER')
-}
-
-/**
- * Roles that can access the CV Builder feature.
- * Charity-level users (SUPER_ADMIN, CHARITY_EMPLOYEE) can always use it for
- * self-testing — they bypass the org-level feature flag because they have no org.
- * Leaf roles also require the org-level flag to be enabled.
- */
-export function canAccessCVBuilder(session: Session | null): boolean {
-  if (!session?.user?.role) return false
-  if (isCharityLevel(session)) return true
-  const hasRole = ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE'].includes(session.user.role)
-  const orgEnabled = (session.user as { cvBuilderEnabled?: boolean }).cvBuilderEnabled !== false
-  return hasRole && orgEnabled
 }
 
 /**
