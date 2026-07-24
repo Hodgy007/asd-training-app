@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 const SLUG = 'public-toolkit'
-const REQUIRED_ALLOWED_ROLES = ['CAREGIVER', 'STUDENT', 'EMPLOYEE', 'FAMILY_CARER']
+const REQUIRED_ALLOWED_ROLES = ['LEARNER']
 
 export async function seedPublicToolkitOrg(client: PrismaClient = prisma) {
   const existing = await client.organisation.findUnique({ where: { slug: SLUG } })

@@ -112,7 +112,7 @@ async function writeCohortFromEvent(
       orgType: 'COHORT',
       organisationType: 'EDUCATION',
       allowedProgramIds: [],
-      allowedRoles: ['STUDENT', 'CAREGIVER', 'CAREER_DEV_OFFICER', 'INTERN', 'EMPLOYEE'],
+      allowedRoles: ['LEARNER'],
       active: true,
       lifecycleStatus: 'ACTIVE',
       eventbriteEvent: {
@@ -262,7 +262,7 @@ async function resolveUserForBooking(
         email,
         name,
         password: null,
-        role: 'STUDENT',
+        role: 'LEARNER',
         organisationId: orgId,
         active: true,
         invitedAt: new Date(),

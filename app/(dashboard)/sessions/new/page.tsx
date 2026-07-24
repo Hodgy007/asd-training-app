@@ -32,7 +32,7 @@ const ROLE_LABELS: Record<string, string> = {
   EMPLOYEE: 'Employee',
 }
 
-const CAN_CREATE = ['ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER']
+const CAN_CREATE = ['ORG_ADMIN']
 
 export default function NewSessionPage() {
   const { data: session, status } = useSession()

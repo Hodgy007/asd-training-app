@@ -257,15 +257,6 @@ export function JobBuilderForm({
             ))}
           </select>
         </label>
-        <label className="block">
-          <span className="text-sm">Roles (empty = all eligible)</span>
-          <select multiple className="input" value={values.targetRoles ?? []} onChange={(e) => set('targetRoles', Array.from(e.target.selectedOptions).map((o) => o.value))}>
-            <option value="CAREER_DEV_OFFICER">Careers Professional</option>
-            <option value="STUDENT">Student</option>
-            <option value="INTERN">Intern</option>
-            <option value="EMPLOYEE">Employee</option>
-          </select>
-        </label>
       </section>
 
       <div className="flex gap-3 sticky bottom-0 bg-white dark:bg-slate-900 py-3 border-t">

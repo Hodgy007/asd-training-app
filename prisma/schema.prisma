@@ -13,7 +13,7 @@ model User {
   email                        String             @unique
   name                         String?
   password                     String?
-  role                         Role               @default(CAREGIVER)
+  role                         Role               @default(LEARNER)
   active                       Boolean            @default(true)
   pendingApproval              Boolean            @default(false)
   organisationId               String?
@@ -614,13 +614,7 @@ enum Role {
   SUPER_ADMIN
   CHARITY_EMPLOYEE
   ORG_ADMIN
-  CAREGIVER
-  CAREER_DEV_OFFICER
-  STUDENT
-  INTERN
-  EMPLOYEE
-  PARTICIPANT
-  FAMILY_CARER
+  LEARNER
 }
 
 enum OrgLifecycleStatus {

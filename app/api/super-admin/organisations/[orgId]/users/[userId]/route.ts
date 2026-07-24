@@ -6,14 +6,7 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { isSystemOrg } from '@/lib/cohort'
 
-const SYSTEM_ORG_ROLES = [
-  'CAREGIVER',
-  'CAREER_DEV_OFFICER',
-  'STUDENT',
-  'INTERN',
-  'EMPLOYEE',
-  'PARTICIPANT',
-] as const
+const SYSTEM_ORG_ROLES = ['LEARNER'] as const
 
 const patchSchema = z.object({
   name: z.string().min(1).max(200).optional(),

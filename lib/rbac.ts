@@ -39,13 +39,7 @@ export const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: 'Charity Admin',
   CHARITY_EMPLOYEE: 'Charity Employee',
   ORG_ADMIN: 'Org Admin',
-  CAREGIVER: 'Practitioner',
-  CAREER_DEV_OFFICER: 'Careers Professional',
-  STUDENT: 'Student',
-  INTERN: 'Intern',
-  EMPLOYEE: 'Employee',
-  PARTICIPANT: 'Workshop Participant',
-  FAMILY_CARER: 'Parent/Friend/Relative/Carer',
+  LEARNER: 'Learner',
 }
 
 /** Get the display label for a role. Falls back to the raw role string. */
@@ -56,6 +50,7 @@ export function getRoleLabel(role: string): string {
 // ─── Organisation type labels & helpers ────────────────────────────────────────
 
 export const ORG_TYPE_LABELS: Record<string, string> = {
+  CHARITY: 'Charity (internal)',
   SCHOOL: 'School',
   COLLEGE: 'College',
   ACADEMY: 'Academy',
@@ -65,9 +60,19 @@ export const ORG_TYPE_LABELS: Record<string, string> = {
   BUSINESS: 'Business (legacy)',
 }
 
-/** All org types available for new organisations (excludes legacy values). */
+/**
+ * Org types available when provisioning a new organisation (excludes legacy values).
+ *
+ * CHARITY is deliberately absent: there is exactly one charity org, seeded once, and
+ * it must not be creatable through the provisioning UI.
+ */
 export const ORG_TYPES = ['SCHOOL', 'COLLEGE', 'ACADEMY', 'UNIVERSITY', 'EMPLOYER'] as const
 export type OrgType = (typeof ORG_TYPES)[number]
+
+/** True for the charity's own organisation — its members are internal staff. */
+export function isInternalOrgType(organisationType: string | null | undefined): boolean {
+  return organisationType === 'CHARITY'
+}
 
 // ─── Role checks ───────────────────────────────────────────────────────────────
 
@@ -102,29 +107,16 @@ export function isOrgAdmin(session: Session | null): boolean {
   return hasRole(session, 'ORG_ADMIN')
 }
 
-/** Any of the leaf roles (end users who do training, including workshop participants) */
-export function isLeafRole(session: Session | null): boolean {
-  return hasRole(
-    session,
-    'CAREGIVER',
-    'CAREER_DEV_OFFICER',
-    'STUDENT',
-    'INTERN',
-    'EMPLOYEE',
-    'PARTICIPANT',
-    'FAMILY_CARER'
-  )
+/** LEARNER — anyone who takes training, internal charity staff or external. */
+export function isLearner(session: Session | null): boolean {
+  return hasRole(session, 'LEARNER')
 }
 
-/** FAMILY_CARER — parent/friend/relative/carer (stripped-back surface; no training/careers/sessions). */
-export function isFamilyCarer(session: Session | null): boolean {
-  return hasRole(session, 'FAMILY_CARER')
-}
-
-/** PARTICIPANT — joined a cohort via invite link, no formal org affiliation */
-export function isParticipant(session: Session | null): boolean {
-  return hasRole(session, 'PARTICIPANT')
-}
+/**
+ * Backwards-compat alias for isLearner.
+ * @deprecated There is only one leaf role now — prefer isLearner().
+ */
+export const isLeafRole = isLearner
 
 /**
  * Backwards-compat alias. Now checks SUPER_ADMIN instead of ADMIN.
@@ -133,41 +125,11 @@ export function isAdmin(session: Session | null): boolean {
   return isSuperAdmin(session)
 }
 
-/**
- * Returns true if the user's role is CAREER_DEV_OFFICER.
- * SUPER_ADMIN and ORG_ADMIN do NOT access training routes.
- */
-export function canAccessCareers(session: Session | null): boolean {
-  return hasRole(session, 'CAREER_DEV_OFFICER')
-}
-
-/** Leaf roles that a CAREER_DEV_OFFICER manages (students). */
-export const CDO_MANAGED_ROLES: Role[] = ['STUDENT', 'INTERN', 'EMPLOYEE']
-
-/** Returns true if the session is a CAREER_DEV_OFFICER (can manage students). */
-export function canManageStudents(session: Session | null): boolean {
-  return hasRole(session, 'CAREER_DEV_OFFICER')
-}
-
-/** Roles that can create and manage virtual classroom sessions */
+/** Who can create and manage virtual classroom sessions. */
 export function canCreateSessions(session: Session | null): boolean {
   if (!session?.user?.role) return false
   if (hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SESSIONS)) return true
-  return hasRole(session, 'ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER')
-}
-
-/**
- * Roles that can access the Careers Advisor feature.
- * Charity-level users (SUPER_ADMIN, CHARITY_EMPLOYEE) can always use it for
- * self-testing — they bypass the org-level feature flag because they have no org.
- * Leaf roles also require the org-level flag to be enabled.
- */
-export function canAccessCareersAdvisor(session: Session | null): boolean {
-  if (!session?.user?.role) return false
-  if (isCharityLevel(session)) return true
-  const hasRole = ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE'].includes(session.user.role)
-  const orgEnabled = (session.user as { careersAdvisorEnabled?: boolean }).careersAdvisorEnabled !== false
-  return hasRole && orgEnabled
+  return hasRole(session, 'ORG_ADMIN')
 }
 
 // ─── Permission checks ─────────────────────────────────────────────────────────
@@ -188,14 +150,34 @@ export function hasPermission(session: Session | null, permission: string): bool
   return false
 }
 
-/** Who can create/edit job openings — SUPER_ADMIN or CHARITY_EMPLOYEE with manage_jobs. */
-export function canManageJobs(session: Session | null): boolean {
+/**
+ * Who can manage the charity tier of job openings — those with no owning
+ * organisation, visible platform-wide.
+ */
+export function canManageCharityJobs(session: Session | null): boolean {
   if (!session?.user) return false
   if (isSuperAdmin(session)) return true
   return hasPermission(session, CHARITY_PERMISSIONS.MANAGE_JOBS)
 }
 
+/**
+ * Backwards-compat alias for canManageCharityJobs.
+ * @deprecated Jobs are now two-tier — say which tier you mean.
+ */
+export const canManageJobs = canManageCharityJobs
+
+/**
+ * Who can manage an organisation's own job openings. Org admins manage their own
+ * org; charity-level users with manage_jobs can manage any org's.
+ */
+export function canManageOrgJobs(session: Session | null, orgId: string | null): boolean {
+  if (!session?.user) return false
+  if (canManageCharityJobs(session)) return true
+  if (!isOrgAdmin(session) || !orgId) return false
+  return session.user.organisationId === orgId
+}
+
 /** Who can see the learner Jobs page. */
 export function canAccessJobs(session: Session | null): boolean {
-  return hasRole(session, 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE')
+  return hasRole(session, 'LEARNER')
 }

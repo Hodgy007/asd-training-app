@@ -1,24 +1,17 @@
-export type Role =
-  | 'SUPER_ADMIN'
-  | 'CHARITY_EMPLOYEE'
-  | 'ORG_ADMIN'
-  | 'CAREGIVER'
-  | 'CAREER_DEV_OFFICER'
-  | 'STUDENT'
-  | 'INTERN'
-  | 'EMPLOYEE'
-  | 'PARTICIPANT'
-  | 'FAMILY_CARER'
+/**
+ * Four roles. Everyone who takes training is a LEARNER — what they can see comes
+ * from their organisation's assigned programmes, not from their role.
+ *
+ * Internal (charity staff) vs external (schools, companies) is a property of the
+ * organisation, not the role: the charity has its own Organisation row with
+ * organisationType CHARITY, and its staff are ordinary members of it.
+ *
+ * Replaced CAREGIVER, CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE, PARTICIPANT
+ * and FAMILY_CARER, all of which collapsed into LEARNER.
+ */
+export type Role = 'SUPER_ADMIN' | 'CHARITY_EMPLOYEE' | 'ORG_ADMIN' | 'LEARNER'
 
-export const LEAF_ROLES: Role[] = [
-  'CAREGIVER',
-  'CAREER_DEV_OFFICER',
-  'STUDENT',
-  'INTERN',
-  'EMPLOYEE',
-  'PARTICIPANT',
-  'FAMILY_CARER',
-]
+export const LEAF_ROLES: Role[] = ['LEARNER']
 
 export interface Organisation {
   id: string

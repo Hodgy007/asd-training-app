@@ -149,7 +149,7 @@ export default function CohortDetailPage() {
   const [memberName, setMemberName] = useState('')
   const [memberEmail, setMemberEmail] = useState('')
   const [memberPassword, setMemberPassword] = useState('')
-  const [memberRole, setMemberRole] = useState('STUDENT')
+  const [memberRole, setMemberRole] = useState('LEARNER')
   const [addingMember, setAddingMember] = useState(false)
 
   // Credential card modal
@@ -257,7 +257,7 @@ export default function CohortDetailPage() {
         setMemberName('')
         setMemberEmail('')
         setMemberPassword('')
-        setMemberRole('STUDENT')
+        setMemberRole('LEARNER')
         setShowAddMember(false)
         fetchAll()
       } else {
@@ -356,7 +356,7 @@ export default function CohortDetailPage() {
       if (parts.length < 2) continue
       const name = parts[0].trim().replace(/^"|"$/g, '')
       const email = parts[1].trim().replace(/^"|"$/g, '')
-      if (name && email) members.push({ name, email, role: 'STUDENT' })
+      if (name && email) members.push({ name, email, role: 'LEARNER' })
     }
 
     if (members.length === 0) {

@@ -69,7 +69,7 @@ export async function PATCH(
 
   // Self-claim default role must be a leaf role; admin-side roles would let
   // an anonymous Stripe purchase mint a SUPER_ADMIN account.
-  const ALLOWED_LEAF_ROLES = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']
+  const ALLOWED_LEAF_ROLES = ['LEARNER']
   if (
     data.defaultLeafRole !== undefined &&
     data.defaultLeafRole !== null &&

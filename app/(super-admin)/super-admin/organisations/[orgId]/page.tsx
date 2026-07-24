@@ -51,14 +51,7 @@ interface AvailableSurvey {
   status: 'DRAFT' | 'PUBLISHED' | 'CLOSED'
 }
 
-const SYSTEM_ORG_ROLES = [
-  'CAREGIVER',
-  'CAREER_DEV_OFFICER',
-  'STUDENT',
-  'INTERN',
-  'EMPLOYEE',
-  'PARTICIPANT',
-] as const
+const SYSTEM_ORG_ROLES = ['LEARNER'] as const
 
 interface ChildOrgSummary {
   id: string
@@ -195,7 +188,7 @@ export default function OrgDetailPage() {
   const [adminName, setAdminName] = useState('')
   const [adminEmail, setAdminEmail] = useState('')
   const [adminPassword, setAdminPassword] = useState('')
-  const [adminRole, setAdminRole] = useState<typeof SYSTEM_ORG_ROLES[number]>('PARTICIPANT')
+  const [adminRole, setAdminRole] = useState<typeof SYSTEM_ORG_ROLES[number]>('LEARNER')
   const [adminProgramIds, setAdminProgramIds] = useState<string[]>([])
   const [adminCvBuilder, setAdminCvBuilder] = useState(false)
   const [adminCareersAdvisor, setAdminCareersAdvisor] = useState(false)
@@ -208,7 +201,7 @@ export default function OrgDetailPage() {
   // Inline edit state for system-org users (one row at a time)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editUserName, setEditUserName] = useState('')
-  const [editUserRole, setEditUserRole] = useState<typeof SYSTEM_ORG_ROLES[number]>('PARTICIPANT')
+  const [editUserRole, setEditUserRole] = useState<typeof SYSTEM_ORG_ROLES[number]>('LEARNER')
   const [editUserActive, setEditUserActive] = useState(true)
   const [editUserProgramIds, setEditUserProgramIds] = useState<string[]>([])
   const [editUserCvBuilder, setEditUserCvBuilder] = useState(false)
@@ -412,7 +405,7 @@ export default function OrgDetailPage() {
         setAdminName('')
         setAdminEmail('')
         setAdminPassword('')
-        setAdminRole('PARTICIPANT')
+        setAdminRole('LEARNER')
         setAdminProgramIds([])
         setAdminCvBuilder(false)
         setAdminCareersAdvisor(false)
@@ -435,7 +428,7 @@ export default function OrgDetailPage() {
     setEditUserRole(
       (SYSTEM_ORG_ROLES as readonly string[]).includes(u.role)
         ? (u.role as typeof SYSTEM_ORG_ROLES[number])
-        : 'PARTICIPANT'
+        : 'LEARNER'
     )
     setEditUserActive(u.active)
     setEditUserProgramIds(u.allowedProgramIds ?? [])

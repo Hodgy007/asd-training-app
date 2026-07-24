@@ -133,7 +133,7 @@ export async function joinCohortByCode(payload: JoinPayload): Promise<JoinResult
         email: normalisedEmail,
         name: name.trim() || null,
         password: passwordHash,
-        role: 'PARTICIPANT',
+        role: 'LEARNER',
         organisationId: independent.id,
         active: true,
       },

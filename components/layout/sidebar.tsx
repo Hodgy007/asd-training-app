@@ -31,45 +31,27 @@ interface NavItem {
   icon: React.ElementType
 }
 
+/**
+ * Learner navigation. There is one leaf role now, so nothing here branches on it —
+ * what a learner sees comes from the programmes their organisation has been
+ * assigned and the document collections targeted at them.
+ */
 function getNavItems(
   role?: string,
   programs: { id: string; name: string }[] = [],
   collections: { id: string; title: string }[] = [],
-  cvBuilderEnabled = true,
-  careersAdvisorEnabled = true,
 ): NavItem[] {
   const items: NavItem[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/home', label: 'Home', icon: Home },
   ]
 
-  if (role === 'CAREGIVER' || role === 'CAREER_DEV_OFFICER' || role === 'STUDENT' || role === 'INTERN' || role === 'EMPLOYEE') {
+  if (role === 'LEARNER') {
     for (const program of programs) {
       items.push({ href: `/training/${program.id}`, label: program.name, icon: BookOpen })
     }
-    if (role !== 'CAREGIVER' && cvBuilderEnabled) {
-      items.push({ href: '/cv-builder', label: 'CV Builder', icon: FileText })
-    }
-    if (role !== 'CAREGIVER' && careersAdvisorEnabled) {
-      items.push({ href: '/careers-advisor', label: 'Careers Advisor', icon: Compass })
-    }
-    if (role !== 'CAREGIVER') {
-      items.push({ href: '/jobs', label: 'Jobs', icon: Briefcase })
-    }
-    if (role === 'CAREER_DEV_OFFICER') {
-      items.push(
-        { href: '/students', label: 'My Students', icon: Users },
-        { href: '/students/reports', label: 'Student Reports', icon: BarChart3 },
-      )
-    }
+    items.push({ href: '/jobs', label: 'Jobs', icon: Briefcase })
   }
-
-  // PARTICIPANT — workshop attendees get a deliberately stripped surface.
-  // Their cohort drives all their content; programs (if any) are surfaced
-  // inline on the dashboard via the CohortHub. We don't auto-add training
-  // links to the sidebar — most participants only see one cohort and an
-  // ever-growing nav list adds noise.
-  // Library + Workshops items are added by the shared logic below.
 
   // Single Document Library entry — the library page itself handles
   // collection grid / per-collection drill-in (and auto-selects when there's only one).
@@ -77,13 +59,7 @@ function getNavItems(
     items.push({ href: '/library', label: 'Document Library', icon: FolderOpen })
   }
 
-  // FAMILY_CARER (parent/friend/relative/carer) gets a deliberately
-  // stripped surface — Dashboard + Library + How-to + Settings only.
-  // No Workshops, no training programs. They're typically self-registered
-  // via the public toolkit and don't have a cohort or training plan.
-  if (role !== 'FAMILY_CARER') {
-    items.push({ href: '/sessions', label: 'Workshops', icon: Calendar })
-  }
+  items.push({ href: '/sessions', label: 'Workshops', icon: Calendar })
 
   // Sort everything after Dashboard alphabetically
   const dashboard = items[0]
@@ -92,23 +68,11 @@ function getNavItems(
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  CAREGIVER: 'Practitioner',
-  CAREER_DEV_OFFICER: 'Careers Professional',
-  STUDENT: 'Student',
-  INTERN: 'Intern',
-  EMPLOYEE: 'Employee',
-  PARTICIPANT: 'Workshop Participant',
-  FAMILY_CARER: 'Parent/Friend/Relative/Carer',
+  LEARNER: 'Learner',
 }
 
 const ROLE_BADGE_STYLES: Record<string, string> = {
-  CAREGIVER: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  CAREER_DEV_OFFICER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
-  INTERN: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300',
-  EMPLOYEE: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300',
-  PARTICIPANT: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-  FAMILY_CARER: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
+  LEARNER: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
 }
 
 interface SidebarProps {
@@ -126,8 +90,6 @@ export function Sidebar({ onClose, mobile, collapsed = false, onToggleCollapse }
   const isDark = colorTheme === 'dark'
   const role = session?.user?.role
   const programs = session?.user?.effectivePrograms ?? []
-  const cvBuilderEnabled = (session?.user as { cvBuilderEnabled?: boolean })?.cvBuilderEnabled !== false
-  const careersAdvisorEnabled = (session?.user as { careersAdvisorEnabled?: boolean })?.careersAdvisorEnabled !== false
   const [collections, setCollections] = useState<{ id: string; title: string }[]>([])
 
   useEffect(() => {
@@ -137,7 +99,7 @@ export function Sidebar({ onClose, mobile, collapsed = false, onToggleCollapse }
       .catch(() => {})
   }, [])
 
-  const navItems = getNavItems(role, programs, collections, cvBuilderEnabled, careersAdvisorEnabled)
+  const navItems = getNavItems(role, programs, collections)
 
   const chrome = isClassic ? {
     sidebar: 'bg-white dark:bg-slate-900',
