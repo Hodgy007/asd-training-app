@@ -89,38 +89,7 @@ export async function GET(req: NextRequest) {
     }
   })
 
-  // ── CV Builder stats (scoped to org) ──
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
   const orgUserIds = users.map((u) => u.id)
-
-  const [cvTotal, cvByStatus, cvRecent, cvByTemplate] = await Promise.all([
-    prisma.cV.count({ where: { userId: { in: orgUserIds } } }),
-    prisma.cV.groupBy({ by: ['status'], _count: { id: true }, where: { userId: { in: orgUserIds } } }),
-    prisma.cV.count({ where: { userId: { in: orgUserIds }, createdAt: { gte: thirtyDaysAgo } } }),
-    prisma.cV.groupBy({ by: ['template'], _count: { id: true }, where: { userId: { in: orgUserIds } } }),
-  ])
-
-  const cvStats = {
-    total: cvTotal,
-    byStatus: Object.fromEntries(cvByStatus.map((s) => [s.status, s._count.id])),
-    recentLast30Days: cvRecent,
-    byTemplate: Object.fromEntries(cvByTemplate.map((t) => [t.template, t._count.id])),
-  }
-
-  // ── Careers Advisor stats (scoped to org) ──
-  const [advisorTotal, advisorByStatus, advisorRecent] = await Promise.all([
-    prisma.careerAdvisorSession.count({ where: { userId: { in: orgUserIds } } }),
-    prisma.careerAdvisorSession.groupBy({ by: ['status'], _count: { id: true }, where: { userId: { in: orgUserIds } } }),
-    prisma.careerAdvisorSession.count({ where: { userId: { in: orgUserIds }, createdAt: { gte: thirtyDaysAgo } } }),
-  ])
-
-  const advisorStats = {
-    total: advisorTotal,
-    byStatus: Object.fromEntries(advisorByStatus.map((s) => [s.status, s._count.id])),
-    recentLast30Days: advisorRecent,
-  }
 
   // ── Workshop, download, and survey response counts (org-scoped) ──
   const [workshopCount, downloadCount, surveyResponseCount] = await Promise.all([
@@ -140,8 +109,6 @@ export async function GET(req: NextRequest) {
       completedModules: u.trainingProgress.map((p) => p.moduleId),
       totalCompleted: u.trainingProgress.length,
     })),
-    cvStats,
-    advisorStats,
     workshopCount,
     downloadCount,
     surveyResponseCount,

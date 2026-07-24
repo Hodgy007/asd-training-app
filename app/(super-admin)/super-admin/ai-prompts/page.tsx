@@ -11,8 +11,6 @@ import { HowToPanel } from '@/components/howto/panel'
 import AiPromptsHowTo from '@/components/howto/super-admin/ai-prompts'
 
 const CATEGORY_LABEL: Record<string, string> = {
-  cv: 'CV Builder',
-  careers: 'Careers Advisor',
   survey: 'Surveys',
   training: 'Training',
   library: 'Document Library',
