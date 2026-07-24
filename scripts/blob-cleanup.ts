@@ -23,7 +23,12 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 const dryRun = process.argv.includes('--dry-run')
 
-const KEEP_PREFIXES = ['tts/', 'carousel-images/', 'hotspot-images/']
+// library/thumbnails/ is kept unconditionally rather than relying on the exact-URL
+// match in shouldKeep(). Any drift between the stored thumbnailUrl and the blob
+// listing used to classify a live thumbnail as an orphan and delete it — silently,
+// irreversibly, and for every document at once. Accumulating a few genuinely
+// orphaned thumbnails is the cheaper failure.
+const KEEP_PREFIXES = ['tts/', 'carousel-images/', 'hotspot-images/', 'library/thumbnails/']
 
 function isUrl(s: unknown): s is string {
   return typeof s === 'string' && /^https?:\/\//.test(s)
