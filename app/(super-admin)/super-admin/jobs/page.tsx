@@ -24,8 +24,14 @@ export default async function JobsListPage() {
 
   await autoCloseExpiredJobs()
 
+  // Lists both tiers: the charity's own platform-wide jobs (organisationId
+  // null) and jobs owned by individual organisations, which charity admins
+  // oversee. The Owner column distinguishes them.
   const jobs = await prisma.jobOpening.findMany({
-    include: { _count: { select: { assignments: true, attachments: true } } },
+    include: {
+      _count: { select: { assignments: true, attachments: true } },
+      organisation: { select: { name: true } },
+    },
     orderBy: { createdAt: 'desc' },
   })
 
@@ -47,6 +53,7 @@ export default async function JobsListPage() {
             <tr>
               <th className="p-3">Title</th>
               <th className="p-3">Employer</th>
+              <th className="p-3">Owner</th>
               <th className="p-3">Status</th>
               <th className="p-3">Closes</th>
               <th className="p-3">Targeting</th>
@@ -59,6 +66,9 @@ export default async function JobsListPage() {
               <tr key={j.id} className="border-t">
                 <td className="p-3 font-medium">{j.title}</td>
                 <td className="p-3">{j.employer}</td>
+                <td className="p-3 text-slate-600 dark:text-slate-300">
+                  {j.organisation?.name ?? 'Ambitious about Autism'}
+                </td>
                 <td className="p-3">
                   <span className={`px-2 py-0.5 rounded text-xs ${STATUS_BADGE[j.status]}`}>
                     {j.status}
@@ -66,8 +76,11 @@ export default async function JobsListPage() {
                 </td>
                 <td className="p-3">{format(j.closingDate, 'd MMM yyyy')}</td>
                 <td className="p-3 text-slate-600 dark:text-slate-300">
-                  {j.targetOrgIds.length === 0 ? 'All orgs' : `${j.targetOrgIds.length} orgs`} ·{' '}
-                  {j.targetRoles.length === 0 ? 'All roles' : j.targetRoles.join(', ')}
+                  {j.organisationId !== null
+                    ? 'That organisation only'
+                    : j.targetOrgIds.length === 0
+                      ? 'All orgs'
+                      : `${j.targetOrgIds.length} orgs`}
                 </td>
                 <td className="p-3">{j._count.assignments}</td>
                 <td className="p-3">

@@ -67,22 +67,6 @@ const TILES: Tile[] = [
     iconBg: 'bg-primary-100 dark:bg-primary-900/40',
   },
   {
-    href: '/super-admin/reports/cv-builder',
-    title: 'CV Builder',
-    description: 'CV creation activity by status and template.',
-    icon: FileCheck,
-    iconColor: 'text-primary-600 dark:text-primary-400',
-    iconBg: 'bg-primary-100 dark:bg-primary-900/40',
-  },
-  {
-    href: '/super-admin/reports/careers-advisor',
-    title: 'Careers Advisor',
-    description: 'AI careers advisor session activity.',
-    icon: Users,
-    iconColor: 'text-primary-600 dark:text-primary-400',
-    iconBg: 'bg-primary-100 dark:bg-primary-900/40',
-  },
-  {
     href: '/super-admin/reports/jobs',
     title: 'Job Openings',
     description: 'Published jobs and learner assignments.',

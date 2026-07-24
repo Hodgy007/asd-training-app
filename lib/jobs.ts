@@ -5,22 +5,37 @@ export type JobVisibilityUser = {
   id: string
   role: string
   organisationId: string | null
+  /** The user's org's parent, when it belongs to a hierarchy. */
+  parentOrgId?: string | null
 }
 
 export type JobVisibilityRow = {
   id: string
   status: JobStatus
+  /** null = charity-owned (platform-wide); set = owned by that organisation. */
+  organisationId: string | null
   targetOrgIds: string[]
   targetRoles: string[]
   closingDate: Date
 }
 
 /**
- * Pure visibility rule — decides if a single job is visible to a user.
+ * Pure visibility rule — decides if a single job is visible to a learner.
  *
- *  - DRAFT / ARCHIVED: never visible to learners.
- *  - PUBLISHED: visible when targeting matches, OR the user has an assignment.
- *  - CLOSED: visible only if the user has an assignment (to keep deep links working).
+ * Jobs come in two tiers:
+ *   - Charity tier (organisationId null): visible platform-wide, optionally
+ *     narrowed to specific orgs via targetOrgIds.
+ *   - Organisation tier (organisationId set): visible only to that org's own
+ *     learners, plus the learners of its child orgs when it is a parent org.
+ *
+ * Status rules are the same for both:
+ *   - DRAFT / ARCHIVED: never visible.
+ *   - PUBLISHED: visible when the tier rule matches, OR the user is assigned.
+ *   - CLOSED: visible only to assigned users, so their deep links keep working.
+ *
+ * targetRoles is deliberately not consulted. Since the role collapse there is a
+ * single learner role, so it can no longer narrow anything; the column is kept
+ * only so existing rows stay valid.
  */
 export function isJobVisibleToUser(
   job: JobVisibilityRow,
@@ -35,12 +50,52 @@ export function isJobVisibleToUser(
 
   if (job.status !== 'PUBLISHED') return false
 
-  const orgMatches =
+  // Organisation tier — ownership decides, targetOrgIds is not consulted.
+  if (job.organisationId !== null) {
+    if (user.organisationId === null) return false
+    return (
+      job.organisationId === user.organisationId ||
+      job.organisationId === (user.parentOrgId ?? null)
+    )
+  }
+
+  // Charity tier — platform-wide unless narrowed to specific orgs.
+  return (
     job.targetOrgIds.length === 0 ||
     (user.organisationId !== null && job.targetOrgIds.includes(user.organisationId))
-  const roleMatches = job.targetRoles.length === 0 || job.targetRoles.includes(user.role)
+  )
+}
 
-  return orgMatches && roleMatches
+/**
+ * Build the visibility user for a session, resolving the org's parent so
+ * parent-org jobs reach child-org learners.
+ *
+ * Always use this rather than assembling the object inline: parentOrgId is
+ * optional on the type, so hand-built objects silently omit it and child orgs
+ * quietly stop seeing their parent's jobs — a bug with no type error and no
+ * runtime error, just missing rows.
+ */
+export async function resolveJobVisibilityUser(sessionUser: {
+  id: string
+  role: string
+  organisationId?: string | null
+}): Promise<JobVisibilityUser> {
+  const organisationId = sessionUser.organisationId ?? null
+  if (!organisationId) {
+    return { id: sessionUser.id, role: sessionUser.role, organisationId: null, parentOrgId: null }
+  }
+
+  const org = await prisma.organisation.findUnique({
+    where: { id: organisationId },
+    select: { parentOrgId: true },
+  })
+
+  return {
+    id: sessionUser.id,
+    role: sessionUser.role,
+    organisationId,
+    parentOrgId: org?.parentOrgId ?? null,
+  }
 }
 
 /**
@@ -55,22 +110,34 @@ export async function autoCloseExpiredJobs(): Promise<number> {
   return result.count
 }
 
-/** Returns the jobs visible to a given learner, with their own assignment joined. */
+/**
+ * Returns the jobs visible to a given learner, with their own assignment joined.
+ * Mirrors isJobVisibleToUser — keep the two in step.
+ */
 export async function listVisibleJobsForUser(user: JobVisibilityUser) {
   await autoCloseExpiredJobs()
 
-  const orgClause: Prisma.JobOpeningWhereInput = user.organisationId
-    ? {
-        OR: [{ targetOrgIds: { isEmpty: true } }, { targetOrgIds: { has: user.organisationId } }],
-      }
-    : { targetOrgIds: { isEmpty: true } }
-
-  const roleClause: Prisma.JobOpeningWhereInput = {
-    OR: [{ targetRoles: { isEmpty: true } }, { targetRoles: { has: user.role } }],
+  // Charity tier: platform-wide, or narrowed to the user's org.
+  const charityTier: Prisma.JobOpeningWhereInput = {
+    organisationId: null,
+    ...(user.organisationId
+      ? { OR: [{ targetOrgIds: { isEmpty: true } }, { targetOrgIds: { has: user.organisationId } }] }
+      : { targetOrgIds: { isEmpty: true } }),
   }
 
+  // Organisation tier: the user's own org, or its parent when it has one.
+  const ownerIds = [user.organisationId, user.parentOrgId].filter(
+    (id): id is string => typeof id === 'string'
+  )
+  const orgTier: Prisma.JobOpeningWhereInput | null = ownerIds.length
+    ? { organisationId: { in: ownerIds } }
+    : null
+
   const targeted = await prisma.jobOpening.findMany({
-    where: { status: 'PUBLISHED', AND: [orgClause, roleClause] },
+    where: {
+      status: 'PUBLISHED',
+      OR: orgTier ? [charityTier, orgTier] : [charityTier],
+    },
     include: {
       assignments: { where: { userId: user.id } },
       attachments: true,
@@ -115,13 +182,22 @@ export async function getJobForUser(jobId: string, user: JobVisibilityUser) {
 export type JobWithRelations = Awaited<ReturnType<typeof getJobForUser>>
 
 /**
- * Aggregate stats for reports. If `orgId` is provided, scopes jobs to those
- * that target the org (or have no targeting) and assignments to users in that org.
+ * Aggregate stats for reports. With `orgId`, scopes to what that organisation
+ * can see — its own jobs, plus charity-tier jobs that reach it — and to
+ * assignments held by its own users. Without one, covers every job.
  */
 export async function getJobStats(orgId?: string | null) {
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000)
   const baseWhere: Prisma.JobOpeningWhereInput = orgId
-    ? { OR: [{ targetOrgIds: { isEmpty: true } }, { targetOrgIds: { has: orgId } }] }
+    ? {
+        OR: [
+          { organisationId: orgId },
+          {
+            organisationId: null,
+            OR: [{ targetOrgIds: { isEmpty: true } }, { targetOrgIds: { has: orgId } }],
+          },
+        ],
+      }
     : {}
 
   const assignmentWhere: Prisma.JobAssignmentWhereInput = orgId

@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest) {
   if (defaultRole !== null && defaultRole !== undefined && defaultRole !== '') {
     if (typeof defaultRole !== 'string' || !LEAF_ROLES.includes(defaultRole as typeof LEAF_ROLES[number])) {
       return NextResponse.json(
-        { error: 'defaultRole must be a leaf role (CAREGIVER, CAREER_DEV_OFFICER, STUDENT, INTERN, EMPLOYEE, or PARTICIPANT)' },
+        { error: 'defaultRole must be LEARNER' },
         { status: 400 },
       )
     }

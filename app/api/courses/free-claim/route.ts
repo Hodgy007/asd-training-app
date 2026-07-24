@@ -65,7 +65,6 @@ export async function POST(req: NextRequest) {
       active: true,
       purchasable: true,
       priceAmount: true,
-      defaultLeafRole: true,
     },
   })
 
@@ -86,17 +85,6 @@ export async function POST(req: NextRequest) {
     const result = await grantFreeAccess({
       programId: program.id,
       programName: program.name,
-      // The PATCH validator at /api/super-admin/training/programs/[id]
-      // refuses any non-leaf value, but Prisma's generated type is the full
-      // Role enum — cast at the boundary.
-      programDefaultLeafRole:
-        (program.defaultLeafRole as
-          | 'CAREGIVER'
-          | 'CAREER_DEV_OFFICER'
-          | 'STUDENT'
-          | 'INTERN'
-          | 'EMPLOYEE'
-          | null) ?? null,
       email,
       name,
     })

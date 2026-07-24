@@ -20,12 +20,8 @@ vi.mock('@/lib/org-hierarchy', () => ({
 }))
 vi.mock('@/lib/toolkit-registration', () => ({
   getPublicToolkitOrgId: vi.fn(),
-  mapFormRoleToPlatformRole: (formRole: string) => {
-    if (formRole === 'autistic') return 'STUDENT'
-    if (formRole === 'practitioner') return 'CAREGIVER'
-    // parent_carer + supporter
-    return 'FAMILY_CARER'
-  },
+  // Every form role maps to LEARNER — see lib/toolkit-registration.ts.
+  mapFormRoleToPlatformRole: () => 'LEARNER',
 }))
 vi.mock('bcryptjs', () => ({
   default: { hash: vi.fn(async () => 'HASH') },
@@ -119,7 +115,7 @@ describe('POST /api/auth/register — existing org', () => {
       id: 'o1', name: 'Sunrise', active: true, orgType: 'ORGANISATION',
     } as any)
     vi.mocked(getEffectiveOrgSettings).mockResolvedValue({
-      allowedRoles: ['STUDENT', 'CAREGIVER'],
+      allowedRoles: ['LEARNER'],
       allowedProgramIds: [],
       cvBuilderEnabled: true,
       careersAdvisorEnabled: true,
@@ -128,7 +124,7 @@ describe('POST /api/auth/register — existing org', () => {
 
     const res = await POST(req({
       mode: 'existing', name: 'Jane', email: 'jane@school.com',
-      organisationId: 'o1', role: 'STUDENT',
+      organisationId: 'o1', role: 'LEARNER',
     }))
 
     expect(res.status).toBe(200)
@@ -140,7 +136,7 @@ describe('POST /api/auth/register — existing org', () => {
     expect(prisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         email: 'jane@school.com',
-        role: 'STUDENT',
+        role: 'LEARNER',
         organisationId: 'o1',
         password: null,
         active: true,
@@ -156,14 +152,14 @@ describe('POST /api/auth/register — existing org', () => {
       id: 'o1', name: 'Sunrise', active: true, orgType: 'ORGANISATION',
     } as any)
     vi.mocked(getEffectiveOrgSettings).mockResolvedValue({
-      allowedRoles: ['STUDENT'],
+      allowedRoles: [],
       allowedProgramIds: [],
       cvBuilderEnabled: true,
       careersAdvisorEnabled: true,
     })
     const res = await POST(req({
       mode: 'existing', name: 'Jane', email: 'jane@school.com',
-      organisationId: 'o1', role: 'CAREGIVER',
+      organisationId: 'o1', role: 'LEARNER',
     }))
     expect(res.status).toBe(400)
   })
@@ -174,7 +170,7 @@ describe('POST /api/auth/register — existing org', () => {
     } as any)
     const res = await POST(req({
       mode: 'existing', name: 'Jane', email: 'jane@school.com',
-      organisationId: 'o1', role: 'STUDENT',
+      organisationId: 'o1', role: 'LEARNER',
     }))
     expect(res.status).toBe(404)
   })
@@ -185,7 +181,7 @@ describe('POST /api/auth/register — existing org', () => {
     } as any)
     const res = await POST(req({
       mode: 'existing', name: 'Jane', email: 'jane@school.com',
-      organisationId: 'o1', role: 'STUDENT',
+      organisationId: 'o1', role: 'LEARNER',
     }))
     expect(res.status).toBe(404)
   })
@@ -293,10 +289,10 @@ describe('POST /api/auth/register — new org', () => {
 
 describe('POST /api/auth/register — no-org (catchall)', () => {
   it.each([
-    { formRole: 'autistic',     expectedRole: 'STUDENT' },
-    { formRole: 'parent_carer', expectedRole: 'FAMILY_CARER' },
-    { formRole: 'supporter',    expectedRole: 'FAMILY_CARER' },
-    { formRole: 'practitioner', expectedRole: 'CAREGIVER' },
+    { formRole: 'autistic',     expectedRole: 'LEARNER' },
+    { formRole: 'parent_carer', expectedRole: 'LEARNER' },
+    { formRole: 'supporter',    expectedRole: 'LEARNER' },
+    { formRole: 'practitioner', expectedRole: 'LEARNER' },
   ])('formRole=$formRole → role=$expectedRole, attached to public-toolkit (magic-link)', async ({ formRole, expectedRole }) => {
     vi.mocked(getPublicToolkitOrgId).mockResolvedValue('public-org')
     vi.mocked(prisma.user.create).mockResolvedValue({ id: 'no' } as any)

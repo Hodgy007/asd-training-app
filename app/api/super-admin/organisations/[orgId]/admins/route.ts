@@ -11,7 +11,7 @@ import { z } from 'zod'
 // Roles this endpoint may create. ORG_ADMIN is the default for normal orgs;
 // any leaf role can be created on the Independent Learners system org so
 // charity staff can provision practitioners / students / etc directly.
-const SYSTEM_ORG_ROLES = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE', 'PARTICIPANT'] as const
+const SYSTEM_ORG_ROLES = ['LEARNER'] as const
 const CREATABLE_ROLES = ['ORG_ADMIN', ...SYSTEM_ORG_ROLES] as const
 
 const createAdminSchema = z.object({
@@ -58,7 +58,7 @@ export async function POST(
 
   const isSystem = isSystemOrg(org)
   // Default to ORG_ADMIN for normal orgs and PARTICIPANT for the system org.
-  let role: typeof CREATABLE_ROLES[number] = parsed.data.role ?? (isSystem ? 'PARTICIPANT' : 'ORG_ADMIN')
+  let role: typeof CREATABLE_ROLES[number] = parsed.data.role ?? (isSystem ? 'LEARNER' : 'ORG_ADMIN')
 
   if (!isSystem && role !== 'ORG_ADMIN') {
     return NextResponse.json(

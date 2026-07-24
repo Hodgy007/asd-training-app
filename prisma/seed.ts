@@ -740,7 +740,7 @@ async function main() {
       email: 'demo@example.com',
       name: 'Sarah Thompson',
       password: learnerPassword,
-      role: 'EMPLOYEE',
+      role: 'LEARNER',
     },
   })
   console.log('Created demo learner:', learner.email)

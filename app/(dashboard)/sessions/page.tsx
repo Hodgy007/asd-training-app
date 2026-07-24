@@ -169,7 +169,7 @@ export default function SessionsPage() {
             Virtual workshops you&apos;re hosting or attending.
           </p>
         </div>
-        {['ORG_ADMIN', 'CAREGIVER', 'CAREER_DEV_OFFICER'].includes(authSession?.user?.role ?? '') && (
+        {['ORG_ADMIN'].includes(authSession?.user?.role ?? '') && (
           <Link
             href="/sessions/new"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold transition-colors flex-shrink-0"

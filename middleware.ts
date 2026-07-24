@@ -150,42 +150,21 @@ export async function middleware(req: NextRequest) {
     return redirect(new URL(homeForRole(role), req.url), 'role_blocked_admin', { userId, role })
   }
 
-  // Charity-level, ORG_ADMIN cannot access leaf-role routes (except training/careers/CV/advisor preview for charity-level users).
-  // Charity admins use /cv-builder and /careers-advisor to self-test the tools — they only ever see their own data.
+  // Charity-level and ORG_ADMIN users cannot access learner routes, except that
+  // charity-level users may preview training and the library as a learner sees them.
+  //
+  // The per-role carve-outs that used to live here (PARTICIPANT and FAMILY_CARER
+  // stripped-back surfaces, /students for careers officers) are gone with those
+  // roles. A learner's surface is now determined by their organisation's assigned
+  // programmes, not by branching on their role.
   if (role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE' || role === 'ORG_ADMIN') {
-    const previewPaths = ['/training', '/careers', '/cv-builder', '/careers-advisor', '/library']
+    const previewPaths = ['/training', '/careers', '/library']
     const isPreview = (role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE') && previewPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
     if (!isPreview) {
-      const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/settings', '/guide', '/careers-advisor', '/cv-builder', '/students']
+      const leafOnlyPaths = ['/dashboard', '/training', '/careers', '/settings', '/guide']
       if (leafOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
         return redirect(new URL(homeForRole(role), req.url), 'role_blocked_leaf_only', { userId, role })
       }
-    }
-  }
-
-  // /students/* — CAREER_DEV_OFFICER only (within leaf roles)
-  if (pathname.startsWith('/students') && role !== 'CAREER_DEV_OFFICER') {
-    return redirect(new URL(homeForRole(role), req.url), 'role_blocked_students', { userId, role })
-  }
-
-  // PARTICIPANT — workshop attendees get a stripped-back surface. They join via
-  // an invite link and don't have access to the careers tooling or formal
-  // training-program management features that other leaf roles see.
-  if (role === 'PARTICIPANT') {
-    const blockedForParticipant = ['/cv-builder', '/careers-advisor', '/jobs', '/students', '/careers']
-    if (blockedForParticipant.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-      return redirect(new URL(homeForRole(role), req.url), 'role_blocked_participant', { userId })
-    }
-  }
-
-  // FAMILY_CARER — parent/friend/relative/carer users (typically self-
-  // registered via the public toolkit) get an even more stripped surface
-  // than PARTICIPANT: no Workshops, no training, no careers tooling.
-  // Dashboard + Library + How-to + Settings only.
-  if (role === 'FAMILY_CARER') {
-    const blockedForFamilyCarer = ['/cv-builder', '/careers-advisor', '/jobs', '/students', '/careers', '/training', '/sessions']
-    if (blockedForFamilyCarer.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-      return redirect(new URL(homeForRole(role), req.url), 'role_blocked_family_carer', { userId })
     }
   }
 

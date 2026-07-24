@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { canAccessJobs } from '@/lib/rbac'
-import { getJobForUser, listVisibleJobsForUser } from '@/lib/jobs'
+import { getJobForUser, listVisibleJobsForUser, resolveJobVisibilityUser } from '@/lib/jobs'
 import { JobsClient } from '../jobs-client'
 
 export const dynamic = 'force-dynamic'
@@ -11,11 +11,7 @@ export default async function JobDeepLink({ params }: { params: { jobId: string 
   const session = await getServerSession(authOptions)
   if (!canAccessJobs(session) || !session?.user) redirect('/dashboard')
 
-  const user = {
-    id: session.user.id,
-    role: session.user.role,
-    organisationId: session.user.organisationId ?? null,
-  }
+  const user = await resolveJobVisibilityUser(session.user)
 
   const single = await getJobForUser(params.jobId, user)
   if (!single) notFound()

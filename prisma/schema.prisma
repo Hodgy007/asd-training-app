@@ -13,7 +13,7 @@ model User {
   email                        String             @unique
   name                         String?
   password                     String?
-  role                         Role               @default(CAREGIVER)
+  role                         Role               @default(LEARNER)
   active                       Boolean            @default(true)
   pendingApproval              Boolean            @default(false)
   organisationId               String?
@@ -164,6 +164,7 @@ model Organisation {
   surveyTargets     SurveyTarget[]
   feedback          FeedbackSubmission[]   @relation("OrgFeedback")
   purchases         Purchase[]
+  jobOpenings       JobOpening[]           @relation("OrgJobOpenings")
   eventbriteEvent   CohortEventbriteEvent?
 
   @@index([parentOrgId])
@@ -601,6 +602,7 @@ enum ProgramAudience {
 }
 
 enum OrganisationType {
+  CHARITY // the charity's own organisation — its members are internal staff
   SCHOOL
   COLLEGE
   ACADEMY
@@ -614,13 +616,7 @@ enum Role {
   SUPER_ADMIN
   CHARITY_EMPLOYEE
   ORG_ADMIN
-  CAREGIVER
-  CAREER_DEV_OFFICER
-  STUDENT
-  INTERN
-  EMPLOYEE
-  PARTICIPANT
-  FAMILY_CARER
+  LEARNER
 }
 
 enum OrgLifecycleStatus {
@@ -1071,7 +1067,16 @@ model JobOpening {
   closingDate DateTime
   status      JobStatus @default(DRAFT)
 
+  // Two tiers of ownership:
+  //   null  → charity-owned, visible platform-wide (optionally narrowed by targetOrgIds)
+  //   set   → owned by that organisation, visible to its learners and to the
+  //           learners of its child orgs when it is a parent org
+  organisationId String?
+  organisation   Organisation? @relation("OrgJobOpenings", fields: [organisationId], references: [id], onDelete: Cascade)
+
   targetOrgIds String[]
+  // Vestigial since the role collapse — every learner is a LEARNER, so role
+  // targeting cannot narrow anything. Kept so existing rows stay valid.
   targetRoles  String[]
 
   createdById String
@@ -1085,6 +1090,7 @@ model JobOpening {
 
   @@index([status, closingDate])
   @@index([createdById])
+  @@index([organisationId])
 }
 
 model JobAttachment {

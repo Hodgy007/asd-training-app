@@ -34,10 +34,19 @@ export type JobFormInitial = Partial<{
 export function JobBuilderForm({
   initial,
   organisations,
+  /**
+   * Which tier this form writes to. Charity admins post platform-wide jobs via
+   * the super-admin API; org admins post their own org's jobs via the admin API,
+   * which derives ownership from the session and ignores org targeting.
+   */
+  tier = 'charity',
 }: {
   initial?: JobFormInitial
   organisations: Option[]
+  tier?: 'charity' | 'organisation'
 }) {
+  const apiBase = tier === 'charity' ? '/api/super-admin/jobs' : '/api/admin/jobs'
+  const pageBase = tier === 'charity' ? '/super-admin/jobs' : '/admin/jobs'
   const router = useRouter()
   const [values, setValues] = useState<JobFormInitial>({
     status: 'DRAFT',
@@ -75,9 +84,7 @@ export function JobBuilderForm({
         applyUrl: applyMode === 'url' ? values.applyUrl ?? null : null,
         applyEmail: applyMode === 'email' ? values.applyEmail ?? null : null,
       }
-      const url = initial?.id
-        ? `/api/super-admin/jobs/${initial.id}`
-        : '/api/super-admin/jobs'
+      const url = initial?.id ? `${apiBase}/${initial.id}` : apiBase
       const method = initial?.id ? 'PATCH' : 'POST'
       const res = await fetch(url, {
         method,
@@ -89,7 +96,7 @@ export function JobBuilderForm({
         throw new Error(msg.error ?? 'Failed to save')
       }
       const { job } = await res.json()
-      router.push(`/super-admin/jobs/${job.id}`)
+      router.push(`${pageBase}/${job.id}`)
       router.refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save')
@@ -249,23 +256,16 @@ export function JobBuilderForm({
             <option value="ARCHIVED">Archived</option>
           </select>
         </label>
-        <label className="block">
-          <span className="text-sm">Organisations (empty = all)</span>
-          <select multiple className="input min-h-[8rem]" value={values.targetOrgIds ?? []} onChange={(e) => set('targetOrgIds', Array.from(e.target.selectedOptions).map((o) => o.value))}>
-            {organisations.map((o) => (
-              <option key={o.id} value={o.id}>{o.name}</option>
-            ))}
-          </select>
-        </label>
-        <label className="block">
-          <span className="text-sm">Roles (empty = all eligible)</span>
-          <select multiple className="input" value={values.targetRoles ?? []} onChange={(e) => set('targetRoles', Array.from(e.target.selectedOptions).map((o) => o.value))}>
-            <option value="CAREER_DEV_OFFICER">Careers Professional</option>
-            <option value="STUDENT">Student</option>
-            <option value="INTERN">Intern</option>
-            <option value="EMPLOYEE">Employee</option>
-          </select>
-        </label>
+        {tier === 'charity' && (
+          <label className="block">
+            <span className="text-sm">Organisations (empty = all)</span>
+            <select multiple className="input min-h-[8rem]" value={values.targetOrgIds ?? []} onChange={(e) => set('targetOrgIds', Array.from(e.target.selectedOptions).map((o) => o.value))}>
+              {organisations.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          </label>
+        )}
       </section>
 
       <div className="flex gap-3 sticky bottom-0 bg-white dark:bg-slate-900 py-3 border-t">

@@ -9,7 +9,7 @@ import {
   isOrgAdmin,
   isLeafRole,
   isAdmin,
-  canAccessCareers,
+  isLearner,
   canCreateSessions,
   hasPermission,
   CHARITY_PERMISSIONS,
@@ -134,21 +134,32 @@ describe('isOrgAdmin', () => {
   })
 })
 
-describe('isLeafRole', () => {
-  const leafRoles = ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE', 'PARTICIPANT', 'FAMILY_CARER']
+describe('isLearner', () => {
   const nonLeafRoles = ['SUPER_ADMIN', 'CHARITY_EMPLOYEE', 'ORG_ADMIN']
 
-  it.each(leafRoles)('returns true for %s', (role) => {
-    expect(isLeafRole(makeSession(role))).toBe(true)
+  it('returns true for LEARNER', () => {
+    expect(isLearner(makeSession('LEARNER'))).toBe(true)
   })
 
   it.each(nonLeafRoles)('returns false for %s', (role) => {
-    expect(isLeafRole(makeSession(role))).toBe(false)
+    expect(isLearner(makeSession(role))).toBe(false)
   })
 
   it('returns false for null session', () => {
-    expect(isLeafRole(null)).toBe(false)
+    expect(isLearner(null)).toBe(false)
   })
+
+  it('isLeafRole is kept as an alias of isLearner', () => {
+    expect(isLeafRole(makeSession('LEARNER'))).toBe(true)
+    expect(isLeafRole(makeSession('ORG_ADMIN'))).toBe(false)
+  })
+
+  it.each(['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE', 'PARTICIPANT', 'FAMILY_CARER'])(
+    'returns false for retired role %s',
+    (role) => {
+      expect(isLearner(makeSession(role))).toBe(false)
+    }
+  )
 })
 
 describe('isAdmin (backwards-compat alias)', () => {
@@ -161,31 +172,9 @@ describe('isAdmin (backwards-compat alias)', () => {
   })
 })
 
-describe('canAccessCareers', () => {
-  it('returns true for CAREER_DEV_OFFICER', () => {
-    expect(canAccessCareers(makeSession('CAREER_DEV_OFFICER'))).toBe(true)
-  })
-
-  it('returns false for SUPER_ADMIN', () => {
-    expect(canAccessCareers(makeSession('SUPER_ADMIN'))).toBe(false)
-  })
-
-  it('returns false for ORG_ADMIN', () => {
-    expect(canAccessCareers(makeSession('ORG_ADMIN'))).toBe(false)
-  })
-})
-
 describe('canCreateSessions', () => {
   it('returns true for ORG_ADMIN', () => {
     expect(canCreateSessions(makeSession('ORG_ADMIN'))).toBe(true)
-  })
-
-  it('returns true for CAREER_DEV_OFFICER', () => {
-    expect(canCreateSessions(makeSession('CAREER_DEV_OFFICER'))).toBe(true)
-  })
-
-  it('returns true for CAREGIVER', () => {
-    expect(canCreateSessions(makeSession('CAREGIVER'))).toBe(true)
   })
 
   it('returns true for SUPER_ADMIN (has all permissions)', () => {
@@ -206,20 +195,8 @@ describe('canCreateSessions', () => {
     expect(canCreateSessions(session)).toBe(false)
   })
 
-  it('returns false for STUDENT', () => {
-    expect(canCreateSessions(makeSession('STUDENT'))).toBe(false)
-  })
-
-  it('returns false for INTERN', () => {
-    expect(canCreateSessions(makeSession('INTERN'))).toBe(false)
-  })
-
-  it('returns false for EMPLOYEE', () => {
-    expect(canCreateSessions(makeSession('EMPLOYEE'))).toBe(false)
-  })
-
-  it('returns false for FAMILY_CARER (stripped-back surface — no Workshops)', () => {
-    expect(canCreateSessions(makeSession('FAMILY_CARER'))).toBe(false)
+  it('returns false for LEARNER', () => {
+    expect(canCreateSessions(makeSession('LEARNER'))).toBe(false)
   })
 
   it('returns false for null session', () => {
@@ -262,8 +239,8 @@ describe('hasPermission', () => {
     expect(hasPermission(session, 'manage_organisations')).toBe(false)
   })
 
-  it('returns false for STUDENT regardless of permission', () => {
-    const session = makeSession('STUDENT')
+  it('returns false for LEARNER regardless of permission', () => {
+    const session = makeSession('LEARNER')
     expect(hasPermission(session, 'view_reports')).toBe(false)
   })
 
@@ -282,12 +259,7 @@ describe('getRoleLabel', () => {
     expect(getRoleLabel('SUPER_ADMIN')).toBe('Charity Admin')
     expect(getRoleLabel('CHARITY_EMPLOYEE')).toBe('Charity Employee')
     expect(getRoleLabel('ORG_ADMIN')).toBe('Org Admin')
-    expect(getRoleLabel('CAREGIVER')).toBe('Practitioner')
-    expect(getRoleLabel('CAREER_DEV_OFFICER')).toBe('Careers Professional')
-    expect(getRoleLabel('STUDENT')).toBe('Student')
-    expect(getRoleLabel('INTERN')).toBe('Intern')
-    expect(getRoleLabel('EMPLOYEE')).toBe('Employee')
-    expect(getRoleLabel('FAMILY_CARER')).toBe('Parent/Friend/Relative/Carer')
+    expect(getRoleLabel('LEARNER')).toBe('Learner')
   })
 
   it('returns the raw string for unknown roles', () => {
@@ -312,9 +284,15 @@ describe('CHARITY_PERMISSIONS constant', () => {
 })
 
 describe('ROLE_LABELS constant', () => {
-  it('has labels for all ten roles', () => {
-    expect(Object.keys(ROLE_LABELS)).toHaveLength(10)
-    expect(ROLE_LABELS.PARTICIPANT).toBe('Workshop Participant')
-    expect(ROLE_LABELS.FAMILY_CARER).toBe('Parent/Friend/Relative/Carer')
+  it('has labels for all four roles', () => {
+    expect(Object.keys(ROLE_LABELS)).toHaveLength(4)
+    expect(ROLE_LABELS.SUPER_ADMIN).toBe('Charity Admin')
+    expect(ROLE_LABELS.LEARNER).toBe('Learner')
+  })
+
+  it('no longer carries labels for the retired roles', () => {
+    for (const retired of ['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE', 'PARTICIPANT', 'FAMILY_CARER']) {
+      expect(ROLE_LABELS[retired]).toBeUndefined()
+    }
   })
 })

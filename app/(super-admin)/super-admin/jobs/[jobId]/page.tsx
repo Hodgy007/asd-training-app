@@ -26,7 +26,7 @@ export default async function EditJobPage({ params }: { params: { jobId: string 
     }),
     prisma.organisation.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
     prisma.user.findMany({
-      where: { role: { in: ['CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE'] }, active: true },
+      where: { role: 'LEARNER', active: true },
       select: { id: true, name: true, email: true, role: true },
       orderBy: { email: 'asc' },
     }),

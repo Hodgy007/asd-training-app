@@ -44,12 +44,7 @@ interface LibraryCollection {
 }
 
 const ROLE_OPTIONS = [
-  { value: 'CAREGIVER', label: 'Practitioner' },
-  { value: 'FAMILY_CARER', label: 'Parent/Friend/Relative/Carer' },
-  { value: 'CAREER_DEV_OFFICER', label: 'Careers Professional' },
-  { value: 'STUDENT', label: 'Student' },
-  { value: 'INTERN', label: 'Intern' },
-  { value: 'EMPLOYEE', label: 'Employee' },
+  { value: 'LEARNER', label: 'Learner' },
   { value: 'ORG_ADMIN', label: 'Org Admin' },
 ]
 
@@ -160,7 +155,9 @@ export default function LibraryPage() {
         setEditThumbnailUrl(j.thumbnailUrl)
       }
       if (includeImage && !j.thumbnailUrl) {
-        showToast(j.imageError ? 'Thumbnail generation failed.' : 'Thumbnail not returned.', 'error')
+        // Surface the gateway's actual error — a generic message here hides
+        // model-id and auth failures that are otherwise invisible from the UI.
+        showToast(j.imageError || 'Thumbnail not returned.', 'error')
       } else {
         showToast(j.source === 'ai' ? 'AI suggestions applied.' : 'Used fallback (no AI prompt configured).', 'success')
       }
@@ -277,7 +274,9 @@ export default function LibraryPage() {
         setFormThumbnail(null)
       }
       if (includeImage && !j.thumbnailUrl) {
-        showToast(j.imageError ? 'Thumbnail generation failed.' : 'Thumbnail not returned.', 'error')
+        // Surface the gateway's actual error — a generic message here hides
+        // model-id and auth failures that are otherwise invisible from the UI.
+        showToast(j.imageError || 'Thumbnail not returned.', 'error')
       } else {
         showToast(j.source === 'ai' ? 'AI suggestions applied.' : 'Used fallback (no AI prompt configured).', 'success')
       }

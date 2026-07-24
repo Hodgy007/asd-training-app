@@ -9,12 +9,9 @@ export const JOB_EMPLOYMENT_TYPES = [
   'FULL_TIME',
   'VOLUNTEER',
 ] as const
-export const JOB_TARGETABLE_ROLES = [
-  'CAREER_DEV_OFFICER',
-  'STUDENT',
-  'INTERN',
-  'EMPLOYEE',
-] as const
+// Vestigial with a single leaf role — targeting is by organisation via
+// targetOrgIds. Kept so existing rows and the schema stay valid.
+export const JOB_TARGETABLE_ROLES = ['LEARNER'] as const
 
 export const createJobSchema = z
   .object({

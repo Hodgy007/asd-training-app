@@ -1,13 +1,12 @@
 import { z } from 'zod'
 import { sanitizeHtml } from './sanitize'
 
-export const EDITABLE_HOMEPAGE_ROLES = [
-  'STUDENT',
-  'INTERN',
-  'EMPLOYEE',
-  'CAREGIVER',
-  'CAREER_DEV_OFFICER',
-] as const
+/**
+ * Homepages are keyed by Role, and there is now exactly one leaf role — so this
+ * is effectively "the default homepage" that every logged-in learner sees.
+ * Per-organisation overrides layer on top of it separately.
+ */
+export const EDITABLE_HOMEPAGE_ROLES = ['LEARNER'] as const
 
 export type EditableHomepageRole = (typeof EDITABLE_HOMEPAGE_ROLES)[number]
 

@@ -19,21 +19,16 @@ export const TOOLKIT_FORM_ROLE_LABELS: Record<ToolkitFormRole, string> = {
   supporter: 'I am a supporter',
 }
 
-// Form-role → platform role mapping for self-registration via the
-// public toolkit. The Public Toolkit Users org's allowedRoles must
-// include each target.
-//   - autistic young person/adult → STUDENT
-//   - parent/carer/relative + supporter → FAMILY_CARER (stripped-back surface)
-//   - professional → CAREGIVER ("Practitioner")
-//   - employer → EMPLOYEE (no dedicated EMPLOYER role exists)
-export type ToolkitPlatformRole = 'CAREGIVER' | 'STUDENT' | 'EMPLOYEE' | 'FAMILY_CARER'
+// Every toolkit form role now maps to the single LEARNER platform role — what a
+// person sees comes from their organisation's assigned programmes, not their role.
+//
+// No information is lost by this: the self-declared identity is persisted verbatim
+// on ToolkitRegistrant.formRole, which is what reporting reads. The platform role
+// only ever decided access, and all five form roles get the same access.
+export type ToolkitPlatformRole = 'LEARNER'
 
-export function mapFormRoleToPlatformRole(formRole: ToolkitFormRole): ToolkitPlatformRole {
-  if (formRole === 'autistic') return 'STUDENT'
-  if (formRole === 'employer') return 'EMPLOYEE'
-  if (formRole === 'practitioner') return 'CAREGIVER'
-  // parent_carer + supporter
-  return 'FAMILY_CARER'
+export function mapFormRoleToPlatformRole(_formRole: ToolkitFormRole): ToolkitPlatformRole {
+  return 'LEARNER'
 }
 
 export async function getPublicToolkitOrgId(): Promise<string | null> {

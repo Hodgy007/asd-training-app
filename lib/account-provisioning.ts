@@ -126,12 +126,10 @@ export interface GrantFreeAccessResult {
 export async function grantFreeAccess(args: {
   programId: string
   programName: string
-  /** Per-program default role for self-claim users; null/undefined → CAREGIVER. */
-  programDefaultLeafRole?: 'CAREGIVER' | 'CAREER_DEV_OFFICER' | 'STUDENT' | 'INTERN' | 'EMPLOYEE' | null
   email: string
   name: string | null
 }): Promise<GrantFreeAccessResult> {
-  const { programId, programName, programDefaultLeafRole, email, name } = args
+  const { programId, programName, email, name } = args
 
   const existing = await prisma.user.findUnique({
     where: { email },
@@ -201,7 +199,7 @@ export async function grantFreeAccess(args: {
         email,
         name: name ?? emailLocal,
         password: passwordHash,
-        role: programDefaultLeafRole ?? 'CAREGIVER',
+        role: 'LEARNER',
         organisationId: null,
         mustChangePassword: true,
         active: true,

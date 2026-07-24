@@ -12,7 +12,7 @@ const addMemberSchema = z.object({
   name: z.string().min(1).max(200),
   email: z.string().email(),
   password: z.string().min(8).max(128),
-  role: z.enum(['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']).default('STUDENT'),
+  role: z.literal('LEARNER').default('LEARNER'),
 })
 
 export async function POST(

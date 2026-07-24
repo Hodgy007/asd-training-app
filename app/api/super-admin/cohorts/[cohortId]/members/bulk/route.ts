@@ -11,7 +11,7 @@ const bulkSchema = z.object({
   members: z.array(z.object({
     name: z.string().min(1).max(200),
     email: z.string().email(),
-    role: z.enum(['CAREGIVER', 'CAREER_DEV_OFFICER', 'STUDENT', 'INTERN', 'EMPLOYEE']).default('STUDENT'),
+    role: z.literal('LEARNER').default('LEARNER'),
   })).min(1).max(200),
 })
 
