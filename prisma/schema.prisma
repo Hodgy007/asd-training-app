@@ -601,6 +601,7 @@ enum ProgramAudience {
 }
 
 enum OrganisationType {
+  CHARITY // the charity's own organisation — its members are internal staff
   SCHOOL
   COLLEGE
   ACADEMY
