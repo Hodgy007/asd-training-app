@@ -723,24 +723,6 @@ export default function OrgDetailPage() {
           {/* Features */}
           <div>
             <label className="label mb-2 block">Features</label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={editCvBuilder}
-                onChange={(e) => setEditCvBuilder(e.target.checked)}
-                className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-              />
-              <span className="text-sm text-slate-700 dark:text-slate-300">CV Builder</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={editCareersAdvisor}
-                onChange={(e) => setEditCareersAdvisor(e.target.checked)}
-                className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-              />
-              <span className="text-sm text-slate-700 dark:text-slate-300">Careers Advisor</span>
-            </label>
           </div>
 
           {/* Training Programs */}
@@ -1070,26 +1052,6 @@ export default function OrgDetailPage() {
                     </div>
                   </div>
 
-                  <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <label className="flex items-center gap-2 text-xs cursor-pointer px-3 py-2 rounded-lg border border-calm-200 bg-white hover:bg-calm-50">
-                      <input
-                        type="checkbox"
-                        checked={adminCvBuilder}
-                        onChange={(e) => setAdminCvBuilder(e.target.checked)}
-                        className="accent-primary-600"
-                      />
-                      <span className="text-slate-700 font-medium">CV Builder</span>
-                    </label>
-                    <label className="flex items-center gap-2 text-xs cursor-pointer px-3 py-2 rounded-lg border border-calm-200 bg-white hover:bg-calm-50">
-                      <input
-                        type="checkbox"
-                        checked={adminCareersAdvisor}
-                        onChange={(e) => setAdminCareersAdvisor(e.target.checked)}
-                        className="accent-primary-600"
-                      />
-                      <span className="text-slate-700 font-medium">Careers Advisor</span>
-                    </label>
-                  </div>
 
                   <div className="sm:col-span-3">
                     <label className="label text-xs">
@@ -1284,26 +1246,6 @@ export default function OrgDetailPage() {
                                   ))
                                 )}
                               </div>
-                            </div>
-                            <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              <label className="flex items-center gap-2 text-xs cursor-pointer px-3 py-2 rounded-lg border border-calm-200 bg-white hover:bg-calm-50">
-                                <input
-                                  type="checkbox"
-                                  checked={editUserCvBuilder}
-                                  onChange={(e) => setEditUserCvBuilder(e.target.checked)}
-                                  className="accent-primary-600"
-                                />
-                                <span className="text-slate-700 font-medium">CV Builder</span>
-                              </label>
-                              <label className="flex items-center gap-2 text-xs cursor-pointer px-3 py-2 rounded-lg border border-calm-200 bg-white hover:bg-calm-50">
-                                <input
-                                  type="checkbox"
-                                  checked={editUserCareersAdvisor}
-                                  onChange={(e) => setEditUserCareersAdvisor(e.target.checked)}
-                                  className="accent-primary-600"
-                                />
-                                <span className="text-slate-700 font-medium">Careers Advisor</span>
-                              </label>
                             </div>
                             <div className="sm:col-span-3">
                               <label className="label text-xs">
@@ -1609,20 +1551,6 @@ function OrgDetailsView({
         )}
       </div>
 
-      {/* Features */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Features</p>
-        <div className="flex flex-wrap gap-2">
-          <Chip tone={org.cvBuilderEnabled ? 'emerald' : 'slate'}>
-            {org.cvBuilderEnabled ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-            CV Builder
-          </Chip>
-          <Chip tone={org.careersAdvisorEnabled ? 'emerald' : 'slate'}>
-            {org.careersAdvisorEnabled ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-            Careers Advisor
-          </Chip>
-        </div>
-      </div>
 
       {/* Training Programs */}
       <div>

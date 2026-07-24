@@ -18,7 +18,6 @@ export default function PrivacyPage() {
           <li>A hashed password (we never store your real password)</li>
           <li>If enabled, a two-factor authentication secret</li>
           <li>Training progress and quiz scores</li>
-          <li>CV Builder and Careers Advisor responses (if you use those tools)</li>
         </ul>
 
         <h2>Lawful basis</h2>
@@ -29,19 +28,14 @@ export default function PrivacyPage() {
 
         <h2>Pseudonymisation before AI</h2>
         <p>
-          Where AI features are used (e.g. CV Builder suggestions, Careers Advisor reports), we
-          only send the content you submit. Google never receives your email address or
-          organisation in AI payloads.
+          Where AI features are used, we only send the content you submit. Google never receives
+          your email address or organisation in AI payloads.
         </p>
 
         <h2>Retention</h2>
         <ul>
           <li>
             Your account data is kept until your organisation removes you or closes your account.
-          </li>
-          <li>
-            CV drafts and Careers Advisor sessions are kept until you delete them or your account
-            is closed.
           </li>
         </ul>
 
@@ -53,9 +47,9 @@ export default function PrivacyPage() {
             Addendum. Encrypted at rest (AES-256).
           </li>
           <li>
-            <strong>Google LLC</strong> (US) — Gemini AI for CV and Careers Advisor features.
-            Google&rsquo;s API Terms of Service prohibit use of API content for model training.
-            SCC + UK Addendum.
+            <strong>Google LLC</strong> (US) — Gemini AI for training content and document
+            generation. Google&rsquo;s API Terms of Service prohibit use of API content for model
+            training. SCC + UK Addendum.
           </li>
           <li>
             <strong>Microsoft Corp.</strong> — Azure AD (optional single sign-on; only if your

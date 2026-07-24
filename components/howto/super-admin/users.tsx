@@ -41,9 +41,7 @@ export default function UsersHowTo() {
         <li><strong>Charity Admin</strong> <Crown className="inline h-3.5 w-3.5 text-primary-500" /> &mdash; full platform access including user management. Manages organisations, training content, surveys, announcements, and reports across the entire platform.</li>
         <li><strong>Charity Employee</strong> <Shield className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; delegated platform access with specific permissions granted by a Charity Admin. Can manage organisations, training, surveys, announcements, and/or reports depending on assigned permissions.</li>
         <li><strong>Org Admin</strong> <Users className="inline h-3.5 w-3.5 text-blue-500" /> &mdash; manages users, announcements, sessions, and reports within their own organisation.</li>
-        <li><strong>Practitioner</strong> (Caregiver) &mdash; accesses ASD training modules and training reports.</li>
-        <li><strong>Careers Professional</strong> (Career Dev Officer) &mdash; accesses careers CPD training, CV Builder, Careers Advisor, Jobs, and manages their students.</li>
-        <li><strong>Student</strong> / <strong>Intern</strong> / <strong>Employee</strong> &mdash; access training modules assigned to their organisation, plus CV Builder, Careers Advisor, and Jobs.</li>
+        <li><strong>Learner</strong> &mdash; anyone who takes training, whether internal charity staff or a member of an external organisation. What a learner sees comes from the training programmes their organisation has been assigned, not from their role, so there is no longer a separate role per audience. Learners also get Jobs and the document library.</li>
       </ul>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">MFA / TOTP requirement</h3>
