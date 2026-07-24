@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { canAccessJobs } from '@/lib/rbac'
-import { listVisibleJobsForUser } from '@/lib/jobs'
+import { listVisibleJobsForUser, resolveJobVisibilityUser } from '@/lib/jobs'
 import { JobsClient } from './jobs-client'
 import { HowToPanel } from '@/components/howto/panel'
 import JobsHowTo from '@/components/howto/learner/jobs'
@@ -47,11 +47,7 @@ function toCardAndDetail(j: Awaited<ReturnType<typeof listVisibleJobsForUser>>[n
 export default async function JobsPage() {
   const session = await getServerSession(authOptions)
   if (!canAccessJobs(session) || !session?.user) redirect('/dashboard')
-  const jobs = await listVisibleJobsForUser({
-    id: session.user.id,
-    role: session.user.role,
-    organisationId: session.user.organisationId ?? null,
-  })
+  const jobs = await listVisibleJobsForUser(await resolveJobVisibilityUser(session.user))
   return (
     <>
       <JobsClient initialJobs={jobs.map(toCardAndDetail)} initialSelectedId={null} />

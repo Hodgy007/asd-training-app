@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { canAccessJobs, canManageJobs } from '@/lib/rbac'
-import { getJobForUser } from '@/lib/jobs'
+import { getJobForUser, resolveJobVisibilityUser } from '@/lib/jobs'
 
 // Auth-gated proxy for job attachment downloads. Visibility is checked
 // each request: managers always pass; learners must be able to see the
@@ -28,11 +28,7 @@ export async function GET(
   }
 
   if (!canManageJobs(session)) {
-    const job = await getJobForUser(params.jobId, {
-      id: session.user.id,
-      role: session.user.role,
-      organisationId: session.user.organisationId ?? null,
-    })
+    const job = await getJobForUser(params.jobId, await resolveJobVisibilityUser(session.user))
     if (!job) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
