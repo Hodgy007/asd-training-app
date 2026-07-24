@@ -11,7 +11,6 @@ import {
   XCircle,
   RefreshCw,
   ChevronDown,
-  ChevronUp,
   Clock,
   AlertCircle,
   Search,
@@ -52,13 +51,6 @@ const ROLE_LABELS: Record<string, string> = {
   EMPLOYEE: 'Employee',
 }
 
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-}
-
 export default function OrganisationsPage() {
   return (
     <Suspense>
@@ -73,27 +65,9 @@ function OrganisationsContent() {
   const [programs, setPrograms] = useState<ProgramOption[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [showForm, setShowForm] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Create form state
-  const [formName, setFormName] = useState('')
-  const [formSlug, setFormSlug] = useState('')
-  const [formRoles, setFormRoles] = useState<string[]>([])
-  const [formPrograms, setFormPrograms] = useState<string[]>([])
-  const [formActive, setFormActive] = useState(true)
-  const [formSubmitting, setFormSubmitting] = useState(false)
-  const [formOrgType, setFormOrgType] = useState<string>('SCHOOL')
-  const [formContactName, setFormContactName] = useState('')
-  const [formContactEmail, setFormContactEmail] = useState('')
-  const [formContactPhone, setFormContactPhone] = useState('')
-  const [formAddress1, setFormAddress1] = useState('')
-  const [formAddress2, setFormAddress2] = useState('')
-  const [formCity, setFormCity] = useState('')
-  const [formCounty, setFormCounty] = useState('')
-  const [formPostcode, setFormPostcode] = useState('')
-  const [formCountry, setFormCountry] = useState('United Kingdom')
-  const [formIsParentOrg, setFormIsParentOrg] = useState(false)
 
   const fetchOrgs = useCallback(async () => {
     setLoading(true)
@@ -144,77 +118,6 @@ function OrganisationsContent() {
     }
   }
 
-  function handleNameChange(name: string) {
-    setFormName(name)
-    setFormSlug(slugify(name))
-  }
-
-  function toggleRole(role: string) {
-    setFormRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    )
-  }
-
-  function toggleProgram(programId: string) {
-    setFormPrograms((prev) =>
-      prev.includes(programId) ? prev.filter((p) => p !== programId) : [...prev, programId]
-    )
-  }
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault()
-    setFormSubmitting(true)
-    try {
-      const res = await fetch('/api/super-admin/organisations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formName,
-          slug: formSlug,
-          allowedRoles: formRoles,
-          allowedProgramIds: formPrograms,
-          active: formActive,
-          organisationType: formOrgType,
-          contactName: formContactName || undefined,
-          contactEmail: formContactEmail || undefined,
-          contactPhone: formContactPhone || undefined,
-          addressLine1: formAddress1 || undefined,
-          addressLine2: formAddress2 || undefined,
-          city: formCity || undefined,
-          county: formCounty || undefined,
-          postcode: formPostcode || undefined,
-          country: formCountry || undefined,
-          isParentOrg: formIsParentOrg,
-        }),
-      })
-      if (res.ok) {
-        showToast('Organisation created.', 'success')
-        setShowForm(false)
-        setFormName('')
-        setFormSlug('')
-        setFormRoles([])
-        setFormPrograms([])
-        setFormActive(true)
-        setFormOrgType('SCHOOL')
-        setFormContactName('')
-        setFormContactEmail('')
-        setFormContactPhone('')
-        setFormAddress1('')
-        setFormAddress2('')
-        setFormCity('')
-        setFormCounty('')
-        setFormPostcode('')
-        setFormCountry('United Kingdom')
-        setFormIsParentOrg(false)
-        fetchOrgs()
-      } else {
-        const d = await res.json()
-        showToast(d.error || 'Create failed.', 'error')
-      }
-    } finally {
-      setFormSubmitting(false)
-    }
-  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
@@ -240,188 +143,15 @@ function OrganisationsContent() {
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Manage all organisations on the platform.</p>
         </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
+        <Link
+          href="/super-admin/organisations/new"
           className="btn-primary flex items-center gap-2"
         >
-          {showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {showForm ? 'Cancel' : 'Create Organisation'}
-        </button>
+          <Plus className="h-4 w-4" />
+          Add Organisation
+        </Link>
       </div>
 
-      {/* Create form */}
-      {showForm && (
-        <div className="card space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">New Organisation</h2>
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="label">Name</label>
-                <input
-                  className="input w-full"
-                  type="text"
-                  value={formName}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  required
-                  placeholder="e.g. Sunrise Care"
-                />
-              </div>
-              <div>
-                <label className="label">URL Identifier</label>
-                <input
-                  className="input w-full font-mono text-sm"
-                  type="text"
-                  value={formSlug}
-                  onChange={(e) => setFormSlug(e.target.value)}
-                  required
-                  placeholder="e.g. sunrise-care"
-                />
-              </div>
-            </div>
-
-            {/* Organisation Type */}
-            <div>
-              <label className="label">Organisation Type</label>
-              <p className="text-xs text-slate-400 mb-1">Sets the default role for self-registered users.</p>
-              <div className="relative">
-                <select
-                  value={formOrgType}
-                  onChange={(e) => setFormOrgType(e.target.value)}
-                  className="input w-full appearance-none pr-8"
-                >
-                  {ORG_TYPES.map((t) => (
-                    <option key={t} value={t}>{ORG_TYPE_LABELS[t]}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Primary Contact */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="label">Contact Name</label>
-                <input className="input w-full" type="text" value={formContactName} onChange={(e) => setFormContactName(e.target.value)} placeholder="e.g. Jane Smith" />
-              </div>
-              <div>
-                <label className="label">Contact Email</label>
-                <input className="input w-full" type="email" value={formContactEmail} onChange={(e) => setFormContactEmail(e.target.value)} placeholder="e.g. jane@example.com" />
-              </div>
-              <div>
-                <label className="label">Contact Phone</label>
-                <input className="input w-full" type="tel" value={formContactPhone} onChange={(e) => setFormContactPhone(e.target.value)} placeholder="e.g. 07700 123456" />
-              </div>
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="label">Address Line 1</label>
-              <input className="input w-full" type="text" value={formAddress1} onChange={(e) => setFormAddress1(e.target.value)} placeholder="e.g. 10 High Street" />
-            </div>
-            <div>
-              <label className="label">Address Line 2</label>
-              <input className="input w-full" type="text" value={formAddress2} onChange={(e) => setFormAddress2(e.target.value)} placeholder="Optional" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="label">City / Town</label>
-                <input className="input w-full" type="text" value={formCity} onChange={(e) => setFormCity(e.target.value)} placeholder="e.g. London" />
-              </div>
-              <div>
-                <label className="label">County</label>
-                <input className="input w-full" type="text" value={formCounty} onChange={(e) => setFormCounty(e.target.value)} placeholder="e.g. Hertfordshire" />
-              </div>
-              <div>
-                <label className="label">Postcode</label>
-                <input className="input w-full" type="text" value={formPostcode} onChange={(e) => setFormPostcode(e.target.value)} placeholder="e.g. AL5 2QP" />
-              </div>
-            </div>
-            <div>
-              <label className="label">Country</label>
-              <input className="input w-full" type="text" value={formCountry} onChange={(e) => setFormCountry(e.target.value)} />
-            </div>
-
-            {/* Allowed Roles */}
-            <div>
-              <label className="label mb-2 block">Allowed Roles</label>
-              <div className="flex flex-wrap gap-3">
-                {LEAF_ROLES.map((role) => (
-                  <label key={role} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formRoles.includes(role)}
-                      onChange={() => toggleRole(role)}
-                      className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-sm text-slate-700">{ROLE_LABELS[role] ?? role}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Training Programs */}
-            <div>
-              <label className="label mb-2 block">Training Programs</label>
-              <div className="flex flex-wrap gap-3">
-                {programs.map((prog) => (
-                  <label key={prog.id} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formPrograms.includes(prog.id)}
-                      onChange={() => toggleProgram(prog.id)}
-                      className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-sm text-slate-700">{prog.name}</span>
-                  </label>
-                ))}
-                {programs.length === 0 && (
-                  <p className="text-xs text-slate-400">Loading programs...</p>
-                )}
-              </div>
-            </div>
-
-            {/* Active toggle */}
-            <div>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formActive}
-                  onChange={(e) => setFormActive(e.target.checked)}
-                  className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm font-medium text-slate-700">Active</span>
-              </label>
-            </div>
-
-            {/* Parent org toggle */}
-            <div>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formIsParentOrg}
-                  onChange={(e) => setFormIsParentOrg(e.target.checked)}
-                  className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm font-medium text-slate-700">Parent Organisation</span>
-              </label>
-              <p className="text-xs text-slate-400 mt-1 ml-7">Enable if this organisation will have child organisations underneath it.</p>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 rounded-xl border border-calm-200 text-sm font-medium text-slate-600 hover:bg-calm-50"
-              >
-                Cancel
-              </button>
-              <button type="submit" disabled={formSubmitting} className="btn-primary">
-                {formSubmitting ? 'Creating\u2026' : 'Create Organisation'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {/* Table */}
       {(() => {
