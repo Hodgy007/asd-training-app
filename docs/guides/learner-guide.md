@@ -165,7 +165,7 @@ Your organisation may have a document library set up for you. This is a collecti
 
 ### Accessing the library
 
-If collections have been shared with your role, they appear as individual links in the left-hand sidebar. You can also browse all collections you have access to by visiting `/library` directly.
+If any collections have been shared with you, a single **Document Library** link appears in the left-hand sidebar. Click it to see everything you have access to. If only one collection has been shared with you, the page opens straight into it.
 
 ### Viewing and downloading documents
 
@@ -277,9 +277,9 @@ Try these steps first:
 
 The training content is reviewed by specialists. If something in a lesson seems unclear, note your question and raise it with your line manager or the professional you work alongside. They will be best placed to help you apply the learning in your specific context.
 
-### The built-in How to Guide
+### Built-in help on every page
 
-The platform has an in-built guide available at any time. Click **How to Guide** in the left-hand sidebar. This guide covers the same ground as this document and is always up to date.
+Most pages have a **How to use this page** panel at the bottom. Click it to expand step-by-step help for whatever you are looking at — your dashboard, a training module, the document library, workshops or jobs. It is always up to date with the version of the platform you are using.
 
 ### Contacting your organisation administrator
 
@@ -287,4 +287,4 @@ For account issues — password resets, access problems, or questions about whic
 
 ---
 
-*Guide version: May 2026. For the latest version of this guide, click How to Guide in the platform sidebar.*
+*Guide version: July 2026. For help with a specific screen, expand the "How to use this page" panel at the bottom of that page.*

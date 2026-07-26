@@ -156,7 +156,7 @@ A: Two steps. (1) Set `GOOGLE_CLIENT_ID` / `AZURE_AD_CLIENT_ID` env vars in Verc
 A: Both are rows in the `Organisation` table. **Organisations** are registered schools / employers with their own admin and ongoing user accounts. **Cohorts** are lightweight groups for one-off events (a public workshop, an awareness session) — members are managed by the charity directly, with no organisation admin. Cohorts can also be imported from Eventbrite event attendee lists.
 
 **Q: How do brand assets get used?**
-A: The Brand Store under Charity Admin holds AAA logos, banners, and illustrations. The AI banner generator and AI library-thumbnail features use them as context so the output stays on-brand. You can tick "Use brand store as context" on the banner-generation modal.
+A: Brand Assets, under Products in the Charity Admin area, holds AAA logos, banners, and illustrations. The AI banner generator and AI library-thumbnail features use them as context so the output stays on-brand. You can tick "Use brand store as context" on the banner-generation modal.
 
 **Q: How do I extract reporting data into our internal system (e.g. Dynamics 365)?**
 A: Create an Integration API key at `/super-admin/integrations`, then call `/api/integrations/reports?section=training|library|surveys` with a Bearer token. The raw key is shown only once on creation — store it safely.

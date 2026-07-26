@@ -4,6 +4,26 @@ The PDFs in this folder are **generated artefacts** — every PDF is built from 
 
 This changelog tracks what's changed since the last rebuild. When you regenerate the PDFs, you can clear entries that are now reflected in the freshly-built PDFs.
 
+## 2026-07-26 — Documentation sweep against the current build
+
+All nine PDFs rebuilt. Everything below was documentation drift — no platform behaviour changed.
+
+**Navigation.** The Charity Admin sidebar was slimmed at some point to Overview, Feedback, Organisations, Products, Reports, Subscribers and Users, with everything the charity publishes moved behind the **Products** hub. Every guide still described the old long sidebar and told readers to click items that are no longer there. All navigation instructions now route through Products where that is where the page actually lives.
+
+**The standalone How to Guide pages are gone.** Help is now a collapsed "How to use this page" panel at the foot of each page. All three role guides still told readers to click a sidebar item that does not exist.
+
+**Brand Store is called Brand Assets**, and lives under Products rather than the sidebar. Renamed throughout, except for the literal checkbox label "Use brand store as context", which is still what the banner modal says.
+
+**Document Library in the learner sidebar** is one link, not one link per collection. Corrected in the learner guide and the README.
+
+**MFA applies to Charity Employees too**, not just Charity Admins and Org Admins. The middleware has always enforced it for all three; the docs listed two.
+
+**Org Admin guide gained a Job Openings section** (§9) — organisation-tier job openings shipped in July 2026 with no user documentation at all. The "what you cannot do" list was also wrong: it omitted that an Org Admin cannot assign themselves a training programme, cannot create a second Org Admin, and cannot edit their own home page.
+
+**Stale integration-API references** to the removed `cv` and `careers` sections, and a `STUDENT` role in an example payload, corrected in the README and the Integration Reports Guide.
+
+**One live defect recorded, not fixed:** the **Audit Log** item in the Org Admin sidebar points at `/admin/audit`, which was never built. It is marked "reserved for a future release" in the guide. Either build the page or drop the nav item.
+
 ## 2026-07-26 — New: Platform Administration Guide
 
 Added a ninth PDF, `AAA_Platform_Administration.pdf`, built from `platform-administration.md`.

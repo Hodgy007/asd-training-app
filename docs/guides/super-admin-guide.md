@@ -22,7 +22,7 @@
 14. [Charity Employee Accounts](#14-charity-employee-accounts)
 15. [Single Sign-On (SSO) Setup](#15-single-sign-on-sso-setup)
 16. [Security and MFA](#16-security-and-mfa)
-17. [Brand Asset Store](#17-brand-asset-store)
+17. [Brand Assets](#17-brand-assets)
 
 ---
 
@@ -38,7 +38,33 @@ Your responsibilities include:
 - Publishing platform-wide announcements to all users
 - Viewing training progress reports across all organisations
 
-Super Admins access a separate area of the platform at `/super-admin`. You will not see the regular learner dashboard — your sidebar includes **Overview**, **Users**, **Organisations**, **Cohorts**, **Document Library**, **Training Content**, **Surveys**, **Announcements**, **Workshops**, **Job Openings**, **Reports**, **Impact**, **Integrations**, **AI Prompts**, **Brand Store**, **Settings**, and **How to Guide**. The sidebar can be collapsed to a narrow icon rail using the collapse toggle at the top — useful on smaller laptops or when working in a side-by-side layout. Charity Staff (CHARITY_EMPLOYEE) see a subset of these items based on the permissions a Charity Admin has granted them.
+Super Admins access a separate area of the platform at `/super-admin`. You will not see the regular learner dashboard.
+
+The sidebar is deliberately short: **Overview**, **Feedback**, **Organisations**, **Products**, **Reports**, **Subscribers**, **Users**, with **Settings** pinned at the bottom.
+
+Everything the charity publishes sits behind **Products** rather than in the sidebar — click it to reach:
+
+| Tile | What it does |
+|---|---|
+| **AI Prompts** | Tune the AI behaviours used across the platform |
+| **Announcements** | Platform-wide and org-scoped notices |
+| **Brand Assets** | Logos, imagery, palette and tone of voice — pickable in image fields and feedable to AI |
+| **Catalogue — Education / Employer** | The public course catalogue, filtered by audience (opens in a new tab) |
+| **Cohorts** | Learner cohorts, including those imported from Eventbrite |
+| **Document Library** | Document collections and downloads |
+| **Home Page** | Edit the platform default home page and any organisation's override |
+| **Job Openings** | Publish and assign job openings to learners |
+| **Surveys** | Targeted surveys with AI-generated insights |
+| **Training Content** | Programmes, modules, lessons and quizzes |
+| **Workshops** | Schedule virtual classroom sessions |
+
+The sidebar can be collapsed to a narrow icon rail using the collapse toggle at the top — useful on smaller laptops or when working in a side-by-side layout.
+
+Charity Staff (CHARITY_EMPLOYEE) see a subset of both the sidebar and the Products tiles, based on the permissions a Charity Admin has granted them. Four items are never shown to Charity Staff whatever their permissions — **Feedback**, **Subscribers**, **Users** and **Home Page**.
+
+Most pages have a **How to use this page** panel at the bottom. Click it to expand step-by-step help for whatever you are looking at.
+
+> For a full picture of who can administer what — including where the boundary sits between the charity and an external organisation — see the **Platform Administration Guide** (`AAA_Platform_Administration.pdf`).
 
 ---
 
@@ -214,7 +240,7 @@ At the bottom of an organisation's detail page there is a **Danger Zone** sectio
 
 ## 5. Managing Cohorts (Charity-Run Workshops)
 
-Navigate to **Cohorts** in the left-hand sidebar.
+Go to **Products** in the sidebar, then click the **Cohorts** tile.
 
 Cohorts are a lightweight way to group people who are **not part of any registered organisation** — for example, walk-in attendees at a community event, parents at a one-off awareness workshop, or members of the public attending an in-person training session run directly by the charity.
 
@@ -229,7 +255,7 @@ Cohort members are completely separate from your registered organisations — th
 
 ### Creating a cohort
 
-1. Click **Cohorts** in the sidebar.
+1. Go to **Products**, then click the **Cohorts** tile.
 2. Click **New Cohort** in the top-right corner.
 3. Fill in:
    - **Name** — a clear, descriptive label (e.g. "Spring Community Workshop 2026", "Harpenden Library Drop-in — March")
@@ -305,7 +331,7 @@ On the **Training** tab you can see which programmes the cohort currently has ac
 
 Cohorts work seamlessly with the **Document Library**. To share a collection with a cohort:
 
-1. Navigate to **Document Library** in the sidebar.
+1. Go to **Products**, then click the **Document Library** tile.
 2. Open the collection you want to share.
 3. In the **Targeting** section, add the cohort to the list of organisations.
 4. Save.
@@ -318,7 +344,7 @@ The **Documents** tab on the cohort detail page shows a read-only list of all co
 
 In-person workshops use the **Workshops** feature with the **In Person** platform option.
 
-1. Navigate to **Workshops** in the sidebar.
+1. Go to **Products**, then click the **Workshops** tile.
 2. Click **Create Workshop**.
 3. Fill in title, description, date/time, and duration as normal.
 4. Set the **Platform** to **In Person**. (You can leave the meeting URL field blank — for in-person workshops you can use it to store a venue address or directions link.)
@@ -345,7 +371,7 @@ You can reactivate a deactivated cohort at any time.
 
 ## 6. Managing Training Content
 
-Navigate to **Training Content** in the left-hand sidebar.
+Go to **Products** in the sidebar, then click the **Training Content** tile.
 
 Training content uses a three-level hierarchy: **Training Program → Module → Lesson**. Learners see one sidebar link per Training Program assigned to their organisation.
 
@@ -505,7 +531,7 @@ Expand the question, then click **Delete**. You will be asked to confirm before 
 
 ## 8. Announcements
 
-Navigate to **Announcements** in the left-hand sidebar.
+Go to **Products** in the sidebar, then click the **Announcements** tile.
 
 Announcements are messages that are broadcast to all users across every organisation on the platform. They are useful for notifying everyone about scheduled maintenance, new features, or important updates.
 
@@ -576,7 +602,7 @@ Organisations that wish to auto-generate Zoom or Microsoft Teams meeting links f
 
 ## 10. Document Library
 
-Navigate to **Document Library** in the left-hand sidebar.
+Go to **Products** in the sidebar, then click the **Document Library** tile.
 
 The Document Library hosts the charity's curated PDFs, images, and resources. You organise documents into **Collections**, each of which is targeted at a specific list of organisations and roles. Targeted collections appear in the recipient's sidebar (each as its own nav link) and on the `/library` page.
 
@@ -623,7 +649,7 @@ Downloads are tracked per user and per organisation. View download counts in **R
 
 ## 11. Surveys
 
-Navigate to **Surveys** in the left-hand sidebar.
+Go to **Products** in the sidebar, then click the **Surveys** tile.
 
 Surveys let you collect structured feedback or assessments from learners across the platform.
 
@@ -663,7 +689,7 @@ Insights are saved to the survey and can be re-generated at any time.
 
 ## 12. AI Prompts
 
-Navigate to **AI Prompts** in the left-hand sidebar (requires the **Manage AI Prompts** permission).
+Go to **Products** in the sidebar, then click the **AI Prompts** tile (requires the **Manage AI Prompts** permission).
 
 All AI features on the platform — quiz generation, survey insights, and document thumbnails — are powered by prompt rows stored in the database. This page lets you view and edit those prompts.
 
@@ -696,7 +722,7 @@ Click the **Test** button on any prompt to send a sample request and see the AI'
 
 ## 13. Job Openings
 
-Navigate to **Job Openings** in the left-hand sidebar (requires the **Manage Jobs** permission).
+Go to **Products** in the sidebar, then click the **Job Openings** tile (requires the **Manage Job Openings** permission).
 
 Job openings come in two tiers. The charity publishes listings platform-wide from here, optionally narrowed to specific organisations. Separately, each organisation can publish its own openings from its admin panel, visible only to its own learners and to any child organisations beneath it — those are not managed from this page, though they appear in the list with the owning organisation named.
 
@@ -761,9 +787,9 @@ Once the user account exists, open the user's profile in the super admin panel a
 
 Save after ticking the permissions you want.
 
-### How the sidebar adapts
+### How the navigation adapts
 
-The super admin sidebar dynamically shows or hides nav items based on the Charity Employee's permissions. A user with only **View Reports** will see just the Reports link; a user with **Manage Training** and **Manage Surveys** will see those two sections and nothing else.
+Both the sidebar and the **Products** tiles filter themselves to the Charity Employee's permissions. A user with only **View Reports** sees the Reports link and an otherwise empty Products page; a user with **Manage Training** and **Manage Surveys** sees those two tiles and nothing else. **Feedback**, **Subscribers**, **Users** and **Home Page** are hidden from Charity Employees whatever their permissions.
 
 ### Super Admins always have all permissions
 
@@ -852,11 +878,11 @@ If you lose your phone or delete your authenticator app and cannot generate a co
 
 ---
 
-## 17. Brand Asset Store
+## 17. Brand Assets
 
-Navigate to **Brand Store** in the left-hand sidebar.
+Click **Products** in the sidebar, then the **Brand Assets** tile.
 
-The Brand Store is the charity's central library of brand assets — logos, banners, icons, and illustrations — that the platform's AI features pull from when generating images, banners, and document thumbnails. Keeping a well-curated Brand Store means AI-generated outputs stay on-brand without you needing to upload the AAA logo or palette every time.
+Brand Assets is the charity's central library of logos, banners, icons and illustrations that the platform's AI features pull from when generating images, banners and document thumbnails. Keeping it well curated means AI-generated outputs stay on-brand without you needing to upload the AAA logo or palette every time.
 
 ### Uploading assets
 
@@ -867,12 +893,12 @@ Two upload modes are supported:
 
 After upload, the AI scans each new asset and writes auto-generated tags (`aiTags`) so that downstream AI features can find them by topic ("autism awareness", "young people", "blue palette" etc.).
 
-### Using the Brand Store in AI generation
+### Using brand assets in AI generation
 
-Several AI features can use the Brand Store as context:
+Several AI features can use these assets as context:
 
 - **AI banner generator** in announcements / training programmes — tick **"Use brand store as context"** in the banner modal. The AI is prompted to compose a banner that matches the AAA visual identity.
-- **AI thumbnail generator** in the Document Library — automatic. Library AI thumbnails pull from the Brand Store by default.
+- **AI thumbnail generator** in the Document Library — automatic. Library AI thumbnails pull from the brand assets by default.
 
 ### Browsing and moving assets
 
@@ -880,7 +906,7 @@ The list view groups assets by type. Use the filter chips at the top to focus on
 
 ### Permissions
 
-`MANAGE_LIBRARY` (charity employees) or Charity Admin (`SUPER_ADMIN`) can manage the Brand Store. Org Admins do not see it.
+`MANAGE_LIBRARY` (charity employees) or Charity Admin (`SUPER_ADMIN`) can manage brand assets. Org Admins do not see them.
 
 ---
 
