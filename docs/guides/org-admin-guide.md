@@ -86,19 +86,18 @@ The left-hand sidebar shows:
 |---|---|
 | **Users** | View, create, and manage all users in your organisation |
 | **Announcements** | Post messages that appear on your members' dashboards |
-| **Audit Log** | Reserved for a future release — this page has not been built yet |
 | **Billing** | Your subscription and invoices |
 | **Catalogue** | The public course catalogue *(opens in a new tab)* |
 | **Document Library** | View document collections shared with your organisation |
 | **Enterprise SSO** | Configure SAML SSO for your organisation |
-| **Job Openings** | Publish vacancies for your own learners |
 | **Home** | The home page your members see |
+| **Job Openings** | Publish vacancies for your own learners |
 | **Meeting Settings** | Configure Zoom/Teams API credentials for auto-generated meeting links |
 | **Reports** | See training progress across your organisation |
-| **Workshops** | Create and manage virtual classroom sessions |
 | **Schools** | Create and manage child organisations *(only shown for parent orgs)* |
+| **Workshops** | Create and manage virtual classroom sessions |
 
-**Settings** is pinned at the bottom of the sidebar, above Sign out.
+**Users** is pinned at the top and everything below it is listed alphabetically, so **Schools** appears in its alphabetical place when your organisation has child schools. **Settings** is pinned at the bottom, above Sign out.
 
 The sidebar has a **collapse toggle** at the top — click it to shrink the sidebar to a narrow icon rail, freeing up screen space. The same toggle expands it back to full width.
 

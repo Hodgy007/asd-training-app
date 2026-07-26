@@ -22,7 +22,10 @@ All nine PDFs rebuilt. Everything below was documentation drift — no platform 
 
 **Stale integration-API references** to the removed `cv` and `careers` sections, and a `STUDENT` role in an example payload, corrected in the README and the Integration Reports Guide.
 
-**One live defect recorded, not fixed:** the **Audit Log** item in the Org Admin sidebar points at `/admin/audit`, which was never built. It is marked "reserved for a future release" in the guide. Either build the page or drop the nav item.
+**Two navigation defects fixed in the same pass:**
+
+- The **Audit Log** item in the Org Admin sidebar pointed at `/admin/audit`, which was never built — there is no audit model, no API and no page anywhere in the codebase. The item has been removed rather than left as a dead link. The absence of an audit trail is now recorded as a known gap in §16 of the Platform Administration Guide, since it may matter for assurance purposes.
+- The Org Admin sidebar sorted its items alphabetically only when the organisation was a parent organisation, so parent and non-parent organisations rendered the same menu in two different orders. It now sorts in both cases.
 
 ## 2026-07-26 — New: Platform Administration Guide
 

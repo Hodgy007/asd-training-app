@@ -301,5 +301,5 @@ An org admin should raise a request with Ambitious about Autism for any of the f
 
 Recorded here so they are not mistaken for faults during handover.
 
-- **Audit Log.** An *Audit Log* item appears in the organisation navigation at `/admin/audit`, but the page has not been built. The link currently leads nowhere. Either build the page or remove the navigation item.
+- **There is no audit log.** The platform does not record an administrator activity trail — who changed what, and when. An *Audit Log* navigation item existed briefly but pointed at a page that was never built, and has been removed rather than left as a dead link. If the charity needs an audit trail for assurance or data-protection purposes, it is a piece of work to specify and build, not a setting to switch on.
 - **Home page editing is centralised.** As noted in §11, organisations cannot edit their own home page. This is intentional today; revisit if the charity would rather delegate it.

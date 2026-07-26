@@ -13,7 +13,6 @@ import {
   Briefcase,
   LogOut,
   X,
-  ShieldCheck,
   FolderOpen,
   Building2,
   Settings,
@@ -36,9 +35,9 @@ interface NavItem {
   openInNewTab?: boolean
 }
 
-// Users stays first, How to Guide stays last. Everything in between is sorted
-// alphabetically by label. Schools is conditionally inserted into its
-// alphabetical position when the current org is a parent org.
+// Users stays pinned first; everything after it is sorted alphabetically at
+// render time (see below). Schools falls into its alphabetical position when
+// the current org is a parent org.
 const BASE_NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Users', icon: Users, exact: true },
 ]
@@ -47,7 +46,6 @@ const PARENT_ORG_NAV: NavItem = { href: '/admin/schools', label: 'Schools', icon
 
 const MIDDLE_NAV_ITEMS: NavItem[] = [
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
-  { href: '/admin/audit', label: 'Audit Log', icon: ShieldCheck },
   { href: '/admin/billing', label: 'Billing', icon: CreditCard },
   { href: '/courses', label: 'Catalogue', icon: ShoppingBag, openInNewTab: true },
   { href: '/admin/library', label: 'Document Library', icon: FolderOpen },
@@ -74,9 +72,11 @@ export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCo
   const isDark = colorTheme === 'dark'
 
   const isParentOrg = session?.user?.isParentOrg ?? false
-  const middleWithSchools = isParentOrg
-    ? [...MIDDLE_NAV_ITEMS, PARENT_ORG_NAV].sort((a, b) => a.label.localeCompare(b.label))
-    : MIDDLE_NAV_ITEMS
+  // Sort in both branches, not just the parent one — otherwise a parent org and
+  // a non-parent org render the same menu in two different orders.
+  const middleWithSchools = (isParentOrg ? [...MIDDLE_NAV_ITEMS, PARENT_ORG_NAV] : MIDDLE_NAV_ITEMS)
+    .slice()
+    .sort((a, b) => a.label.localeCompare(b.label))
   const navItems: NavItem[] = [...BASE_NAV_ITEMS, ...middleWithSchools]
 
   const chrome = isClassic ? {
