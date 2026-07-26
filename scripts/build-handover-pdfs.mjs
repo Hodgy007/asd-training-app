@@ -48,6 +48,11 @@ const DOCS = [
     sources: [join(guidesDir, 'learner-guide.md')],
   },
   {
+    output: 'AAA_Working_With_Claude_Code.pdf',
+    title: 'AAA Digital Platform — Working with Claude Code',
+    sources: [join(handoverDir, 'using-claude-code.md')],
+  },
+  {
     output: 'AAA_Data_Dictionary.pdf',
     title: 'AAA Digital Platform — Data Dictionary',
     sources: [join(handoverDir, 'data-dictionary.md')],
