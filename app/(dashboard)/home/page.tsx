@@ -4,24 +4,18 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isSuperAdmin } from '@/lib/rbac'
-import { homeBlocksSchema, isEditableHomepageRole, type HomeBlock } from '@/lib/home-blocks'
 import { HomeBlocksRenderer } from '@/components/home/home-blocks'
+import { resolveHomePage } from '@/lib/homepage'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions)
-  const role = session?.user?.role
   const canEdit = isSuperAdmin(session)
 
-  let blocks: HomeBlock[] = []
-  if (role && isEditableHomepageRole(role)) {
-    const row = await prisma.homePage.findUnique({ where: { role } })
-    if (row?.blocks) {
-      const parsed = homeBlocksSchema.safeParse(row.blocks)
-      if (parsed.success) blocks = parsed.data
-    }
-  }
+  // The viewer's organisation decides which homepage they get: its own if it
+  // has one, otherwise the platform default. Not role-scoped any more.
+  const { blocks } = await resolveHomePage(session?.user?.organisationId)
 
   return (
     <div className="max-w-6xl mx-auto relative">
@@ -46,9 +40,7 @@ export default async function HomePage() {
         <div className="text-center py-16">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3">Welcome</h1>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
-            {role && isEditableHomepageRole(role)
-              ? "The Home page hasn't been set up for your role yet."
-              : 'There is no Home page configured for your role.'}
+            The Home page hasn&apos;t been set up yet.
           </p>
           {canEdit && (
             <Link

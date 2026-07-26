@@ -1,19 +1,6 @@
 import { z } from 'zod'
 import { sanitizeHtml } from './sanitize'
 
-/**
- * Homepages are keyed by Role, and there is now exactly one leaf role — so this
- * is effectively "the default homepage" that every logged-in learner sees.
- * Per-organisation overrides layer on top of it separately.
- */
-export const EDITABLE_HOMEPAGE_ROLES = ['LEARNER'] as const
-
-export type EditableHomepageRole = (typeof EDITABLE_HOMEPAGE_ROLES)[number]
-
-export function isEditableHomepageRole(role: string): role is EditableHomepageRole {
-  return (EDITABLE_HOMEPAGE_ROLES as readonly string[]).includes(role)
-}
-
 const heroBlockSchema = z.object({
   id: z.string().min(1),
   kind: z.literal('hero'),

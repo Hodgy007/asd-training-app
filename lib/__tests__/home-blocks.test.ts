@@ -1,26 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
-  EDITABLE_HOMEPAGE_ROLES,
   homeBlocksSchema,
-  isEditableHomepageRole,
   newBlockId,
 } from '@/lib/home-blocks'
-
-describe('isEditableHomepageRole', () => {
-  it('accepts every role in EDITABLE_HOMEPAGE_ROLES', () => {
-    for (const role of EDITABLE_HOMEPAGE_ROLES) {
-      expect(isEditableHomepageRole(role)).toBe(true)
-    }
-  })
-
-  it('rejects admin / unknown roles', () => {
-    expect(isEditableHomepageRole('SUPER_ADMIN')).toBe(false)
-    expect(isEditableHomepageRole('ORG_ADMIN')).toBe(false)
-    expect(isEditableHomepageRole('CHARITY_EMPLOYEE')).toBe(false)
-    expect(isEditableHomepageRole('NOT_A_ROLE')).toBe(false)
-    expect(isEditableHomepageRole('')).toBe(false)
-  })
-})
 
 describe('homeBlocksSchema', () => {
   it('accepts an empty array', () => {

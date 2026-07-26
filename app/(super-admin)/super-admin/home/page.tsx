@@ -5,11 +5,8 @@ import {
   Save, Loader2, ArrowUp, ArrowDown, Trash2, Plus, Upload, Eye,
   Image as ImageIcon, Film, LayoutGrid, Type, Layout, Sparkles,
 } from 'lucide-react'
-import { ROLE_LABELS } from '@/lib/rbac'
 import {
-  EDITABLE_HOMEPAGE_ROLES,
   newBlockId,
-  type EditableHomepageRole,
   type HomeBlock,
   type Tile,
 } from '@/lib/home-blocks'
@@ -40,7 +37,11 @@ const KIND_LABELS: Record<BlockKind, { label: string; icon: typeof Layout }> = {
 }
 
 export default function SuperAdminHomePage() {
-  const [activeRole, setActiveRole] = useState<EditableHomepageRole>(EDITABLE_HOMEPAGE_ROLES[0])
+  // null = the platform default homepage; a string targets that org's override.
+  const [activeOrgId, setActiveOrgId] = useState<string | null>(null)
+  const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([])
+  const [orgsWithPage, setOrgsWithPage] = useState<string[]>([])
+  const scopeLabel = activeOrgId ?? 'default'
   const [blocks, setBlocks] = useState<HomeBlock[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -53,22 +54,38 @@ export default function SuperAdminHomePage() {
     setTimeout(() => setToast(null), 3000)
   }, [])
 
+  // Organisation list for the picker, loaded once.
+  useEffect(() => {
+    fetch('/api/super-admin/organisations')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setOrgs(Array.isArray(data) ? data.map((o: { id: string; name: string }) => ({ id: o.id, name: o.name })) : []))
+      .catch(() => {})
+  }, [])
+
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/super-admin/home?role=${activeRole}`)
+    const qs = activeOrgId ? `?orgId=${activeOrgId}` : ''
+    fetch(`/api/super-admin/home${qs}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))
       .then((data) => {
-        setBlocks(Array.isArray(data.blocks) ? data.blocks : [])
+        const loaded = Array.isArray(data.blocks) ? data.blocks : []
+        setBlocks(loaded)
         setUpdatedAt(data.updatedAt ?? null)
+        setOrgsWithPage((prev) => {
+          if (!activeOrgId) return prev
+          const has = loaded.length > 0
+          const without = prev.filter((id) => id !== activeOrgId)
+          return has ? [...without, activeOrgId] : without
+        })
       })
       .catch(() => showToast('Failed to load home page.', 'error'))
       .finally(() => setLoading(false))
-  }, [activeRole, showToast])
+  }, [activeOrgId, showToast])
 
   async function save() {
     setSaving(true)
     try {
-      const res = await fetch(`/api/super-admin/home?role=${activeRole}`, {
+      const res = await fetch(`/api/super-admin/home${activeOrgId ? `?orgId=${activeOrgId}` : ''}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blocks }),
@@ -131,26 +148,29 @@ export default function SuperAdminHomePage() {
         </div>
       </div>
 
-      <div className="border-b border-slate-200 dark:border-slate-700 mb-6 overflow-x-auto">
-        <div className="flex gap-1">
-          {EDITABLE_HOMEPAGE_ROLES.map((role) => {
-            const active = role === activeRole
-            return (
-              <button
-                key={role}
-                onClick={() => setActiveRole(role)}
-                className={
-                  'px-4 py-2 text-sm font-bold whitespace-nowrap border-b-2 -mb-px ' +
-                  (active
-                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100')
-                }
-              >
-                {ROLE_LABELS[role] ?? role}
-              </button>
-            )
-          })}
-        </div>
+      <div className="border-b border-slate-200 dark:border-slate-700 mb-6 pb-4">
+        <label htmlFor="homepage-scope" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+          Editing
+        </label>
+        <select
+          id="homepage-scope"
+          value={activeOrgId ?? ''}
+          onChange={(e) => setActiveOrgId(e.target.value || null)}
+          className="w-full sm:max-w-md rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white"
+        >
+          <option value="">Default — everyone without their own page</option>
+          {orgs.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.name}
+              {orgsWithPage.includes(o.id) ? ' (has its own page)' : ''}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          {activeOrgId
+            ? 'This organisation\u2019s members see this page instead of the default. Remove every block to send them back to the default.'
+            : 'Shown to every organisation that does not have its own page.'}
+        </p>
       </div>
 
       {updatedAt && (
@@ -178,7 +198,7 @@ export default function SuperAdminHomePage() {
               <BlockCard
                 key={block.id}
                 block={block}
-                activeRole={activeRole}
+                scopeLabel={scopeLabel}
                 isFirst={idx === 0}
                 isLast={idx === blocks.length - 1}
                 onUpdate={(next) => updateBlock(idx, next)}
@@ -241,10 +261,11 @@ function AddBlockMenu({ onAdd }: { onAdd: (kind: BlockKind) => void }) {
 }
 
 function BlockCard({
-  block, activeRole, isFirst, isLast, onUpdate, onMoveUp, onMoveDown, onRemove,
+  block, scopeLabel, isFirst, isLast, onUpdate, onMoveUp, onMoveDown, onRemove,
 }: {
   block: HomeBlock
-  activeRole: EditableHomepageRole
+  /** Which homepage is being edited — 'default' or an organisation id. Used as AI-generation context. */
+  scopeLabel: string
   isFirst: boolean
   isLast: boolean
   onUpdate: (next: HomeBlock) => void
@@ -266,7 +287,7 @@ function BlockCard({
           <IconButton onClick={onRemove} aria-label="Remove" className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"><Trash2 className="h-4 w-4" /></IconButton>
         </div>
       </div>
-      <BlockEditor block={block} activeRole={activeRole} onUpdate={onUpdate} />
+      <BlockEditor block={block} scopeLabel={scopeLabel} onUpdate={onUpdate} />
     </div>
   )
 }
@@ -282,12 +303,12 @@ function IconButton({ children, className = '', ...rest }: React.ButtonHTMLAttri
   )
 }
 
-function BlockEditor({ block, activeRole, onUpdate }: { block: HomeBlock; activeRole: EditableHomepageRole; onUpdate: (next: HomeBlock) => void }) {
+function BlockEditor({ block, scopeLabel, onUpdate }: { block: HomeBlock; scopeLabel: string; onUpdate: (next: HomeBlock) => void }) {
   switch (block.kind) {
-    case 'hero': return <HeroEditor block={block} activeRole={activeRole} onUpdate={onUpdate} />
+    case 'hero': return <HeroEditor block={block} scopeLabel={scopeLabel} onUpdate={onUpdate} />
     case 'tiles': return <TilesEditor block={block} onUpdate={onUpdate} />
     case 'richText': return <RichTextEditor block={block} onUpdate={onUpdate} />
-    case 'image': return <ImageEditor block={block} activeRole={activeRole} onUpdate={onUpdate} />
+    case 'image': return <ImageEditor block={block} scopeLabel={scopeLabel} onUpdate={onUpdate} />
     case 'video': return <VideoEditor block={block} onUpdate={onUpdate} />
   }
 }
@@ -299,7 +320,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 const inputClass =
   'w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
 
-function HeroEditor({ block, activeRole, onUpdate }: { block: Extract<HomeBlock, { kind: 'hero' }>; activeRole: EditableHomepageRole; onUpdate: (b: HomeBlock) => void }) {
+function HeroEditor({ block, scopeLabel, onUpdate }: { block: Extract<HomeBlock, { kind: 'hero' }>; scopeLabel: string; onUpdate: (b: HomeBlock) => void }) {
   return (
     <div className="grid md:grid-cols-2 gap-3">
       <div>
@@ -317,7 +338,7 @@ function HeroEditor({ block, activeRole, onUpdate }: { block: Extract<HomeBlock,
           url={block.imageUrl}
           onChange={(url) => onUpdate({ ...block, imageUrl: url })}
           aiContext={{
-            role: activeRole,
+            role: scopeLabel,
             blockKind: 'hero',
             blockTitle: block.title,
             blockSubtitle: block.subtitle,
@@ -401,7 +422,7 @@ function RichTextEditor({ block, onUpdate }: { block: Extract<HomeBlock, { kind:
   )
 }
 
-function ImageEditor({ block, activeRole, onUpdate }: { block: Extract<HomeBlock, { kind: 'image' }>; activeRole: EditableHomepageRole; onUpdate: (b: HomeBlock) => void }) {
+function ImageEditor({ block, scopeLabel, onUpdate }: { block: Extract<HomeBlock, { kind: 'image' }>; scopeLabel: string; onUpdate: (b: HomeBlock) => void }) {
   return (
     <div className="space-y-3">
       <MediaUpload
@@ -409,7 +430,7 @@ function ImageEditor({ block, activeRole, onUpdate }: { block: Extract<HomeBlock
         url={block.src}
         onChange={(url) => onUpdate({ ...block, src: url })}
         aiContext={{
-          role: activeRole,
+          role: scopeLabel,
           blockKind: 'image',
         }}
       />
