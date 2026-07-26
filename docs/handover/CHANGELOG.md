@@ -4,6 +4,24 @@ The PDFs in this folder are **generated artefacts** — every PDF is built from 
 
 This changelog tracks what's changed since the last rebuild. When you regenerate the PDFs, you can clear entries that are now reflected in the freshly-built PDFs.
 
+## 2026-07-26 — Review corrections
+
+A code review of the documentation sweep below found that two of the newly-written sections described features that do not exist, and one documented a real permission bug as though it were the intended design. All corrected.
+
+**The Org Admin Job Openings section described an Assign control and document attachments.** Neither exists at organisation tier — both endpoints live only under the charity's own job routes. The guide now says plainly that the charity handles both, and invites org admins to ask if they need them. It also notes that the closing date is a required field, which it did not before.
+
+**Cohorts were reachable only by accident.** The Products tile was gated on *Manage Organisations* while every cohort route checks *Manage Cohorts*, so granting the purpose-named permission hid the only way in, and granting the other produced a tile that returned a permission error. The tile now matches the routes. The Platform Administration Guide had recorded the tile's gate as the rule.
+
+**Settings is Charity Admin only.** The Platform Administration Guide listed it as available to all charity-level users. The page and all eight settings APIs behind it require Charity Admin, so the list of charity-admin-only surfaces is five, not four.
+
+**The token lifetime table was incomplete** — it gave the 7-day activation link and the 1-hour password reset but omitted the 24-hour self-registration welcome link, which is the longest-lived of the three after activation.
+
+**Charity employees got the learner sidebar on the shared home page**, contradicting the stated intent that admins keep their own navigation.
+
+**PDFs are no longer rebuilt when their sources have not changed.** md-to-pdf stamps a creation time into every file, so a full rebuild produced nine byte-different PDFs regardless of what was edited — several megabytes of binary churn on every docs commit, and a `git diff --stat` that could not show which documents actually moved.
+
+**A test now checks every navigation link resolves to a real page**, so the dead-link problem that produced the Audit Log item cannot recur silently.
+
 ## 2026-07-26 — Documentation sweep against the current build
 
 All nine PDFs rebuilt. Everything below was documentation drift — no platform behaviour changed.

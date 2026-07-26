@@ -72,11 +72,12 @@ export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCo
   const isDark = colorTheme === 'dark'
 
   const isParentOrg = session?.user?.isParentOrg ?? false
-  // Sort in both branches, not just the parent one — otherwise a parent org and
-  // a non-parent org render the same menu in two different orders.
-  const middleWithSchools = (isParentOrg ? [...MIDDLE_NAV_ITEMS, PARENT_ORG_NAV] : MIDDLE_NAV_ITEMS)
-    .slice()
-    .sort((a, b) => a.label.localeCompare(b.label))
+  // Both branches copy before sorting — MIDDLE_NAV_ITEMS is module-level, and
+  // sort mutates. Sort in both, not just the parent one, or a parent org and a
+  // non-parent org render the same menu in two different orders.
+  const middleWithSchools = (
+    isParentOrg ? [...MIDDLE_NAV_ITEMS, PARENT_ORG_NAV] : [...MIDDLE_NAV_ITEMS]
+  ).sort((a, b) => a.label.localeCompare(b.label))
   const navItems: NavItem[] = [...BASE_NAV_ITEMS, ...middleWithSchools]
 
   const chrome = isClassic ? {

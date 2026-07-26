@@ -30,7 +30,7 @@ five technical / process documents, and one integration partner guide.
 | `AAA_Integration_Reports_Guide.pdf` | `docs/guides/integration-reports-guide.md` |
 
 The role-facing guides and the integration partner guide live in `docs/guides/`
-because they're also the canonical in-repo user documentation. The five
+because they're also the canonical in-repo user documentation. The six
 handover-only sources live here in `docs/handover/` because they have no
 purpose outside the PDF bundle.
 
@@ -50,7 +50,11 @@ The build script (`scripts/build-handover-pdfs.mjs`) reads each markdown source,
 concatenates composite sources, and runs them through `md-to-pdf`. Styling lives in
 `docs/handover/_pdf-style.css` — edit that to change the look of every PDF at once.
 
-The output is nine `.pdf` files in this folder. Re-commit them whenever you regenerate.
+There are nine `.pdf` files in this folder. Only those whose sources have changed are
+rebuilt — md-to-pdf stamps a creation time into every PDF, so rebuilding an unchanged
+document produces a byte-different file and pollutes the commit. Pass `--force` to
+rebuild all nine (needed after a change to `_pdf-style.css` or the build script itself,
+though both are already tracked as inputs). Re-commit whatever the build rewrites.
 
 ## When to regenerate
 
