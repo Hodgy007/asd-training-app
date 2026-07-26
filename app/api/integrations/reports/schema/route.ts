@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     info: {
       title: 'AAA Platform Integration Reports',
       description:
-        'Bearer-token-authenticated read-only API for exporting platform reporting data to Power BI, Dynamics 365, Power Automate, and similar BI / iPaaS tools.\n\nAll PII is pseudonymised (HMAC-SHA-256, partitioned per feature). The combined endpoint returns aggregates across all five sections (training, library, surveys, CV Builder, Careers Advisor); request a specific section for tighter scope.',
+        'Bearer-token-authenticated read-only API for exporting platform reporting data to Power BI, Dynamics 365, Power Automate, and similar BI / iPaaS tools.\n\nAll PII is pseudonymised (HMAC-SHA-256, partitioned per feature). The combined endpoint returns aggregates across all three sections (training, library, surveys); request a specific section for tighter scope.',
       version: '1.0.0',
       contact: { name: 'AAA Platform', url: 'https://asd-training-app-v2.vercel.app' },
     },
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
         get: {
           summary: 'Export reporting data',
           description:
-            'Returns aggregated or row-level data for one or all sections. Use `?format=flat` for BI-friendly long-format rows with stable `rowId` primary keys. Use `?since=<ISO>` for incremental refresh on event-shaped sections (library, surveys, cv, careers). Surveys responses are paginated via `?limit=` + `?cursor=`.',
+            'Returns aggregated or row-level data for one or all sections. Use `?format=flat` for BI-friendly long-format rows with stable `rowId` primary keys. Use `?since=<ISO>` for incremental refresh on event-shaped sections (library, surveys). Surveys responses are paginated via `?limit=` + `?cursor=`.',
           parameters: [
             {
               name: 'section',
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
               required: false,
               schema: {
                 type: 'string',
-                enum: ['all', 'training', 'library', 'surveys', 'cv', 'careers'],
+                enum: ['all', 'training', 'library', 'surveys'],
                 default: 'all',
               },
             },
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
               in: 'query',
               required: false,
               description:
-                'ISO 8601 datetime. Filters event-shaped sections (library, surveys, cv, careers) to records updated/completed after this time. Training aggregates always reflect full-population state.',
+                'ISO 8601 datetime. Filters event-shaped sections (library, surveys) to records updated/completed after this time. Training aggregates always reflect full-population state.',
               schema: { type: 'string', format: 'date-time' },
             },
             {
@@ -125,8 +125,6 @@ export async function GET(req: NextRequest) {
             training: { $ref: '#/components/schemas/SectionPayload' },
             library: { $ref: '#/components/schemas/SectionPayload' },
             surveys: { $ref: '#/components/schemas/SectionPayloadPaginated' },
-            cv: { $ref: '#/components/schemas/SectionPayload' },
-            careers: { $ref: '#/components/schemas/SectionPayload' },
           },
         },
         SectionResponse: {
@@ -134,7 +132,7 @@ export async function GET(req: NextRequest) {
           properties: {
             apiVersion: { type: 'string', enum: ['v1'] },
             generatedAt: { type: 'string', format: 'date-time' },
-            section: { type: 'string', enum: ['training', 'library', 'surveys', 'cv', 'careers'] },
+            section: { type: 'string', enum: ['training', 'library', 'surveys'] },
             format: { type: 'string', enum: ['nested', 'flat'] },
             incrementalSupported: { type: 'boolean' },
             since: { type: 'string', format: 'date-time', nullable: true },
@@ -202,41 +200,6 @@ export async function GET(req: NextRequest) {
             question: { type: 'string' },
             questionType: { type: 'string', enum: ['MULTIPLE_CHOICE', 'YES_NO', 'FREE_TEXT', 'RATING_SCALE', 'MULTI_SELECT'] },
             answer: { type: 'string' },
-          },
-        },
-        CvFlatRow: {
-          type: 'object',
-          properties: {
-            rowId: { type: 'string', description: 'CV id.' },
-            cvId: { type: 'string' },
-            userPseudonym: { type: 'string', description: 'Pseudonymised — stable per user across their CVs (namespace: `cv`). Not joinable to careers or survey pseudonyms.' },
-            role: { type: 'string' },
-            organisationId: { type: 'string', nullable: true },
-            organisationName: { type: 'string' },
-            status: { type: 'string', enum: ['DRAFT', 'COMPLETE'] },
-            template: { type: 'string', enum: ['ACCESSIBLE', 'MODERN', 'CLASSIC'] },
-            currentStep: { type: 'integer', minimum: 0, maximum: 8 },
-            workExperienceCount: { type: 'integer' },
-            educationCount: { type: 'integer' },
-            skillsCount: { type: 'integer' },
-            createdAt: { type: 'string', format: 'date-time' },
-            updatedAt: { type: 'string', format: 'date-time' },
-          },
-        },
-        CareersFlatRow: {
-          type: 'object',
-          properties: {
-            rowId: { type: 'string', description: 'Careers advisor session id.' },
-            sessionId: { type: 'string' },
-            userPseudonym: { type: 'string', description: 'Pseudonymised — stable per user across sessions (namespace: `careers`).' },
-            role: { type: 'string' },
-            organisationId: { type: 'string', nullable: true },
-            organisationName: { type: 'string' },
-            status: { type: 'string', enum: ['IN_PROGRESS', 'COMPLETE'] },
-            currentStep: { type: 'integer' },
-            hasReport: { type: 'boolean', description: 'True when the AI report has been generated and saved.' },
-            createdAt: { type: 'string', format: 'date-time' },
-            updatedAt: { type: 'string', format: 'date-time' },
           },
         },
       },

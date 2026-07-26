@@ -27,8 +27,8 @@ import { prisma } from '@/lib/prisma'
 
 export const API_VERSION = 'v1' as const
 
-export type SectionId = 'training' | 'library' | 'surveys' | 'cv' | 'careers'
-export const ALL_SECTIONS: SectionId[] = ['training', 'library', 'surveys', 'cv', 'careers']
+export type SectionId = 'training' | 'library' | 'surveys'
+export const ALL_SECTIONS: SectionId[] = ['training', 'library', 'surveys']
 
 export type Format = 'nested' | 'flat'
 
@@ -45,8 +45,6 @@ export type Format = 'nested' | 'flat'
  *
  * Namespaces:
  *   - For surveys: pass `surveyId` (matches the legacy v1 contract)
- *   - For CV Builder: pass `'cv'` (stable per user across their CVs)
- *   - For Careers Advisor: pass `'careers'` (stable per user across sessions)
  */
 export function pseudonymise(userId: string, namespace: string): string {
   const secret = process.env.NEXTAUTH_SECRET ?? ''
@@ -488,189 +486,4 @@ export async function fetchSurveys({ since, limit, cursor }: FetchSurveysOptions
   }
 
   return { nested, flat, watermark, incrementalSupported: true, nextCursor }
-}
-
-// ── CV Builder ──────────────────────────────────────────────────────────────
-
-interface CvNestedRow {
-  cvId: string
-  userPseudonym: string
-  role: string
-  organisationId: string | null
-  organisationName: string
-  status: string
-  template: string
-  currentStep: number
-  workExperienceCount: number
-  educationCount: number
-  skillsCount: number
-  createdAt: Date
-  updatedAt: Date
-}
-
-interface CvFlatRow {
-  rowId: string
-  cvId: string
-  userPseudonym: string
-  role: string
-  organisationId: string | null
-  organisationName: string
-  status: string
-  template: string
-  currentStep: number
-  workExperienceCount: number
-  educationCount: number
-  skillsCount: number
-  createdAt: string
-  updatedAt: string
-}
-
-export async function fetchCV(since: Date | null): Promise<SectionResult<CvNestedRow[], CvFlatRow>> {
-  const cvs = await prisma.cV.findMany({
-    where: since ? { updatedAt: { gte: since } } : {},
-    orderBy: { updatedAt: 'desc' },
-    select: {
-      id: true,
-      status: true,
-      template: true,
-      currentStep: true,
-      createdAt: true,
-      updatedAt: true,
-      user: {
-        select: {
-          id: true,
-          role: true,
-          organisation: { select: { id: true, name: true } },
-        },
-      },
-      _count: {
-        select: {
-          workExperiences: true,
-          educationEntries: true,
-          skills: true,
-        },
-      },
-    },
-  })
-
-  let watermark: Date | null = null
-  for (const c of cvs) if (!watermark || c.updatedAt > watermark) watermark = c.updatedAt
-
-  const nested: CvNestedRow[] = cvs.map((cv) => ({
-    cvId: cv.id,
-    userPseudonym: pseudonymise(cv.user.id, 'cv'),
-    role: cv.user.role,
-    organisationId: cv.user.organisation?.id ?? null,
-    organisationName: cv.user.organisation?.name ?? '',
-    status: cv.status,
-    template: cv.template,
-    currentStep: cv.currentStep,
-    workExperienceCount: cv._count.workExperiences,
-    educationCount: cv._count.educationEntries,
-    skillsCount: cv._count.skills,
-    createdAt: cv.createdAt,
-    updatedAt: cv.updatedAt,
-  }))
-
-  const flat: CvFlatRow[] = nested.map((cv) => ({
-    rowId: cv.cvId,
-    cvId: cv.cvId,
-    userPseudonym: cv.userPseudonym,
-    role: cv.role,
-    organisationId: cv.organisationId,
-    organisationName: cv.organisationName,
-    status: cv.status,
-    template: cv.template,
-    currentStep: cv.currentStep,
-    workExperienceCount: cv.workExperienceCount,
-    educationCount: cv.educationCount,
-    skillsCount: cv.skillsCount,
-    createdAt: cv.createdAt.toISOString(),
-    updatedAt: cv.updatedAt.toISOString(),
-  }))
-
-  return { nested, flat, watermark, incrementalSupported: true }
-}
-
-// ── Careers Advisor ─────────────────────────────────────────────────────────
-
-interface CareersNestedRow {
-  sessionId: string
-  userPseudonym: string
-  role: string
-  organisationId: string | null
-  organisationName: string
-  status: string
-  currentStep: number
-  hasReport: boolean
-  createdAt: Date
-  updatedAt: Date
-}
-
-interface CareersFlatRow {
-  rowId: string
-  sessionId: string
-  userPseudonym: string
-  role: string
-  organisationId: string | null
-  organisationName: string
-  status: string
-  currentStep: number
-  hasReport: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-export async function fetchCareers(since: Date | null): Promise<SectionResult<CareersNestedRow[], CareersFlatRow>> {
-  const sessions = await prisma.careerAdvisorSession.findMany({
-    where: since ? { updatedAt: { gte: since } } : {},
-    orderBy: { updatedAt: 'desc' },
-    select: {
-      id: true,
-      status: true,
-      currentStep: true,
-      report: true,
-      createdAt: true,
-      updatedAt: true,
-      user: {
-        select: {
-          id: true,
-          role: true,
-          organisation: { select: { id: true, name: true } },
-        },
-      },
-    },
-  })
-
-  let watermark: Date | null = null
-  for (const s of sessions) if (!watermark || s.updatedAt > watermark) watermark = s.updatedAt
-
-  const nested: CareersNestedRow[] = sessions.map((s) => ({
-    sessionId: s.id,
-    userPseudonym: pseudonymise(s.user.id, 'careers'),
-    role: s.user.role,
-    organisationId: s.user.organisation?.id ?? null,
-    organisationName: s.user.organisation?.name ?? '',
-    status: s.status,
-    currentStep: s.currentStep,
-    hasReport: s.report !== null && s.report !== undefined,
-    createdAt: s.createdAt,
-    updatedAt: s.updatedAt,
-  }))
-
-  const flat: CareersFlatRow[] = nested.map((s) => ({
-    rowId: s.sessionId,
-    sessionId: s.sessionId,
-    userPseudonym: s.userPseudonym,
-    role: s.role,
-    organisationId: s.organisationId,
-    organisationName: s.organisationName,
-    status: s.status,
-    currentStep: s.currentStep,
-    hasReport: s.hasReport,
-    createdAt: s.createdAt.toISOString(),
-    updatedAt: s.updatedAt.toISOString(),
-  }))
-
-  return { nested, flat, watermark, incrementalSupported: true }
 }

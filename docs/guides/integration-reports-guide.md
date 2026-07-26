@@ -37,8 +37,6 @@ The Integration API is a read-only HTTPS endpoint that exports platform data in 
 | `training` | Per-organisation × per-module completion stats. One row per (org, module) | Bounded: roughly `orgs × modules` |
 | `library` | Per-document download counts and metadata | Bounded: ~documents in the library |
 | `surveys` | Every completed survey response, flattened to one row per (response × question) | Largest — grows linearly with responses |
-| `cv` | CV Builder usage — one row per CV. Metadata only (status, template, counts, timestamps). No CV content. | Roughly one per active CV |
-| `careers` | Careers Advisor usage — one row per session. Metadata only. No report content. | Roughly one per session |
 
 ### What the API does well
 
@@ -54,7 +52,6 @@ The Integration API is a read-only HTTPS endpoint that exports platform data in 
 - **No webhooks.** Polling only. Daily is a sensible cadence.
 - **No write access.** Read-only.
 - **No raw user identifiers.** All `userId`-shaped fields are pseudonymised (see [section 13](#13-privacy-notes--what-is-and-isnt-exposed)).
-- **No CV content or careers report content.** Just metadata, status, and counts.
 
 ---
 
@@ -183,8 +180,6 @@ Change the `section` value in the query to pull different data:
 - `"training"` — completion stats per org/module
 - `"library"` — document download counts
 - `"surveys"` — flattened survey responses
-- `"cv"` — CV Builder usage
-- `"careers"` — Careers Advisor usage
 
 ### Storing the key safely
 
@@ -224,14 +219,12 @@ The flat format puts each section into one rectangular table. The cleanest setup
 - `qry_training`
 - `qry_library`
 - `qry_surveys`
-- `qry_cv`
-- `qry_careers`
 
 These don't join in Power BI — they are independent fact tables. The shared dimensions (organisations, dates, roles) emerge from the data itself.
 
 ### Pulling everything in one go
 
-If you want one query that fetches all sections, omit the `section` parameter (or use `section=all`). The response is shaped differently — it has top-level keys `training`, `library`, `surveys`, `cv`, `careers` each containing `rows`. You'll need to expand each in Power Query separately.
+If you want one query that fetches all sections, omit the `section` parameter (or use `section=all`). The response is shaped differently — it has top-level keys `training`, `library`, `surveys` each containing `rows`. You'll need to expand each in Power Query separately.
 
 For most BI workflows, one-section-per-query is cleaner.
 
@@ -248,8 +241,6 @@ Power BI's **Incremental Refresh** feature can use the API's `since` parameter t
 | `training` | **No** — aggregates are full-population | Completion rates depend on all-time data |
 | `library` | Yes — filters download events by `createdAt` | |
 | `surveys` | Yes — filters responses by `completedAt` | |
-| `cv` | Yes — filters CVs by `updatedAt` | |
-| `careers` | Yes — filters sessions by `updatedAt` | |
 
 Training is small enough to fully refresh each cycle. For the others, use incremental refresh once response volume crosses a few thousand rows.
 
@@ -337,30 +328,30 @@ Once the data is in Power BI, treat each section as an independent fact table. U
 ### Recommended star schema
 
 ```
-                ┌──────────────┐
-                │ DimDate      │
-                └──┬──┬──┬──┬──┘
-                   │  │  │  │
-   ┌───────────────┼──┼──┼──┼──────────────┐
-   │               │  │  │  │              │
-┌──┴────┐    ┌─────┴┐┌┴────┐┌┴───┐    ┌────┴────┐
-│FactTrn│    │FctLib││FctSv││FctCv│    │FactCarrs│
-└──┬────┘    └──┬───┘└─┬───┘└──┬─┘    └─────────┘
-   │            │      │       │
-   └────────────┴──────┴───────┘
-            │
-       ┌────┴────────┐
-       │ DimOrg      │
-       │ DimRole     │
-       │ (etc.)      │
-       └─────────────┘
+              ┌──────────────┐
+              │ DimDate      │
+              └───┬───────┬──┘
+                  │       │
+   ┌──────────────┼───────┼──────────────┐
+   │              │       │              │
+┌──┴────────┐ ┌───┴─────┐ ┌───────────┐  │
+│FactTraining│ │FactLib  │ │FactSurvey │  │
+└──┬────────┘ └───┬─────┘ └─────┬─────┘  │
+   │              │             │        │
+   └──────────────┴─────────────┴────────┘
+                  │
+             ┌────┴────────┐
+             │ DimOrg      │
+             │ DimRole     │
+             │ (etc.)      │
+             └─────────────┘
 ```
 
 ### Dimension table tips
 
-- **DimOrg** — derive from any fact table's distinct `(organisationId, organisationName)` pairs. Or pull all five sections into a staging query, union the org columns, and dedupe.
-- **DimRole** — small fixed enum: `SUPER_ADMIN`, `CHARITY_EMPLOYEE`, `ORG_ADMIN`, `CAREGIVER`, `CAREER_DEV_OFFICER`, `STUDENT`, `INTERN`, `EMPLOYEE`. The training section excludes the two admin roles from `totalUsers` — be aware when joining.
-- **DimDate** — standard date dimension keyed on `completedAt` (surveys), `updatedAt` (CV/careers), `createdAt` (library events).
+- **DimOrg** — derive from any fact table's distinct `(organisationId, organisationName)` pairs. Or pull all three sections into a staging query, union the org columns, and dedupe.
+- **DimRole** — small fixed enum: `SUPER_ADMIN`, `CHARITY_EMPLOYEE`, `ORG_ADMIN`, `LEARNER`. The training section excludes the admin roles from `totalUsers` — be aware when joining.
+- **DimDate** — standard date dimension keyed on `completedAt` (surveys) and `createdAt` (library events).
 
 ### Common measures (DAX)
 
@@ -374,15 +365,11 @@ Active Surveys (last 30 days) =
         FactSurvey[completedAt] >= TODAY() - 30
     )
 
-CVs Completed This Month = 
+Library Downloads (last 30 days) = 
     CALCULATE(
-        COUNTROWS(FactCv),
-        FactCv[status] = "COMPLETE",
+        SUM(FactLibrary[downloads]),
         DATESINPERIOD(DimDate[Date], TODAY(), -30, DAY)
     )
-
-Unique CV Authors = 
-    DISTINCTCOUNT(FactCv[userPseudonym])
 
 Unique Survey Respondents (this survey) = 
     DISTINCTCOUNT(FactSurvey[respondentId])
@@ -460,10 +447,10 @@ Some recipes that don't need Power BI or Dynamics:
 4. Filter for surveys with `status: CLOSED` and `closesAt` in the last hour
 5. **Post message in a channel** action (Slack connector)
 
-### Sync CV completion stats to a SharePoint list
+### Sync library download stats to a SharePoint list
 
 1. **Trigger**: Recurrence (daily)
-2. **HTTP** GET `/api/integrations/reports?section=cv&format=flat&since=` *(yesterday)*
+2. **HTTP** GET `/api/integrations/reports?section=library&format=flat&since=` *(yesterday)*
 3. **For each** row → **SharePoint — Create item** or **Update item** keyed on `rowId`
 
 ---
@@ -532,49 +519,6 @@ One row per `(response × question)` — Power BI's preferred long format.
 
 `incrementalSupported: true` via `?since=` on `completedAt`. Paginated via `?limit=` + `?cursor=`.
 
-### `cv`
-
-One row per CV. **No CV content** is exposed — just metadata.
-
-| Column | Type | Notes |
-|---|---|---|
-| `rowId` | string | CV id |
-| `cvId` | string | |
-| `userPseudonym` | string | **Pseudonymised.** Stable per user across all their CVs. Not joinable to careers or survey pseudonyms |
-| `role` | string | |
-| `organisationId` | string \| null | |
-| `organisationName` | string | |
-| `status` | string | `DRAFT` \| `COMPLETE` |
-| `template` | string | `ACCESSIBLE` \| `MODERN` \| `CLASSIC` |
-| `currentStep` | integer | 0–8 in the wizard |
-| `workExperienceCount` | integer | |
-| `educationCount` | integer | |
-| `skillsCount` | integer | |
-| `createdAt` | datetime (ISO) | |
-| `updatedAt` | datetime (ISO) | |
-
-`incrementalSupported: true` via `?since=` on `updatedAt`.
-
-### `careers`
-
-One row per Careers Advisor session. **No report content** is exposed — just metadata.
-
-| Column | Type | Notes |
-|---|---|---|
-| `rowId` | string | Session id |
-| `sessionId` | string | |
-| `userPseudonym` | string | **Pseudonymised.** Stable per user across all their sessions. Not joinable to CV or survey pseudonyms |
-| `role` | string | |
-| `organisationId` | string \| null | |
-| `organisationName` | string | |
-| `status` | string | `IN_PROGRESS` \| `COMPLETE` |
-| `currentStep` | integer | 0–11 in the wizard |
-| `hasReport` | boolean | True once the AI report has been generated |
-| `createdAt` | datetime (ISO) | |
-| `updatedAt` | datetime (ISO) | |
-
-`incrementalSupported: true` via `?since=` on `updatedAt`.
-
 ---
 
 ## 13. Privacy notes — what is and isn't exposed
@@ -584,24 +528,19 @@ One row per Careers Advisor session. **No report content** is exposed — just m
 All user-identifying fields are replaced with a stable, non-reversible pseudonym:
 
 - **Survey responses** — `respondentId` is HMAC-SHA-256 of `(surveyId, userId)` truncated to 16 hex characters
-- **CV Builder rows** — `userPseudonym` is HMAC-SHA-256 of `('cv', userId)`
-- **Careers Advisor rows** — `userPseudonym` is HMAC-SHA-256 of `('careers', userId)`
 
 The HMAC secret is the platform's `NEXTAUTH_SECRET` and is never transmitted. Pseudonyms cannot be reversed from a leaked report.
 
-### Why pseudonyms differ across sections
+### Why pseudonyms are partitioned per section
 
-Because the namespace differs, the same user has a different pseudonym in surveys vs CVs vs careers. This is **intentional** — it prevents someone with two leaked reports from cross-referencing them to re-identify a person.
+Pseudonyms are namespaced per feature, so the same user has a different pseudonym in one section than another. This is **intentional** — it prevents someone holding two leaked extracts from cross-referencing them to re-identify a person.
 
-Consequence: you cannot calculate "users who have both completed a CV and a survey" from this dataset. If you need that figure, request it through the in-app Reports page instead, where the underlying user identity is available to the Charity Admin viewing the data.
+Consequence: you cannot join a user across sections in this dataset. If you need a figure that spans them, request it through the in-app Reports page instead, where the underlying user identity is available to the Charity Admin viewing the data.
 
 ### What's not exposed
 
 - Email addresses
 - Names
-- CV personal-detail fields (name, address, phone, work history descriptions, personal statement, etc.)
-- Careers Advisor questionnaire answers
-- Careers Advisor AI-generated report content
 - Survey free-text answers from non-completed responses (only `completedAt: not null` rows are returned)
 - User passwords or any auth tokens
 
@@ -640,7 +579,7 @@ If your data-protection officer wants the formal record, see `docs/compliance/RO
 
 ### 400 Bad Request — invalid section
 
-- The `?section=` value is not one of `training`, `library`, `surveys`, `cv`, `careers`, `all`
+- The `?section=` value is not one of `training`, `library`, `surveys`, `all`
 - Check spelling and casing (lower-case)
 
 ### Power BI: "Web.Contents failed to get contents from..."

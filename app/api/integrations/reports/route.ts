@@ -60,8 +60,6 @@ import {
   type Format,
   type SectionId,
   computeEtag,
-  fetchCV,
-  fetchCareers,
   fetchLibrary,
   fetchSurveys,
   fetchTraining,
@@ -180,12 +178,10 @@ export async function GET(req: NextRequest) {
     }
 
     // ── Combined-section path ────────────────────────────────────────
-    const [training, library, surveys, cv, careers] = await Promise.all([
+    const [training, library, surveys] = await Promise.all([
       fetchSection('training', { since, limit, cursor }),
       fetchSection('library', { since, limit, cursor }),
       fetchSection('surveys', { since, limit, cursor }),
-      fetchSection('cv', { since, limit, cursor }),
-      fetchSection('careers', { since, limit, cursor }),
     ])
 
     const etag = computeEtag([
@@ -194,13 +190,9 @@ export async function GET(req: NextRequest) {
       training.watermark?.toISOString() ?? null,
       library.watermark?.toISOString() ?? null,
       surveys.watermark?.toISOString() ?? null,
-      cv.watermark?.toISOString() ?? null,
-      careers.watermark?.toISOString() ?? null,
       training.rowCount,
       library.rowCount,
       surveys.rowCount,
-      cv.rowCount,
-      careers.rowCount,
       surveys.nextCursor ?? null,
     ])
 
@@ -229,11 +221,7 @@ export async function GET(req: NextRequest) {
       section: 'all',
       format,
       rowCount:
-        training.rowCount +
-        library.rowCount +
-        surveys.rowCount +
-        cv.rowCount +
-        careers.rowCount,
+        training.rowCount + library.rowCount + surveys.rowCount,
       durationMs: Date.now() - startedAt,
     })
 
@@ -246,8 +234,6 @@ export async function GET(req: NextRequest) {
         training: pack(training),
         library: pack(library),
         surveys: { ...pack(surveys), nextCursor: surveys.nextCursor },
-        cv: pack(cv),
-        careers: pack(careers),
       },
       { headers: { ETag: etag } },
     )
@@ -294,14 +280,6 @@ async function fetchSection(section: SectionId, opts: DispatchOpts): Promise<Sec
     case 'surveys': {
       const r = await fetchSurveys(opts)
       return { ...r, rowCount: r.flat.length }
-    }
-    case 'cv': {
-      const r = await fetchCV(opts.since)
-      return { ...r, rowCount: r.flat.length, nextCursor: null }
-    }
-    case 'careers': {
-      const r = await fetchCareers(opts.since)
-      return { ...r, rowCount: r.flat.length, nextCursor: null }
     }
   }
 }
