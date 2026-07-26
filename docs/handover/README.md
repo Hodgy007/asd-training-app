@@ -1,8 +1,9 @@
 # Handover documentation
 
 This folder is the deliverable bundle for handover to Ambitious About Autism. It contains
-nine PDFs — two role-facing user/admin guides, one platform administration model guide,
-five technical / process documents, and one integration partner guide.
+ten PDFs — two role-facing user/admin guides, one platform administration model guide,
+one guide to maintaining the platform with Claude Code, five technical / process
+documents, and one integration partner guide.
 
 ## Working principles
 
@@ -11,9 +12,9 @@ five technical / process documents, and one integration partner guide.
 2. **The CHANGELOG.md log carries the running history** of platform changes since each PDF
    was last regenerated. Add an entry when a feature ships, then regenerate the PDF the
    next time it's convenient.
-3. **Every PDF maps to one or more markdown sources** (see table below). Two PDFs are
-   composites of two role guides each; the build script handles concatenation with a page
-   break.
+3. **Every PDF maps to one or more markdown sources** (see table below). One PDF — the
+   Admin Guide — is a composite of two role guides; the build script handles concatenation
+   with a page break.
 
 ## Source ↔ PDF mapping
 
@@ -22,6 +23,7 @@ five technical / process documents, and one integration partner guide.
 | `AAA_Admin_Guide.pdf` | `docs/guides/super-admin-guide.md` + `docs/guides/org-admin-guide.md` |
 | `AAA_Platform_Administration.pdf` | `docs/handover/platform-administration.md` |
 | `AAA_User_Guide.pdf` | `docs/guides/learner-guide.md` |
+| `AAA_Working_With_Claude_Code.pdf` | `docs/handover/using-claude-code.md` |
 | `AAA_Data_Dictionary.pdf` | `docs/handover/data-dictionary.md` |
 | `AAA_Technical_Setup_Guide.pdf` | `docs/handover/technical-setup-guide.md` |
 | `AAA_Self_Registration_Flow.pdf` | `docs/handover/self-registration-flow.md` |
@@ -30,7 +32,7 @@ five technical / process documents, and one integration partner guide.
 | `AAA_Integration_Reports_Guide.pdf` | `docs/guides/integration-reports-guide.md` |
 
 The role-facing guides and the integration partner guide live in `docs/guides/`
-because they're also the canonical in-repo user documentation. The six
+because they're also the canonical in-repo user documentation. The seven
 handover-only sources live here in `docs/handover/` because they have no
 purpose outside the PDF bundle.
 
@@ -50,10 +52,10 @@ The build script (`scripts/build-handover-pdfs.mjs`) reads each markdown source,
 concatenates composite sources, and runs them through `md-to-pdf`. Styling lives in
 `docs/handover/_pdf-style.css` — edit that to change the look of every PDF at once.
 
-There are nine `.pdf` files in this folder. Only those whose sources have changed are
+There are ten `.pdf` files in this folder. Only those whose sources have changed are
 rebuilt — md-to-pdf stamps a creation time into every PDF, so rebuilding an unchanged
 document produces a byte-different file and pollutes the commit. Pass `--force` to
-rebuild all nine (needed after a change to `_pdf-style.css` or the build script itself,
+rebuild all ten (needed after a change to `_pdf-style.css` or the build script itself,
 though both are already tracked as inputs). Re-commit whatever the build rewrites.
 
 ## When to regenerate

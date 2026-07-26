@@ -4,6 +4,16 @@ The PDFs in this folder are **generated artefacts** — every PDF is built from 
 
 This changelog tracks what's changed since the last rebuild. When you regenerate the PDFs, you can clear entries that are now reflected in the freshly-built PDFs.
 
+## 2026-07-26 — New: Working with Claude Code
+
+Added a tenth PDF, `AAA_Working_With_Claude_Code.pdf`, built from `using-claude-code.md`.
+
+The platform is handed over with the expectation that the charity will keep changing it, and Claude Code is how that will be done. Nothing in the bundle explained how to use it, and none of the existing documents are written for someone who has never worked with an AI assistant.
+
+It covers installation and first session, how to phrase a request, working in small steps, git as a safety net, how to verify a change without reading code, where to be careful (schema changes, environment files, deletion, deploying), what to do when things go wrong, and a quick reference of phrases that reliably improve results. The single most important habit — telling the assistant to read the relevant files before it writes anything — has its own section near the front, with before-and-after examples.
+
+Worked examples use real tasks on this platform rather than generic ones, and the guide is explicit about the assistant's failure modes: that it can be confidently wrong, that it does not know what it has not read, and that verification rather than vigilance is the reader's defence.
+
 ## 2026-07-26 — Review corrections
 
 A code review of the documentation sweep below found that two of the newly-written sections described features that do not exist, and one documented a real permission bug as though it were the intended design. All corrected.
