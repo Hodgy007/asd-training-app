@@ -198,7 +198,7 @@ A managed file repository for sharing documents with targeted audiences.
 - Charity Admins create **collections** at `/super-admin/library` — each collection has a title, description, and optional AI-generated thumbnail.
 - Documents (PDFs, Word files, images, etc.) are uploaded to **Vercel Blob** storage within each collection.
 - Collections are targeted to specific organisations and/or roles using `targetOrgIds` and `targetRoles` arrays. Only users matching the targeting criteria can see the collection.
-- Targeted collections appear as individual navigation links in the user's sidebar (e.g. "Safeguarding Docs", "Policy Library").
+- A single **Document Library** link appears in the sidebar when at least one collection is visible; `/library` renders the grid and auto-selects when there is only one.
 - Users browse collections at `/library` and can filter by collection using the `?c=<collectionId>` query parameter.
 - Every document view and download is tracked per user and per organisation via `LibraryDocumentEvent`, providing analytics on engagement.
 - Org Admins can view and edit collection metadata (title, description) for collections visible to their organisation at `/admin/library`.
@@ -276,7 +276,7 @@ Example flat survey row (one row per response × question):
   "rowId": "<responseId>:<questionId>",
   "surveyId": "...", "surveyTitle": "...", "surveyStatus": "PUBLISHED",
   "respondentId": "9c4e0b71d3a18d2f",   // pseudonymised, stable per (user, survey)
-  "role": "STUDENT", "organisation": "Example School",
+  "role": "LEARNER", "organisation": "Example School",
   "completedAt": "2026-05-15T14:32:00.000Z",
   "questionId": "...", "question": "How was the workshop?", "questionType": "FREE_TEXT",
   "answer": "It was very useful"
@@ -284,7 +284,7 @@ Example flat survey row (one row per response × question):
 ```
 
 **Incremental refresh** (`?since=<ISO datetime>`):
-- Applies to event-shaped sections (`library`, `surveys`, `cv`, `careers`) — only records updated/completed after the watermark are returned
+- Applies to event-shaped sections (`library`, `surveys`) — only records updated/completed after the watermark are returned
 - Training stats are full-population aggregates and ignore `since`; the response carries `incrementalSupported: false` so consumers can branch on it
 - Power BI Incremental Refresh maps directly onto this pattern via its `RangeStart` / `RangeEnd` parameters
 
@@ -297,12 +297,12 @@ Example flat survey row (one row per response × question):
 
 **PII pseudonymisation** — respondent / user ids are never exposed in plaintext:
 - Survey responses: stable per `(user, survey)` — joinable across questions in the same survey but not across surveys
-- Different namespaces never produce the same pseudonym for the same user, so a leaked CV report cannot be cross-referenced against a leaked survey report
+- Different namespaces never produce the same pseudonym for the same user, so a leaked library report cannot be cross-referenced against a leaked survey report
 
 **Data caveats** (documented in the OpenAPI schema):
 - Training `totalUsers` excludes `SUPER_ADMIN` and `ORG_ADMIN` roles
 - Training section filters cohort orgs out (matches the in-app super-admin reports)
-- CV / Careers rows don't expose CV personal-detail fields or AI report content — only metadata, status, and counts
+- The `cv` and `careers` sections were removed in July 2026 along with those features; `?section=cv` and `?section=careers` now return 400
 
 **Full end-user guide for Excel, Power BI, and Dynamics 365:** see [docs/guides/integration-reports-guide.md](docs/guides/integration-reports-guide.md) — step-by-step recipes for Power Query, Power BI Desktop / Service, Power BI incremental refresh, Dynamics Custom Connector, Power Automate flows, and a full data-reference table per section.
 
@@ -325,7 +325,7 @@ Example flat survey row (one row per response × question):
 ### Multi-Factor Authentication (MFA)
 
 - TOTP-based (Time-based One-Time Password) using the `otpauth` library.
-- **Mandatory for admin roles** — SUPER_ADMIN and ORG_ADMIN users are redirected to `/mfa-setup` until they configure TOTP. They cannot access any other page until MFA is set up.
+- **Mandatory for admin roles** — SUPER_ADMIN, CHARITY_EMPLOYEE and ORG_ADMIN users are redirected to `/mfa-setup` until they configure TOTP. They cannot access any other page until MFA is set up. Set `DISABLE_MFA=true` to bypass this in a recovery situation; existing TOTP secrets are unaffected.
 - After password login, MFA-enabled users are redirected to `/mfa-verify` to enter their 6-digit code before gaining full session access.
 - QR code display for authenticator app setup (Google Authenticator, Authy, etc.).
 

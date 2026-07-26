@@ -547,7 +547,7 @@ Consequence: you cannot join a user across sections in this dataset. If you need
 ### What is exposed in plain text
 
 - Organisation names and slugs
-- Role names (e.g. `STUDENT`)
+- Role names (e.g. `LEARNER`)
 - Module / lesson / program names
 - Library document titles and filenames
 - Survey titles, question text, and answer values

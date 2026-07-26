@@ -4,6 +4,42 @@ The PDFs in this folder are **generated artefacts** — every PDF is built from 
 
 This changelog tracks what's changed since the last rebuild. When you regenerate the PDFs, you can clear entries that are now reflected in the freshly-built PDFs.
 
+## 2026-07-26 — Documentation sweep against the current build
+
+All nine PDFs rebuilt. Everything below was documentation drift — no platform behaviour changed.
+
+**Navigation.** The Charity Admin sidebar was slimmed at some point to Overview, Feedback, Organisations, Products, Reports, Subscribers and Users, with everything the charity publishes moved behind the **Products** hub. Every guide still described the old long sidebar and told readers to click items that are no longer there. All navigation instructions now route through Products where that is where the page actually lives.
+
+**The standalone How to Guide pages are gone.** Help is now a collapsed "How to use this page" panel at the foot of each page. All three role guides still told readers to click a sidebar item that does not exist.
+
+**Brand Store is called Brand Assets**, and lives under Products rather than the sidebar. Renamed throughout, except for the literal checkbox label "Use brand store as context", which is still what the banner modal says.
+
+**Document Library in the learner sidebar** is one link, not one link per collection. Corrected in the learner guide and the README.
+
+**MFA applies to Charity Employees too**, not just Charity Admins and Org Admins. The middleware has always enforced it for all three; the docs listed two.
+
+**Org Admin guide gained a Job Openings section** (§9) — organisation-tier job openings shipped in July 2026 with no user documentation at all. The "what you cannot do" list was also wrong: it omitted that an Org Admin cannot assign themselves a training programme, cannot create a second Org Admin, and cannot edit their own home page.
+
+**Stale integration-API references** to the removed `cv` and `careers` sections, and a `STUDENT` role in an example payload, corrected in the README and the Integration Reports Guide.
+
+**Two navigation defects fixed in the same pass:**
+
+- The **Audit Log** item in the Org Admin sidebar pointed at `/admin/audit`, which was never built — there is no audit model, no API and no page anywhere in the codebase. The item has been removed rather than left as a dead link. The absence of an audit trail is now recorded as a known gap in §16 of the Platform Administration Guide, since it may matter for assurance purposes.
+- The Org Admin sidebar sorted its items alphabetically only when the organisation was a parent organisation, so parent and non-parent organisations rendered the same menu in two different orders. It now sorts in both cases.
+
+## 2026-07-26 — New: Platform Administration Guide
+
+Added a ninth PDF, `AAA_Platform_Administration.pdf`, built from `platform-administration.md`.
+
+It documents the administration *model* rather than the screens: the two-tier split between charity-level and organisation-level administration, the four roles, the ten charity permissions and what each unlocks, what an organisation can and cannot do for itself, how provisioning works, how access is enforced by middleware, the security requirements for administrator accounts, and a full responsibility matrix.
+
+This was written to answer a recurring question — whether only Ambitious about Autism can administer the platform. It cannot be answered from the existing Admin Guide, which describes procedures screen by screen but never states the boundary. The two documents are complementary: update this one when a permission or role boundary changes, and the Admin Guide when a screen changes.
+
+Two gaps are recorded in §16 of the new guide rather than silently fixed:
+
+- The **Audit Log** item in the organisation admin navigation (`/admin/audit`) points at a page that was never built.
+- Home page editing is charity-only, so organisations cannot customise their own.
+
 ## 2026-07-26 — Four-role model; CV Builder and Careers Advisor retired; org-level jobs and homepages
 
 All eight PDFs rebuilt from their sources on this date.

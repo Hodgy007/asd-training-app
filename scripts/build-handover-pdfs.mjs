@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Builds the seven handover PDFs in docs/handover/ from their markdown sources.
+// Builds the handover PDFs in docs/handover/ from their markdown sources.
 // Run via: npm run handover:build
 //
 // Sources live alongside the PDFs in docs/handover/, plus the four role guides in
@@ -29,6 +29,11 @@ const DOCS = [
       join(guidesDir, 'super-admin-guide.md'),
       join(guidesDir, 'org-admin-guide.md'),
     ],
+  },
+  {
+    output: 'AAA_Platform_Administration.pdf',
+    title: 'AAA Digital Platform — Platform Administration Guide',
+    sources: [join(handoverDir, 'platform-administration.md')],
   },
   {
     output: 'AAA_User_Guide.pdf',

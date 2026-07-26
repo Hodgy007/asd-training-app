@@ -16,8 +16,9 @@ This guide is for Organisation Admins. It covers everything you need to manage y
 6. [Reports](#6-reports)
 7. [Document Library](#7-document-library)
 8. [Virtual Classroom Sessions (Workshops)](#8-virtual-classroom-sessions-workshops)
-9. [Managing Schools (Parent Organisations)](#9-managing-schools-parent-organisations)
-10. [Security and MFA](#10-security-and-mfa)
+9. [Job Openings](#9-job-openings)
+10. [Managing Schools (Parent Organisations)](#10-managing-schools-parent-organisations)
+11. [Security and MFA](#11-security-and-mfa)
 
 ---
 
@@ -84,16 +85,27 @@ The left-hand sidebar shows:
 | Section | What it does |
 |---|---|
 | **Users** | View, create, and manage all users in your organisation |
+| **Announcements** | Post messages that appear on your members' dashboards |
+| **Billing** | Your subscription and invoices |
+| **Catalogue** | The public course catalogue *(opens in a new tab)* |
+| **Document Library** | View document collections shared with your organisation |
+| **Enterprise SSO** | Configure SAML SSO for your organisation |
+| **Home** | The home page your members see |
+| **Job Openings** | Publish vacancies for your own learners |
+| **Meeting Settings** | Configure Zoom/Teams API credentials for auto-generated meeting links |
+| **Reports** | See training progress across your organisation |
 | **Schools** | Create and manage child organisations *(only shown for parent orgs)* |
 | **Workshops** | Create and manage virtual classroom sessions |
-| **Announcements** | Post messages that appear on your members' dashboards |
-| **Document Library** | View document collections shared with your organisation |
-| **Reports** | See training progress across your organisation |
-| **Meeting Settings** | Configure Zoom/Teams API credentials for auto-generated meeting links |
-| **Enterprise SSO** | Configure SAML SSO for your organisation |
-| **How to Guide** | Access the org admin how-to guide |
+
+**Users** is pinned at the top and everything below it is listed alphabetically, so **Schools** appears in its alphabetical place when your organisation has child schools. **Settings** is pinned at the bottom, above Sign out.
 
 The sidebar has a **collapse toggle** at the top — click it to shrink the sidebar to a narrow icon rail, freeing up screen space. The same toggle expands it back to full width.
+
+Most pages have a **How to use this page** panel at the bottom. Click it to expand step-by-step help for whatever you are looking at.
+
+### What you cannot do
+
+Your access stops at the edge of your own organisation. You cannot create other organisations, author training content, or assign yourself an additional training programme — those are the charity's to do. See §16 of the **Platform Administration Guide** for the short list of things to ask Ambitious about Autism for.
 
 At the top of the Users page you will see:
 
@@ -323,7 +335,40 @@ Once credentials are saved and the connection is tested, the **Generate link** b
 
 ---
 
-## 9. Managing Schools (Parent Organisations)
+## 9. Job Openings
+
+Click **Job Openings** in the sidebar to reach `/admin/jobs`.
+
+Job openings you publish here belong to **your organisation**. They are visible to your own learners on their Jobs page, and — if you are a parent organisation — to the learners of your child schools as well. They are not visible to any other organisation.
+
+Ambitious about Autism separately publishes openings across the whole platform. Those appear on your learners' Jobs page alongside yours, but you cannot edit or remove them.
+
+### Creating an opening
+
+1. Click **Create Job Opening**.
+2. Fill in the **title**, **employer**, and **description**.
+3. Set the **location type** — On-site, Hybrid, or Remote — and the **employment type**: Internship, Apprenticeship, Part-time, Full-time, or Volunteer.
+4. Add **skills** and any **autism-friendly notes**. The notes field is where you describe adjustments, interview format, sensory environment, and anything else that helps a candidate decide whether the role suits them. It is the most valuable field on the form — do not leave it blank.
+5. Set a **closing date**. Listings close automatically once it passes; you do not need to remember to take them down.
+6. Attach any supporting documents (job pack, application form).
+7. Save as **Draft** while you are still working on it, or **Publish** to make it live.
+
+### Assigning a job to a specific learner
+
+Open a published job and use **Assign** to attach it to named learners. An assigned job appears on that learner's Jobs page even if it would not otherwise have reached them.
+
+### Statuses
+
+| Status | Meaning |
+|---|---|
+| **Draft** | Only visible to you |
+| **Published** | Live and visible to your learners |
+| **Closed** | Past its closing date, or closed by hand |
+| **Archived** | Hidden from the list, retained for your records |
+
+---
+
+## 10. Managing Schools (Parent Organisations)
 
 **This section only applies if your organisation has been set up as a parent organisation by the platform super admin.** If you do not see a **Schools** link in your sidebar, this section does not apply to you.
 
@@ -331,7 +376,7 @@ Parent organisations — such as Multi-Academy Trusts, CEC Careers Hubs, and Loc
 
 ### Accessing the Schools page
 
-Click **Schools** in the left-hand sidebar (between Users and Workshops). This takes you to `/admin/schools`.
+Click **Schools** in the left-hand sidebar. This takes you to `/admin/schools`.
 
 ### Creating a school
 
@@ -339,7 +384,7 @@ Click **Schools** in the left-hand sidebar (between Users and Workshops). This t
 2. Fill in the school's **Name** and **Slug** (the slug auto-generates from the name — you can edit it).
 3. Optionally select an **Organisation Type** (School, College, Academy, etc.).
 4. Fill in contact details (name, email, phone) and address if required.
-5. The **Inherit Settings** toggle is on by default. When enabled, the school will use your organisation's training programs, allowed roles, and feature flags. Turn it off if you need the school to have its own independent settings.
+5. The **Inherit Settings** toggle is on by default. When enabled, the school will use your organisation's training programmes and allowed roles. Turn it off if you need the school to have its own independent settings.
 6. Click **Create School**.
 
 ### Managing a school
@@ -360,7 +405,7 @@ On the **Reports**, **Sessions**, and **Announcements** pages, you will see an *
 
 ---
 
-## 10. Security and MFA
+## 11. Security and MFA
 
 ### Two-factor authentication
 
@@ -373,15 +418,23 @@ Your admin account requires 2FA at all times. This is enforced by the platform a
 
 As an Organisation Admin you can:
 
-- Manage users only within your own organisation
+- Manage users within your own organisation — and within your child schools, if you are a parent organisation
 - Create and delete announcements for your organisation
+- Publish your organisation's own job openings
+- Schedule and run workshops
 - View training reports for your organisation
+- Configure your organisation's SAML SSO and Zoom / Teams credentials
 
 You cannot:
 
-- Access or modify users in other organisations
-- Create or edit training module content (this is managed by the platform super admin)
+- Access or modify users, reports or job openings in any other organisation
+- Create or edit training content — that is the charity's
+- Assign your organisation an additional training programme
+- Create another Organisation Admin — new accounts can only be given roles the charity has permitted for your organisation, which is normally Learner only
+- Edit your organisation's home page
 - Change platform-wide settings
+
+Anything on that second list can be requested from Ambitious about Autism, and is quick for them to action.
 
 ### Dark mode
 
