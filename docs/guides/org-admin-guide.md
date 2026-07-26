@@ -349,13 +349,17 @@ Ambitious about Autism separately publishes openings across the whole platform. 
 2. Fill in the **title**, **employer**, and **description**.
 3. Set the **location type** — On-site, Hybrid, or Remote — and the **employment type**: Internship, Apprenticeship, Part-time, Full-time, or Volunteer.
 4. Add **skills** and any **autism-friendly notes**. The notes field is where you describe adjustments, interview format, sensory environment, and anything else that helps a candidate decide whether the role suits them. It is the most valuable field on the form — do not leave it blank.
-5. Set a **closing date**. Listings close automatically once it passes; you do not need to remember to take them down.
-6. Attach any supporting documents (job pack, application form).
-7. Save as **Draft** while you are still working on it, or **Publish** to make it live.
+5. Set a **closing date**. This field is required — the form will not submit without one. Listings close automatically once the date passes, so you do not need to remember to take them down. For an open-ended role, set a date a few months out and extend it if the vacancy is still live.
+6. Save as **Draft** while you are still working on it, or **Publish** to make it live.
 
-### Assigning a job to a specific learner
+### What you cannot do from here
 
-Open a published job and use **Assign** to attach it to named learners. An assigned job appears on that learner's Jobs page even if it would not otherwise have reached them.
+Two things on job openings are handled by Ambitious about Autism rather than by you:
+
+- **Attaching documents** — job packs and application forms can only be uploaded by the charity. Put the details in the description, or link to a document in your own Document Library collection.
+- **Assigning a job to a named learner** — the charity can pin a specific opening to a specific learner so it reaches them regardless of the usual targeting. Your job list shows an **Assignees** count so you can see when this has happened, but the assignment itself is made centrally.
+
+If either would be useful to you, say so — both already exist on the charity's side and could be opened up.
 
 ### Statuses
 

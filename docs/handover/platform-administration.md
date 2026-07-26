@@ -49,7 +49,7 @@ Charity administrators work under `/super-admin`. Anyone whose role is not `SUPE
 | Reports | `/super-admin/reports` | Needs *View Reports* |
 | Subscribers | `/super-admin/subscribers` | Charity Admin only |
 | Users | `/super-admin/users` | Charity Admin only |
-| Settings | `/super-admin/settings` | All charity-level users |
+| Settings | `/super-admin/settings` | Charity Admin only |
 
 ### 3.2 The Products hub
 
@@ -62,7 +62,7 @@ Everything the charity publishes to the platform lives behind **Products**. Each
 | Brand Assets | `/super-admin/brand-assets` | Manage Library |
 | Catalogue — Education | `/courses?audience=education` | None (public page) |
 | Catalogue — Employer | `/courses?audience=employer` | None (public page) |
-| Cohorts | `/super-admin/cohorts` | Manage Organisations |
+| Cohorts | `/super-admin/cohorts` | Manage Cohorts |
 | Document Library | `/super-admin/library` | Manage Library |
 | Home Page | `/super-admin/home` | Charity Admin only |
 | Job Openings | `/super-admin/jobs` | Manage Job Openings |
@@ -115,7 +115,9 @@ There are **ten** permissions:
 
 A **Charity Admin** holds all ten implicitly — the check short-circuits on the role, so nothing needs to be ticked.
 
-Four surfaces are **never** available to a charity employee, whatever their permissions: Feedback, Subscribers, platform-wide Users, and Home Page editing. These are Charity Admin only by design, because they touch billing, personal data across every organisation, or the account model itself.
+Five surfaces are **never** available to a charity employee, whatever their permissions: Feedback, Subscribers, platform-wide Users, Home Page editing, and **Settings**. These are Charity Admin only by design, because they touch billing, personal data across every organisation, platform-wide identity configuration, or the account model itself.
+
+The Settings link is visible in the sidebar to charity employees but the page itself turns them away, as does every settings API behind it. Treat the whole of Settings — appearance, meeting credentials, SSO, integrations and Eventbrite — as Charity Admin territory.
 
 > **Granting permissions.** Permissions are set per user under **Users** (`/super-admin/users`), which is Charity Admin only. A charity employee therefore cannot widen their own access or anyone else's.
 
@@ -259,7 +261,7 @@ Middleware is the outer gate, not the only one. Every API route re-checks the se
 | Password hashing | Everyone | bcrypt, cost factor 12 |
 | Sign-in rate limit | Everyone | 10 attempts per 15 minutes |
 | Forced password change | Invited users | Anyone given a temporary password must replace it at first sign-in |
-| Activation and reset tokens | Everyone | Stored hashed, never in plain text; activation links expire after 7 days, password resets after 1 hour |
+| Activation and reset tokens | Everyone | Stored hashed, never in plain text. Three lifetimes are in use: organisation-admin activation links **7 days**, self-registration welcome links **24 hours**, password resets **1 hour** |
 
 > **The MFA kill-switch.** Setting `DISABLE_MFA=true` skips all enrolment and verification. It exists for recovery situations — for example, an administrator locked out after losing their authenticator. Existing TOTP secrets survive untouched. **It must not be left on in production**, and turning it on should be treated as an incident with a recorded reason and a time by which it will be turned off again.
 
