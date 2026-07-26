@@ -10,7 +10,7 @@ This document is regenerated from markdown via `npm run handover:build` — see 
 
 ## 1. System Overview
 
-The AAA Digital Platform is a Next.js 14 training application for Ambitious about Autism, deployed on Vercel with a PostgreSQL database hosted on Neon. It supports ASD-awareness training for practitioners, careers training and AI-assisted careers tooling for autistic learners, virtual classroom workshops, a charity-managed document library and job board, and aggregate impact reporting. AI features run through the Vercel AI Gateway (Gemini / Claude / GPT); text-to-speech via ElevenLabs; transactional email via Resend; optional payments via Stripe. Authentication uses NextAuth v4 with JWT sessions, supporting email/password, OAuth (Google + Microsoft Azure AD), and per-org SAML SSO.
+The AAA Digital Platform is a Next.js 14 training application for Ambitious about Autism, deployed on Vercel with a PostgreSQL database hosted on Neon. It delivers training to the charity's own staff and to external organisations — schools, colleges, universities and employers — alongside virtual classroom workshops, a document library, a two-tier job board and aggregate impact reporting. AI features run through the Vercel AI Gateway (Gemini / Claude / GPT); text-to-speech via ElevenLabs; transactional email via Resend; optional payments via Stripe. Authentication uses NextAuth v4 with JWT sessions, supporting email/password, OAuth (Google + Microsoft Azure AD), and per-org SAML SSO.
 
 | Component | Technology | Hosted at |
 |---|---|---|

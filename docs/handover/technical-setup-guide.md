@@ -135,7 +135,6 @@ npx tsx prisma/seed-training-content.ts
 > **Warn:** Always push schema to **BOTH** dev AND production when adding columns that are queried at runtime. Production will crash if it references a missing column.
 
 **Prisma accessor gotchas:**
-- The CV model accessor is `prisma.cV` (not `prisma.cv`).
 - Virtual classroom sessions use `prisma.classSession` (not `prisma.session` — that's the NextAuth Session table).
 
 ## 7. Local Development
@@ -222,7 +221,7 @@ CSP is configured in `next.config.js` headers. Key directives that require expli
 
 **`scorm-again` v3.** Handles both SCORM 1.2 (`window.API`) and SCORM 2004 (`window.API_1484_11`). Version 3 supports concurrent requests and improved CMI state management.
 
-**`prisma.cV`, not `prisma.cv`.** Prisma generates accessors from model names. The CV model is named "CV" (uppercase) so the accessor is `prisma.cV`. Similarly `ClassSession` avoids collision with NextAuth `Session`.
+**`prisma.classSession`, not `prisma.session`.** The virtual-classroom model is named `ClassSession` specifically to avoid colliding with the NextAuth `Session` table, so always reach for `prisma.classSession`.
 
 **OAuth toggled in DB, not env.** `OAuthSsoConfig` lets Charity Admins flip Google / Microsoft on per-environment without a redeploy. Replaces the old `ENABLE_OAUTH_SSO` env flag (removed May 2026).
 

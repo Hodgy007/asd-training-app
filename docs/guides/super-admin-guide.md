@@ -127,9 +127,7 @@ This page lists every organisation on the platform in a table. You can see each 
 1. Click **Create Organisation** in the top-right corner. A form appears below the header.
 2. Fill in the **Name** field (e.g. "Sunrise Care Services"). The **Slug** field will fill in automatically based on the name — you can edit it if needed. The slug must use only lowercase letters, numbers, and hyphens.
 3. Under **Allowed Roles**, tick the types of users this organisation will have. The available roles are:
-   - **Practitioner** — accesses ASD awareness training and workshops
-   - **Careers Professional** — accesses careers training, CV Builder, Careers Advisor, and the jobs board
-   - **Student**, **Intern**, **Employee** — access whichever training programmes the organisation has been assigned, plus CV Builder, Careers Advisor, and jobs (where enabled)
+   - **Learner** — the single role for everyone who takes training, whether charity staff or a member of an external organisation. They see whichever training programmes their organisation has been assigned, plus jobs, workshops and the document library.
 4. Under **Module Access**, use the **ASD Awareness Training** and **Careers CPD Training** toggles to control which training plans this organisation's users may access.
 5. The **Active** checkbox is ticked by default. Leave it ticked to make the organisation live immediately.
 6. The **Parent Organisation** checkbox is unticked by default. Tick it if this organisation will manage child organisations underneath it (e.g. a Multi-Academy Trust, CEC Careers Hub, or Local Authority that oversees multiple schools). See [Hierarchical Organisations](#hierarchical-organisations-parentchild) below for details.
@@ -700,7 +698,7 @@ Click the **Test** button on any prompt to send a sample request and see the AI'
 
 Navigate to **Job Openings** in the left-hand sidebar (requires the **Manage Jobs** permission).
 
-The Jobs feature lets the charity publish job listings to targeted learners — students, interns, employees, and career development officers.
+Job openings come in two tiers. The charity publishes listings platform-wide from here, optionally narrowed to specific organisations. Separately, each organisation can publish its own openings from its admin panel, visible only to its own learners and to any child organisations beneath it — those are not managed from this page, though they appear in the list with the owning organisation named.
 
 ### Creating a job listing
 
@@ -730,9 +728,9 @@ The Jobs feature lets the charity publish job listings to targeted learners — 
 
 Open a job listing and click **Add Attachment** to upload supporting documents (e.g. a job description PDF, an application form). These appear as downloads on the job detail page at `/jobs/[jobId]`.
 
-### Job Assignments (CDO-to-student targeting)
+### Job assignments
 
-Career Development Officers (CDOs) can assign specific published jobs to individual students in their organisation. This creates a personalised jobs feed for that student. Assignments are managed by CDOs from their own panel — you do not need to manage these as a Super Admin.
+A published job can be assigned to an individual learner, which pins it to their jobs list even when it was not otherwise aimed at their organisation. Organisation admins assign within their own organisation; charity-level users can assign anywhere.
 
 ---
 

@@ -1,6 +1,6 @@
 # Organisation Admin Guide
 
-**Ambitious about Autism — Practitioner Training Platform**
+**Ambitious about Autism — Training Platform**
 
 This guide is for Organisation Admins. It covers everything you need to manage your organisation's users and training programme.
 
@@ -98,7 +98,7 @@ The sidebar has a **collapse toggle** at the top — click it to shrink the side
 At the top of the Users page you will see:
 
 - The total number of users in your organisation
-- A breakdown of users by role (e.g. how many Practitioners, how many Students)
+- A breakdown of users by role (administrators versus learners)
 - A search bar and role filter to find specific people quickly
 
 ---
@@ -122,15 +122,12 @@ You can search by name or email using the search bar. You can also filter by rol
 
 Your organisation is configured to use a specific set of roles. The roles available on the platform are:
 
-| Role | Who it is for | Training access |
+| Role | Who it is for | Access |
 |---|---|---|
-| **Practitioner** | People caring for a child with autism | ASD awareness training modules |
-| **Careers Professional** | Careers advisers and employment support staff | Careers training modules only |
-| **Student** | Learners undertaking training as part of their studies | ASD and/or careers training (depending on what your organisation is assigned) |
-| **Intern** | Interns undertaking the training programme | ASD and/or careers training |
-| **Employee** | Employed staff undertaking training | ASD and/or careers training |
+| **Learner** | Everyone in your organisation who takes training | Whichever training programmes your organisation has been assigned, plus jobs, workshops and the document library |
+| **Organisation Admin** | You and any colleagues who help you run the organisation | Everything a learner sees, plus user management, workshops, job openings, the library and reports |
 
-Not all roles may be available in your organisation. The roles shown in your panel are the ones your platform administrator has enabled for you.
+There is one learner role rather than one per audience. What a learner can see is decided by the training programmes your organisation has been assigned — so if someone is missing a programme you expect them to have, it is the organisation's assignment that needs changing, not their role.
 
 ### Creating a new user
 
@@ -269,7 +266,7 @@ The **Workshops** section (click **Workshops** in the left-hand sidebar) lets yo
    - **Host** — select a member of your organisation who will lead the session.
 3. Under **Invite attendees**, choose who to invite:
    - **All members** — everyone in your organisation.
-   - **By role** — invite all members who have a specific role (e.g. all Practitioners).
+   - **By role** — invite all members who have a specific role (e.g. all Learners).
    - **Individual people** — select specific members by name.
 4. Click **Create Session**.
 

@@ -35,7 +35,7 @@ The most common path. For someone whose school, college, university, or employer
 
 ### Why is this safe to auto-approve?
 
-Each organisation has already told the charity which roles they want to allow (Students only, Practitioners only, etc.). Anyone signing up has to match that allow-list — they can't pick a role their org hasn't authorised. Org admins can deactivate any account at any time from their admin panel. Sign-up attempts are rate-limited (5 / 15 min / IP) to stop abuse. The 24h magic-link TTL means a leaked email + intercepted welcome link is the only theoretical risk, and it's mitigated by the recipient being the only person who can click it.
+Everyone who joins an organisation joins as a Learner, and what they can then see is limited to the training programmes that organisation has been assigned — so joining grants nothing the organisation hasn't already been given. Org admins can deactivate any account at any time from their admin panel. Sign-up attempts are rate-limited (5 / 15 min / IP) to stop abuse. The 24h magic-link TTL means a leaked email + intercepted welcome link is the only theoretical risk, and it's mitigated by the recipient being the only person who can click it.
 
 ### What if the email is already on the platform?
 
@@ -43,12 +43,12 @@ The form gently tells the user and links them to the sign-in page. No informatio
 
 ## Path 2 — Setting up a new school or business
 
-For a Practitioner, Careers Professional, or Employee whose organisation isn't on the platform yet. They create the organisation and become its first administrator.
+For someone whose organisation isn't on the platform yet. They create the organisation and become its first administrator.
 
 | Step | What happens |
 |---|---|
 | 1 | User opens `/register` and selects **"I want to register a new school or business"**. |
-| 2 | Picks one of three roles that can register a new org: **Practitioner**, **Careers Professional**, or **Employee**. The choice constrains the organisation types they can create: practitioners and careers professionals can register a school / college / academy / university; employees can register a business (employer). |
+| 2 | States what they do, which constrains the organisation types available: education staff can register a school / college / academy / university; employers can register a business. This is a form-only distinction — it selects the organisation type and does not become a platform role. |
 | 3 | Enters the organisation's details (name, type) and their own name, email, **and password** (inline, not magic-link). |
 | 4 | Clicks **Register**. Both the user account and the new organisation are created with `active: true`. The user is signed in immediately as the new organisation's `ORG_ADMIN`. |
 | 5 | They land on the org admin dashboard and can start adding colleagues, choosing training programmes, configuring SSO etc. |
@@ -63,11 +63,11 @@ The platform previously required a Charity Admin to approve new organisations be
 
 ### Why limit who can do this?
 
-Only Practitioner / Careers Professional / Employee roles can register new organisations. A student or parent shouldn't be able to spin up a fake school — they'd take Path 1 (joining an existing one) or Path 3 (no organisation) instead.
+The registration form asks what someone does before letting them create an organisation, so an autistic young person or a parent isn't routed into spinning up a fake school — they'd take Path 1 (joining an existing organisation) or Path 3 (no organisation) instead. It's a routing guard rather than a security control: the real protection is that a Charity Admin can deactivate any organisation and its users in one click.
 
 ## Path 3 — No organisation (public Toolkit pool)
 
-For anyone who wants access to the platform but isn't part of a school, college, or employer — parents, carers, autistic adults, supporters, independent practitioners.
+For anyone who wants access but isn't part of a school, college or employer — parents, carers, autistic adults, supporters and independent professionals.
 
 | Step | What happens |
 |---|---|
@@ -76,16 +76,18 @@ For anyone who wants access to the platform but isn't part of a school, college,
 | 3 | Enters name and email. **No password field.** |
 | 4 | Receives a welcome email (same template as Path 1) with a 24h magic link. |
 | 5 | Clicks the link, lands on `/welcome`, picks a password, and is signed in. |
-| 6 | They land in the public Toolkit area, with access tailored to their selected role. |
+| 6 | They land in the public Toolkit area as a Learner. |
 
 ### The four options
 
-| What describes you? | What you'll be on the platform |
-|---|---|
-| I am autistic | Student account |
-| I am the parent / carer / relative of an autistic young person | Parent / Carer account |
-| I am a supporter | Parent / Carer account (general follower) |
-| I am a professional working with autistic people | Practitioner account |
+All four create a Learner account — the platform role is the same either way. The answer is recorded separately against the person's registration record, which is what reporting reads, so the distinction is preserved without needing a role per audience.
+
+| What describes you? |
+|---|
+| I am autistic |
+| I am the parent / carer / relative of an autistic young person |
+| I am a supporter |
+| I am a professional working with autistic people |
 
 ### Why no "employer" option here?
 

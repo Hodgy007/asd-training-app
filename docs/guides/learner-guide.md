@@ -1,4 +1,4 @@
-# Practitioner Guide — Ambitious about Autism Training Platform
+# Learner Guide — Ambitious about Autism Training Platform
 
 **Platform:** https://asd-training-app-v2.vercel.app
 
@@ -12,17 +12,20 @@
 4. [Training Modules](#4-training-modules)
 5. [Lesson Features](#5-lesson-features)
 6. [Document Library](#6-document-library)
-7. [Workshops and Sessions](#7-workshops-and-sessions)
-8. [Settings](#8-settings)
-9. [Getting Help](#9-getting-help)
+7. [Job Openings](#7-job-openings)
+8. [Workshops and Sessions](#8-workshops-and-sessions)
+9. [Settings](#9-settings)
+10. [Getting Help](#10-getting-help)
 
 ---
 
 ## 1. Welcome
 
-Welcome to the Ambitious about Autism training platform. If you are here, you are taking a meaningful step towards deepening your understanding of autism and how to support the people in your care.
+Welcome to the Ambitious about Autism training platform. If you are here, you are taking a meaningful step towards deepening your understanding of autism and how to support the people around you.
 
-This platform has been designed with busy practitioners in mind. You can work through training at your own pace, return to lessons whenever you need a refresher, and access resources and workshops arranged by your organisation — all in one place.
+This guide is for everyone who takes training on the platform, whether you work for the charity or for a school, college or employer that uses it. You can work through training at your own pace, return to lessons whenever you need a refresher, and access resources, job opportunities and workshops arranged by your organisation — all in one place.
+
+**What you can see is set by your organisation.** The training programmes on your sidebar are the ones your organisation has been given, so your list may differ from a colleague's at another organisation. If you expect to see a programme and do not, ask your organisation administrator.
 
 This guide explains how to use each part of the platform. You do not need any technical knowledge to get started. Take your time, and go at the pace that suits you.
 
@@ -158,7 +161,7 @@ Some lessons have downloadable resources attached — for example, PDF reference
 
 ## 6. Document Library
 
-Your organisation may have a document library set up for you. This is a collection of documents — guides, policies, reference materials — that your organisation wants to make available to practitioners.
+Your organisation may have a document library set up for you. This is a collection of documents — guides, policies, reference materials — that your organisation wants to make available to you.
 
 ### Accessing the library
 
@@ -170,7 +173,33 @@ Click a collection to open it and see the documents inside. Click any document t
 
 ---
 
-## 7. Workshops and Sessions
+## 7. Job Openings
+
+Select **Jobs** in the sidebar to see job opportunities you can apply for.
+
+### Where the listings come from
+
+Listings reach you from two places, and both appear in the same list:
+
+- **Ambitious about Autism** curates opportunities and publishes them across the platform.
+- **Your own organisation** can post its own openings, visible only to its members.
+
+You may also have a job assigned to you individually, which appears in your list even if it was not otherwise aimed at your organisation.
+
+### What a listing shows
+
+- Employer name and details
+- Job title and full description
+- Employment type: Internship, Apprenticeship, Part-time, Full-time, or Volunteer
+- Location type: On-site, Hybrid, or Remote
+- Closing date — listings close automatically once this passes
+- **Autism-friendly notes**, where the employer has described what makes the role and workplace suitable: predictable hours, quiet spaces, a named contact, an adjusted interview process, and so on
+
+Select any listing to open the full detail view, including how to apply and any attached documents.
+
+---
+
+## 8. Workshops and Sessions
 
 Your organisation may invite you to virtual workshops or training sessions, run over Zoom, Microsoft Teams, or another platform.
 
@@ -207,7 +236,7 @@ If your organisation's administrator has assigned you as a **host** for a sessio
 
 ---
 
-## 8. Settings
+## 9. Settings
 
 The **Settings** option is at the bottom of the left-hand sidebar, above Sign Out.
 
@@ -219,7 +248,7 @@ If you are prompted to change your password immediately after logging in, this m
 
 ### Multi-Factor Authentication (MFA)
 
-MFA is not required for the Practitioner role. However, if your organisation's administrator has set up additional security requirements, you may be prompted to set up an authenticator app (TOTP). If this happens, the platform will guide you through the steps — you will need an authenticator app such as Google Authenticator or Microsoft Authenticator on your phone.
+MFA is not required for learner accounts. However, if your organisation's administrator has set up additional security requirements, you may be prompted to set up an authenticator app (TOTP). If this happens, the platform will guide you through the steps — you will need an authenticator app such as Google Authenticator or Microsoft Authenticator on your phone.
 
 ### Dark mode
 
@@ -227,7 +256,7 @@ The platform fully supports dark mode. All buttons, text, and interface elements
 
 ---
 
-## 9. Getting Help
+## 10. Getting Help
 
 ### If something is not working
 

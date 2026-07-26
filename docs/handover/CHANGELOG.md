@@ -4,6 +4,48 @@ The PDFs in this folder are **generated artefacts** — every PDF is built from 
 
 This changelog tracks what's changed since the last rebuild. When you regenerate the PDFs, you can clear entries that are now reflected in the freshly-built PDFs.
 
+## 2026-07-26 — Four-role model; CV Builder and Careers Advisor retired; org-level jobs and homepages
+
+All eight PDFs rebuilt from their sources on this date.
+
+### What changed
+
+**1. Ten roles collapsed into four**
+
+`SUPER_ADMIN`, `CHARITY_EMPLOYEE`, `ORG_ADMIN`, `LEARNER`. `CAREGIVER`, `CAREER_DEV_OFFICER`, `STUDENT`, `INTERN`, `EMPLOYEE`, `PARTICIPANT` and `FAMILY_CARER` all became `LEARNER`. What a learner can see now comes from the training programmes their organisation has been assigned, not from their role — so the platform no longer needs a role per audience.
+
+The self-declared identity captured at registration ("I am autistic", "I am a parent or carer") is unaffected: it was always stored separately on the registration record, which is what reporting reads.
+
+**2. The charity is now an organisation**
+
+Internal versus external is a property of the organisation, not the role. The charity has its own `Organisation` row (`organisationType: CHARITY`) and its staff are ordinary members, so progress, reports and certificates work for internal training with no special-casing.
+
+**3. CV Builder and Careers Advisor removed**
+
+Both were built for the student roles that no longer exist. Removed end to end — pages, APIs, AI prompts, database tables. All six tables were empty on both dev and production before being dropped, so no data was lost. Full specifications, data models and AI prompts are preserved in `docs/archive/retired-feature-specs.md` if either is ever rebuilt.
+
+**Breaking change for BI consumers:** `/api/integrations/reports` no longer exposes the `cv` or `careers` sections. `?section=cv` and `?section=careers` now return 400, and the combined response drops both keys. The OpenAPI contract and the Integration Reports Guide have been updated to match.
+
+**4. Job openings are now two-tier**
+
+The charity publishes listings platform-wide as before. Organisations can now also publish their own, visible only to their own learners and to any child organisations beneath them, managed from the organisation admin panel.
+
+**5. Homepages are scoped per organisation**
+
+Previously one homepage per role. Now there is a single platform default plus an optional override per organisation, which its members see instead. Managed centrally by charity admins.
+
+**6. One-step organisation provisioning**
+
+Adding a school or company now creates the organisation, assigns its training programmes, creates its administrator and emails them an activation link in a single flow, instead of leaving each step to be done by hand.
+
+### Documentation impact
+
+- `caregiver-guide.md` and `careers-professional-guide.md` merged into a single `learner-guide.md`, since both described roles that no longer exist. `AAA_User_Guide.pdf` now builds from that one source.
+- Role tables, onboarding checklists, FAQs and glossaries updated across the admin guides, training materials and self-registration flow.
+- Data dictionary: CV Builder and Careers Advisor sections removed and the remaining sections renumbered; `HomePage` re-keying documented.
+
+---
+
 ## 2026-05-16 — Integration Reports Guide added; AI usage caps; reports API v2
 
 ### What changed

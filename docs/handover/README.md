@@ -20,7 +20,7 @@ one integration partner guide.
 | PDF | Source markdown |
 |---|---|
 | `AAA_Admin_Guide.pdf` | `docs/guides/super-admin-guide.md` + `docs/guides/org-admin-guide.md` |
-| `AAA_User_Guide.pdf` | `docs/guides/caregiver-guide.md` + `docs/guides/careers-professional-guide.md` |
+| `AAA_User_Guide.pdf` | `docs/guides/learner-guide.md` |
 | `AAA_Data_Dictionary.pdf` | `docs/handover/data-dictionary.md` |
 | `AAA_Technical_Setup_Guide.pdf` | `docs/handover/technical-setup-guide.md` |
 | `AAA_Self_Registration_Flow.pdf` | `docs/handover/self-registration-flow.md` |

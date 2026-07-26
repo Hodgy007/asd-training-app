@@ -33,10 +33,7 @@ const DOCS = [
   {
     output: 'AAA_User_Guide.pdf',
     title: 'AAA Digital Platform — User Guide',
-    sources: [
-      join(guidesDir, 'caregiver-guide.md'),
-      join(guidesDir, 'careers-professional-guide.md'),
-    ],
+    sources: [join(guidesDir, 'learner-guide.md')],
   },
   {
     output: 'AAA_Data_Dictionary.pdf',

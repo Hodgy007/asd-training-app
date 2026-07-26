@@ -17,9 +17,10 @@ This document is regenerated from markdown via `npm run handover:build` — see 
 | Development | Neon dev branch pooler | Endpoint `ep-lucky-cherry-a8toqlw5`; pulled via `vercel env pull .env.local` |
 
 **Prisma accessor gotchas:**
-1. Model `CV` → accessor `prisma.cV` (capital V) — NOT `prisma.cv`.
-2. Model `ClassSession` → accessor `prisma.classSession` — avoids collision with NextAuth `Session` table.
-3. `Child` / `Observation` / `AiInsight` / `ObservationAccessLog` models were removed in commit `8968cf0` (21 April 2026). Do not reference them.
+1. Model `ClassSession` → accessor `prisma.classSession` — avoids collision with NextAuth `Session` table.
+2. `Child` / `Observation` / `AiInsight` / `ObservationAccessLog` were removed in commit `8968cf0` (21 April 2026). Do not reference them.
+3. `CV` / `CVWorkExperience` / `CVEducation` / `CVSkill` / `CVReference` / `CareerAdvisorSession` were removed in July 2026 with the CV Builder and Careers Advisor features. Their specifications and AI prompts are preserved in `docs/archive/retired-feature-specs.md` if either is ever rebuilt.
+4. `HomePage` is keyed by `id`, not by role. The platform default uses the fixed id `'default'`; a row with an `organisationId` overrides it for that organisation's members.
 
 ## 2. Core Models
 
@@ -31,7 +32,7 @@ This document is regenerated from markdown via `npm run handover:build` — see 
 | email | String | No | Unique — used for login |
 | name | String | Yes | |
 | password | String | Yes | bcrypt hash (cost 12). Null for SSO-only users. |
-| role | Role enum | No | `SUPER_ADMIN` / `CHARITY_EMPLOYEE` / `ORG_ADMIN` / `CAREGIVER` / `CAREER_DEV_OFFICER` / `STUDENT` / `INTERN` / `EMPLOYEE` |
+| role | Role enum | No | `SUPER_ADMIN` / `CHARITY_EMPLOYEE` / `ORG_ADMIN` / `LEARNER` |
 | organisationId | String | Yes | FK → Organisation; SET NULL on org delete |
 | active | Boolean | No | Default true. Deactivated users cannot sign in. |
 | pendingApproval | Boolean | No | **Deprecated** (May 2026). Column retained; not read or written by current code. Always written as false on new rows. |
@@ -54,8 +55,6 @@ This document is regenerated from markdown via `npm run handover:build` — see 
 | orgType | Enum | No | `ORGANISATION` or `COHORT` (cohorts share the same table) |
 | allowedProgramIds | String[] | No | IDs of `TrainingProgram` records the org can access |
 | allowedRoles | Role[] | No | Roles that can be assigned within this org |
-| cvBuilderEnabled | Boolean | No | Feature flag, default true |
-| careersAdvisorEnabled | Boolean | No | Feature flag, default true |
 | active | Boolean | No | |
 | pendingApproval | Boolean | No | **Deprecated** (May 2026). See User notes. |
 | logoUrl | String | Yes | Vercel Blob URL |
@@ -360,50 +359,7 @@ Optional sub-grouping inside a collection. Added April 2026.
 | eventType | Enum | `VIEW` / `DOWNLOAD` |
 | createdAt | DateTime | |
 
-## 7. CV Builder Models
-
-Prisma accessor is `prisma.cV` (capital V) — not `prisma.cv`.
-
-### CV
-
-| Field | Type | Description |
-|---|---|---|
-| id | String | Primary key |
-| userId | String | FK → User |
-| title | String | User-facing CV name |
-| status | Enum | `DRAFT` / `COMPLETE` |
-| template | Enum | `ACCESSIBLE` / `MODERN` / `CLASSIC` |
-| currentStep | Int | Wizard step, default 1 (1–8) |
-| personalStatement | Text? | |
-| fullName / email / phone / address / linkedin | String? | |
-| createdAt / updatedAt | DateTime | Auto-managed |
-
-### CV sub-items
-
-- **CVWorkExperience** — `{ jobTitle, employer, startDate, endDate?, description?, order }`. FK → CV (CASCADE delete).
-- **CVEducation** — `{ qualification, institution, startDate, endDate?, grade?, order }`. FK → CV (CASCADE delete).
-- **CVSkill** — `{ name, level? }`. FK → CV (CASCADE delete).
-- **CVReference** — `{ name, jobTitle, company, email, phone? }`. FK → CV (CASCADE delete).
-
-Dates stored as free-form strings (e.g. `"Sept 2022"`) per UK CV convention. Zod schemas must use `.nullable().optional()` for nullable fields — `z.string().optional()` rejects `null`.
-
-## 8. Careers Advisor
-
-### CareerAdvisorSession
-
-Prisma accessor is `prisma.careerAdvisorSession`.
-
-| Field | Type | Description |
-|---|---|---|
-| id | String | Primary key |
-| userId | String | FK → User; indexed |
-| status | Enum | `IN_PROGRESS` / `COMPLETE` |
-| currentStep | Int | Wizard step position (1–12) |
-| answers | Json? | Structured questionnaire responses keyed by step |
-| report | Json? | AI report: `{ strengths, careers, nextSteps, workplaceSupport }` |
-| createdAt / updatedAt | DateTime | Auto-managed |
-
-## 9. Jobs Models
+## 7. Jobs Models
 
 ### JobOpening
 
@@ -447,7 +403,7 @@ Prisma accessor is `prisma.careerAdvisorSession`.
 
 Unique constraint on `(jobId, userId)`.
 
-## 10. AI & Integration
+## 8. AI & Integration
 
 ### AiPrompt
 
@@ -525,7 +481,7 @@ Charity-owned brand assets (logos, banners, illustrations). Used by the AI banne
 - **ToolkitDownload** — per-document download event linked to a `ToolkitRegistrant`.
 - **ToolkitAnonymousDocumentEvent** — view/download event with no registrant attached (anonymous metric only).
 
-## 11. Key Relationships
+## 9. Key Relationships
 
 | Parent model | Relationship | Child model | Foreign key | On delete |
 |---|---|---|---|---|
@@ -545,12 +501,13 @@ Charity-owned brand assets (logos, banners, illustrations). Used by the AI banne
 | LibraryCollection | 1 : many | LibrarySection | collectionId | CASCADE |
 | LibraryCollection | 1 : many | LibraryDocument | collectionId | CASCADE |
 | LibraryDocument | 1 : many | LibraryDocumentEvent | documentId | CASCADE |
-| CV | 1 : many | CVWorkExperience / CVEducation / CVSkill / CVReference | cvId | CASCADE |
+| Organisation | 1 : many | JobOpening | organisationId | CASCADE |
+| Organisation | 1 : 1 | HomePage | organisationId | CASCADE |
 | JobOpening | 1 : many | JobAttachment | jobId | CASCADE |
 | JobOpening | 1 : many | JobAssignment | jobId | CASCADE |
 | AiPrompt | 1 : many | AiPromptContextFile | promptId | CASCADE |
 
-## 12. Sample Prisma Queries
+## 10. Sample Prisma Queries
 
 **1. Get user with their organisation:**
 
@@ -579,17 +536,23 @@ const sessions = await prisma.classSession.findMany({
 })
 ```
 
-**4. Get a CV with all sub-items:**
+**4. Get the job openings visible to a learner (both tiers):**
 
 ```typescript
-const cv = await prisma.cV.findFirst({
-  where: { userId, id: cvId },
-  include: {
-    workExperience: true,
-    education: true,
-    skills: true,
-    references: true
-  }
+// Charity tier: organisationId null, optionally narrowed by targetOrgIds.
+// Organisation tier: owned by the learner's org, or by its parent.
+const jobs = await prisma.jobOpening.findMany({
+  where: {
+    status: 'PUBLISHED',
+    OR: [
+      {
+        organisationId: null,
+        OR: [{ targetOrgIds: { isEmpty: true } }, { targetOrgIds: { has: organisationId } }]
+      },
+      { organisationId: { in: [organisationId, parentOrgId].filter(Boolean) } }
+    ]
+  },
+  include: { attachments: true, assignments: { where: { userId } } }
 })
 ```
 
@@ -616,12 +579,12 @@ await prisma.trainingProgress.upsert({
 })
 ```
 
-## 13. External Integrations
+## 11. External Integrations
 
 | Service | Used for | Auth method | Env var(s) |
 |---|---|---|---|
 | Neon PostgreSQL | Primary database | Connection string | `DATABASE_URL`, `DIRECT_URL` |
-| Vercel Blob | File storage (docs, images, SCORM, TTS, CV uploads, brand assets) | Token | `BLOB_READ_WRITE_TOKEN` |
+| Vercel Blob | File storage (docs, images, SCORM, TTS, job attachments, brand assets) | Token | `BLOB_READ_WRITE_TOKEN` |
 | Vercel AI Gateway | AI features routing (multi-provider) | API key | `AI_GATEWAY_API_KEY` |
 | ElevenLabs | Text-to-speech — Lily voice (`pFZP5JQG7iQjIQuC4Bku`); MP3s cached at `tts/<voiceId>/<sha256>.mp3` | API key | `ELEVENLABS_API_KEY` |
 | Resend | Transactional email (welcome links, password reset, invites, digests) | API key | `RESEND_API_KEY` |

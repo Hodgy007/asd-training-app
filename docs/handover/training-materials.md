@@ -10,26 +10,26 @@ Onboarding materials, quick-reference cards, FAQs, and a glossary covering every
 
 ### What is the AAA Digital Platform?
 
-A training and career-development platform for Ambitious about Autism. It supports practitioners, careers professionals, and autistic learners with structured training programmes, virtual workshops, document library, CV building tools, an AI Careers Advisor, and a charity-curated job board.
+A training platform for Ambitious about Autism. It delivers structured training programmes to the charity's own staff and to external organisations — schools, colleges, universities and employers — alongside virtual workshops, a document library and a job board.
 
 ### Who uses it?
 
-- **Practitioners** (`CAREGIVER`) — ASD-awareness training, workshops, document library
-- **Careers Professionals** (`CAREER_DEV_OFFICER`) — Careers CPD training, CV Builder, AI Careers Advisor, jobs
-- **Learners** (`STUDENT` / `INTERN` / `EMPLOYEE`) — Assigned training, CV Builder, Careers Advisor, jobs
-- **Organisation Admins** (`ORG_ADMIN`) — Manage their org's users, workshops, library, reports
-- **Charity Staff** (`CHARITY_EMPLOYEE`) — Delegated charity-level access (permissions configurable per user)
-- **Charity Admins** (`SUPER_ADMIN`) — Full platform access
+There are four roles.
+
+- **Learners** (`LEARNER`) — anyone who takes training, whether charity staff or a member of an external organisation. Training, jobs, workshops and the document library.
+- **Organisation Admins** (`ORG_ADMIN`) — manage their own organisation's users, workshops, job openings, library and reports
+- **Charity Staff** (`CHARITY_EMPLOYEE`) — delegated charity-level access, permissions configurable per user
+- **Charity Admins** (`SUPER_ADMIN`) — full platform access
+
+**What a learner sees is set by their organisation, not their role.** Access comes from the training programmes an organisation has been assigned, so two learners in different organisations can see entirely different content. Internal versus external is a property of the organisation too: the charity has its own organisation record, and its staff are ordinary members of it.
 
 ### Training programmes
 
 ASD Awareness Training · Careers CPD Training · Autism in the Workplace · custom SCORM packages uploaded by the charity. Progress is tracked automatically and completion earns a certificate.
 
-### Career tools
+### Job openings
 
-**CV Builder** — 8-step autism-friendly wizard, 3 templates (Accessible / Modern / Classic), PDF & Word export.
-
-**AI Careers Advisor** — 12-question guided wizard generating a structured report (strengths, career suggestions, next steps, workplace support).
+Two tiers, both shown in one list to the learner. The charity publishes curated opportunities platform-wide; an organisation can publish its own, visible only to its members and to any child organisations beneath it. Listings carry autism-friendly notes describing what makes the role and workplace suitable, and close automatically once the closing date passes.
 
 ### Admin features
 
@@ -41,37 +41,16 @@ Built on Next.js 14, hosted on Vercel, database on Neon PostgreSQL. AI via the V
 
 ## Onboarding Checklists by Role
 
-### Practitioner (`CAREGIVER`)
+### Learner (`LEARNER`)
 
-- ☐ Receive a welcome email from the platform OR be invited by an Organisation Admin
-- ☐ Click the welcome link, pick a password on `/welcome`
-- ☐ Land on dashboard — review assigned training and announcements
+- ☐ Receive a welcome email from the platform, or be invited by an Organisation Admin
+- ☐ Click the welcome link and pick a password on `/welcome`
+- ☐ Land on the dashboard — review assigned training and announcements
 - ☐ Start the first training module from the sidebar
 - ☐ Complete all lessons and quizzes to earn a certificate
+- ☐ Browse the Jobs board for opportunities
 - ☐ Check the Workshops section for upcoming sessions
 - ☐ Update display name in Settings → Account
-
-### Careers Professional (`CAREER_DEV_OFFICER`)
-
-- ☐ Receive welcome email / be invited
-- ☐ Pick a password and sign in
-- ☐ Explore the Careers CPD Training programme
-- ☐ Visit **My Students** to see assigned learners
-- ☐ Try the CV Builder — create a sample CV to understand the wizard
-- ☐ Explore the AI Careers Advisor wizard
-- ☐ Review the Jobs board and assign any open roles to relevant learners
-- ☐ Check Workshops for upcoming sessions
-
-### Learner — Student / Intern / Employee
-
-- ☐ Receive credentials from your organisation OR self-register at `/register`
-- ☐ Pick a password from the welcome email link
-- ☐ Check the dashboard for assigned training programmes
-- ☐ Begin the first training module
-- ☐ Try the CV Builder to draft your CV
-- ☐ Try the AI Careers Advisor to get personalised career suggestions
-- ☐ Browse the Jobs board for opportunities
-- ☐ Check Workshops for upcoming events
 
 ### Organisation Admin (`ORG_ADMIN`)
 
@@ -120,12 +99,12 @@ A: Click *Forgot password?* on the login page and enter your email. You'll recei
 A: Ask your Org Admin to resend it, or use the *Forgot password?* link with the email you registered.
 
 **Q: Why can't I see some menu items?**
-A: Menu items depend on your role and your organisation's settings (which training programmes are assigned, whether CV Builder / Careers Advisor are enabled). Contact your admin if you believe something is missing.
+A: Menu items depend on your role and, for learners, on which training programmes your organisation has been assigned. Contact your admin if you believe something is missing.
 
 **Q: Is my data secure?**
 A: Yes. Passwords are bcrypt-hashed at cost 12. Sessions use signed JWT tokens with an 8-hour TTL. MFA is mandatory for admin roles. All traffic is over HTTPS. The platform is hosted on Vercel with Neon's SOC 2 compliant database. Sub-processor list and DPA status are published at `/privacy`.
 
-## Practitioner FAQs
+## Learner FAQs
 
 **Q: How do I unlock the next module?**
 A: Complete all lessons in the current module. The next module is then unlocked automatically.
@@ -142,16 +121,14 @@ A: TTS (Text-to-Speech) reads lesson content aloud using the Lily voice from Ele
 **Q: Can I add personal notes to a lesson?**
 A: Yes — every lesson has a notes field. Notes are private to you.
 
-## Careers Professional FAQs
+**Q: Where do the job listings come from?**
+A: Two places, shown together in one list. Ambitious about Autism publishes curated opportunities platform-wide, and your own organisation can publish its own. A job may also be assigned to you individually, in which case it appears even if it was not otherwise aimed at your organisation.
 
-**Q: Can I see my students' CVs?**
-A: Yes — go to **My Students** in the CV Builder, click a learner, and you can view (read-only) and download their CV.
+**Q: What are the autism-friendly notes on a job?**
+A: A description from the employer of what makes the role and workplace suitable — predictable hours, quiet spaces, a named contact, an adjusted interview process, and so on. Not every listing has them.
 
-**Q: Can I assign a job directly to a student?**
-A: Yes — on the Jobs board, open a listing and use the **Assign to Student** option. The student sees the job pinned in their `/jobs` view.
-
-**Q: How is the AI Careers Advisor report generated?**
-A: The learner answers 12 questions covering interests, strengths, environment preferences, sensory considerations, and values. The platform sends those structured answers (no identifiers) through the Vercel AI Gateway to an LLM, which returns a structured report with strengths, 3–5 career suggestions, next steps, and workplace support strategies.
+**Q: A job disappeared from my list. Why?**
+A: Listings close automatically once their closing date passes. If it was assigned to you individually, you can still reach it from a direct link.
 
 ## Organisation Admin FAQs
 
@@ -199,9 +176,7 @@ A: Create an Integration API key at `/super-admin/integrations`, then call `/api
 - `SUPER_ADMIN` = Charity Admin
 - `CHARITY_EMPLOYEE` = Charity Staff (configurable permissions)
 - `ORG_ADMIN` = Organisation Admin
-- `CAREGIVER` = Practitioner
-- `CAREER_DEV_OFFICER` = Careers Professional
-- `STUDENT` / `INTERN` / `EMPLOYEE` = Learner
+- `LEARNER` = Learner (everyone who takes training, internal or external)
 
 ### Support contacts
 
@@ -217,8 +192,7 @@ A: Create an Integration API key at `/super-admin/integrations`, then call `/api
 | Term | Definition |
 |---|---|
 | AAA Digital Platform | The Ambitious about Autism training and career-development platform |
-| CAREGIVER | Role for early-years practitioners and caregivers (display name: Practitioner) |
-| CDO | Career Development Officer — platform role `CAREER_DEV_OFFICER` (display name: Careers Professional) |
+| LEARNER | The single role for everyone who takes training. What they can see comes from their organisation's assigned programmes |
 | Cohort | A lightweight group for charity-run events (organisation row with `orgType = COHORT`) |
 | MFA | Multi-Factor Authentication — a second login step using an authenticator app |
 | TOTP | Time-based One-Time Password — the 6-digit code generated by authenticator apps |
