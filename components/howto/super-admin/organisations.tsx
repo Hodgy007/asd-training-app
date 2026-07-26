@@ -28,7 +28,7 @@ export default function OrganisationsHowTo() {
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Configuring allowed roles</h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        Control which user roles can be created within each organisation. For example, you might restrict a specialist organisation to only Practitioner and Student roles.
+        Control which user roles can be created within each organisation. In practice this is Learner for members and Org Admin for whoever runs it, since what a learner can see is decided by the organisation&apos;s assigned training programmes rather than by their roles.
       </p>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing and deactivating organisations</h3>

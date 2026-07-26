@@ -15,7 +15,7 @@ export default function LibraryHowTo() {
         <li>Enter a title and description for the collection.</li>
         <li>Optionally upload a thumbnail image to visually identify the collection.</li>
         <li>Select target organisations &mdash; leave empty to make the collection available to all organisations.</li>
-        <li>Select target roles &mdash; choose which user roles can see the collection (e.g. Practitioner, Student, Org Admin).</li>
+        <li>Select target roles &mdash; choose whether the collection is visible to Learners, Org Admins, or both. Leave it empty to show it to everyone targeted by the organisation field.</li>
         <li>Click <strong>Save</strong> to create the collection.</li>
       </ol>
 

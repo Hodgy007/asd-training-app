@@ -19,7 +19,7 @@ We are a UK-based data controller subject to the UK GDPR and the Data Protection
 
 **Brief description of how we use your service:**
 
-We operate a multi-tenant web application (the *ASD Training Platform*) for caregivers, careers professionals, autistic students, and organisation administrators to access training, virtual workshops, document libraries, and CV / careers tools. **[Processor name]** is used as **[one short sentence — e.g. "the managed PostgreSQL database where all platform data is stored at rest"]**.
+We operate a multi-tenant web application (the *ASD Training Platform*) for learners — including autistic young people and the professionals who support them — and organisation administrators to access training, virtual workshops, document libraries and job openings. **[Processor name]** is used as **[one short sentence — e.g. "the managed PostgreSQL database where all platform data is stored at rest"]**.
 
 **Data categories we send through your service:**
 

@@ -22,7 +22,7 @@ Developer and DevOps reference for setup, deployment, and operation of the AAA D
 
 **Route groups:** `(auth)` → public login / register / reset; `(dashboard)` → leaf roles; `(org-admin)` → ORG_ADMIN; `(super-admin)` → SUPER_ADMIN / CHARITY_EMPLOYEE; `(mfa)` → MFA flow; `(change-password)` → forced change.
 
-**Auth flow:** credentials / OAuth / SAML → JWT callback extends token (`id`, `role`, `organisationId`, `mustChangePassword`, `totpEnabled`, `mfaPending`, `hasPassword`, `effectivePrograms`, `charityPermissions`, `cvBuilderEnabled`, `careersAdvisorEnabled`, `isParentOrg`) → session callback → middleware checks role / MFA / password.
+**Auth flow:** credentials / OAuth / SAML → JWT callback extends token (`id`, `role`, `organisationId`, `mustChangePassword`, `totpEnabled`, `mfaPending`, `hasPassword`, `effectivePrograms`, `charityPermissions`, `isParentOrg`) → session callback → middleware checks role / MFA / password.
 
 ## 2. Prerequisites
 

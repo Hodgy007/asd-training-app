@@ -4,7 +4,7 @@ export default function JobsHowTo() {
   return (
     <>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        Job Openings are curated roles (internships, apprenticeships, part-time, full-time, volunteer) surfaced to your learners &mdash; students, interns, employees, and their Careers Professionals.
+        Job Openings are curated roles (internships, apprenticeships, part-time, full-time, volunteer) surfaced to learners &mdash; employees, and their Careers Professionals.
       </p>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Creating a job</h3>
@@ -19,7 +19,8 @@ export default function JobsHowTo() {
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Targeting and assignments</h3>
       <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Restrict visibility to specific organisations or roles via the targeting fields.</li>
+        <li>Restrict visibility to specific organisations via the targeting field. Leave it empty to show the job to every organisation.</li>
+        <li>Jobs you create here are charity-wide. Organisations can also post their own from their admin panel &mdash; those appear in this list with the owning organisation named, and are managed by that organisation.</li>
         <li>Explicitly <strong>assign</strong> a job to a named learner so it&apos;s highlighted for them. Careers Professionals can also do this.</li>
       </ul>
 

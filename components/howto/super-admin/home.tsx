@@ -4,17 +4,21 @@ export default function HomePageBuilderHowTo() {
   return (
     <>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        The Home Page Builder lets you compose a different landing page for each end-user role
-        &mdash; Student, Intern, Employee, Practitioner, Careers Professional. Each role&apos;s
-        page is built from <strong>blocks</strong>: hero banners, tile grids, rich text, images,
-        and videos. Pick a role tab, add and arrange blocks, hit Save.
+        The Home Page Builder composes the landing page learners see. There is one
+        <strong> default</strong> page shown to everyone, and you can optionally give an individual
+        organisation its own page that replaces the default for its members. Pages are built from
+        <strong> blocks</strong>: hero banners, tile grids, rich text, images, and videos. Pick what
+        you&apos;re editing from the dropdown, add and arrange blocks, hit Save.
       </p>
 
-      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Picking a role</h3>
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Default page vs an organisation&apos;s own</h3>
       <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Each role tab is independent &mdash; saving one role doesn&apos;t affect the others.</li>
-        <li>Switching tabs reloads that role&apos;s saved blocks. Unsaved edits on the previous tab are lost &mdash; save before switching.</li>
-        <li>Charity Admin, Charity Employee, and Org Admin don&apos;t have a configurable home page; they see their admin dashboards instead.</li>
+        <li><strong>Default</strong> is shown to every organisation that hasn&apos;t been given its own page. Most of the time this is the only one you need.</li>
+        <li>Choosing an organisation edits a page just for its members. It replaces the default for them entirely &mdash; blocks aren&apos;t merged.</li>
+        <li>Each page is independent. Saving one never affects another.</li>
+        <li>Switching between them reloads the saved blocks. Unsaved edits are lost &mdash; save before switching.</li>
+        <li>To send an organisation back to the default, remove all of its blocks and save.</li>
+        <li>Charity Admin, Charity Employee, and Org Admin don&apos;t see a configurable home page; they land on their admin dashboards instead.</li>
       </ul>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Block types</h3>
@@ -54,24 +58,19 @@ export default function HomePageBuilderHowTo() {
           illustrative quality, gentle gradients, warm and optimistic.
         </li>
         <li>
-          <strong>Student / Intern hero:</strong> Bright radiating curves in orange, magenta, and lime
+          <strong>Getting-started hero:</strong> Bright radiating curves in orange, magenta, and lime
           green on white, hand-drawn illustrative style with soft gradients. Forward-looking, energetic,
           like the start of something new.
         </li>
         <li>
-          <strong>Caregiver / Practitioner hero:</strong> Layered organic shapes in teal, amber yellow,
-          and orange flowing gently across a cream background. Hand-drawn illustrative quality with
-          watercolor-like edges. Supportive, calm, professional warmth.
+          <strong>Supportive hero:</strong> Layered organic shapes in teal, amber yellow, and orange
+          flowing gently across a cream background. Hand-drawn illustrative quality with
+          watercolor-like edges. Calm, professional warmth &mdash; good for a training-led page.
         </li>
         <li>
-          <strong>Career Dev Officer hero:</strong> Bold interlocking shapes in vivid orange and bright
-          magenta with vibrant green details on white. Hand-drawn lines, gentle gradients, ambitious
-          and outward-looking.
-        </li>
-        <li>
-          <strong>Employee hero:</strong> Interconnecting circles and curves in cyan, amber, and lime
+          <strong>Workplace hero:</strong> Interconnecting circles and curves in cyan, amber, and lime
           green with vivid orange highlights on white. Hand-drawn illustrative style, friendly and
-          collaborative tone.
+          collaborative tone &mdash; good for an employer organisation&apos;s page.
         </li>
         <li>
           <strong>Geometric image block:</strong> Abstract dotted pattern with overlapping circles in
@@ -91,12 +90,12 @@ export default function HomePageBuilderHowTo() {
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Preview and save</h3>
       <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Click <strong>Preview</strong> to see what the role will see &mdash; click again to return to editing.</li>
-        <li>Click <strong>Save</strong> to publish. Users in that role see the new page on next load.</li>
-        <li>If a role has no blocks saved, users in that role see a fallback &ldquo;Welcome&rdquo; placeholder.</li>
+        <li>Click <strong>Preview</strong> to see the page as a learner will &mdash; click again to return to editing.</li>
+        <li>Click <strong>Save</strong> to publish. Affected users see the new page on their next load.</li>
+        <li>If the default has no blocks saved, learners see a fallback &ldquo;Welcome&rdquo; placeholder.</li>
       </ul>
 
-      <Tip>Build one role first as a template, then copy-paste blocks into the others by switching tabs and using the JSON in your browser&apos;s storage if you want to duplicate. Or just start with a Hero + Tiles combo on every role &mdash; it&apos;s a strong default.</Tip>
+      <Tip>Start with the default page &mdash; a Hero + Tiles combo is a strong baseline that works for everyone. Only give an organisation its own page when it genuinely needs different content, since every extra page is one more to keep up to date.</Tip>
     </>
   )
 }

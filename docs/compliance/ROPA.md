@@ -3,11 +3,23 @@
 **Product:** Ambitious About Autism Training Platform
 **Controller(s):** The customer organisation (school / Local Authority / college / nursery / employer)
 **Processor:** Ambitious About Autism (service provider, UK charity no. 1063184)
-**Version:** 2.0 — 2026-05-11
-**Supersedes:** v1.0 (2026-04-19), which described the Child Observations feature removed in commit `8968cf0`
+**Version:** 3.0 — 2026-07-26
+**Supersedes:** v2.0 (2026-05-11), which recorded the CV Builder and Careers Advisor activities removed in July 2026
 **Review cycle:** Annual, or on material change
 
 UK GDPR Art. 30 record covering all current processing activities within the platform.
+
+## Material changes from v2.0
+
+The CV Builder and Careers Advisor features were removed from the platform in July 2026. v2.0 Activities 4 and 5 no longer occur and are removed from this record. **This is a net reduction in processing:** the platform no longer collects CV personal details (name, contact, personal statement, work history, education, references) or careers questionnaire answers covering sensory and communication preferences, and no longer sends either to an AI provider.
+
+The six underlying tables (`CV`, `CVWorkExperience`, `CVEducation`, `CVSkill`, `CVReference`, `CareerAdvisorSession`) were dropped from both the development and production databases. All were empty at the point of removal, so no personal data required erasure.
+
+Also in v3.0:
+
+- **Role model collapsed from ten roles to four** — `SUPER_ADMIN`, `CHARITY_EMPLOYEE`, `ORG_ADMIN`, `LEARNER`. What a learner can access is now determined by the training programmes their organisation is assigned, not by a role that implied an audience. Data-subject descriptions throughout this record are updated accordingly. The self-declared identity captured at registration ("I am autistic", "I am a parent or carer") is unchanged — it was always held on the registration record rather than inferred from the role.
+- **The charity's own staff are now ordinary members of a charity organisation record**, so internal training is processed on the same basis as external.
+- **Integration API narrowed** — the `cv` and `careers` export sections were removed, so those data categories are no longer available to downstream BI consumers.
 
 ## Material changes from v1.0
 
@@ -29,7 +41,7 @@ In v2.0:
 | Purpose | Authenticate the user and bind them to a customer organisation so they can access the training, careers, library and workshop features their organisation has enabled. |
 | Lawful basis (Art. 6) | Contract (Art. 6(1)(b)) — performance of the service contract between Ambitious About Autism and the customer organisation. |
 | Special category basis (Art. 9) | N/A |
-| Data subjects | Adult users (caregivers / practitioners, careers professionals, org admins, charity employees) and learners in adult-led education / employment contexts (students, interns, employees — may be aged 16+). |
+| Data subjects | Adult users (charity staff, organisation admins) and learners in adult-led education / employment contexts (may be aged 16+). All non-admin users hold the single `LEARNER` role. |
 | Data categories | Name, email, hashed password, organisation id, role, charity permissions (where applicable), MFA secret, last-login timestamp, account flags (`active`, `mustChangePassword`). |
 | Recipients | Org-admin (their own users only), super-admin / permissioned charity employees (cross-org reporting). |
 | International transfers | Vercel US (SCC + UK Addendum). |
@@ -57,40 +69,12 @@ In v2.0:
 | Lawful basis (Art. 6) | Contract (Art. 6(1)(b)). |
 | Data subjects | Adult users and learners assigned to a training program. |
 | Data categories | Progress per lesson (`TrainingProgress.completedAt`, score, `interactionData`), SCORM CMI snapshots (`cmi.interactions.*`, `cmi.score.*`, `cmi.completion_status`), free-text `LessonNote` rows (learner's personal notes, single row per user/lesson). |
-| Recipients | Org-admin and super-admin (aggregate reporting); the user themselves; CDOs for assigned students (per `canManageStudents` rules). |
+| Recipients | Organisation admins and charity admins (aggregate reporting); the user themselves. |
 | International transfers | Vercel US. |
 | Retention | Until the account is closed or the org relationship ends. Per-question SCORM analytics anonymised; no per-learner data exposed in cross-org reports. |
 | Security measures | Row-level ownership on read; auth-gated `/api/scorm/[lessonId]/[...path]` for SCORM assets (lesson → program → user entitlement check); admin-side SCORM zips validated for entry count, decompressed size, zip-slip and ZIP64 EOCD per `lib/scorm/package.ts`. |
 
-## Activity 4 — CV Builder
-
-| Field | Value |
-|---|---|
-| Purpose | Allow learners (and CAREER_DEV_OFFICER users on their behalf) to draft UK-format CVs through an 8-step accessible wizard, with optional AI suggestions per section. |
-| Lawful basis (Art. 6) | Contract (Art. 6(1)(b)). |
-| Special category basis (Art. 9) | N/A — the platform does not collect ethnicity, religion, health, sexual orientation, or disability data. The fact that the platform's audience is autistic learners is not recorded against individual users. |
-| Data subjects | Learners (STUDENT / INTERN / EMPLOYEE) and the careers professionals supporting them. |
-| Data categories | CV personal details (name, contact, personal statement), work experience, education, skills, interests, references (CV is user-authored throughout). |
-| Recipients | The user themselves; CDOs for same-org students (read-only). |
-| International transfers | Vercel AI Gateway upstream providers (Google / Anthropic / OpenAI, all US) — only the user's own CV draft text is sent in AI payloads, no identifiers. |
-| Retention | Until the user deletes the CV or closes the account. |
-| Security measures | AI endpoint rate-limited (10 / 5 min / user); upstream provider DPAs prohibit use of API content for model training; payload contains user-authored text only. |
-
-## Activity 5 — Careers Advisor
-
-| Field | Value |
-|---|---|
-| Purpose | Generate a personalised careers report from a structured 12-step questionnaire (interests, strengths, environment, concerns, experience, communication, sensory, values). |
-| Lawful basis (Art. 6) | Contract (Art. 6(1)(b)). |
-| Special category basis (Art. 9) | N/A. |
-| Data subjects | Learners (STUDENT / INTERN / EMPLOYEE / CAREER_DEV_OFFICER). |
-| Data categories | Questionnaire answers (JSON on `CareerAdvisorSession.answers`), AI-generated report (strengths, 3–5 career suggestions, next steps, workplace support). |
-| Recipients | The user themselves; CDOs for same-org students (read-only). |
-| International transfers | Vercel AI Gateway upstream providers (US). Payload is the user's own questionnaire answers; no identifiers, no email, no organisation. |
-| Retention | Until the user deletes the session or closes the account. |
-| Security measures | Rate-limited (10 / 5 min / user); prompt registry in `AiPrompt` table instructs the model never to diagnose, to be strength-focused, and to use UK English; output is explicitly non-deterministic and includes career *suggestions*, not employment advice. |
-
-## Activity 6 — Surveys
+## Activity 4 — Surveys
 
 | Field | Value |
 |---|---|
@@ -103,7 +87,7 @@ In v2.0:
 | Retention | Lifetime of the survey; deleted on survey deletion. |
 | Security measures | Respondents pseudonymised with a per-survey key so a respondent cannot be cross-referenced across surveys (security-audit hardening, 2026-05); insight generation operates on aggregate response counts; CSV export reports respondent role / org only, not name. |
 
-## Activity 7 — Document library
+## Activity 5 — Document library
 
 | Field | Value |
 |---|---|
@@ -116,7 +100,7 @@ In v2.0:
 | Retention | Event rows: account lifetime. Documents: until admin deletion. |
 | Security measures | Visibility targeting (`targetOrgIds`, `targetRoles`); document URLs served via auth-gated proxy routes (`/api/library/.../download/*`) — raw Blob URLs are never rendered (security-audit hardening, 2026-05, hash-rewrite migration `f5b2b19`); SVG uploads blocked; admin-uploaded files validated for extension + MIME (`lib/upload-validation.ts`). |
 
-## Activity 8 — Virtual classroom sessions (workshops)
+## Activity 6 — Virtual classroom sessions (workshops)
 
 | Field | Value |
 |---|---|
@@ -129,24 +113,24 @@ In v2.0:
 | Retention | Until the session is deleted by the host or org admin. |
 | Security measures | Per-org / per-charity meeting API credentials stored encrypted at rest; only hosts and org admins can edit a session. |
 
-## Activity 9 — Jobs
+## Activity 7 — Jobs
 
 | Field | Value |
 |---|---|
 | Purpose | Surface charity-curated job openings to learners; allow CDOs to assign jobs to specific learners. |
 | Lawful basis (Art. 6) | Contract (Art. 6(1)(b)). |
-| Data subjects | Learners (STUDENT / INTERN / EMPLOYEE) who view or are assigned to jobs. |
+| Data subjects | Learners who view or are assigned to job openings. |
 | Data categories | Job opening (organisational data — employer, role, autism-friendly notes); `JobAssignment` (user ↔ job link, assigned-by). |
 | Recipients | Learner, the assigning CDO, super-admin / `MANAGE_JOBS` charity employees. |
 | International transfers | Vercel US. |
 | Retention | Job openings until status `ARCHIVED`. Assignments retained for the lifetime of the job. |
 | Security measures | Visibility resolved by `lib/jobs.ts` (`targetOrgIds`, `targetRoles`, `PUBLISHED` status, `closingDate` not past); assignments unique on `(jobId, userId)`. |
 
-## Activity 10 — AI processing via Vercel AI Gateway
+## Activity 8 — AI processing via Vercel AI Gateway
 
 | Field | Value |
 |---|---|
-| Purpose | Provide AI suggestions and reports across CV Builder, Careers Advisor, survey insights, training quiz / content generation, and document-library thumbnail metadata. |
+| Purpose | Provide AI assistance across survey insights, training quiz and content generation, document-library metadata and thumbnails, and homepage banner generation. |
 | Lawful basis (Art. 6) | Triggered by, and inherited from, the activity that calls it (Activities 3, 4, 5, 6, 7). |
 | Data subjects | The user who triggered the AI call; never third parties. |
 | Data categories | Only the content needed for the specific feature: the user's own CV draft, their own questionnaire answers, aggregate (not respondent-level) survey response counts, admin-supplied lesson text, admin-supplied collection metadata. **No user identifiers, account data, organisation id, or special-category data is transmitted.** |
@@ -155,7 +139,7 @@ In v2.0:
 | Retention | AI Gateway observability logs per Vercel DPA; upstream provider DPAs confirm API inputs are not used for model training and are not retained beyond processing. AI outputs are persisted on the platform's own database against the calling activity's record. |
 | Security measures | Prompt registry in `AiPrompt` table — every prompt explicitly instructs the model never to diagnose; user-authored input sanitised via `lib/sanitize.ts`; rate limits per feature (`lib/rate-limit.ts`); error responses sanitised on the admin prompt-test endpoint to strip provider stack traces. |
 
-## Activity 11 — Text-to-speech (ElevenLabs)
+## Activity 9 — Text-to-speech (ElevenLabs)
 
 | Field | Value |
 |---|---|
@@ -168,7 +152,7 @@ In v2.0:
 | Retention | MP3s cached on Vercel Blob keyed by `sha256(voiceId|text)` (`lib/tts-blob.ts`) and reused across users; never tagged with a user id. |
 | Security measures | Cache key is content-derived (no user identifier in path); `/api/tts` streams the cached MP3 with MP3 magic-byte validation; per-user rate limit on the route. |
 
-## Activity 12 — Audit logging
+## Activity 10 — Audit logging
 
 | Field | Value |
 |---|---|
@@ -181,7 +165,7 @@ In v2.0:
 | Retention | Account lifetime. |
 | Security measures | Audit rows are insert-only on the application path; admin permissions required to view. |
 
-## Activity 13 — Integration API access
+## Activity 11 — Integration API access
 
 | Field | Value |
 |---|---|

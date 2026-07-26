@@ -19,9 +19,8 @@ export default function UsersHowTo() {
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Role Descriptions</h3>
       <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li><strong>Practitioner</strong> &mdash; Access to ASD Awareness Training modules.</li>
         <li><strong>Career Dev Officer</strong> &mdash; Access to Careers CPD Training modules.</li>
-        <li><strong>Student / Intern / Employee</strong> &mdash; Access to whichever training plans are assigned by your organisation.</li>
+        <li><strong>Learner</strong> &mdash; access to whichever training programmes are assigned to your organisation, plus jobs, workshops and the document library. There is one learner role: if someone is missing a programme you expect them to have, change the organisation&apos;s assigned programmes rather than their role.</li>
       </ul>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Managing Existing Users</h3>

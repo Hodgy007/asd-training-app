@@ -14,8 +14,6 @@ A multi-tenant SaaS platform for ASD awareness training, virtual workshops, and 
 - [User Roles](#user-roles)
 - [Features in Detail](#features-in-detail)
   - [Training Modules](#training-modules)
-  - [CV Builder](#cv-builder)
-  - [AI Careers Advisor](#ai-careers-advisor)
   - [Virtual Workshops](#virtual-workshops)
   - [Cohorts (Charity-Run Workshops)](#cohorts-charity-run-workshops)
   - [Eventbrite Integration](#eventbrite-integration)
@@ -35,13 +33,13 @@ A multi-tenant SaaS platform for ASD awareness training, virtual workshops, and 
 
 ## Platform Overview
 
-The platform serves three distinct audiences through a single unified application:
+The platform serves two audiences through a single unified application:
 
-1. **Practitioners** (caregivers, nursery workers, health visitors) use the platform to complete ASD awareness training, attend virtual workshops, and access shared documents from their organisation's library.
+1. **Learners** — everyone who takes training, whether they are Ambitious about Autism's own staff or a member of an external organisation (school, college, university or employer). They complete training programmes, attend virtual workshops, browse job openings and access their organisation's document library.
 
-2. **Career-focused users** (careers professionals, students, interns, employees) use the platform to complete careers CPD training, build autism-friendly CVs with AI writing assistance, browse job openings, and receive personalised career guidance through the AI Careers Advisor.
+2. **Administrators** (charity admins, charity employees, organisation admins) manage users, organisations, training content, surveys, document libraries, virtual workshops, jobs, and platform-wide analytics.
 
-3. **Administrators** (charity admins, charity employees, organisation admins) manage users, organisations, training content, surveys, document libraries, virtual workshops, jobs, and platform-wide analytics.
+**What a learner can see is decided by their organisation, not by their role.** Access flows from the training programmes an organisation has been assigned, so two learners in different organisations can see entirely different content. Internal versus external is likewise a property of the organisation: the charity has its own organisation record and its staff are ordinary members of it.
 
 Every feature is designed with accessibility in mind. The platform uses plain language, step-by-step wizards, visible examples, and respects `prefers-reduced-motion`. Colour is never the sole indicator of status — all feedback uses icon + text combinations.
 
@@ -49,18 +47,14 @@ Every feature is designed with accessibility in mind. The platform uses plain la
 
 ## User Roles
 
-The platform has eight roles, each with specific access:
+The platform has four roles:
 
 | Role | Display Name | Home Page | Description |
 |------|-------------|-----------|-------------|
 | `SUPER_ADMIN` | Charity Admin | `/super-admin` | Full platform control. Manages all organisations, users, training content, surveys, document library, workshops, reports, integrations, and SSO configuration. Has all permissions implicitly. MFA (TOTP) required. |
 | `CHARITY_EMPLOYEE` | Charity Employee | `/super-admin` | Delegated charity-level access. Sees a subset of the charity admin dashboard based on individually assigned permissions (e.g. manage_training, view_reports, manage_sessions). |
 | `ORG_ADMIN` | Org Admin | `/admin` | Manages a single organisation. Creates and manages users within their org, handles org-level announcements, views org reports, configures meeting integrations (Zoom/Teams), and sets up enterprise SAML SSO. MFA (TOTP) required. |
-| `CAREGIVER` | Practitioner | `/dashboard` | Completes ASD awareness training modules and quizzes. Attends virtual workshops, accesses shared document collections, and can create workshop sessions for their organisation. |
-| `CAREER_DEV_OFFICER` | Careers Professional | `/dashboard` | Completes careers CPD training. Uses CV Builder and AI Careers Advisor. Can view student CVs and career advisor reports for users in the same organisation. Can create workshop sessions. |
-| `STUDENT` | Student | `/dashboard` | Completes assigned training. Uses CV Builder and AI Careers Advisor for personal career development. |
-| `INTERN` | Intern | `/dashboard` | Same access as Student. Completes training, builds CVs, and uses the AI Careers Advisor. |
-| `EMPLOYEE` | Employee | `/dashboard` | Same access as Student. Completes training, builds CVs, and uses the AI Careers Advisor. |
+| `LEARNER` | Learner | `/dashboard` | Everyone who takes training. Completes the training programmes assigned to their organisation, attends virtual workshops, browses job openings and reads the document library. Replaced the seven separate end-user roles in July 2026. |
 
 ### Charity Employee Permissions
 
@@ -110,78 +104,6 @@ The platform plays third-party e-learning courses produced by Articulate, iSprin
 - **Per-question quiz analytics:** see the Reports section.
 - **Asset hosting:** uploaded zips are extracted to Vercel Blob under `scorm/<lessonId>/`. The `/api/scorm/[lessonId]/[...path]` route serves assets with auth and an iframe-friendly CSP. Two-stage upload (browser → Blob → server-side extract) bypasses Vercel's 4.5 MB serverless body limit; packages up to 200 MB are supported.
 - **Runtime:** [`scorm-again`](https://github.com/jcputney/scorm-again) v3 provides the LMS-side API (`Scorm12API` / `Scorm2004API`). The SCO finds it on `window.API` (1.2) or `window.API_1484_11` (2004) via the standard SCORM discovery walk.
-
-### CV Builder
-
-An 8-step autism-friendly wizard for building UK-format CVs, accessible to Careers Professionals, Students, Interns, and Employees.
-
-**How it works:**
-1. **Personal Details** — name, email, phone, city, postcode, LinkedIn URL
-2. **Personal Statement** — opening statement with AI generation assistance
-3. **Work Experience** — job entries with title, employer, dates, and description (AI can rephrase bullet points)
-4. **Education** — school/university entries with qualification, grade, and dates
-5. **Skills** — skills list with AI suggestions based on experience
-6. **Interests** — hobbies and interests section
-7. **References** — referee details (name, title, organisation, contact)
-8. **Review and Download** — final review with completion checklist, template selection, and export
-
-**Key design decisions:**
-- Step-by-step wizard rather than a single long form — reduces cognitive load
-- Visible example text rather than placeholders — shows what good input looks like
-- Auto-save with 500ms debounce — no "Save" button needed, progress is never lost
-- Skip and return — users can navigate freely between steps; `currentStep` is persisted
-- Plain text date inputs with format hints ("Sept 2022") instead of calendar date pickers
-- Single AI suggestions rather than multiple options — avoids decision paralysis
-- Inline editing rather than modal dialogs
-- AI buttons positioned below textareas, not above
-
-**Three CV templates:**
-- **Accessible** (recommended default) — single-column, 12pt font, 1.5 line spacing
-- **Modern** — two-column layout with a sidebar
-- **Classic** — traditional centred UK CV format
-
-**Export formats:** PDF (via `@react-pdf/renderer`) and Word `.docx` (via the `docx` library).
-
-**Careers Professional view:** Careers Professionals can view and download CVs for students within their organisation at `/cv-builder/students`. This is read-only access, verified to be same-organisation.
-
-**Feature gating:** CV Builder can be enabled or disabled per organisation by a Charity Admin via the organisation settings page. The flag is surfaced in the user's JWT token and checked in both the sidebar navigation and API routes.
-
-### AI Careers Advisor
-
-A guided questionnaire that generates personalised career guidance reports via the Vercel AI Gateway (default model: `google/gemini-2.5-flash`, swappable per-prompt). Accessible to the same roles as CV Builder.
-
-**How it works:**
-Users complete an 11-step wizard:
-
-1. **Interests** — "What topics or activities do you enjoy?" (multi-select pills)
-2. **Strengths** — "What are you good at?" (multi-select pills)
-3. **Work Environment** — "What kind of workplace suits you?" (multi-select pills)
-4. **Concerns** — "Is there anything about work that worries you?" (multi-select pills + free text)
-5. **Experience** — "Do you have any work experience?" (free text, optional)
-6. **Career Stage** — "Where are you in your career journey?" (single select)
-7. **Communication** — "How do you prefer to communicate?" (multi-select pills)
-8. **Sensory Preferences** — "What kind of sensory environment works for you?" (multi-select pills)
-9. **Values** — "What matters most to you in a job?" (multi-select pills)
-10. **Other** — free text for anything else (optional)
-11. **Report** — AI generates the report; user can view and download as PDF
-
-**The pill selector component** (`pill-selector.tsx`) is a reusable multi-select input with support for `allowOther` (adds a free-text "Other" option), `maxSelect` (limits selections), and `singleSelect` mode. It uses plain language labels and clear visual feedback.
-
-**AI report generation:**
-- Answers are formatted into a structured prompt via `lib/ai-runner.ts:runPrompt()` and sent through the Vercel AI Gateway
-- The AI returns a JSON report with four sections:
-  - **Strengths** — what the user is good at and how it applies to work
-  - **Career Suggestions** — 3-5 specific career ideas with explanations of why they suit the user
-  - **Next Steps** — actionable things the user can do now (courses, volunteering, research)
-  - **Workplace Support** — accommodations and strategies for the workplace
-- All prompts are strength-focused, use UK English, reference UK-specific resources (e.g. Access to Work, National Careers Service), and **never mention autism or disability**
-- Rate limited to 10 report generations per 5 minutes per user, with a hard ceiling of **10 reports per 24 hours** per user (each call is a full structured report — the daily cap exists so a stuck client can't burn through the AI Gateway budget)
-
-**PDF export:** Reports can be downloaded as PDF via `@react-pdf/renderer` with a formatted layout including all four sections and a disclaimer.
-
-**Careers Professional view:** Careers Professionals can view student sessions and reports at `/careers-advisor/students`, with expandable session cards showing the full AI-generated report. Same-organisation access only.
-
-**Feature gating:** Same pattern as CV Builder — org-level `careersAdvisorEnabled` flag, surfaced in JWT, checked in sidebar and API routes.
 
 ### Virtual Workshops
 
@@ -320,8 +242,6 @@ Both Charity Admins and Org Admins have access to comprehensive analytics dashbo
 **Charity Admin reports** (`/super-admin/reports`) include:
 - **Training stats** — total users, completion rates, average quiz scores, progress by module and programme
 - **SCORM Quiz Analytics** — per-question correctness rates aggregated across every learner who has attempted a SCORM lesson, sorted worst-first so material that needs revising surfaces immediately. Anonymised — no individual learner data is ever shown. Per-lesson CSV export.
-- **CV Builder stats** — total CVs, CVs by status (Draft/Complete), CVs created in the last 30 days, breakdown by template
-- **Careers Advisor stats** — total sessions, sessions by status (In Progress/Complete), sessions in the last 30 days
 - **Survey analytics** — response rates, completion stats, CSV export of responses
 - **Library stats** — download counts per org, per document, engagement trends
 
@@ -377,8 +297,6 @@ Example flat survey row (one row per response × question):
 
 **PII pseudonymisation** — respondent / user ids are never exposed in plaintext:
 - Survey responses: stable per `(user, survey)` — joinable across questions in the same survey but not across surveys
-- CV Builder: stable per `(user, 'cv')` namespace — a user's multiple CVs map to the same pseudonym
-- Careers Advisor: stable per `(user, 'careers')` namespace
 - Different namespaces never produce the same pseudonym for the same user, so a leaked CV report cannot be cross-referenced against a leaked survey report
 
 **Data caveats** (documented in the OpenAPI schema):
@@ -414,14 +332,14 @@ Example flat survey row (one row per response × question):
 ### Session Management
 
 - JWT-based sessions (not database sessions) with 8-hour expiry.
-- The JWT token carries: user ID, role, organisation ID, feature flags (`cvBuilderEnabled`, `careersAdvisorEnabled`), effective training programs, charity permissions, MFA status, and password change requirements.
+- The JWT token carries: user ID, role, organisation ID, effective training programs, charity permissions, MFA status, and password change requirements.
 - Middleware enforces authentication, MFA verification, password change requirements, and role-based route access on every request.
 
 ### Security Features
 
 **Authentication and account hygiene**
 - Rate limiting on every auth endpoint — login (10/15 min), forgot-password (5/15 min), reset-password (5/15 min), MFA verify (5/5 min), change-password (5/15 min). The limiter is Upstash-backed in production and falls back to in-memory for local dev (single shared `createRateLimiter` factory; `/api/tts` is also per-user rate-limited to stop abuse of paid TTS minutes).
-- AI endpoints carry a **24h daily ceiling** per user on top of their short-window burst limit so a stuck client can't drain the AI Gateway budget — CV Builder 50/day, Careers Advisor 10/day, super-admin training generate 20/day, library doc generate 50/day, library collection generate 30/day. Daily-cap 429s include `code: 'DAILY_LIMIT'` so clients can show a "come back tomorrow" message rather than the generic backoff toast.
+- AI endpoints carry a **24h daily ceiling** per user on top of their short-window burst limit so a stuck client can't drain the AI Gateway budget — super-admin training generate 20/day, library doc generate 50/day, library collection generate 30/day. Daily-cap 429s include `code: 'DAILY_LIMIT'` so clients can show a "come back tomorrow" message rather than the generic backoff toast.
 - bcrypt cost factor of 12 across all password hashing call-sites (login, registration, account provisioning, cohort import).
 - Forced password change on first login (`mustChangePassword: true`) and on admin-initiated resets.
 - Cohort self-join, CDO temp-password creation, and forgot-password flows all run through `validatePassword` complexity rules.
@@ -439,8 +357,8 @@ Example flat survey row (one row per response × question):
 **Multi-tenancy and entitlement**
 - SCORM CMI POSTs and SCORM asset GETs both check the user's `effectivePrograms` against the lesson's `programId` — no logged-in user can fabricate completions or read SCORM assets for programs their org isn't entitled to.
 - `/api/admin/users`, `/api/admin/announcements`, `/api/admin/library`, `/api/admin/sessions`, `/api/admin/reports`, and `/admin/schools` all verify parent/child org relationships before mutating or reading sub-org data.
-- CDO careers-advisor student lookup filters strictly by leaf role + same organisation.
-- Middleware path matchers tightened to drop a duplicate PARTICIPANT block and prevent path-prefix bypass; `/api/cron` is the only public POST.
+- Middleware path matchers use exact or path-segment prefix matching to prevent path-prefix bypass; `/api/cron` is the only public POST.
+- Job openings are two-tier: `organisationId` is set from the session and is absent from the request schema, so a client cannot publish into another organisation or onto the charity-wide tier. Ownership on the org-admin job routes is checked against the job's own `organisationId`, so a charity-tier job is never editable from them.
 
 **File and content safety**
 - Upload validation enforces an allow-list of MIME types and extensions, with size caps. **SVG uploads are blocked** at the platform layer because SVG can carry inline `<script>`/`foreignObject` payloads — admin SVG editing must go through `sanitize-html` first.
@@ -475,8 +393,7 @@ The platform supports multiple organisations, each operating as an isolated tena
 
 **Organisation settings** (managed by Charity Admins at `/super-admin/organisations`):
 - **Allowed training programs** — which programs the org's users can access
-- **Allowed roles** — which user roles can be assigned within the org
-- **Feature flags** — `cvBuilderEnabled` and `careersAdvisorEnabled` toggles
+- **Allowed roles** — which user roles can be assigned within the org (in practice `LEARNER`, plus `ORG_ADMIN` for whoever runs it)
 - **Contact details** — name, email, phone
 - **Address** — full UK address fields (line 1, line 2, city, county, postcode, country)
 - **Meeting config** — Zoom/Teams API credentials for auto-generating meeting links
@@ -488,7 +405,7 @@ The platform supports multiple organisations, each operating as an isolated tena
 MATs (Multi-Academy Trusts), CEC Careers Hubs, and Local Authorities can manage multiple schools or sub-organisations under a single parent org.
 
 - **Schema:** Self-referencing relation on `Organisation` — `parentOrgId`, `isParentOrg`, `inheritSettings`, `childOrgs[]`
-- **Settings inheritance:** Child orgs with `inheritSettings: true` automatically inherit their parent's `allowedProgramIds`, `allowedRoles`, `cvBuilderEnabled`, and `careersAdvisorEnabled`. Single-level inheritance only (no recursive chain). When `inheritSettings` is disabled, the child org uses its own independent settings.
+- **Settings inheritance:** Child orgs with `inheritSettings: true` automatically inherit their parent's `allowedProgramIds` and `allowedRoles`. Single-level inheritance only (no recursive chain). A parent org's job openings are also visible to its child orgs' learners. When `inheritSettings` is disabled, the child org uses its own independent settings.
 - **Parent org admin features:** When an Org Admin's organisation is marked as a parent (`isParentOrg: true`), their sidebar shows a "Schools" link. From `/admin/schools` they can:
   - Create and manage child organisations (name, slug, type, contact details, active status)
   - Toggle settings inheritance per child
@@ -513,19 +430,6 @@ MATs (Multi-Academy Trusts), CEC Careers Hubs, and Local Authorities can manage 
 
 All AI features route through the **Vercel AI Gateway** using the AI SDK v6. Prompts live in the `AiPrompt` database table (managed at `/super-admin/ai-prompts`); models are addressed by provider/model strings (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`, `openai/gpt-4o-mini`) and can be switched per-prompt without redeploying. The runtime entry point is `lib/ai-runner.ts:runPrompt(key, values)` which loads the prompt row, prepends any uploaded context files, and calls `generateText` against the configured model. All prompts are strength-focused, use UK English, and explicitly instruct the model never to diagnose or reference autism.
 
-### CV Writing Assistance (`lib/cv-ai.ts`)
-- `generatePersonalStatement()` — creates an opening statement from the user's experience and skills
-- `rephraseBulletPoint()` — improves work experience descriptions with stronger action verbs
-- `suggestSkills()` — recommends relevant skills based on the user's experience entries
-- `improveDescription()` — enhances education or experience descriptions
-- Rate limited: 10 AI requests per 5 minutes **and 50 per 24 hours** per user
-
-### Careers Report Generation (`lib/careers-advisor-ai.ts`)
-- Takes structured questionnaire answers and generates a comprehensive careers report
-- Output structure: strengths analysis, 3-5 career suggestions with reasoning, actionable next steps, and workplace support strategies
-- References UK-specific resources (Access to Work, National Careers Service, Disability Confident employers)
-- Rate limited: 10 report generations per 5 minutes **and 10 per 24 hours** per user
-
 ### Other AI features
 - **Survey insights** (`lib/survey-ai.ts`): Summary, comparative, and recommendation insights generated from survey responses, surfaced at `/super-admin/surveys/[surveyId]/results`.
 - **Quiz generation** for training modules from existing lesson content.
@@ -542,8 +446,6 @@ app/
   (dashboard)/                      # Leaf role pages (wrapped by sidebar layout)
     dashboard/                      #   Role-aware home page
     training/[programId]/           #   Training modules and lessons (incl. SCORM)
-    cv-builder/                     #   CV Builder wizard, preview, student view
-    careers-advisor/                #   AI Careers Advisor wizard, student view
     careers/                        #   Careers training modules
     jobs/                           #   Job openings (learners + CDOs)
     sessions/                       #   Virtual workshops (user view)
@@ -579,8 +481,6 @@ app/
     auth/                           #   Authentication (NextAuth, MFA, SAML, SSO)
     training/                       #   Training progress (incl. /progress/scorm)
     scorm/[lessonId]/[...path]/     #   Auth-gated SCORM asset serving from Blob
-    cv-builder/                     #   CV CRUD, AI, PDF, DOCX, students
-    careers-advisor/                #   Sessions, AI report, PDF, students
     jobs/                           #   Learner-facing job listings + assignments
     sessions/                       #   Virtual workshops
     library/                        #   Document library
@@ -597,8 +497,6 @@ components/
   ui/                               # Shared UI primitives and disclaimers
   training/                         # Module cards, quiz component, video player
   lessons/                          # Lesson-time players incl. SCORM player + TOC sidebar
-  cv-builder/                       # CV wizard shell, steps, AI buttons, progress bar
-  careers-advisor/                  # Advisor wizard shell, steps, pill selector, progress bar
   super-admin/                      # Content generation, survey builder, file upload, SCORM import
   admin/                            # Per-lesson SCORM upload, org-admin pieces
   ai/                               # AI insight panels and buttons
@@ -610,9 +508,6 @@ lib/
   prisma.ts                         # Prisma client singleton
   ai-runner.ts                      # DB-backed AI prompt runner (via Vercel AI Gateway)
   ai-models.ts                      # Provider/model id constants
-  cv-ai.ts                          # CV writing AI helpers
-  careers-advisor-ai.ts             # Careers report AI helpers
-  careers-advisor-pdf.tsx           # Careers report PDF template
   cv-templates/                     # CV PDF templates (accessible, modern, classic)
   scorm/                            # SCORM manifest parsing, package extraction, progress
                                     #   mapping, and quiz analytics

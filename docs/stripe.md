@@ -46,7 +46,6 @@ TrainingProgram                     Stripe (sandbox or live)
 ├─ stripeProductId    ───────────┘   │
 ├─ stripePriceId     ────────────┐   │
 ├─ purchasable                    │   │
-├─ defaultLeafRole                │   │
 └─ ...                             │   │
                                    │   ▼
                                    │   Checkout Session
@@ -89,25 +88,15 @@ Two ownership models live side-by-side:
 
 ---
 
-## Per-program default role
+## Role assigned on self-serve sign-up
 
-Every `TrainingProgram` has an optional `defaultLeafRole` column. When a
-**new account is created** by a self-serve flow (free-claim or anonymous
-Stripe checkout), this is the role the new user lands with.
+Self-serve flows (free-claim and anonymous Stripe checkout) create the new
+account with the single `LEARNER` role. There is nothing to configure.
 
-| Program | Sensible default |
-|---|---|
-| Careers CPD Training | `CAREER_DEV_OFFICER` |
-| Autism in the Workplace | `EMPLOYEE` |
-| ASD Awareness | `CAREGIVER` |
-
-Only the 5 leaf roles are allowed (`CAREGIVER`, `CAREER_DEV_OFFICER`,
-`STUDENT`, `INTERN`, `EMPLOYEE`); admin/charity-side roles are excluded
-server-side so a self-claim can never mint privilege. When `null`, falls
-back to `CAREGIVER`.
-
-Set it in the super-admin training form → program edit dialog →
-"Default role for self-claim users" dropdown.
+The `TrainingProgram.defaultLeafRole` column that used to drive this was
+dropped in July 2026 along with the per-audience roles it selected between.
+What a user can then see comes from `User.allowedProgramIds` — the purchased
+or claimed programme is added there at account creation.
 
 Read by:
 - `lib/account-provisioning.ts` `grantFreeAccess()`
@@ -168,7 +157,7 @@ sequenceDiagram
   Stripe->>Webhook: checkout.session.completed
   Webhook->>Webhook: Look up User by email
   alt new email
-    Webhook->>App: Create User<br/>role = program.defaultLeafRole ?? CAREGIVER<br/>mustChangePassword = true<br/>random temp password
+    Webhook->>App: Create User<br/>role = LEARNER<br/>mustChangePassword = true<br/>random temp password
     Webhook->>Visitor: Email welcome + temp password
   else existing user
     Webhook->>App: Append programId to user.allowedProgramIds<br/>(or org's, if user has one)
@@ -249,7 +238,7 @@ sequenceDiagram
   App->>DB: Look up program (must be APPROVED + active +<br/>purchasable + priceAmount=0)
   App->>DB: Look up User by email
   alt new email
-    App->>DB: Create User<br/>role = program.defaultLeafRole ?? CAREGIVER<br/>mustChangePassword = true<br/>allowedProgramIds = [programId]
+    App->>DB: Create User<br/>role = LEARNER<br/>mustChangePassword = true<br/>allowedProgramIds = [programId]
     App->>Email: Welcome + temp password
   else existing user (no org)
     App->>DB: Append programId to user.allowedProgramIds
@@ -462,11 +451,10 @@ dev` after editing `.env.local`.
 ### "Anonymous buyer logged in, can't see the program"
 1. Confirm `User.allowedProgramIds` includes the `programId`.
 2. JWT is cached for the session — they may need to sign out and back in.
-3. Check `User.role` — if it's `CAREGIVER` but the program is a
-   careers one, they won't see the careers sidebar but should still
-   see the program in their training list. The `defaultLeafRole`
-   feature fixes the role question, but only for *new* sign-ups after
-   it's been set per-program.
+3. Role is not the issue — every self-serve account is a `LEARNER`, and
+   the sidebar renders one entry per programme in `allowedProgramIds`.
+   If the programme is missing from the sidebar, it is missing from
+   that array.
 
 ### "I made a checkout session and it 502'd"
 Check the server logs (Vercel dashboard → Functions → logs). Common

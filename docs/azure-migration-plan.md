@@ -618,7 +618,7 @@ All existing prompts work with GPT-4o without modification. However, two minor o
 
 1. **JSON reliability:** GPT-4o is better at following JSON instructions. The `extractJson()` helper (strips code fences) can remain as a safety net but will rarely be needed.
 
-2. **UK English:** GPT-4o defaults to US English. The existing prompts already specify "UK English" where needed (CV AI, Careers Advisor). No additional changes required.
+2. **UK English:** GPT-4o defaults to US English. The existing prompts already specify "UK English" where needed. No additional changes required.
 
 ---
 
@@ -963,7 +963,7 @@ grep -r "@vercel" package.json
 - SAML SSO (`OrgSsoConfig`, `CharitySsoConfig`)
 - Resend email (works from any host)
 - All business logic, UI components, middleware, and RBAC
-- CV Builder and Careers Advisor workflows
+- Job openings (both charity-wide and organisation-owned tiers)
 - Survey system and reporting
 - Training content CMS and quiz system
 - Document library structure
@@ -982,9 +982,6 @@ After deployment, test each area:
 - [ ] **Dashboard:** All role-specific dashboards render correctly
 - [ ] **Training:** View programs, complete lessons, take quizzes
 - [ ] **AI Quiz Generation:** Generate quiz questions from lesson content
-- [ ] **AI Observations:** Generate observation summaries, patterns, action guidance, insight reports
-- [ ] **CV Builder:** Create CV, AI personal statement, AI bullet rephrasing, AI skill suggestions
-- [ ] **Careers Advisor:** Complete questionnaire, generate AI report, download PDF
 - [ ] **Surveys:** Create survey (AI-generated), respond, view results, generate AI insights
 - [ ] **Document Library:** Upload documents, AI-generate metadata + thumbnail, download
 - [ ] **File Uploads:** Training images, lesson attachments, library documents

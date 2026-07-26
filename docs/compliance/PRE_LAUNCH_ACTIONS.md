@@ -101,11 +101,11 @@ The practical risk is two-fold:
 
 | # | Processor | What it processes | DPA source | Cost |
 |---|-----------|-------------------|------------|------|
-| 2.1 | **Vercel** | Hosts the app, runs serverless compute, stores Blob files (documents, SCORM packages, CV uploads, TTS audio cache), proxies AI calls through the AI Gateway | Self-serve in Vercel dashboard | Free |
-| 2.2 | **Neon** (Postgres on Azure) | The PostgreSQL database — every user account, training record, CV, careers session, survey response, etc. | Email Neon support (`support@neon.tech`) requesting their DPA | Free |
+| 2.1 | **Vercel** | Hosts the app, runs serverless compute, stores Blob files (documents, SCORM packages, job attachments, TTS audio cache), proxies AI calls through the AI Gateway | Self-serve in Vercel dashboard | Free |
+| 2.2 | **Neon** (Postgres on Azure) | The PostgreSQL database — every user account, training record, survey response, etc. | Email Neon support (`support@neon.tech`) requesting their DPA | Free |
 | 2.3 | **Resend** | Sends password-reset emails (recipient email + first name only) | Self-serve in Resend dashboard | Free |
 | 2.4 | **ElevenLabs** | Text-to-speech for the lesson read-aloud feature (lesson text only, no user identifiers) | Self-serve in ElevenLabs dashboard | Free |
-| 2.5 | **Upstream LLM providers** (Google, Anthropic, OpenAI) — sub-processors of Vercel via the AI Gateway | LLM inference for CV writing, Careers Advisor, survey insights, training quiz / content generation, library metadata. User-authored content only — no identifiers, no special-category data. | Verify these are listed as sub-processors under the **Vercel DPA**. If not, the charity may need to sign individual provider DPAs directly. | Free |
+| 2.5 | **Upstream LLM providers** (Google, Anthropic, OpenAI) — sub-processors of Vercel via the AI Gateway | LLM inference for admin-triggered content generation and survey insights. Formerly also CV writing, Careers Advisor, survey insights, training quiz / content generation, library metadata. User-authored content only — no identifiers, no special-category data. | Verify these are listed as sub-processors under the **Vercel DPA**. If not, the charity may need to sign individual provider DPAs directly. | Free |
 
 #### What you actually need to do — step by step
 

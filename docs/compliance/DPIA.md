@@ -1,11 +1,11 @@
 # Data Protection Impact Assessment — AI-assisted processing for autistic learners
 
 **Product:** Ambitious About Autism Training Platform
-**Subject of this DPIA:** AI-assisted training, CV and careers processing for autistic learners — including learners under the age of 18
-**DPIA version:** 2.0
-**Completed:** 2026-05-11
-**Supersedes:** v1.0 (2026-04-19), which assessed the Child Observations feature removed in commit `8968cf0` on 21 April 2026.
-**Review due:** 2027-05-11, or sooner if processing changes materially
+**Subject of this DPIA:** AI-assisted training processing for autistic learners — including learners under the age of 18
+**DPIA version:** 3.0
+**Completed:** 2026-07-26
+**Supersedes:** v2.0 (2026-05-11), which assessed the CV Builder and Careers Advisor processing removed in July 2026.
+**Review due:** 2027-07-26, or sooner if processing changes materially
 **Data controller:** The customer organisation (school / college / Local Authority / employer)
 **Data processor:** Ambitious About Autism
 **DPIA owner:** Ambitious About Autism — privacy@ambitiousaboutautism.org.uk
@@ -16,10 +16,10 @@
 
 Under the ICO's screening criteria for Art. 35 high-risk processing, a DPIA is required when **two or more** of the nine high-risk triggers apply. The following four apply to the current platform:
 
-- **Children's data.** STUDENT and INTERN learner accounts may be held by users under 18 (sixth-form pupils, FE college learners, supported-internship participants).
+- **Children's data.** Learner accounts may be held by users under 18 (sixth-form pupils, FE college learners, supported-internship participants).
 - **Vulnerable data subjects.** The service is designed for autistic learners; in the ICO's view, autistic users are within scope of the "vulnerable" criterion regardless of age.
-- **Innovative use of technology / AI.** Large-language-model inference (Vercel AI Gateway routing to Google Gemini, Anthropic Claude, OpenAI GPT) is used for CV writing assistance, the Careers Advisor report, survey insight reports, training-quiz / content generation, and library-collection metadata.
-- **Combining datasets.** AI features take the user's own training, CV, and careers-questionnaire content together to produce personalised reports.
+- **Innovative use of technology / AI.** Large-language-model inference (Vercel AI Gateway routing to Google Gemini, Anthropic Claude, OpenAI GPT) is used for survey insight reports, training-quiz and content generation, library-collection metadata, and homepage banner generation. All are admin-triggered and admin-reviewed.
+- **Combining datasets.** No longer applicable following the July 2026 removal of CV Builder and Careers Advisor. AI features now operate on aggregate survey counts or admin-supplied source material, not on an individual's combined record.
 
 The platform **no longer** processes special-category data under Art. 9 (the Child Observations feature that required Art. 9 cover was removed on 21 April 2026; this DPIA replaces the v1.0 assessment that covered that feature).
 
@@ -33,8 +33,6 @@ The AI-assisted features in scope are:
 
 | Feature | Trigger | Input to AI | Output persisted on |
 |---|---|---|---|
-| CV Builder section suggestions | Learner clicks "Suggest" in the wizard | Their own CV section text | `CV*` model |
-| Careers Advisor report | Learner finishes the 12-step questionnaire | Their structured answers | `CareerAdvisorSession.report` |
 | Survey insights | Charity admin opens the insight tab | Aggregate response counts (not respondent rows) | `SurveyInsight` |
 | Training quiz / content generation | Admin uploads source material | Admin-supplied text | Draft `Module` / `Lesson` rows in the editor |
 | Library collection thumbnail | Admin saves a collection | Admin-supplied title + description | `LibraryCollection.thumbnailUrl` |
@@ -43,8 +41,8 @@ The AI-assisted features in scope are:
 
 | Dimension | Detail |
 |---|---|
-| Data subjects | (a) Learners — STUDENT / INTERN / EMPLOYEE — including under-18s in school / college / supported-internship contexts. (b) Adult users in training, careers and admin roles. |
-| Data categories sent in AI payloads | User-authored CV text; questionnaire answers; lesson notes; aggregate survey response counts; admin-supplied training source material. |
+| Data subjects | (a) Learners — including under-18s in school / college / supported-internship contexts. (b) Adult users in learner and admin roles. All non-admin users hold the single `LEARNER` role. |
+| Data categories sent in AI payloads | Aggregate survey response counts; admin-supplied training source material; admin-supplied collection titles and descriptions. **No learner-authored free text is sent to an AI provider following the July 2026 removal of CV Builder and Careers Advisor.** |
 | Data categories explicitly **not** sent | Name (other than where the user includes it in CV text), email, organisation, role, account id, IP address, special-category data (the platform does not collect health / ethnicity / religion / biometric / sexual-orientation data at all). |
 | Volume | ≤ 30 customer organisations and ≤ 5 000 active users in year 2. |
 | Geography | UK controllers. Processing in US (Vercel AI Gateway and its upstream providers Google / Anthropic / OpenAI) under SCC + UK Addendum. |
@@ -52,9 +50,9 @@ The AI-assisted features in scope are:
 
 ### 2.3 Context
 
-- The service is contracted by the customer organisation; learner usage is mediated by the organisation's careers professional / org admin in most cases.
-- Under-18 learners are not the *target* audience for the platform's core training tracks — they appear in STUDENT / INTERN cohorts as part of educational programmes commissioned by the customer org. Where they do appear, the platform is treated as in scope for AADC (see [AADC.md](AADC.md) v2.0).
-- AI outputs are **explicitly non-deterministic suggestions**. The Careers Advisor report uses the framing "career *suggestions*" rather than "career advice"; CV suggestions are presented as drafts to edit, not as final copy.
+- The service is contracted by the customer organisation; learner usage is mediated by the organisation's admin in most cases.
+- Under-18 learners are not the *target* audience for the platform's core training tracks — they appear as part of educational programmes commissioned by the customer org. Where they do appear, the platform is treated as in scope for AADC (see [AADC.md](AADC.md) v2.0).
+- AI outputs are **explicitly non-deterministic suggestions**, presented as drafts for an admin to review and edit rather than as final copy. Since July 2026 no AI feature produces output addressed directly to a learner.
 
 ### 2.4 Purposes
 
@@ -69,9 +67,9 @@ The platform **does not** diagnose autism or any other condition. Every prompt i
 
 | Party | Consulted | Outcome |
 |---|---|---|
-| Ambitious About Autism internal DPO | 2026-05-11 | Pending sign-off. |
+| Ambitious About Autism internal DPO | 2026-07-26 | Pending sign-off of v3.0. |
 | Customer DPOs | Per-procurement | This DPIA forms part of the due-diligence pack shared with each school / college / LA / employer DPO at procurement. |
-| Learners (lived-experience input) | Iterative — CV Builder UX was designed against accessibility principles (auto-save, visible examples, single AI suggestion not multi-option) | Ongoing via product feedback channels. |
+| Learners (lived-experience input) | Iterative — accessibility principles (auto-save, visible examples, plain language, reduced-motion support) continue to shape the training and workshop surfaces | Ongoing via product feedback channels. |
 | ICO | Not required | No residual high-risk outcome after mitigations (§5). |
 
 ## 4. Necessity & proportionality
@@ -89,9 +87,9 @@ Each risk is scored *Likelihood × Severity* before mitigation (Gross) and after
 
 | # | Risk | L | S | Gross | Mitigation | L' | S' | Net |
 |---|---|---|---|---|---|---|---|---|
-| R1 | A learner reads an AI careers suggestion as deterministic employment advice and acts on it without further support. | Med | High | High | Output framed as "suggestions" not "advice"; learner is routed back to a careers professional inside the platform; CDOs have read-only visibility of student sessions to discuss them; prompts instruct the model never to commit to outcomes. | Low | Med | **Med** |
-| R2 | AI generates biased or stigmatising output for an autistic learner (e.g. recommends only stereotypical roles). | Med | High | High | Prompts are explicitly strength-focused, UK English, and forbid deterministic / diagnostic phrasing; multiple upstream providers available so the charity can route around any one provider whose output quality regresses; prompt registry is editable by the charity. | Low | Med | **Med** |
-| R3 | Identifiable data leaks into a prompt because a learner pastes name / email / address into a free-text CV section. | High | Low | Med | AI payload structure is content-only; the system never adds identifiers; user-authored text is sanitised before transmission; provider DPAs prohibit training-set use so even a leaked payload does not contaminate future model output. | Low | Low | **Low** |
+| R1 | ~~A learner reads an AI careers suggestion as deterministic employment advice and acts on it without further support.~~ **Retired in v3.0** — the Careers Advisor was removed in July 2026. No AI feature now produces output addressed to a learner, so the risk no longer arises. | — | — | — | Processing removed entirely. | — | — | **N/A** |
+| R2 | AI generates biased or stigmatising output about autistic learners in generated training content. | Med | High | High | Prompts are explicitly strength-focused, UK English, and forbid deterministic / diagnostic phrasing; all AI output is admin-reviewed before publication; multiple upstream providers available so the charity can route around any one whose output quality regresses; prompt registry is editable by the charity. | Low | Low | **Low** |
+| R3 | ~~Identifiable data leaks into a prompt because a learner pastes name / email / address into a free-text CV section.~~ **Materially reduced in v3.0** — CV Builder was removed, and no remaining AI feature accepts learner-authored free text. The residual path is an admin pasting identifiable material into training source content. | Low | Low | Low | AI payload structure is content-only and the system never adds identifiers; provider DPAs prohibit training-set use. | Low | Low | **Low** |
 | R4 | Prompt injection from user-authored input causes an AI call to behave outside its prompt template (e.g. emit confidential prompt text). | Med | Med | Med | Prompts are loaded from the DB-backed `AiPrompt` registry; user input is concatenated as a delimited section, not woven into prompt control text; admin-prompt test endpoint sanitises error responses to strip provider stack traces. | Low | Med | **Low** |
 | R5 | Upstream provider retains content despite DPA. | Low | High | Med | Multi-provider routing (Google / Anthropic / OpenAI) gives the charity a credible escape route if a provider's DPA materially changes; controller is alerted via the standard sub-processor change process in §2 of [ROPA.md](ROPA.md). | Low | Med | **Low** |
 | R6 | Under-18 learner cannot exercise their own GDPR rights because the data is held against their organisation. | Med | Med | Med | Account self-service in `/settings` allows users (including under-18s) to view and export their own CV / careers data, and to delete it. Org admin can deactivate or delete an account on request. The DPO inbox is published at `/privacy`. |  Low | Low | **Low** |
