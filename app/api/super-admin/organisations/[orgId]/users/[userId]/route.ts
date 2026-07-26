@@ -13,8 +13,6 @@ const patchSchema = z.object({
   role: z.enum(SYSTEM_ORG_ROLES).optional(),
   active: z.boolean().optional(),
   allowedProgramIds: z.array(z.string()).optional(),
-  cvBuilderEnabled: z.boolean().optional(),
-  careersAdvisorEnabled: z.boolean().optional(),
   surveyIds: z.array(z.string()).optional(),
 })
 
@@ -70,8 +68,6 @@ export async function PATCH(
       role: true,
       active: true,
       allowedProgramIds: true,
-      cvBuilderEnabled: true,
-      careersAdvisorEnabled: true,
     },
   })
 

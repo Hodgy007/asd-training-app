@@ -4,8 +4,6 @@ import type { Session } from 'next-auth'
 export interface EffectiveOrgSettings {
   allowedProgramIds: string[]
   allowedRoles: string[]
-  cvBuilderEnabled: boolean
-  careersAdvisorEnabled: boolean
 }
 
 /**
@@ -18,15 +16,13 @@ export async function getEffectiveOrgSettings(orgId: string): Promise<EffectiveO
     select: {
       allowedProgramIds: true,
       allowedRoles: true,
-      cvBuilderEnabled: true,
-      careersAdvisorEnabled: true,
       inheritSettings: true,
       parentOrgId: true,
     },
   })
 
   if (!org) {
-    return { allowedProgramIds: [], allowedRoles: [], cvBuilderEnabled: true, careersAdvisorEnabled: true }
+    return { allowedProgramIds: [], allowedRoles: [] }
   }
 
   if (org.inheritSettings && org.parentOrgId) {
@@ -35,16 +31,12 @@ export async function getEffectiveOrgSettings(orgId: string): Promise<EffectiveO
       select: {
         allowedProgramIds: true,
         allowedRoles: true,
-        cvBuilderEnabled: true,
-        careersAdvisorEnabled: true,
       },
     })
     if (parent) {
       return {
         allowedProgramIds: parent.allowedProgramIds,
         allowedRoles: parent.allowedRoles,
-        cvBuilderEnabled: parent.cvBuilderEnabled,
-        careersAdvisorEnabled: parent.careersAdvisorEnabled,
       }
     }
   }
@@ -52,8 +44,6 @@ export async function getEffectiveOrgSettings(orgId: string): Promise<EffectiveO
   return {
     allowedProgramIds: org.allowedProgramIds,
     allowedRoles: org.allowedRoles,
-    cvBuilderEnabled: org.cvBuilderEnabled,
-    careersAdvisorEnabled: org.careersAdvisorEnabled,
   }
 }
 

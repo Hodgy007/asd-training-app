@@ -23,8 +23,6 @@ const createAdminSchema = z.object({
   // Ignored for normal orgs (those inherit from the org's allowedProgramIds).
   allowedProgramIds: z.array(z.string()).optional(),
   // Per-user feature toggles + survey picks (system org only — ignored elsewhere).
-  cvBuilderEnabled: z.boolean().optional(),
-  careersAdvisorEnabled: z.boolean().optional(),
   surveyIds: z.array(z.string()).optional(),
 })
 
@@ -87,8 +85,6 @@ export async function POST(
       // System-org-only fields: per-user program list, per-user feature toggles.
       // Other orgs ignore these (they inherit from the org row).
       allowedProgramIds: isSystem ? (parsed.data.allowedProgramIds ?? []) : [],
-      cvBuilderEnabled: isSystem ? (parsed.data.cvBuilderEnabled ?? false) : null,
-      careersAdvisorEnabled: isSystem ? (parsed.data.careersAdvisorEnabled ?? false) : null,
     },
     select: { id: true, name: true, email: true, role: true },
   })

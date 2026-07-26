@@ -31,8 +31,6 @@ export async function seedPublicToolkitOrg(client: PrismaClient = prisma) {
       orgType: 'ORGANISATION',
       allowedRoles: REQUIRED_ALLOWED_ROLES,
       allowedProgramIds: [],
-      cvBuilderEnabled: false,
-      careersAdvisorEnabled: false,
       active: true,
     },
   })

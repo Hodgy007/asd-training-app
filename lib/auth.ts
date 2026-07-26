@@ -14,50 +14,6 @@ async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> 
   return getUserPrograms(userId)
 }
 
-async function getOrgFeatureFlags(organisationId: string | null | undefined): Promise<{ cvBuilderEnabled: boolean; careersAdvisorEnabled: boolean }> {
-  if (!organisationId) return { cvBuilderEnabled: true, careersAdvisorEnabled: true }
-  const settings = await getEffectiveOrgSettings(organisationId)
-  return {
-    cvBuilderEnabled: settings.cvBuilderEnabled,
-    careersAdvisorEnabled: settings.careersAdvisorEnabled,
-  }
-}
-
-/**
- * Effective per-user feature flags.
- *
- * Normal orgs: user-level override wins, otherwise inherit the org default.
- * Independent Learners (system org): null user-level value means OFF, not
- *   inherit. Each unaffiliated learner is opted in explicitly — we don't
- *   want toggling the org default to silently grant CV Builder to every
- *   workshop participant.
- */
-async function getEffectiveFeatureFlags(
-  userId: string | null | undefined,
-  organisationId: string | null | undefined
-): Promise<{ cvBuilderEnabled: boolean; careersAdvisorEnabled: boolean }> {
-  const orgFlags = await getOrgFeatureFlags(organisationId)
-  if (!userId) return orgFlags
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      cvBuilderEnabled: true,
-      careersAdvisorEnabled: true,
-      organisation: { select: { slug: true } },
-    },
-  })
-  if (!user) return orgFlags
-  const onSystemOrg = isSystemOrg(user.organisation ?? {})
-  return {
-    cvBuilderEnabled: onSystemOrg
-      ? (user.cvBuilderEnabled ?? false)
-      : (user.cvBuilderEnabled ?? orgFlags.cvBuilderEnabled),
-    careersAdvisorEnabled: onSystemOrg
-      ? (user.careersAdvisorEnabled ?? false)
-      : (user.careersAdvisorEnabled ?? orgFlags.careersAdvisorEnabled),
-  }
-}
-
 async function getOrgIsParent(organisationId: string | null | undefined): Promise<boolean> {
   if (!organisationId) return false
   const org = await prisma.organisation.findUnique({
@@ -344,9 +300,6 @@ export const authOptions: NextAuthOptions = {
           select: { charityPermissions: true },
         })
         token.charityPermissions = dbUserForPerms?.charityPermissions ?? []
-        const flags = await getEffectiveFeatureFlags(user.id, token.organisationId as string | null)
-        token.cvBuilderEnabled = flags.cvBuilderEnabled
-        token.careersAdvisorEnabled = flags.careersAdvisorEnabled
         token.isParentOrg = await getOrgIsParent(token.organisationId as string | null)
         const subInfo = await getUserSubscriptionInfo(
           token.id as string,
@@ -373,9 +326,6 @@ export const authOptions: NextAuthOptions = {
           token.hasPassword = !!dbUser.password
           token.effectivePrograms = await getUserEffectivePrograms(dbUser.id)
           token.charityPermissions = dbUser.charityPermissions ?? []
-          const ssoFlags = await getEffectiveFeatureFlags(dbUser.id, dbUser.organisationId)
-          token.cvBuilderEnabled = ssoFlags.cvBuilderEnabled
-          token.careersAdvisorEnabled = ssoFlags.careersAdvisorEnabled
           token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
           const ssoSubInfo = await getUserSubscriptionInfo(dbUser.id, dbUser.organisationId)
           token.subscriptionStatus = ssoSubInfo.subscriptionStatus
@@ -431,9 +381,6 @@ export const authOptions: NextAuthOptions = {
         token.totpEnabled = dbUser.totpEnabled
         token.hasPassword = !!dbUser.password
         token.charityPermissions = dbUser.charityPermissions ?? []
-        const updateFlags = await getEffectiveFeatureFlags(token.id as string, dbUser.organisationId)
-        token.cvBuilderEnabled = updateFlags.cvBuilderEnabled
-        token.careersAdvisorEnabled = updateFlags.careersAdvisorEnabled
         token.isParentOrg = await getOrgIsParent(dbUser.organisationId)
         const updateSubInfo = await getUserSubscriptionInfo(token.id as string, dbUser.organisationId)
         token.subscriptionStatus = updateSubInfo.subscriptionStatus
@@ -460,8 +407,6 @@ export const authOptions: NextAuthOptions = {
         session.user.hasPassword = (token.hasPassword as boolean) ?? true
         session.user.effectivePrograms = (token.effectivePrograms as ProgramInfo[]) ?? []
         session.user.charityPermissions = (token.charityPermissions as string[]) ?? []
-        session.user.cvBuilderEnabled = (token.cvBuilderEnabled as boolean) ?? true
-        session.user.careersAdvisorEnabled = (token.careersAdvisorEnabled as boolean) ?? true
         session.user.isParentOrg = (token.isParentOrg as boolean) ?? false
         session.user.subscriptionStatus = (token.subscriptionStatus as string) ?? 'NONE'
         session.user.isPersonalOrg = (token.isPersonalOrg as boolean) ?? false

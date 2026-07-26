@@ -37,10 +37,6 @@ model User {
   // out of order (e.g. a late `updated` after `deleted`).
   lastStripeEventAt            DateTime?
   allowedProgramIds            String[]           @default([])
-  // Per-user feature overrides (mainly for Independent Learners). Null means
-  // "inherit from the user's org"; explicit true/false overrides the org flag.
-  cvBuilderEnabled             Boolean?
-  careersAdvisorEnabled        Boolean?
   createdAt                    DateTime           @default(now())
   updatedAt                    DateTime           @updatedAt
 
@@ -58,9 +54,7 @@ model User {
   uploadedDocuments     LibraryDocument[]      @relation("UploadedDocuments")
   documentEvents        LibraryDocumentEvent[] @relation("DocumentEvents")
   integrationKeys       IntegrationApiKey[]    @relation("IntegrationKeys")
-  cvs                   CV[]
   surveyTargets         SurveyTarget[]         @relation("SurveyTargets")
-  careerAdvisorSessions CareerAdvisorSession[]
   lessonNotes           LessonNote[]
   cohortMemberships     CohortMembership[]
   invitedByUser         User?                  @relation("UserInviter", fields: [invitedBy], references: [id])
@@ -120,8 +114,6 @@ model Organisation {
   organisationType             OrganisationType   @default(BUSINESS)
   allowedProgramIds            String[]
   allowedRoles                 String[]
-  cvBuilderEnabled             Boolean            @default(true)
-  careersAdvisorEnabled        Boolean            @default(true)
   logoUrl                      String?
   contactName                  String?
   contactEmail                 String?
@@ -347,12 +339,6 @@ model TrainingProgram {
   stripeProductId String?
   stripePriceId   String?
   purchasable     Boolean         @default(false)
-  // Default role assigned to users who self-provision themselves into this
-  // program — currently the free-claim flow on /courses and the anonymous
-  // Stripe checkout webhook. Admin-created users are unaffected.
-  // Should always be a leaf role (CAREGIVER / CAREER_DEV_OFFICER / STUDENT
-  // / INTERN / EMPLOYEE); the admin form enforces that.
-  defaultLeafRole Role?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -670,17 +656,6 @@ enum InsightType {
   RECOMMENDATIONS
 }
 
-enum CVTemplate {
-  CLASSIC
-  MODERN
-  ACCESSIBLE
-}
-
-enum CVStatus {
-  DRAFT
-  COMPLETE
-}
-
 model LibraryCollection {
   id                      String   @id @default(cuid())
   title                   String
@@ -876,120 +851,6 @@ model IntegrationApiKey {
   createdAt   DateTime  @default(now())
 
   createdBy User @relation("IntegrationKeys", fields: [createdById], references: [id])
-}
-
-model CV {
-  id                     String     @id @default(cuid())
-  userId                 String
-  title                  String     @default("My CV")
-  template               CVTemplate @default(ACCESSIBLE)
-  status                 CVStatus   @default(DRAFT)
-  currentStep            Int        @default(0)
-  fullName               String?
-  email                  String?
-  phone                  String?
-  city                   String?
-  postcode               String?
-  linkedIn               String?
-  personalStatement      String?    @db.Text
-  interests              String?    @db.Text
-  refsAvailableOnRequest Boolean    @default(true)
-  createdAt              DateTime   @default(now())
-  updatedAt              DateTime   @updatedAt
-
-  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workExperiences  CVWorkExperience[]
-  educationEntries CVEducation[]
-  skills           CVSkill[]
-  references       CVReference[]
-
-  @@index([userId])
-}
-
-model CVWorkExperience {
-  id          String   @id @default(cuid())
-  cvId        String
-  jobTitle    String
-  employer    String
-  startDate   String
-  endDate     String?
-  isCurrent   Boolean  @default(false)
-  description String?  @db.Text
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  @@index([cvId])
-}
-
-model CVEducation {
-  id            String   @id @default(cuid())
-  cvId          String
-  institution   String
-  qualification String
-  grade         String?
-  startDate     String
-  endDate       String?
-  description   String?  @db.Text
-  order         Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  @@index([cvId])
-}
-
-model CVSkill {
-  id       String  @id @default(cuid())
-  cvId     String
-  name     String
-  category String?
-  order    Int     @default(0)
-
-  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  @@index([cvId])
-}
-
-model CVReference {
-  id           String  @id @default(cuid())
-  cvId         String
-  name         String
-  jobTitle     String?
-  organisation String?
-  email        String?
-  phone        String?
-  relationship String?
-  order        Int     @default(0)
-
-  cv CV @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  @@index([cvId])
-}
-
-// ─── Careers Advisor ─────────────────────────────────────────────────────────
-
-enum AdvisorSessionStatus {
-  IN_PROGRESS
-  COMPLETE
-}
-
-model CareerAdvisorSession {
-  id          String               @id @default(cuid())
-  userId      String
-  status      AdvisorSessionStatus @default(IN_PROGRESS)
-  currentStep Int                  @default(0)
-  answers     Json?
-  report      Json?
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
 
 model AiPrompt {

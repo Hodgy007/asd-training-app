@@ -127,9 +127,6 @@ export async function POST(req: NextRequest) {
   // Mint a session cookie so the user lands signed in (same shape as
   // the SAML and SSO-complete callbacks).
   const effectivePrograms = await getUserPrograms(user.id)
-  const orgFlags = user.organisationId
-    ? await getEffectiveOrgSettings(user.organisationId)
-    : { cvBuilderEnabled: true, careersAdvisorEnabled: true }
   const orgInfo = user.organisationId
     ? await prisma.organisation.findUnique({
         where: { id: user.organisationId },
@@ -150,8 +147,6 @@ export async function POST(req: NextRequest) {
       hasPassword: true,
       effectivePrograms,
       charityPermissions: user.charityPermissions ?? [],
-      cvBuilderEnabled: orgFlags.cvBuilderEnabled,
-      careersAdvisorEnabled: orgFlags.careersAdvisorEnabled,
       isParentOrg: orgInfo?.isParentOrg ?? false,
       subscriptionStatus: orgInfo?.subscriptionStatus ?? 'NONE',
       isPersonalOrg: !user.organisationId,

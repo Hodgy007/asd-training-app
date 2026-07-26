@@ -117,8 +117,6 @@ describe('POST /api/auth/register — existing org', () => {
     vi.mocked(getEffectiveOrgSettings).mockResolvedValue({
       allowedRoles: ['LEARNER'],
       allowedProgramIds: [],
-      cvBuilderEnabled: true,
-      careersAdvisorEnabled: true,
     })
     vi.mocked(prisma.user.create).mockResolvedValue({ id: 'u1' } as any)
 
@@ -154,8 +152,6 @@ describe('POST /api/auth/register — existing org', () => {
     vi.mocked(getEffectiveOrgSettings).mockResolvedValue({
       allowedRoles: [],
       allowedProgramIds: [],
-      cvBuilderEnabled: true,
-      careersAdvisorEnabled: true,
     })
     const res = await POST(req({
       mode: 'existing', name: 'Jane', email: 'jane@school.com',
