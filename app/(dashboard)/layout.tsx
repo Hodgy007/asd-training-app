@@ -38,9 +38,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // the same content, but admins should keep their own sidebar — otherwise the
   // nav suddenly switches to the learner one (with Workshops, training links,
   // etc.) the moment they click Home Page.
+  // CHARITY_EMPLOYEE belongs with SUPER_ADMIN here — both use the charity
+  // sidebar everywhere else, and leaving it out dropped charity employees onto
+  // the learner nav with training links they can't follow.
   const role = session?.user?.role
+  const isCharityRole = role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE'
   const SidebarComponent =
-    isSharedHome && role === 'SUPER_ADMIN'
+    isSharedHome && isCharityRole
       ? SuperAdminSidebar
       : isSharedHome && role === 'ORG_ADMIN'
         ? OrgAdminSidebar

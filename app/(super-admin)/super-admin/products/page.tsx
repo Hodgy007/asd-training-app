@@ -83,7 +83,11 @@ const TILES: Tile[] = [
     icon: UsersRound,
     iconColor: 'text-primary-600 dark:text-primary-400',
     iconBg: 'bg-primary-100 dark:bg-primary-900/40',
-    permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS,
+    // Must match what the cohort routes actually enforce. This tile used to be
+    // gated on MANAGE_ORGANISATIONS while every route under /api/super-admin/
+    // cohorts checks MANAGE_COHORTS, so the permission that does the work hid
+    // the only way to reach it and the permission that showed the tile got a 403.
+    permission: CHARITY_PERMISSIONS.MANAGE_COHORTS,
   },
   {
     href: '/super-admin/library',

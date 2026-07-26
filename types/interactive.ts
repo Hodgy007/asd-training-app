@@ -151,7 +151,7 @@ const scenarioChoiceSchema = z.object({
 
 const scenarioNodeSchema = z.object({
   id: z.string().min(1),
-  text: z.string().min(1),
+  text: z.string(),
   imageUrl: z.string().optional(),
   choices: z.array(scenarioChoiceSchema).optional(),
   isEnding: z.boolean().optional(),
@@ -178,7 +178,7 @@ const dragCategorySchema = z.object({
 
 const dragDropDataSchema = z.object({
   variant: z.enum(['match', 'categorize', 'order']),
-  items: z.array(dragItemSchema).min(1),
+  items: z.array(dragItemSchema),
   categories: z.array(dragCategorySchema).optional(),
   correctOrder: z.array(z.string()).optional(),
   correctMatches: z.record(z.string()).optional(),
@@ -214,14 +214,14 @@ const hotspotDataSchema = z.object({
 
 const knowledgeCheckQuestionSchema = z.object({
   id: z.string().min(1),
-  question: z.string().min(1),
-  options: z.array(z.string().min(1)).min(2).max(4),
-  correctAnswer: z.string().min(1),
-  feedback: z.string().min(1),
+  question: z.string(),
+  options: z.array(z.string()).min(2).max(4),
+  correctAnswer: z.string(),
+  feedback: z.string(),
 })
 
 const knowledgeCheckDataSchema = z.object({
-  questions: z.array(knowledgeCheckQuestionSchema).min(1).max(3),
+  questions: z.array(knowledgeCheckQuestionSchema).max(3),
 })
 
 const carouselSlideSchema = z.object({

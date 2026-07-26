@@ -2,12 +2,19 @@
 // Builds the handover PDFs in docs/handover/ from their markdown sources.
 // Run via: npm run handover:build
 //
-// Sources live alongside the PDFs in docs/handover/, plus the four role guides in
-// docs/guides/. Two of the PDFs are composites of multiple guide files — the script
-// concatenates them with a page-break separator before handing to md-to-pdf.
+// Sources live alongside the PDFs in docs/handover/, plus the role guides and the
+// integration guide in docs/guides/. One PDF (the Admin Guide) is a composite of two
+// guide files — the script concatenates them with a page-break separator before
+// handing to md-to-pdf.
+//
+// Outputs whose sources haven't changed are skipped. md-to-pdf embeds a creation
+// timestamp, so a rebuilt PDF is byte-different even when its content is identical;
+// without the skip, every docs commit carried megabytes of meaningless binary churn
+// and `git diff --stat` couldn't show which documents actually moved.
+// Pass --force to rebuild everything regardless.
 
 import { mdToPdf } from 'md-to-pdf'
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -39,6 +46,11 @@ const DOCS = [
     output: 'AAA_User_Guide.pdf',
     title: 'AAA Digital Platform — User Guide',
     sources: [join(guidesDir, 'learner-guide.md')],
+  },
+  {
+    output: 'AAA_Working_With_Claude_Code.pdf',
+    title: 'AAA Digital Platform — Working with Claude Code',
+    sources: [join(handoverDir, 'using-claude-code.md')],
   },
   {
     output: 'AAA_Data_Dictionary.pdf',
@@ -113,6 +125,20 @@ async function buildPdf({ output, title, sources }) {
   return outputPath
 }
 
+/**
+ * True when the PDF is newer than every input that shapes it — its markdown
+ * sources, the shared stylesheet, and this script (which owns the header and
+ * footer templates). Missing output always rebuilds.
+ */
+function isUpToDate({ output, sources }) {
+  const outputPath = join(handoverDir, output)
+  if (!existsSync(outputPath)) return false
+
+  const builtAt = statSync(outputPath).mtimeMs
+  const inputs = [...sources, cssPath, __filename]
+  return inputs.every((input) => statSync(input).mtimeMs <= builtAt)
+}
+
 function escapeHtml(value) {
   return value
     .replace(/&/g, '&amp;')
@@ -126,19 +152,31 @@ async function main() {
     mkdirSync(handoverDir, { recursive: true })
   }
 
-  console.log(`Building ${DOCS.length} handover PDF(s)...`)
+  const force = process.argv.includes('--force')
+  let built = 0
+  let skipped = 0
+
+  console.log(`Building ${DOCS.length} handover PDF(s)${force ? ' (forced)' : ''}...`)
   for (const doc of DOCS) {
     process.stdout.write(`  ${doc.output} ... `)
+
+    if (!force && isUpToDate(doc)) {
+      console.log('up to date')
+      skipped++
+      continue
+    }
+
     try {
       await buildPdf(doc)
       console.log('done')
+      built++
     } catch (err) {
       console.log('FAILED')
       console.error(err)
       process.exitCode = 1
     }
   }
-  console.log('Finished.')
+  console.log(`Finished. ${built} rebuilt, ${skipped} unchanged.`)
 }
 
 main()
