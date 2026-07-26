@@ -4,6 +4,19 @@ The PDFs in this folder are **generated artefacts** — every PDF is built from 
 
 This changelog tracks what's changed since the last rebuild. When you regenerate the PDFs, you can clear entries that are now reflected in the freshly-built PDFs.
 
+## 2026-07-26 — New: Platform Administration Guide
+
+Added a ninth PDF, `AAA_Platform_Administration.pdf`, built from `platform-administration.md`.
+
+It documents the administration *model* rather than the screens: the two-tier split between charity-level and organisation-level administration, the four roles, the ten charity permissions and what each unlocks, what an organisation can and cannot do for itself, how provisioning works, how access is enforced by middleware, the security requirements for administrator accounts, and a full responsibility matrix.
+
+This was written to answer a recurring question — whether only Ambitious about Autism can administer the platform. It cannot be answered from the existing Admin Guide, which describes procedures screen by screen but never states the boundary. The two documents are complementary: update this one when a permission or role boundary changes, and the Admin Guide when a screen changes.
+
+Two gaps are recorded in §16 of the new guide rather than silently fixed:
+
+- The **Audit Log** item in the organisation admin navigation (`/admin/audit`) points at a page that was never built.
+- Home page editing is charity-only, so organisations cannot customise their own.
+
 ## 2026-07-26 — Four-role model; CV Builder and Careers Advisor retired; org-level jobs and homepages
 
 All eight PDFs rebuilt from their sources on this date.

@@ -1,8 +1,8 @@
 # Handover documentation
 
 This folder is the deliverable bundle for handover to Ambitious About Autism. It contains
-eight PDFs — three role-facing user/admin guides, four technical / process documents, and
-one integration partner guide.
+nine PDFs — two role-facing user/admin guides, one platform administration model guide,
+five technical / process documents, and one integration partner guide.
 
 ## Working principles
 
@@ -20,6 +20,7 @@ one integration partner guide.
 | PDF | Source markdown |
 |---|---|
 | `AAA_Admin_Guide.pdf` | `docs/guides/super-admin-guide.md` + `docs/guides/org-admin-guide.md` |
+| `AAA_Platform_Administration.pdf` | `docs/handover/platform-administration.md` |
 | `AAA_User_Guide.pdf` | `docs/guides/learner-guide.md` |
 | `AAA_Data_Dictionary.pdf` | `docs/handover/data-dictionary.md` |
 | `AAA_Technical_Setup_Guide.pdf` | `docs/handover/technical-setup-guide.md` |
@@ -29,9 +30,15 @@ one integration partner guide.
 | `AAA_Integration_Reports_Guide.pdf` | `docs/guides/integration-reports-guide.md` |
 
 The role-facing guides and the integration partner guide live in `docs/guides/`
-because they're also the canonical in-repo user documentation. The four
+because they're also the canonical in-repo user documentation. The five
 handover-only sources live here in `docs/handover/` because they have no
 purpose outside the PDF bundle.
+
+`platform-administration.md` covers the administration *model* — who can administer
+what, and where the boundary between the charity and an external organisation sits.
+`AAA_Admin_Guide.pdf` covers the screen-by-screen *procedures*. Keep them distinct:
+when a permission or a role boundary changes, update the former; when a screen
+changes, update the latter.
 
 ## Regenerating the PDFs
 
@@ -43,7 +50,7 @@ The build script (`scripts/build-handover-pdfs.mjs`) reads each markdown source,
 concatenates composite sources, and runs them through `md-to-pdf`. Styling lives in
 `docs/handover/_pdf-style.css` — edit that to change the look of every PDF at once.
 
-The output is eight `.pdf` files in this folder. Re-commit them whenever you regenerate.
+The output is nine `.pdf` files in this folder. Re-commit them whenever you regenerate.
 
 ## When to regenerate
 
