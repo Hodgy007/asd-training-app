@@ -68,26 +68,53 @@ export function splitContentAtBlocks(
 }
 
 /**
- * Validate and parse interactive blocks from unknown JSON data (e.g. from DB).
- * Returns a typed array or null if the input isn't an array at all.
- * If the whole array parse fails, falls back to per-block parsing so one
- * malformed block never hides all the others.
+ * Strict, all-or-nothing validation. Returns null if the input isn't an array
+ * or if *any* block fails the schema.
+ *
+ * This is the write-path contract: a payload that doesn't round-trip cleanly
+ * must be rejected, not silently trimmed, or a malformed block gets deleted
+ * from the database without anyone being told. Use it wherever the result is
+ * about to be persisted.
  */
 export function validateInteractiveBlocks(
   data: unknown
 ): InteractiveBlock[] | null {
   if (!data || !Array.isArray(data)) return null
   const result = interactiveBlocksSchema.safeParse(data)
-  if (result.success) return result.data
-  // One block failed — try each individually and keep the valid ones.
-  const valid: InteractiveBlock[] = []
-  for (const item of data) {
-    const blockResult = interactiveBlockSchema.safeParse(item)
-    if (blockResult.success) {
-      valid.push(blockResult.data)
-    }
-  }
-  return valid.length > 0 ? valid : null
+  return result.success ? result.data : null
+}
+
+/** What survived a lenient parse, and what didn't. */
+export interface LenientParseResult {
+  blocks: InteractiveBlock[]
+  /** Indices in the input array that failed the schema, in order. */
+  invalidIndices: number[]
+}
+
+/**
+ * Lenient, per-block parsing for *read* paths — rendering a lesson, extracting
+ * TTS text, building a SCORM export.
+ *
+ * One malformed block used to hide every block on the lesson, because the whole
+ * array was parsed in a single pass. Here each block is parsed on its own so
+ * the good ones still render, and the callers that can act on it are told which
+ * ones were dropped rather than being left to guess.
+ *
+ * Never feed this straight back into a save — see validateInteractiveBlocks.
+ */
+export function parseInteractiveBlocksLenient(data: unknown): LenientParseResult {
+  if (!data || !Array.isArray(data)) return { blocks: [], invalidIndices: [] }
+
+  const blocks: InteractiveBlock[] = []
+  const invalidIndices: number[] = []
+
+  data.forEach((item, index) => {
+    const result = interactiveBlockSchema.safeParse(item)
+    if (result.success) blocks.push(result.data)
+    else invalidIndices.push(index)
+  })
+
+  return { blocks, invalidIndices }
 }
 
 /**

@@ -29,7 +29,7 @@ import { clsx } from 'clsx'
 import { InteractiveBlock } from '@/types/interactive'
 import { InteractiveBlocksPanel } from '@/components/admin/interactive-builder/interactive-blocks-panel'
 import { ScormUpload } from '@/components/admin/scorm-upload'
-import { generateBlockPlaceholder, removeBlockPlaceholder, validateInteractiveBlocks, normaliseBlockPlaceholderAlignment } from '@/lib/interactive-blocks'
+import { generateBlockPlaceholder, removeBlockPlaceholder, parseInteractiveBlocksLenient, normaliseBlockPlaceholderAlignment } from '@/lib/interactive-blocks'
 import { registerResizableImage } from '@/lib/quill-image-format'
 import { registerVideoFormat } from '@/lib/quill-video-format'
 
@@ -142,6 +142,10 @@ export default function LessonEditorPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  // Blocks in the DB that don't match the schema. They can't be shown or edited,
+  // and saving replaces the stored array — so the admin has to be told before
+  // they save, not after. Deliberately not a toast: this must not auto-dismiss.
+  const [unreadableBlockCount, setUnreadableBlockCount] = useState(0)
 
   // Lesson edit fields
   const [editTitle, setEditTitle] = useState('')
@@ -316,7 +320,9 @@ export default function LessonEditorPage() {
         setQuestions(parsed)
         setQuizVisible(parsed.length > 0)
         setAttachments(data.attachments ?? [])
-        setInteractiveBlocks(validateInteractiveBlocks(data.interactiveBlocks) ?? [])
+        const parsedBlocks = parseInteractiveBlocksLenient(data.interactiveBlocks)
+        setInteractiveBlocks(parsedBlocks.blocks)
+        setUnreadableBlockCount(parsedBlocks.invalidIndices.length)
       }
     } finally {
       setLoading(false)
@@ -469,6 +475,23 @@ export default function LessonEditorPage() {
           )}
         >
           {toast.message}
+        </div>
+      )}
+
+      {unreadableBlockCount > 0 && (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-800 dark:text-red-200"
+        >
+          <p className="font-bold">
+            {unreadableBlockCount} interactive {unreadableBlockCount === 1 ? 'block' : 'blocks'} on this
+            lesson could not be read.
+          </p>
+          <p className="mt-1">
+            They are stored but don&apos;t match the current block format, so they can&apos;t be shown or
+            edited here. <strong>Saving this lesson will remove them permanently.</strong> If you need them
+            back, leave this page without saving and ask a developer to look at the lesson record first.
+          </p>
         </div>
       )}
 

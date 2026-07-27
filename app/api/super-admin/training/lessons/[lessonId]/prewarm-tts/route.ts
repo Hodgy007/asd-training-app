@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import prisma from '@/lib/prisma'
-import { validateInteractiveBlocks } from '@/lib/interactive-blocks'
+import { parseInteractiveBlocksLenient } from '@/lib/interactive-blocks'
 import { extractLessonTtsTexts } from '@/lib/tts-extract'
 import {
   DEFAULT_VOICE_ID,
@@ -59,7 +59,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
   }
 
-  const blocks = validateInteractiveBlocks(lesson.interactiveBlocks) ?? []
+  const blocks = parseInteractiveBlocksLenient(lesson.interactiveBlocks).blocks
   const texts = extractLessonTtsTexts(lesson.content || '', blocks)
 
   let hit = 0

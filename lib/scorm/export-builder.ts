@@ -26,7 +26,7 @@
 
 import JSZip from 'jszip'
 import { sanitizeHtml } from '@/lib/sanitize'
-import { validateInteractiveBlocks } from '@/lib/interactive-blocks'
+import { parseInteractiveBlocksLenient } from '@/lib/interactive-blocks'
 import type { InteractiveBlock } from '@/types/interactive'
 import { buildScorm12Manifest, type ExportLessonItem } from './export-manifest'
 import {
@@ -232,7 +232,7 @@ async function renderLessonBodyAndAssets(
 ): Promise<LessonRenderResult> {
   // 1. Parse interactive blocks (or treat as none if invalid/missing).
   const blocks: InteractiveBlock[] =
-    validateInteractiveBlocks(lesson.interactiveBlocks) ?? []
+    parseInteractiveBlocksLenient(lesson.interactiveBlocks).blocks
   const blockById = new Map(blocks.map((b) => [b.id, b]))
 
   // 2. Split prose at block markers — even if blocks is empty this returns

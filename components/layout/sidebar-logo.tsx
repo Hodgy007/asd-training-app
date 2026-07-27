@@ -16,9 +16,9 @@ interface SidebarLogoProps {
  * their opposites and the logo renders off-brand. `logo-aaa-white.svg` is the
  * purpose-made asset: white wordmark, brand colours untouched.
  *
- * Three backgrounds to cover: classic is white (or slate-900 under OS dark
- * mode), dark is slate-800, and the default theme is primary-500. Only classic
- * in light mode gets the dark wordmark.
+ * Three backgrounds to cover: classic is white (or slate-900 in dark mode),
+ * dark is slate-800, and the default theme is primary-500. Only classic in
+ * light mode gets the dark wordmark.
  */
 export function SidebarLogo({ collapsed }: SidebarLogoProps) {
   const { colorTheme } = useColorTheme()
@@ -41,8 +41,15 @@ export function SidebarLogo({ collapsed }: SidebarLogoProps) {
     )
   }
 
-  // Classic follows the OS light/dark preference, which is a CSS-only signal —
-  // hence two elements toggled by `dark:` rather than a single conditional src.
+  // Light/dark is a separate axis from the colour theme: next-themes puts a
+  // `dark` class on <html> (system preference by default, user-overridable) and
+  // Tailwind is configured with darkMode: 'class'. That's a CSS-only signal, so
+  // this needs two elements toggled by `dark:` rather than a conditional src.
+  //
+  // Both carry the real alt text. Only one is ever displayed, and `display:none`
+  // takes the other out of the accessibility tree, so there's no double
+  // announcement — whereas marking one aria-hidden left the sidebar with no
+  // accessible name at all whenever that was the visible one.
   return (
     <>
       <img
@@ -52,8 +59,7 @@ export function SidebarLogo({ collapsed }: SidebarLogoProps) {
       />
       <img
         src="/logo-aaa-white.svg"
-        alt=""
-        aria-hidden="true"
+        alt="Ambitious about Autism"
         className="hidden h-16 w-auto dark:block"
       />
     </>

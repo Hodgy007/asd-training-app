@@ -4,6 +4,17 @@ The PDFs in this folder are **generated artefacts** — every PDF is built from 
 
 This changelog tracks what's changed since the last rebuild. When you regenerate the PDFs, you can clear entries that are now reflected in the freshly-built PDFs.
 
+## 2026-07-26 — Build tooling: content hashing replaces timestamps
+
+The skip added earlier the same day didn't survive normal git use. It compared file timestamps, and a checkout, pull, stash or rebase rewrites files and bumps their timestamps without changing a byte of content. Because `_pdf-style.css` feeds every document, one such touch made all ten PDFs look stale — reinstating exactly the binary churn the skip existed to prevent. A fresh clone was worse: every file lands with the same timestamp, so a PDF committed stale would never have rebuilt at all.
+
+Staleness is now a content hash of the assembled markdown, the stylesheet and the build script, recorded in `.build-manifest.json` and committed alongside the PDFs.
+
+Two smaller faults fixed with it:
+
+- **A missing or renamed source killed the whole run** with a raw filesystem error, because the staleness check sat outside the per-document error handling. The deliberate "Source not found" message was unreachable. It now fails that one document and carries on.
+- **`npm run handover:build --force` never forced anything.** `--force` is an npm flag, so npm consumed it before the script saw it. The correct form is `npm run handover:build -- --force`; the script now also honours the environment variable npm sets, so the old spelling works too.
+
 ## 2026-07-26 — New: Working with Claude Code
 
 Added a tenth PDF, `AAA_Working_With_Claude_Code.pdf`, built from `using-claude-code.md`.
