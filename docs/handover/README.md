@@ -54,9 +54,26 @@ concatenates composite sources, and runs them through `md-to-pdf`. Styling lives
 
 There are ten `.pdf` files in this folder. Only those whose sources have changed are
 rebuilt — md-to-pdf stamps a creation time into every PDF, so rebuilding an unchanged
-document produces a byte-different file and pollutes the commit. Pass `--force` to
-rebuild all ten (needed after a change to `_pdf-style.css` or the build script itself,
-though both are already tracked as inputs). Re-commit whatever the build rewrites.
+document produces a byte-different file and pollutes the commit.
+
+Staleness is tracked by content hash in `.build-manifest.json`, which is committed
+alongside the PDFs. **Commit it whenever you commit rebuilt PDFs** — it is what lets
+the skip work on a fresh clone. Hashes rather than file timestamps because timestamps
+don't survive ordinary git use: a checkout or rebase rewrites files and bumps their
+mtimes, and since `_pdf-style.css` feeds every document, one such touch used to make
+all ten rebuild.
+
+To rebuild everything:
+
+```bash
+npm run handover:build -- --force
+```
+
+The `--` matters. `npm run handover:build --force` does *not* work — `--force` is an
+npm flag, so npm consumes it before the script sees it. (The script also reads the
+env var npm sets in that case, so it happens to work anyway, but write the `--`.)
+
+Re-commit whatever the build rewrites.
 
 ## When to regenerate
 

@@ -9,7 +9,7 @@ import { ArrowLeft, ChevronRight, ChevronDown, BookOpen, Video, CheckCircle, Loa
 import { VideoPlayer } from '@/components/training/video-player'
 import { QuizComponent } from '@/components/training/quiz-component'
 import { InteractiveBlockRenderer } from '@/components/training/interactive/interactive-block-renderer'
-import { splitContentAtBlocks, validateInteractiveBlocks } from '@/lib/interactive-blocks'
+import { splitContentAtBlocks, parseInteractiveBlocksLenient } from '@/lib/interactive-blocks'
 import { InteractiveBlock, InteractionData } from '@/types/interactive'
 import { TtsAudioPlayer } from '@/components/training/interactive/tts-audio-player'
 import { htmlToPlainText } from '@/lib/html-to-text'
@@ -238,7 +238,7 @@ export default function ProgramLessonPage({ params: rawParams }: LessonPageProps
   }))
 
   // Parse interactive blocks and split content
-  const blocks: InteractiveBlock[] = validateInteractiveBlocks(lesson.interactiveBlocks) ?? []
+  const blocks: InteractiveBlock[] = parseInteractiveBlocksLenient(lesson.interactiveBlocks).blocks
   const contentSegments = splitContentAtBlocks(lesson.content, blocks)
   const blocksById = new Map(blocks.map(b => [b.id, b]))
 

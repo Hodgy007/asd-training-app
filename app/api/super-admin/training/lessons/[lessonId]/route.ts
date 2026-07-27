@@ -5,7 +5,7 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { getLessonById } from '@/lib/training-db'
 import prisma from '@/lib/prisma'
 import { LessonType, Prisma } from '@prisma/client'
-import { validateInteractiveBlocks } from '@/lib/interactive-blocks'
+import { validateInteractiveBlocks, parseInteractiveBlocksLenient } from '@/lib/interactive-blocks'
 import { extractLessonTtsTexts } from '@/lib/tts-extract'
 import { sanitizeHtml } from '@/lib/sanitize'
 import {
@@ -192,7 +192,7 @@ async function prewarmLessonTts(content: string, interactiveBlocks: unknown): Pr
   const envKey = process.env.ELEVENLABS_API_KEY
   if (!envKey) return
   const apiKey: string = envKey
-  const blocks = validateInteractiveBlocks(interactiveBlocks) ?? []
+  const blocks = parseInteractiveBlocksLenient(interactiveBlocks).blocks
   const texts = extractLessonTtsTexts(content || '', blocks)
   if (texts.length === 0) return
 

@@ -10,6 +10,7 @@ import { Topbar } from '@/components/layout/topbar'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import { useSidebarCollapse } from '@/lib/use-sidebar-collapse'
+import { isCharityLevel } from '@/lib/rbac'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -30,7 +31,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     pathname.startsWith('/library') ||
     isSharedHome
   if (status === 'authenticated') {
-    if (session?.user?.role === 'SUPER_ADMIN' && !isPreview) redirect('/super-admin')
+    // CHARITY_EMPLOYEE is grouped with SUPER_ADMIN throughout middleware and
+    // rbac; it needs the same backstop here or it is the one admin role with
+    // no client-side guard if the middleware's leafOnlyPaths list ever drifts.
+    if (isCharityLevel(session) && !isPreview) redirect('/super-admin')
     if (session?.user?.role === 'ORG_ADMIN' && !isSharedHome) redirect('/admin')
   }
 
@@ -42,9 +46,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // sidebar everywhere else, and leaving it out dropped charity employees onto
   // the learner nav with training links they can't follow.
   const role = session?.user?.role
-  const isCharityRole = role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE'
   const SidebarComponent =
-    isSharedHome && isCharityRole
+    isSharedHome && isCharityLevel(session)
       ? SuperAdminSidebar
       : isSharedHome && role === 'ORG_ADMIN'
         ? OrgAdminSidebar

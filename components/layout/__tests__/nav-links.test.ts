@@ -32,6 +32,11 @@ function collectRoutes(dir: string, urlPath = ''): { static: Set<string>; dynami
   const staticRoutes = new Set<string>()
   const dynamicRoutes: string[] = []
 
+  // app/page.tsx is the '/' route. The loop below only looks inside child
+  // directories, so without this the root is never collected and a nav item
+  // pointing at '/' would be reported broken.
+  if (urlPath === '' && existsSync(join(dir, 'page.tsx'))) staticRoutes.add('/')
+
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue
     // Private folders and colocated tests never produce routes.
@@ -55,10 +60,17 @@ function collectRoutes(dir: string, urlPath = ''): { static: Set<string>; dynami
   return { static: staticRoutes, dynamic: dynamicRoutes }
 }
 
-/** Pull every `href: '...'` literal out of a nav source file. */
+/**
+ * Pull every href literal out of a nav source file — both the object-literal
+ * form (`href: '/admin'`) and the JSX attribute form (`href="/admin/settings"`).
+ *
+ * Matching only the first form silently skipped the pinned Settings link in all
+ * three sidebars, which is exactly the kind of destination this test exists to
+ * cover.
+ */
 function hrefsIn(relativePath: string): string[] {
   const source = readFileSync(join(repoRoot, relativePath), 'utf8')
-  const matches = source.matchAll(/href:\s*'([^']+)'/g)
+  const matches = source.matchAll(/href[:=]\s*['"]([^'"]+)['"]/g)
   return [...matches].map((m) => m[1])
 }
 
@@ -91,7 +103,17 @@ describe('navigation links', () => {
       .filter((path) => path.startsWith('/'))
       .filter((path) => !routes.static.has(path))
 
-    expect(broken, `no page found for: ${broken.join(', ')}`).toEqual([])
+    // A nav item should never point at a dynamic route — those need an id the
+    // sidebar doesn't have. Calling it out separately makes the cause obvious
+    // instead of just reporting the path as missing.
+    const dynamicHits = broken.filter((path) =>
+      routes.dynamic.some((d) => d.split('/').length === path.split('/').length)
+    )
+    const detail = dynamicHits.length
+      ? `${broken.join(', ')} (note: ${dynamicHits.join(', ')} may need a dynamic segment)`
+      : broken.join(', ')
+
+    expect(broken, `no page found for: ${detail}`).toEqual([])
   })
 
   it('has no dead link left in the org admin sidebar', () => {
