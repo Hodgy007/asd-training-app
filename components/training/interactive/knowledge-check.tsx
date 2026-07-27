@@ -64,6 +64,11 @@ export function KnowledgeCheck({
     [data.questions, completed, onComplete]
   )
 
+  // The schema allows an empty question list so admins can save a block they're
+  // still building. Rendering it would give the learner an empty amber panel
+  // with a heading and nothing to answer, so show nothing at all instead.
+  if (data.questions.length === 0) return null
+
   return (
     <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 sm:p-6">
       <BlockInstructions title={title} instructions={instructions} />
