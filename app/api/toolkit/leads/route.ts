@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma'
 import { toolkitLeadLimiter, getClientIp } from '@/lib/rate-limit'
 import { recordToolkitDocumentEvent } from '@/lib/toolkit'
 import { buildToolkitSessionCookie } from '@/lib/toolkit-session'
+import { validatePassword } from '@/lib/password-validation'
 import {
   TOOLKIT_FORM_ROLES,
   PUBLIC_TOOLKIT_ORG_SLUG,
@@ -38,11 +39,6 @@ const baseSchema = z.object({
   register: z.boolean().optional(),
   password: z.string().min(10).max(200).optional(),
 })
-
-function passwordIsAcceptable(pw: string): boolean {
-  // Repo standard: at least 10 chars, must contain a number.
-  return pw.length >= 10 && /\d/.test(pw)
-}
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req)
@@ -92,19 +88,24 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  let registerRequested = data.register === true
+  const registerRequested = data.register === true
   if (registerRequested) {
-    if (!data.password || !passwordIsAcceptable(data.password)) {
-      return NextResponse.json(
-        { error: 'Choose a password of at least 10 characters and include a number.' },
-        { status: 400 },
-      )
+    if (!data.password) {
+      return NextResponse.json({ error: 'A password is required to create an account.' }, { status: 400 })
+    }
+    const strength = validatePassword(data.password)
+    if (!strength.valid) {
+      return NextResponse.json({ error: strength.error }, { status: 400 })
     }
   }
 
-  // Email-collision check: if a real platform User already exists for this
-  // email and that User is NOT in the Public Toolkit Users org, refuse with
-  // a clear redirect message. Don't reveal which org owns the email.
+  // Email-collision check. This is a PUBLIC, unauthenticated endpoint — it must
+  // never write to an existing account. If a User already exists for this
+  // email (in ANY org, including the Public Toolkit org and org-less charity
+  // admins / individual subscribers) we refuse to register: setting a password
+  // here with no proof of ownership would be account takeover, and demoting
+  // their role to LEARNER would lock admins out. They must sign in or use the
+  // password-reset flow instead. The generic message doesn't reveal the org.
   const publicOrgId = await getPublicToolkitOrgId()
   const existingUser = await prisma.user.findUnique({
     where: { email },
@@ -114,6 +115,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: 'This email is already registered. Please sign in at /login or use a different email.',
+        code: 'email_in_use',
+      },
+      { status: 409 },
+    )
+  }
+  if (registerRequested && existingUser) {
+    return NextResponse.json(
+      {
+        error: 'This email is already registered. Please sign in at /login or reset your password.',
         code: 'email_in_use',
       },
       { status: 409 },
@@ -164,35 +174,24 @@ export async function POST(req: NextRequest) {
         { status: 503 },
       )
     }
+    // We only reach here when no User row exists for this email — the
+    // register+existingUser case returned 409 above. Never update an
+    // existing account from this public endpoint.
     const platformRole = mapFormRoleToPlatformRole(data.formRole)
     const passwordHash = await bcrypt.hash(data.password as string, 12)
-    if (existingUser) {
-      // Existing User row in the public org but with no password (lead-only
-      // upgrading to register). Set the password and return.
-      await prisma.user.update({
-        where: { id: existingUser.id },
-        data: {
-          password: passwordHash,
-          name: data.name,
-          role: platformRole,
-        },
-      })
-      createdUserId = existingUser.id
-    } else {
-      const newUser = await prisma.user.create({
-        data: {
-          email,
-          name: data.name,
-          password: passwordHash,
-          role: platformRole,
-          organisationId: publicOrgId,
-          active: true,
-          mustChangePassword: false,
-          pendingApproval: false,
-        },
-      })
-      createdUserId = newUser.id
-    }
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        name: data.name,
+        password: passwordHash,
+        role: platformRole,
+        organisationId: publicOrgId,
+        active: true,
+        mustChangePassword: false,
+        pendingApproval: false,
+      },
+    })
+    createdUserId = newUser.id
     await prisma.toolkitRegistrant.update({
       where: { id: registrantId },
       data: { userId: createdUserId },

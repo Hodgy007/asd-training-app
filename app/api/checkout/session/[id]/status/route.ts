@@ -25,7 +25,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 
   const mode = stripeSession.mode === 'subscription' ? 'subscription' : 'purchase'
-  const email = stripeSession.customer_details?.email ?? null
   const paid =
     stripeSession.payment_status === 'paid' || stripeSession.payment_status === 'no_payment_required'
 
@@ -53,5 +52,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
   }
 
-  return NextResponse.json({ mode, paid, fulfilled, email })
+  // Deliberately does NOT return the payer's email. This endpoint is public
+  // (the session id travels in the success_url → browser history, referrers),
+  // so echoing customer_details.email would disclose the purchaser's address
+  // to anyone who obtains the id.
+  return NextResponse.json({ mode, paid, fulfilled })
 }

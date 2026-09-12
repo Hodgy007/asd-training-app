@@ -6,7 +6,9 @@ import { canManageJobs } from '@/lib/rbac'
 
 export const runtime = 'nodejs'
 
-const ALLOWED = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
+// Raster images only. SVG is deliberately excluded — it can carry inline
+// <script>, and the logo URL is world-readable on the app's blob domain.
+const ALLOWED = new Set(['image/png', 'image/jpeg', 'image/webp'])
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -24,9 +26,12 @@ export async function POST(req: NextRequest) {
   if (file.size > 4 * 1024 * 1024) {
     return NextResponse.json({ error: 'File too large (max 4 MB)' }, { status: 400 })
   }
-  const blob = await put(`jobs/logos/${Date.now()}-${file.name}`, file, {
+  // addRandomSuffix so a caller can't overwrite another logo by reusing a
+  // filename, and so the stored path isn't attacker-predictable.
+  const blob = await put(`jobs/logos/${file.name}`, file, {
     access: 'public',
     contentType: file.type,
+    addRandomSuffix: true,
   })
   return NextResponse.json({ url: blob.url })
 }

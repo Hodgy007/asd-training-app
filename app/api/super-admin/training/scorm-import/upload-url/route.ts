@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
             'application/x-zip-compressed',
             'application/octet-stream',
           ],
+          maximumSizeInBytes: 200 * 1024 * 1024, // 200 MB — matches the extraction cap
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ userId: session.user.id }),
         }

@@ -127,7 +127,7 @@ export async function joinCohortByCode(payload: JoinPayload): Promise<JoinResult
     userId = existingUser.id
   } else {
     const independent = await getIndependentLearnersOrg()
-    const passwordHash = await bcrypt.hash(password, 10)
+    const passwordHash = await bcrypt.hash(password, 12)
     const created = await prisma.user.create({
       data: {
         email: normalisedEmail,

@@ -36,10 +36,11 @@ export async function PATCH(
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  // Direct access: collection has no targeting (visible to all) or
-  // explicitly includes this admin's org.
-  let hasAccess =
-    collection.targetOrgIds.length === 0 || collection.targetOrgIds.includes(orgId)
+  // Direct access: the collection must explicitly target this admin's org.
+  // An empty targetOrgIds means "visible to every organisation" — a
+  // charity-authored, platform-wide collection — which an org admin must be
+  // able to read but NOT rename/re-describe for every other tenant.
+  let hasAccess = collection.targetOrgIds.includes(orgId)
   // Parent-org access: if a parent admin manages a child org that's in the
   // targeting, they can also edit the collection's metadata. Without this,
   // the parent could see the collection in /admin/library lists (via the

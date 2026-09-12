@@ -30,6 +30,12 @@ export async function POST(req: NextRequest) {
     logger.warn('auth.change_password.unauthenticated', { requestId, ip })
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  // A password-only session must present its second factor before it may
+  // change the password (defence in depth — the middleware blocks this too).
+  if (session.user.mfaPending) {
+    logger.warn('auth.change_password.mfa_pending', { requestId, userId: session.user.id })
+    return NextResponse.json({ error: 'Complete two-factor verification first.' }, { status: 403 })
+  }
 
   const body = await req.json()
   const parsed = schema.safeParse(body)

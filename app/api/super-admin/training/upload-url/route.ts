@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
 
         return {
           allowedContentTypes: ['video/mp4', 'video/webm'],
+          maximumSizeInBytes: 500 * 1024 * 1024, // 500 MB — matches the UI copy
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ userId: session.user.id }),
         }

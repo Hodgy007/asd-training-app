@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import AzureADProvider from 'next-auth/providers/azure-ad'
 import { encode } from 'next-auth/jwt'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import { prisma } from './prisma'
 import { getUserPrograms } from './modules'
 import type { ProgramInfo } from './modules'
@@ -12,6 +13,18 @@ import { isSystemOrg } from './cohort'
 
 async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> {
   return getUserPrograms(userId)
+}
+
+// bcrypt hash of a random secret, computed once per instance. Used to
+// equalise `authorize()` response time when the email is unknown or the
+// account has no password, so timing can't distinguish "no such user" from
+// "wrong password". Cost 12 matches every real hash in the database.
+let dummyPasswordHash: Promise<string> | null = null
+function getDummyPasswordHash(): Promise<string> {
+  if (!dummyPasswordHash) {
+    dummyPasswordHash = bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12)
+  }
+  return dummyPasswordHash
 }
 
 async function getOrgIsParent(organisationId: string | null | undefined): Promise<boolean> {
@@ -150,16 +163,15 @@ export const authOptions: NextAuthOptions = {
         // Normal password check. Every failure path below collapses to the
         // generic INVALID_CREDENTIALS error.
         if (!credentials.password) throw new Error(INVALID_CREDENTIALS)
-        if (!user) throw new Error(INVALID_CREDENTIALS)
-        if (!user.password) {
-          // SSO-only account. Don't tell the attacker that — same generic
-          // error as a wrong password. Legitimate SSO users will use the
-          // SSO toggle on the login page.
-          throw new Error(INVALID_CREDENTIALS)
-        }
 
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-        if (!isPasswordValid) throw new Error(INVALID_CREDENTIALS)
+        // Always run a full-cost bcrypt compare, even when the email is
+        // unknown or the account is SSO-only (password null). Returning
+        // early for those cases answered ~250ms faster than a wrong
+        // password did, which let an attacker enumerate valid emails by
+        // timing despite the single opaque error message.
+        const storedHash = user?.password || (await getDummyPasswordHash())
+        const isPasswordValid = await bcrypt.compare(credentials.password, storedHash)
+        if (!user || !user.password || !isPasswordValid) throw new Error(INVALID_CREDENTIALS)
 
         // Password verified — only NOW reveal account-state errors. These
         // are not enumeration vectors because the attacker already had to
@@ -389,10 +401,11 @@ export const authOptions: NextAuthOptions = {
         token.lastValidatedAt = Date.now()
       }
 
-      // Explicit session.update() also clears any pending MFA gate.
-      if (trigger === 'update') {
-        token.mfaPending = false
-      }
+      // NOTE: `trigger === 'update'` deliberately does NOT clear `mfaPending`.
+      // Any client holding a password-only session can POST /api/auth/session
+      // (that is all `session.update()` is), so clearing the gate here was a
+      // complete MFA bypass. The TOTP sign-in step issues a fresh token with
+      // mfaPending=false through the `user` object above — nothing else may.
 
       return token
     },

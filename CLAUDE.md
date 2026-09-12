@@ -46,7 +46,7 @@ Copy `.env.example` to `.env.local` for local dev. For production (Vercel), the 
 | `STRIPE_WEBHOOK_SECRET` | Endpoint signing secret (`whsec_...`). Comes from `stripe listen` locally or the dashboard webhook config in prod. |
 | `STRIPE_SUBSCRIPTION_PRICE_YEARLY` | Stripe Price ID for the "All-Access" yearly recurring tier. |
 | `ENABLE_PAYMENTS` | Feature flag for the payments layer. `true` to expose `/courses` + checkout; anything else hides it. Keep `false` in production until the charity's live Stripe account is configured. |
-| `CRON_SECRET` | Optional. Bearer token required by `/api/cron/*` routes. When set, cron endpoints accept the header `Authorization: Bearer <CRON_SECRET>` OR Vercel's `x-vercel-cron: 1` injected on scheduled runs. When unset, only Vercel cron invocations are accepted. The Eventbrite Private Token is **not** an env var — it's stored in `CharityEventbriteConfig` via `/super-admin/settings/eventbrite`. |
+| `CRON_SECRET` | **Required in every environment that exposes `/api/cron/*`.** The routes are fail-closed: they return 500 when `CRON_SECRET` is unset and 401 unless the request carries `Authorization: Bearer <CRON_SECRET>`. Vercel sends this header automatically on scheduled runs when the project env var is set. The old `x-vercel-cron` header fallback was removed (that header is attacker-settable and is not a credential). The Eventbrite Private Token is **not** an env var — it's stored in `CharityEventbriteConfig` via `/super-admin/settings/eventbrite`. |
 
 **Critical:** `DATABASE_URL` must use the Neon pooler (port 6543) in production. Using the direct connection (5432) exhausts connection limits on serverless. `DIRECT_URL` is used only by Prisma for migrations.
 

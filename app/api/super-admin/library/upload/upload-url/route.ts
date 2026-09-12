@@ -31,31 +31,60 @@ export async function POST(request: NextRequest) {
           throw new Error('Forbidden')
         }
 
-        const isBrandAssetZip = pathname.startsWith('brand-assets-zips/')
-        if (
-          !pathname.startsWith('library/documents/') &&
-          !pathname.startsWith('library/thumbnails/') &&
-          !pathname.startsWith('brand-assets/') &&
-          !isBrandAssetZip
-        ) {
-          throw new Error('Invalid upload path')
-        }
+        // Every prefix pins BOTH the allowed content types and a maximum
+        // size. Without an allow-list a leaked (or self-minted) token could
+        // PUT text/html or image/svg+xml to a library path, which the
+        // document proxy would then serve inline on the app origin — a
+        // same-origin XSS. Text/HTML and SVG are deliberately absent from
+        // every list below.
+        const DOC_TYPES = [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-powerpoint',
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+          'text/plain',
+          'text/csv',
+          'image/png',
+          'image/jpeg',
+          'image/gif',
+          'video/mp4',
+          'video/webm',
+          'application/octet-stream',
+        ]
+        const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+        const ZIP_TYPES = ['application/zip', 'application/x-zip-compressed', 'application/octet-stream']
+        const MB = 1024 * 1024
 
-        return {
-          addRandomSuffix: true,
+        if (pathname.startsWith('library/documents/')) {
+          return {
+            addRandomSuffix: true,
+            allowedContentTypes: DOC_TYPES,
+            maximumSizeInBytes: 50 * MB,
+            tokenPayload: JSON.stringify({ userId: session.user.id }),
+          }
+        }
+        if (pathname.startsWith('library/thumbnails/') || pathname.startsWith('brand-assets/')) {
+          return {
+            addRandomSuffix: true,
+            allowedContentTypes: IMAGE_TYPES,
+            maximumSizeInBytes: 10 * MB,
+            tokenPayload: JSON.stringify({ userId: session.user.id }),
+          }
+        }
+        if (pathname.startsWith('brand-assets-zips/')) {
           // Bulk-import zips for the brand store are extracted server-side
           // and then deleted, so restrict the token to zip MIME types.
-          ...(isBrandAssetZip
-            ? {
-                allowedContentTypes: [
-                  'application/zip',
-                  'application/x-zip-compressed',
-                  'application/octet-stream',
-                ],
-              }
-            : {}),
-          tokenPayload: JSON.stringify({ userId: session.user.id }),
+          return {
+            addRandomSuffix: true,
+            allowedContentTypes: ZIP_TYPES,
+            maximumSizeInBytes: 100 * MB,
+            tokenPayload: JSON.stringify({ userId: session.user.id }),
+          }
         }
+        throw new Error('Invalid upload path')
       },
       onUploadCompleted: async () => {
         // No-op. The caller POSTs the resulting blob URL to the document

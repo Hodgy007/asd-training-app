@@ -4,13 +4,17 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getToolkitRegistrant } from '@/lib/toolkit-session'
 import { recordToolkitDocumentEvent } from '@/lib/toolkit'
+import { isVercelBlobUrl } from '@/lib/upload-validation'
 
-const INLINE_VIEWABLE_PREFIXES = ['application/pdf', 'image/', 'video/', 'audio/', 'text/']
+// `text/*` and SVG are excluded — serving them inline on the app origin is XSS.
+const INLINE_VIEWABLE_PREFIXES = ['application/pdf', 'image/', 'video/', 'audio/']
 
 function isInlineViewable(fileType: string | null | undefined): boolean {
   if (!fileType) return false
+  const t = fileType.toLowerCase()
+  if (t === 'image/svg+xml') return false
   return INLINE_VIEWABLE_PREFIXES.some((prefix) =>
-    prefix.endsWith('/') ? fileType.startsWith(prefix) : fileType === prefix,
+    prefix.endsWith('/') ? t.startsWith(prefix) : t === prefix,
   )
 }
 
@@ -45,6 +49,10 @@ export async function GET(
   })
   if (!doc) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  if (!isVercelBlobUrl(doc.fileUrl)) {
+    return NextResponse.json({ error: 'File unavailable' }, { status: 502 })
   }
 
   const upstream = await fetch(doc.fileUrl)

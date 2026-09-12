@@ -24,9 +24,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status })
   }
 
-  const folder = formData.get('folder') as string || 'library'
+  // Restrict the blob path prefix to a fixed allow-list — see the training
+  // upload route for the rationale.
+  const ALLOWED_FOLDERS = new Set(['library', 'library-thumbnails'])
+  const requestedFolder = (formData.get('folder') as string) || 'library'
+  if (!ALLOWED_FOLDERS.has(requestedFolder)) {
+    return NextResponse.json({ error: 'Invalid upload folder' }, { status: 400 })
+  }
 
-  const blob = await put(`${folder}/${file.name}`, file, {
+  const blob = await put(`${requestedFolder}/${file.name}`, file, {
     access: 'public',
     addRandomSuffix: true,
   })

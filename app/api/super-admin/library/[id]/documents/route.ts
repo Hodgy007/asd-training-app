@@ -5,15 +5,18 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { del } from '@vercel/blob'
 import { z } from 'zod'
+import { isVercelBlobUrl } from '@/lib/upload-validation'
+
+const blobUrl = z.string().url().refine(isVercelBlobUrl, 'Must be an uploaded file URL')
 
 const createSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().min(1),
-  fileUrl: z.string().url(),
+  fileUrl: blobUrl,
   fileName: z.string().min(1),
   fileSize: z.number().int().positive(),
-  fileType: z.string().min(1),
-  thumbnailUrl: z.string().url().nullable().optional(),
+  fileType: z.string().min(1).max(255),
+  thumbnailUrl: blobUrl.nullable().optional(),
   videoUrl: z.string().url().nullable().optional().or(z.literal('')),
   // Optional grouping. sectionId must belong to this collection — verified
   // server-side. order defaults to 0 (head of bucket).

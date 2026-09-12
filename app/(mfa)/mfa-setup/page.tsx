@@ -23,7 +23,7 @@ export default function MfaSetupPage() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/auth/mfa/setup')
+      const res = await fetch('/api/auth/mfa/setup/start', { method: 'POST' })
       const data = await res.json()
 
       if (!res.ok) {

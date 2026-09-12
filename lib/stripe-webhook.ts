@@ -118,7 +118,7 @@ async function provisionIndividualUser(
   stripeCustomerId: string | null
 ): Promise<Owner | null> {
   const tempPassword = crypto.randomBytes(9).toString('base64url')
-  const passwordHash = await bcrypt.hash(tempPassword, 10)
+  const passwordHash = await bcrypt.hash(tempPassword, 12)
   const emailLocal = email.split('@')[0] ?? 'user'
 
   // Single transaction — if user.create fails (e.g. email collision under race),

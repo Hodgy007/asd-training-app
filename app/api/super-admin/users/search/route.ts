@@ -17,9 +17,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json([])
   }
 
+  // This endpoint backs the workshop attendee picker, which only ever invites
+  // learners / org members — never charity staff. Excluding charity-level
+  // accounts stops a MANAGE_SESSIONS-only employee from using it to enumerate
+  // SUPER_ADMIN / CHARITY_EMPLOYEE names and emails.
   const users = await prisma.user.findMany({
     where: {
       active: true,
+      role: { notIn: ['SUPER_ADMIN', 'CHARITY_EMPLOYEE'] },
       OR: [
         { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },

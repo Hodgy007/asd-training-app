@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
-import { canManageChildOrg } from '@/lib/org-hierarchy'
+import { canManageChildOrg, getEffectiveOrgSettings } from '@/lib/org-hierarchy'
 import { LEAF_ROLES } from '@/types/index'
 import { z } from 'zod'
 
@@ -107,6 +107,19 @@ export async function PATCH(
   // Prevent changing hierarchy fields
   if ('parentOrgId' in (body as Record<string, unknown>) || 'isParentOrg' in (body as Record<string, unknown>)) {
     return NextResponse.json({ error: 'Cannot modify parentOrgId or isParentOrg' }, { status: 400 })
+  }
+
+  // A child org can only be granted programmes the parent itself holds.
+  if (data.allowedProgramIds && data.allowedProgramIds.length > 0 && session.user.organisationId) {
+    const parentSettings = await getEffectiveOrgSettings(session.user.organisationId)
+    const allowed = new Set(parentSettings.allowedProgramIds)
+    const invalid = data.allowedProgramIds.filter((id) => !allowed.has(id))
+    if (invalid.length > 0) {
+      return NextResponse.json(
+        { error: 'Cannot assign programmes your organisation does not have access to.' },
+        { status: 400 },
+      )
+    }
   }
 
   // If slug changed, check uniqueness
