@@ -6,6 +6,7 @@ import {
   Users,
   Plus,
   Pencil,
+  Trash2,
   Crown,
   Shield,
   X,
@@ -161,6 +162,34 @@ export default function CharityUsersPage() {
       setFormError('An unexpected error occurred')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+
+  const handleDelete = async (user: CharityUser) => {
+    const label = user.name?.trim() || user.email
+    if (
+      !window.confirm(
+        `Permanently delete ${label}? This cannot be undone. If you only want to suspend access, edit the user and turn Active off instead.`
+      )
+    ) {
+      return
+    }
+    setError('')
+    setDeletingUserId(user.id)
+    try {
+      const res = await fetch(`/api/super-admin/users/${user.id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error ?? 'Failed to delete user')
+        return
+      }
+      await fetchUsers()
+    } catch {
+      setError('An unexpected error occurred while deleting the user')
+    } finally {
+      setDeletingUserId(null)
     }
   }
 
@@ -426,7 +455,7 @@ export default function CharityUsersPage() {
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Role</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 hidden md:table-cell">Permissions</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Active</th>
-                  <th className="px-4 py-3 w-12"></th>
+                  <th className="px-4 py-3 w-20"></th>
                 </tr>
               </thead>
               <tbody className={filtered.length > 0 ? 'animate-stagger' : ''}>
@@ -502,13 +531,29 @@ export default function CharityUsersPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => openEdit(user)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:bg-calm-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                        title="Edit user"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => openEdit(user)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:bg-calm-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                          title="Edit user"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        {!isSelf(user.id) && (
+                          <button
+                            onClick={() => handleDelete(user)}
+                            disabled={deletingUserId === user.id}
+                            className="p-1.5 rounded-lg text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                            title="Delete user"
+                          >
+                            {deletingUserId === user.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
