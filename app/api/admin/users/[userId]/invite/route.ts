@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Resend } from 'resend'
 import crypto from 'crypto'
+import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { inviteLimiter } from '@/lib/rate-limit'
 import { renderPasswordInviteEmail, renderSsoInviteEmail } from '@/lib/email-templates/invite'
 import { hashResetToken } from '@/lib/reset-token'
@@ -18,10 +19,13 @@ export async function POST(
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const isCharityLevel =
-    session.user.role === 'SUPER_ADMIN' || session.user.role === 'CHARITY_EMPLOYEE'
+  // Charity-level callers need MANAGE_ORGANISATIONS (SUPER_ADMIN always has
+  // it). Without this check any CHARITY_EMPLOYEE — regardless of their
+  // permissions — could invite (and reset the token of) any user on the
+  // platform, including other admins.
+  const isCharityLevelManager = hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)
   const isOrgAdmin = session.user.role === 'ORG_ADMIN'
-  if (!isCharityLevel && !isOrgAdmin) {
+  if (!isCharityLevelManager && !isOrgAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

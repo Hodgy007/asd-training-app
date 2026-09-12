@@ -2,11 +2,21 @@
 import { getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/register', '/register-organisation', '/welcome', '/privacy', '/terms', '/api/auth', '/api/organisations/register', '/api/organisations/public', '/api/cron', '/courses', '/toolkit', '/api/toolkit', '/api/checkout/session', '/api/stripe/webhook', '/api/webhooks', '/api/courses/free-claim', '/join', '/api/join', '/api/integrations']
+const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/register', '/welcome', '/privacy', '/terms', '/api/auth', '/api/organisations/public', '/api/cron', '/courses', '/toolkit', '/api/toolkit', '/api/checkout/session', '/api/stripe/webhook', '/api/webhooks', '/api/courses/free-claim', '/join', '/api/join', '/api/integrations']
 // `/api/integrations/*` is Bearer-token authenticated inside the route via
 // `validateApiKey` (SHA-256 hashed key + rate-limited per key). It's listed
 // here so the middleware doesn't redirect external Bearer clients to /login
 // before the route's own auth has a chance to run.
+
+// `/api/auth` is public so NextAuth's own endpoints (session, csrf,
+// callback/*, signout, providers, _log) and the unauthenticated flows
+// (register, forgot/reset-password, welcome, saml, sso-check) work without a
+// token. The app's own *session-bound* routes under that prefix must NOT ride
+// on that allowance: they have to pass the MFA-pending and forced-password
+// gates below like every other API route. Letting `/api/auth/mfa/setup`
+// through while `mfaPending` was set allowed a password-only session to
+// enrol a new authenticator and complete the second factor with it.
+const GATED_AUTH_API_PATHS = ['/api/auth/mfa', '/api/auth/change-password']
 
 // Temporary MFA kill-switch. Set `DISABLE_MFA=true` in env to skip all MFA
 // enforcement (verify + setup). Existing TOTP secrets remain intact; users
@@ -61,7 +71,8 @@ export async function middleware(req: NextRequest) {
   // Allow public paths. Match exactly or as a path-segment prefix (with a
   // trailing slash) so `/login` doesn't accidentally also unauth-allow
   // `/login-evil-page` or `/api/auth` doesn't allow `/api/authorisation`.
-  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+  const isGatedAuthApi = GATED_AUTH_API_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
+  if (!isGatedAuthApi && PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return passThrough()
   }
 
@@ -85,10 +96,33 @@ export async function middleware(req: NextRequest) {
   const mfaPending = token.mfaPending as boolean
   const totpEnabled = token.totpEnabled as boolean
 
+  // Force MFA verification for users with MFA enabled who haven't verified
+  // yet. This gate runs BEFORE the forced-password-change gate: a session
+  // that has only presented a password must not be able to change that
+  // password, enrol or rotate an authenticator, or reach anything else until
+  // the second factor has been verified. NextAuth's own endpoints are on
+  // PUBLIC_PATHS and are all the /mfa-verify page needs; the app's
+  // session-bound /api/auth routes (GATED_AUTH_API_PATHS) fall through to
+  // the 403 here.
+  if (!MFA_DISABLED && mfaPending) {
+    if (pathname === '/mfa-verify') {
+      return passThrough()
+    }
+    if (pathname.startsWith('/api/')) {
+      return blockApi(403, 'MFA verification required', 'mfa_pending')
+    }
+    return redirect(new URL('/mfa-verify', req.url), 'mfa_pending', { userId })
+  }
+
+  // If on /mfa-verify but not pending, redirect to home
+  if (!mfaPending && pathname === '/mfa-verify') {
+    return redirect(new URL(homeForRole(role), req.url), 'mfa_already_verified', { userId, role })
+  }
+
   // Force password change
   if (mustChangePassword) {
     // Allow the change-password page and its API
-    if (pathname === '/change-password' || pathname.startsWith('/api/auth/change-password')) {
+    if (pathname === '/change-password' || pathname === '/api/auth/change-password') {
       return passThrough()
     }
     // Block other API routes with 403
@@ -104,28 +138,10 @@ export async function middleware(req: NextRequest) {
     return redirect(new URL(homeForRole(role), req.url), 'no_password_change_required', { userId, role })
   }
 
-  // Force MFA verification for users with MFA enabled who haven't verified yet
-  if (!MFA_DISABLED && mfaPending) {
-    // Path-segment prefix only — `pathname.startsWith('/api/auth')` alone
-    // would also let through a future `/api/authorise…` route.
-    if (pathname === '/mfa-verify' || pathname === '/api/auth' || pathname.startsWith('/api/auth/')) {
-      return passThrough()
-    }
-    if (pathname.startsWith('/api/')) {
-      return blockApi(403, 'MFA verification required', 'mfa_pending')
-    }
-    return redirect(new URL('/mfa-verify', req.url), 'mfa_pending', { userId })
-  }
-
-  // If on /mfa-verify but not pending, redirect to home
-  if (!mfaPending && pathname === '/mfa-verify') {
-    return redirect(new URL(homeForRole(role), req.url), 'mfa_already_verified', { userId, role })
-  }
-
   // Force MFA setup for admin roles
   const isAdmin = role === 'SUPER_ADMIN' || role === 'CHARITY_EMPLOYEE' || role === 'ORG_ADMIN'
   if (!MFA_DISABLED && isAdmin && !totpEnabled && !mfaPending) {
-    const allowedPaths = ['/mfa-setup', '/api/auth/mfa', '/api/auth']
+    const allowedPaths = ['/mfa-setup', '/api/auth/mfa']
     if (allowedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
       return passThrough()
     }

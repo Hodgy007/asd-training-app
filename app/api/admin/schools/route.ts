@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { getEffectiveOrgSettings } from '@/lib/org-hierarchy'
 import { LEAF_ROLES } from '@/types/index'
 import { z } from 'zod'
 
@@ -88,6 +89,21 @@ export async function POST(req: NextRequest) {
   }
 
   const data = parsed.data
+
+  // A child org can only be granted programmes the parent itself holds —
+  // otherwise a parent admin could hand a child (and its learners) any
+  // programme on the platform, including paid ones.
+  if (data.allowedProgramIds && data.allowedProgramIds.length > 0) {
+    const parentSettings = await getEffectiveOrgSettings(orgId)
+    const allowed = new Set(parentSettings.allowedProgramIds)
+    const invalid = data.allowedProgramIds.filter((id) => !allowed.has(id))
+    if (invalid.length > 0) {
+      return NextResponse.json(
+        { error: 'Cannot assign programmes your organisation does not have access to.' },
+        { status: 400 },
+      )
+    }
+  }
 
   // Check slug uniqueness globally
   const existing = await prisma.organisation.findUnique({

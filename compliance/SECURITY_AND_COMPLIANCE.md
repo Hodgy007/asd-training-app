@@ -19,8 +19,8 @@ The application handles **ordinary personal data** under the UK General Data Pro
 
 The platform supports administrative roles (charity admin, charity employees with delegated permissions, organisation admins) and end-user roles (practitioners, careers professionals, students, interns, employees). MFA is mandatory for all administrative roles.
 
-**Overall risk rating: LOW**
-The application has comprehensive technical security controls. Remaining items are primarily administrative (signed DPAs, ICO registration confirmation) rather than technical.
+**Overall risk rating: LOW** (after the September 2026 review remediations)
+The application has comprehensive technical security controls. A full manual security review was completed on 12 September 2026 — see [`docs/compliance/SECURITY_REVIEW_2026-09.md`](../docs/compliance/SECURITY_REVIEW_2026-09.md). It found four critical authentication-tier issues (MFA bypasses, SAML tenant-binding, and a public password-overwrite endpoint); all four, and the majority of the lower-severity findings, were fixed in the same change and are covered by tests. The residual items are a Next.js major-version upgrade and a small number of product decisions (organisation-join policy, SSO domain-ownership proof), tracked in that document. Remaining non-technical items are administrative (signed DPAs, ICO registration confirmation).
 
 ---
 

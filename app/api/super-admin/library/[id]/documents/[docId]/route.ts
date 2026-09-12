@@ -5,11 +5,14 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { del } from '@vercel/blob'
 import { z } from 'zod'
+import { isVercelBlobUrl } from '@/lib/upload-validation'
+
+const blobUrl = z.string().url().refine(isVercelBlobUrl, 'Must be an uploaded file URL')
 
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().min(1).optional(),
-  thumbnailUrl: z.string().url().nullable().optional(),
+  thumbnailUrl: blobUrl.nullable().optional(),
   videoUrl: z.string().url().nullable().optional().or(z.literal('')),
   active: z.boolean().optional(),
   // Move between sections (or set null = unsectioned).

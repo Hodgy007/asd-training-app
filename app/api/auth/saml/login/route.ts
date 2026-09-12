@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateSamlLoginUrl } from '@/lib/saml'
+import { samlLoginLimiter, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req)
+    const limit = await samlLoginLimiter.check(ip)
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(limit.retryAfterMs / 1000)) } }
+      )
+    }
+
     const body = await req.json()
     const { email, charity } = body
 

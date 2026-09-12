@@ -82,6 +82,28 @@ const BLOCKED_MIME_TYPES = [
   'application/x-ms-installer',     // msi
 ]
 
+/**
+ * True only for a Vercel Blob storage URL over https. Used to gate any URL
+ * that the server will later fetch and stream back to a browser (library /
+ * toolkit document proxies) or render, so an admin can't point a stored
+ * `fileUrl` at an internal service (SSRF) or at attacker-hosted HTML.
+ */
+export function isVercelBlobUrl(value: string | null | undefined): boolean {
+  if (!value) return false
+  try {
+    const u = new URL(value)
+    if (u.protocol !== 'https:') return false
+    const host = u.hostname.toLowerCase()
+    return (
+      host === 'blob.vercel-storage.com' ||
+      host.endsWith('.public.blob.vercel-storage.com') ||
+      host.endsWith('.blob.vercel-storage.com')
+    )
+  } catch {
+    return false
+  }
+}
+
 function getExtension(fileName: string): string {
   const lastDot = fileName.lastIndexOf('.')
   if (lastDot === -1 || lastDot === fileName.length - 1) return ''

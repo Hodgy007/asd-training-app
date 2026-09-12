@@ -25,8 +25,27 @@ export async function generateSamlLoginUrl(
   email: string,
   opts?: { isCharity?: boolean }
 ): Promise<string> {
+  // The IdP endpoint we redirect the browser to must be https. Without this a
+  // stored `javascript:`/`http:` ssoUrl (org admins control this value) would
+  // be handed straight to `window.location.href` on the login page.
+  let parsedSsoUrl: URL
+  try {
+    parsedSsoUrl = new URL(ssoUrl)
+  } catch {
+    throw new Error('SSO URL is not a valid URL')
+  }
+  if (parsedSsoUrl.protocol !== 'https:') {
+    throw new Error('SSO URL must use https')
+  }
+
   const id = `_${crypto.randomUUID()}`
   const issueInstant = new Date().toISOString()
+
+  // Opportunistic cleanup so the nonce table doesn't grow unbounded — these
+  // rows are single-use and short-lived.
+  prisma.samlAuthnRequest
+    .deleteMany({ where: { expiresAt: { lt: new Date() } } })
+    .catch(() => {})
 
   await prisma.samlAuthnRequest.create({
     data: {
@@ -54,11 +73,41 @@ export async function generateSamlLoginUrl(
   return `${ssoUrl}?SAMLRequest=${encodeURIComponent(encoded)}&RelayState=${encodeURIComponent(email)}`
 }
 
+/**
+ * Consumer mailbox domains that must never be accepted as an org SSO domain.
+ * `/api/auth/sso-check` routes every user whose email is on a configured SSO
+ * domain to that IdP, and `/register` refuses them — so allowing e.g.
+ * `gmail.com` would let one org admin capture every Gmail user on the
+ * platform. The list is deliberately conservative; add to it as needed.
+ */
+export const PUBLIC_MAILBOX_DOMAINS = new Set([
+  'gmail.com', 'googlemail.com', 'outlook.com', 'outlook.co.uk', 'hotmail.com',
+  'hotmail.co.uk', 'live.com', 'live.co.uk', 'msn.com', 'yahoo.com', 'yahoo.co.uk',
+  'ymail.com', 'icloud.com', 'me.com', 'mac.com', 'aol.com', 'proton.me',
+  'protonmail.com', 'pm.me', 'gmx.com', 'gmx.co.uk', 'mail.com', 'zoho.com',
+  'yandex.com', 'fastmail.com', 'hey.com', 'btinternet.com', 'sky.com',
+  'talktalk.net', 'virginmedia.com',
+])
+
+/** Hostname-shaped label check (letters/digits/hyphen, dotted, no leading/trailing hyphen). */
+export const EMAIL_DOMAIN_RE = /^(?=.{1,253}$)(?!-)[a-z0-9-]{1,63}(?<!-)(\.(?!-)[a-z0-9-]{1,63}(?<!-))+$/
+
+export interface ConsumedAuthnRequest {
+  id: string
+  email: string
+  isCharity: boolean
+}
+
 export interface SamlValidationResult {
   valid: boolean
   email?: string
   name?: string
   error?: string
+  // The server-side AuthnRequest row this response answered (matched by
+  // InResponseTo and consumed atomically). It carries the email and the
+  // charity/org flag captured at login initiation — the authoritative record
+  // of which flow this is, not the attacker-supplied RelayState.
+  authnRequest?: ConsumedAuthnRequest
 }
 
 /**
@@ -245,7 +294,7 @@ export async function validateSamlResponse(
       }
     }
 
-    return { valid: true, email, name }
+    return { valid: true, email, name, authnRequest: consumed }
   } catch (err) {
     return {
       valid: false,
@@ -336,11 +385,19 @@ function findSubjectConfirmationData(subjectEl: Element): Element | null {
 }
 
 /**
- * Atomically consume an InResponseTo nonce. Returns true on success; false if
- * the nonce was missing, expired, or already consumed.
+ * Atomically consume an InResponseTo nonce. Returns the consumed row's email
+ * and charity/org flag on success; null if the nonce was missing, expired, or
+ * already consumed. The atomic `updateMany` guard makes replay impossible; the
+ * returned fields let the callback bind the assertion to the flow that was
+ * actually initiated rather than trusting RelayState.
  */
-async function consumeAuthnRequest(id: string): Promise<boolean> {
+async function consumeAuthnRequest(id: string): Promise<ConsumedAuthnRequest | null> {
   try {
+    const row = await prisma.samlAuthnRequest.findUnique({
+      where: { id },
+      select: { id: true, email: true, isCharity: true },
+    })
+    if (!row) return null
     const result = await prisma.samlAuthnRequest.updateMany({
       where: {
         id,
@@ -349,9 +406,10 @@ async function consumeAuthnRequest(id: string): Promise<boolean> {
       },
       data: { consumed: true },
     })
-    return result.count === 1
+    if (result.count !== 1) return null
+    return { id: row.id, email: row.email, isCharity: row.isCharity }
   } catch {
-    return false
+    return null
   }
 }
 

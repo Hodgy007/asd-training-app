@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import { seedPublicToolkitOrg } from './seed-public-toolkit-org'
 
 const prisma = new PrismaClient()
@@ -715,10 +716,24 @@ A diagnosis does not change who a child is. It can open doors to support, provid
 async function main() {
   console.log('Seeding database...')
 
+  // Never seed demo accounts into production. This script creates a
+  // SUPER_ADMIN; running it against the live database would plant a known
+  // account. `npm run prisma:seed` is for local/dev only.
+  if (process.env.VERCEL_ENV === 'production') {
+    throw new Error('Refusing to run the demo seed against a production database (VERCEL_ENV=production).')
+  }
+
   await seedPublicToolkitOrg(prisma)
 
+  // Admin/demo passwords come from env when provided, otherwise a random
+  // CSPRNG value printed once below — never a hardcoded literal, which would
+  // fail the app's own complexity policy and be identical across every deploy.
+  const genPassword = () => `${crypto.randomBytes(12).toString('base64url')}Aa1!`
+  const adminPasswordPlain = process.env.SEED_ADMIN_PASSWORD || genPassword()
+  const learnerPasswordPlain = process.env.SEED_DEMO_PASSWORD || genPassword()
+
   // Create admin user
-  const adminPassword = await bcrypt.hash('admin123', 12)
+  const adminPassword = await bcrypt.hash(adminPasswordPlain, 12)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@asdawareness.org.uk' },
     update: {},
@@ -732,7 +747,7 @@ async function main() {
   console.log('Created admin user:', admin.email)
 
   // Create demo learner user
-  const learnerPassword = await bcrypt.hash('demo123', 12)
+  const learnerPassword = await bcrypt.hash(learnerPasswordPlain, 12)
   const learner = await prisma.user.upsert({
     where: { email: 'demo@example.com' },
     update: {},
@@ -744,6 +759,10 @@ async function main() {
     },
   })
   console.log('Created demo learner:', learner.email)
+  console.log('\n─── Seed credentials (shown once — copy them now) ───')
+  console.log(`  admin@asdawareness.org.uk : ${adminPasswordPlain}`)
+  console.log(`  demo@example.com          : ${learnerPasswordPlain}`)
+  console.log('────────────────────────────────────────────────────\n')
 
   // Seed training progress records for demo user
   for (const module of trainingModules) {

@@ -47,12 +47,29 @@ export async function getNotifications(session: Session): Promise<NotificationsP
       status: 'PUBLISHED',
       createdAt: { gte: surveyWindow },
       targets: {
+        // A SurveyTarget matches this user when it names them directly, OR
+        // when its role/org filters BOTH match (conjunctive — mirror
+        // lib/survey-db.ts:targetMatchesUser). The previous `OR` between the
+        // role and org legs leaked surveys targeted at another org but the
+        // same role, and an org-less user's empty `{}` fallback matched every
+        // target row.
         some: {
           OR: [
-            { role: session.user.role as Role },
-            session.user.organisationId
-              ? { organisationId: session.user.organisationId }
-              : {},
+            { userId: session.user.id },
+            {
+              AND: [
+                { userId: null },
+                { OR: [{ role: null }, { role: session.user.role as Role }] },
+                {
+                  OR: [
+                    { organisationId: null },
+                    ...(session.user.organisationId
+                      ? [{ organisationId: session.user.organisationId }]
+                      : []),
+                  ],
+                },
+              ],
+            },
           ],
         },
       },

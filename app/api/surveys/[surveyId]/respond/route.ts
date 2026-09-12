@@ -24,19 +24,40 @@ export async function POST(
     return NextResponse.json({ error: 'Survey not found or already completed' }, { status: 404 })
   }
 
-  const body = await req.json()
-  const { answers } = body as { answers: Array<{ questionId: string; value: string }> }
+  const body = await req.json().catch(() => null)
+  const rawAnswers = (body as { answers?: unknown })?.answers
 
-  if (!answers || !Array.isArray(answers)) {
+  if (!rawAnswers || !Array.isArray(rawAnswers)) {
     return NextResponse.json({ error: 'Answers are required' }, { status: 400 })
   }
 
-  const requiredQuestionIds = survey.questions
-    .filter((q) => q.required)
-    .map((q) => q.id)
+  // Bind every answer to a question that belongs to THIS survey and coerce the
+  // value to a length-capped string. Without this, a caller could attach
+  // answers referencing another survey's questions (the FK only requires the
+  // question to exist somewhere) or store megabytes in a Text column.
+  const MAX_ANSWER_LENGTH = 10_000
+  const questionIds = new Set(survey.questions.map((q) => q.id))
+  const seen = new Set<string>()
+  const answers = (rawAnswers as Array<{ questionId?: unknown; value?: unknown }>)
+    .filter((a) => a && typeof a.questionId === 'string' && questionIds.has(a.questionId))
+    .filter((a) => {
+      // De-dupe: one answer per question (last-write would otherwise create
+      // duplicate SurveyAnswer rows).
+      const id = a.questionId as string
+      if (seen.has(id)) return false
+      seen.add(id)
+      return true
+    })
+    .map((a) => ({
+      questionId: a.questionId as string,
+      value: String(a.value ?? '').slice(0, MAX_ANSWER_LENGTH),
+    }))
 
   const answeredIds = new Set(answers.map((a) => a.questionId))
-  const missing = requiredQuestionIds.filter((id) => !answeredIds.has(id))
+  const missing = survey.questions
+    .filter((q) => q.required)
+    .map((q) => q.id)
+    .filter((id) => !answeredIds.has(id))
 
   if (missing.length > 0) {
     return NextResponse.json(

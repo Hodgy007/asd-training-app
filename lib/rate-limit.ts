@@ -144,6 +144,10 @@ export const introspectLimiter = createRateLimiter('introspect', 5 * 60 * 1000, 
 // Cohort join: 10 per 15 minutes per IP — public, so a real ceiling matters
 export const joinLimiter = createRateLimiter('cohort-join', 15 * 60 * 1000, 10)
 
+// SAML login initiation: 10 per 15 minutes per IP. Public (no session yet) and
+// every call writes a SamlAuthnRequest nonce row, so cap it.
+export const samlLoginLimiter = createRateLimiter('saml-login', 15 * 60 * 1000, 10)
+
 // Public self-registration: 5 per 15 minutes per IP. Form has three branches
 // (existing-org, new-org, no-org catchall) — same ceiling for all.
 export const registerLimiter = createRateLimiter('register', 15 * 60 * 1000, 5)

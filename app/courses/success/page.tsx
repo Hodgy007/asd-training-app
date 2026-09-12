@@ -9,7 +9,6 @@ type Status = {
   mode: 'purchase' | 'subscription'
   paid: boolean
   fulfilled: boolean
-  email: string | null
 }
 
 const POLL_INTERVAL_MS = 1500
@@ -111,13 +110,11 @@ function CheckoutSuccessInner() {
           Payment confirmed — you&rsquo;re all set
         </h1>
         <p className="mt-2 text-slate-600 dark:text-slate-400">
-          {status.email
-            ? `We've emailed sign-in details to ${status.email}.`
-            : 'We\u2019ve emailed your sign-in details.'}{' '}
+          We&rsquo;ve emailed your sign-in details.{' '}
           Check your inbox (and spam folder) for a message from us.
         </p>
         <div className="mt-6 flex gap-3">
-          <Link href={status.email ? `/login?email=${encodeURIComponent(status.email)}` : '/login'}>
+          <Link href="/login">
             <Button>Go to sign in</Button>
           </Link>
         </div>

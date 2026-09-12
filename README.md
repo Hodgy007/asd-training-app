@@ -554,7 +554,7 @@ Copy `.env.example` to `.env.local` for local development. For production (Verce
 | `BLOB_READ_WRITE_TOKEN` | Yes | Vercel Blob storage token for document uploads, AI thumbnails, and SCORM packages |
 | `AI_GATEWAY_API_KEY` | Yes | Vercel AI Gateway key. AI features route through the gateway using provider/model strings (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`). Replaces direct provider keys at runtime. |
 | `ELEVENLABS_API_KEY` | No | ElevenLabs API key for the lesson read-aloud player (Lily voice). Synthesised MP3s are cached on Blob under `tts/<voiceId>/<sha256>.mp3`. |
-| `CRON_SECRET` | No | Optional bearer token for `/api/cron/*` routes. When set, cron endpoints accept either `Authorization: Bearer <CRON_SECRET>` or Vercel's auto-injected `x-vercel-cron: 1` header. When unset, only Vercel cron invocations are accepted. **Note:** the Eventbrite Private Token is **not** an env var — it's stored in the database via `/super-admin/settings/eventbrite`. |
+| `CRON_SECRET` | **Yes** (if cron is used) | Bearer token guarding `/api/cron/*`. The routes are fail-closed: 500 when unset, 401 unless the request carries `Authorization: Bearer <CRON_SECRET>`. Vercel injects this header on scheduled runs when the env var is set. The former `x-vercel-cron` header fallback was removed — it is attacker-settable and not a credential. **Note:** the Eventbrite Private Token is **not** an env var — it's stored in the database via `/super-admin/settings/eventbrite`. |
 
 **Important:** `DATABASE_URL` must use the Neon connection pooler (port 6543) in production. Using the direct connection (port 5432) exhausts connection limits under serverless execution. `DIRECT_URL` is only used by Prisma CLI commands for schema changes.
 

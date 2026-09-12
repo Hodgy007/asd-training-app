@@ -17,16 +17,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 })
   }
 
-  const skipSizeCheck = formData.get('skipSizeCheck') === 'true'
-  const validation = validateUpload(file, { skipSizeCheck })
+  const validation = validateUpload(file)
   if (!validation.valid) {
     const status = file.size > MAX_FILE_SIZE ? 413 : 400
     return NextResponse.json({ error: validation.error }, { status })
   }
 
-  const folder = formData.get('folder') as string || 'training-media'
+  // `folder` becomes the blob path prefix. Restrict it to a fixed allow-list so
+  // a caller can't write into another feature's namespace (e.g. `scorm/<id>/`,
+  // whose contents are served to learners, or `home-media/`). The 50 MB cap in
+  // validateUpload always applies now — the old `skipSizeCheck` flag let a
+  // client disable it, and the Vercel body limit already bounds this path.
+  const ALLOWED_FOLDERS = new Set([
+    'training-media', 'training-images', 'carousel-images', 'hotspot-images', 'training-videos',
+  ])
+  const requestedFolder = (formData.get('folder') as string) || 'training-media'
+  if (!ALLOWED_FOLDERS.has(requestedFolder)) {
+    return NextResponse.json({ error: 'Invalid upload folder' }, { status: 400 })
+  }
 
-  const blob = await put(`${folder}/${file.name}`, file, {
+  const blob = await put(`${requestedFolder}/${file.name}`, file, {
     access: 'public',
     addRandomSuffix: true,
   })

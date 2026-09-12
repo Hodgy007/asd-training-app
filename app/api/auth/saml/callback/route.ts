@@ -5,6 +5,10 @@ import { validateSamlResponse } from '@/lib/saml'
 import { getUserPrograms } from '@/lib/modules'
 import { LEAF_ROLES } from '@/types'
 
+function loginError(req: NextRequest, message: string): NextResponse {
+  return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(message)}`, req.url))
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
@@ -12,133 +16,161 @@ export async function POST(req: NextRequest) {
     const relayState = formData.get('RelayState') as string | null
 
     if (!samlResponse || !relayState) {
-      return NextResponse.redirect(
-        new URL('/login?error=Invalid+SAML+response', req.url)
-      )
+      return loginError(req, 'Invalid SAML response')
     }
 
-    // Determine if this is a charity SSO callback
-    const isCharity = relayState.startsWith('charity:')
-    const email = isCharity
-      ? relayState.replace('charity:', '').toLowerCase().trim()
-      : relayState.toLowerCase().trim()
-
-    const domain = email.split('@')[1]
-    if (!domain) {
-      return NextResponse.redirect(
-        new URL('/login?error=Invalid+email+in+SAML+response', req.url)
-      )
+    // RelayState is UI state, not a credential. We use it only to pick which
+    // IdP config's certificate to verify the signature against; the assertion
+    // itself (and the server-side AuthnRequest row it answers) are the
+    // authoritative identity. Never trust RelayState past config selection.
+    const relayIsCharity = relayState.startsWith('charity:')
+    const relayEmail = (relayIsCharity ? relayState.slice('charity:'.length) : relayState)
+      .toLowerCase()
+      .trim()
+    const relayDomain = relayEmail.split('@')[1]
+    if (!relayDomain) {
+      return loginError(req, 'Invalid email in SAML response')
     }
 
-    // Look up the appropriate SSO config
+    // Look up the config that will supply the signing certificate + issuer.
     let certificate: string
     let expectedIssuer: string
+    let orgConfig: {
+      organisationId: string
+      emailDomain: string
+      autoProvision: boolean
+      defaultRole: string | null
+    } | null = null
 
-    if (isCharity) {
-      const charityConfig = await prisma.charitySsoConfig.findFirst({
-        where: { configured: true },
-      })
+    if (relayIsCharity) {
+      const charityConfig = await prisma.charitySsoConfig.findFirst({ where: { configured: true } })
       if (!charityConfig || !charityConfig.certificate || !charityConfig.entityId) {
-        return NextResponse.redirect(
-          new URL('/login?error=No+charity+SSO+configuration+found', req.url)
-        )
+        return loginError(req, 'No charity SSO configuration found')
       }
       certificate = charityConfig.certificate
       expectedIssuer = charityConfig.entityId
     } else {
-      const orgConfig = await prisma.orgSsoConfig.findFirst({
-        where: { emailDomain: domain, configured: true },
+      const cfg = await prisma.orgSsoConfig.findFirst({
+        where: { emailDomain: relayDomain, configured: true },
       })
-      if (!orgConfig || !orgConfig.entityId) {
-        return NextResponse.redirect(
-          new URL('/login?error=No+SSO+configuration+found', req.url)
-        )
+      if (!cfg || !cfg.entityId) {
+        return loginError(req, 'No SSO configuration found')
       }
-      certificate = orgConfig.certificate
-      expectedIssuer = orgConfig.entityId
+      certificate = cfg.certificate
+      expectedIssuer = cfg.entityId
+      orgConfig = {
+        organisationId: cfg.organisationId,
+        emailDomain: cfg.emailDomain,
+        autoProvision: cfg.autoProvision,
+        defaultRole: cfg.defaultRole,
+      }
     }
 
-    // Validate the SAML response. expectedIssuer pins the assertion to a
-    // specific IdP — without this a cert shared across tenants would let
-    // one tenant's assertion authenticate against another.
+    // Validate signature, XSW protection, InResponseTo (single-use), issuer,
+    // audience, recipient and freshness. Returns the consumed AuthnRequest row.
     const result = await validateSamlResponse(samlResponse, certificate, expectedIssuer)
-    if (!result.valid) {
+    if (!result.valid || !result.email || !result.authnRequest) {
       console.error('SAML validation failed:', result.error)
-      return NextResponse.redirect(
-        new URL('/login?error=SSO+authentication+failed', req.url)
-      )
+      return loginError(req, 'SSO authentication failed')
     }
 
-    // Trust only the signed SAML assertion's email. The earlier fallback to
-    // the RelayState-supplied email was a vestige — RelayState is UI state,
-    // not a credential, so a missing assertion email should fail closed.
-    if (!result.email) {
-      console.error('SAML assertion missing email', { domain })
-      return NextResponse.redirect(
-        new URL('/login?error=SSO+response+missing+email', req.url)
-      )
+    // The AuthnRequest row (bound by InResponseTo) is the source of truth for
+    // whether this was a charity or org flow. Reject any mismatch with the
+    // RelayState we used to pick the certificate — it means the two disagree
+    // about the flow, which should never happen for a legitimate login.
+    if (result.authnRequest.isCharity !== relayIsCharity) {
+      console.error('SAML flow mismatch between RelayState and AuthnRequest')
+      return loginError(req, 'SSO authentication failed')
     }
+
+    const isCharity = result.authnRequest.isCharity
     const validatedEmail = result.email.toLowerCase().trim()
     const validatedName = result.name
+    const validatedDomain = validatedEmail.split('@')[1]
+    if (!validatedDomain) {
+      return loginError(req, 'SSO response missing email')
+    }
 
-    // Find user
     let user = await prisma.user.findUnique({
       where: { email: validatedEmail },
       include: { organisation: { select: { active: true } } },
     })
 
     if (isCharity) {
-      // Charity SSO: user must exist as SUPER_ADMIN or CHARITY_EMPLOYEE (no auto-provision)
+      // Charity SSO: user must already exist as a charity-level account. No
+      // auto-provisioning, and no org binding (charity staff have no org).
       if (!user) {
-        return NextResponse.redirect(
-          new URL('/login?error=No+charity+account+found+for+this+email', req.url)
-        )
+        return loginError(req, 'No charity account found for this email')
       }
       if (user.role !== 'SUPER_ADMIN' && user.role !== 'CHARITY_EMPLOYEE') {
-        return NextResponse.redirect(
-          new URL('/login?error=This+account+is+not+a+charity+staff+account', req.url)
-        )
+        return loginError(req, 'This account is not a charity staff account')
       }
     } else {
-      // Org SSO: existing auto-provision logic
-      if (!user) {
-        const orgConfig = await prisma.orgSsoConfig.findFirst({
-          where: { emailDomain: domain, configured: true },
+      // Org SSO. Bind the assertion to the tenant that configured it:
+      //   1. The signed NameID's domain must equal the config's emailDomain.
+      //      Without this, an org admin who runs their own IdP for evil.com
+      //      could have it assert superadmin@charity.org and be logged in as
+      //      the charity admin.
+      //   2. An existing user must belong to that same organisation, and must
+      //      not be a charity-level account — org SSO can only ever
+      //      authenticate members of its own org.
+      //   3. Auto-provisioned users are created only in that org, with a leaf
+      //      role.
+      if (!orgConfig) {
+        return loginError(req, 'No SSO configuration found')
+      }
+      if (validatedDomain !== orgConfig.emailDomain) {
+        console.error('SAML NameID domain does not match the SSO config domain', {
+          validatedDomain,
+          configDomain: orgConfig.emailDomain,
         })
-        if (orgConfig?.autoProvision) {
-          // Defence in depth: even if a malformed defaultRole somehow
-          // landed in the DB (manual edit, bypassed migration, future
-          // bug in the config endpoint), refuse to mint anything other
-          // than a leaf role here. ORG_ADMIN / SUPER_ADMIN / CHARITY_*
-          // must never be auto-provisioned.
-          const configuredRole = orgConfig.defaultRole
-          const safeRole =
-            typeof configuredRole === 'string' &&
-            LEAF_ROLES.includes(configuredRole as typeof LEAF_ROLES[number])
-              ? configuredRole
-              : 'EMPLOYEE'
-          user = await prisma.user.create({
-            data: {
-              email: validatedEmail,
-              name: validatedName || validatedEmail.split('@')[0],
-              password: null, // SSO user, no password
-              role: safeRole as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-              organisationId: orgConfig.organisationId,
-              active: true,
-            },
-            include: { organisation: { select: { active: true } } },
-          })
+        return loginError(req, 'SSO email domain does not match this organisation')
+      }
+
+      if (user) {
+        if (user.role === 'SUPER_ADMIN' || user.role === 'CHARITY_EMPLOYEE') {
+          console.error('Org SSO refused for a charity-level account', { email: validatedEmail })
+          return loginError(req, 'SSO authentication failed')
         }
+        if (user.organisationId !== orgConfig.organisationId) {
+          console.error('Org SSO user does not belong to the configured organisation', {
+            email: validatedEmail,
+          })
+          return loginError(req, 'SSO authentication failed')
+        }
+      } else if (orgConfig.autoProvision) {
+        // Defence in depth: even if a malformed defaultRole somehow landed in
+        // the DB, refuse to mint anything other than a leaf role here.
+        const configuredRole = orgConfig.defaultRole
+        const safeRole =
+          typeof configuredRole === 'string' &&
+          LEAF_ROLES.includes(configuredRole as (typeof LEAF_ROLES)[number])
+            ? configuredRole
+            : 'LEARNER'
+        user = await prisma.user.create({
+          data: {
+            email: validatedEmail,
+            name: validatedName || validatedEmail.split('@')[0],
+            password: null, // SSO user, no password
+            role: safeRole as never,
+            organisationId: orgConfig.organisationId,
+            active: true,
+          },
+          include: { organisation: { select: { active: true } } },
+        })
       }
 
       if (!user) {
-        return NextResponse.redirect(
-          new URL(
-            '/login?error=Account+not+found.+Contact+your+organisation+administrator.',
-            req.url
-          )
-        )
+        return loginError(req, 'Account not found. Contact your organisation administrator.')
       }
+    }
+
+    // Blocked accounts / orgs fail closed, same as the credentials path.
+    if (!user.active) {
+      return loginError(req, 'Your account has been deactivated. Please contact an administrator.')
+    }
+    if (user.organisation && !user.organisation.active) {
+      return loginError(req, 'Your organisation has been deactivated. Please contact an administrator.')
     }
 
     // Build JWT token
@@ -158,6 +190,13 @@ export async function POST(req: NextRequest) {
           where: { id: user.id },
           select: { subscriptionStatus: true },
         })
+
+    // TOTP still applies to SSO sessions when the account has it enrolled:
+    // the corporate IdP is one factor, the app's own TOTP is a second. Users
+    // without TOTP (typically learners) get mfaPending=false; admin roles
+    // without it are pushed to /mfa-setup by the middleware as usual.
+    const mfaPending = user.totpEnabled === true
+
     const token = await encode({
       token: {
         id: user.id,
@@ -167,7 +206,7 @@ export async function POST(req: NextRequest) {
         organisationId: user.organisationId,
         mustChangePassword: user.mustChangePassword ?? false,
         totpEnabled: user.totpEnabled ?? false,
-        mfaPending: false, // SAML users skip MFA (already authenticated by corporate IdP)
+        mfaPending,
         hasPassword: !!user.password,
         effectivePrograms,
         charityPermissions: user.charityPermissions ?? [],
@@ -198,8 +237,6 @@ export async function POST(req: NextRequest) {
     return response
   } catch (error) {
     console.error('SAML callback error:', error)
-    return NextResponse.redirect(
-      new URL('/login?error=SSO+authentication+failed', req.url)
-    )
+    return NextResponse.redirect(new URL('/login?error=SSO+authentication+failed', req.url))
   }
 }

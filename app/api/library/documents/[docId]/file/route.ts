@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { createRateLimiter } from '@/lib/rate-limit'
+import { isVercelBlobUrl } from '@/lib/upload-validation'
 
 // Pin Node runtime + a generous timeout so a 50 MB attachment to a learner
 // on a slow connection isn't cut off mid-stream by the platform default.
@@ -25,12 +26,17 @@ const downloadLimiter = createRateLimiter('library-download', 60_000, 30)
 // File types the browser can render natively. Anything outside this list
 // falls back to attachment so a missing native renderer doesn't show the
 // user a screenful of binary garbage.
-const INLINE_VIEWABLE_PREFIXES = ['application/pdf', 'image/', 'video/', 'audio/', 'text/']
+// Types the browser can render inline safely. `text/*` is deliberately absent
+// — serving text/html inline on the app origin is stored XSS — and SVG is
+// excluded because it can carry inline script.
+const INLINE_VIEWABLE_PREFIXES = ['application/pdf', 'image/', 'video/', 'audio/']
 
 function isInlineViewable(fileType: string | null | undefined): boolean {
   if (!fileType) return false
+  const t = fileType.toLowerCase()
+  if (t === 'image/svg+xml') return false
   return INLINE_VIEWABLE_PREFIXES.some((prefix) =>
-    prefix.endsWith('/') ? fileType.startsWith(prefix) : fileType === prefix,
+    prefix.endsWith('/') ? t.startsWith(prefix) : t === prefix,
   )
 }
 
@@ -91,6 +97,13 @@ export async function GET(
         return NextResponse.json({ error: 'Not found' }, { status: 404 })
       }
     }
+  }
+
+  // The stored fileUrl must be a Vercel Blob URL. Guards against an admin (or
+  // a compromised MANAGE_LIBRARY account) pointing it at an internal service
+  // and using this authenticated proxy as an SSRF fetcher.
+  if (!isVercelBlobUrl(doc.fileUrl)) {
+    return NextResponse.json({ error: 'File unavailable' }, { status: 502 })
   }
 
   const upstream = await fetch(doc.fileUrl)
