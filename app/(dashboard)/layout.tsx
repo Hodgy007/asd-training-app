@@ -11,6 +11,7 @@ import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import { useSidebarCollapse } from '@/lib/use-sidebar-collapse'
 import { isCharityLevel } from '@/lib/rbac'
+import { MobileNavDrawer } from '@/components/layout/mobile-nav-drawer'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -70,17 +71,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </Suspense>
       </div>
 
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setSidebarOpen(false)}
-          />
-          <div className="absolute left-0 top-0 h-full w-72">
-            <Suspense><SidebarComponent onClose={() => setSidebarOpen(false)} mobile /></Suspense>
-          </div>
-        </div>
-      )}
+      <MobileNavDrawer open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <Suspense><SidebarComponent onClose={() => setSidebarOpen(false)} mobile /></Suspense>
+      </MobileNavDrawer>
 
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />

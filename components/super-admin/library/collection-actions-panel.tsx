@@ -16,6 +16,7 @@ import {
   EyeOff,
 } from 'lucide-react'
 import { ALLOWED_EXTENSIONS, BLOCKED_EXTENSIONS } from '@/lib/upload-validation'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 
 interface Props {
   collectionId: string
@@ -51,6 +52,7 @@ export function CollectionActionsPanel({
   onAfterDelete,
   onToast,
 }: Props) {
+  const confirmAction = useConfirm()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [zipUploading, setZipUploading] = useState(false)
   const [zipProgress, setZipProgress] = useState<number | null>(null)
@@ -195,7 +197,12 @@ export function CollectionActionsPanel({
 
   async function handleClearAllDocs() {
     if (documentCount === 0) return
-    if (!confirm(`Delete all ${documentCount} document${documentCount === 1 ? '' : 's'} in this collection? This cannot be undone.`)) return
+    if (!(await confirmAction({
+      title: `Delete all ${documentCount} document${documentCount === 1 ? '' : 's'} in this collection?`,
+      description: 'This cannot be undone.',
+      confirmLabel: 'Delete all',
+      tone: 'danger',
+    }))) return
     setClearingDocs(true)
     try {
       const res = await fetch(`/api/super-admin/library/${collectionId}/documents`, { method: 'DELETE' })
@@ -232,7 +239,7 @@ export function CollectionActionsPanel({
   }
 
   async function handleDeleteCollection() {
-    if (!confirm('Delete this collection? All its documents will also be removed. This cannot be undone.')) return
+    if (!(await confirmAction({ title: 'Delete this collection?', description: 'All its documents will also be removed. This cannot be undone.', confirmLabel: 'Delete collection', tone: 'danger' }))) return
     setDeleting(true)
     try {
       const res = await fetch(`/api/super-admin/library/${collectionId}`, { method: 'DELETE' })

@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, UsersRound, BookOpen, CheckCircle, XCircle } from 'lucide-react'
+import { ArrowLeft, UsersRound, BookOpen } from 'lucide-react'
 import { clsx } from 'clsx'
+import { showToast } from '@/components/ui/toaster'
 
 interface TrainingProgram {
   id: string
@@ -22,7 +23,6 @@ export default function NewCohortPage() {
   const [programs, setPrograms] = useState<TrainingProgram[]>([])
   const [selectedProgramIds, setSelectedProgramIds] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -37,11 +37,6 @@ export default function NewCohortPage() {
       })
       .catch(() => {})
   }, [status])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 4000)
-  }
 
   function toggleProgram(id: string) {
     setSelectedProgramIds((prev) =>
@@ -81,18 +76,6 @@ export default function NewCohortPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Breadcrumb */}
       <Link

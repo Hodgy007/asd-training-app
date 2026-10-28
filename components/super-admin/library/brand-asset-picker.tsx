@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import { ImagePlus, X, Search, FileText } from 'lucide-react'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 interface BrandAssetLite {
   id: string
@@ -79,21 +80,19 @@ export function BrandAssetPicker({ imageOnly = true, onPick, triggerLabel, trigg
         {triggerLabel ?? 'Pick from brand store'}
       </button>
 
-      {open && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/55 p-4"
-          onClick={close}
-        >
-          <div
-            className="relative w-full max-w-3xl max-h-[85vh] flex flex-col rounded-2xl bg-white dark:bg-slate-800 shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+      <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) close() }}>
+          <DialogContent
+            size="3xl"
+            showClose={false}
+            overlayClassName="bg-slate-900/55"
+            containerClassName="z-[100]"
+            className="border-0 shadow-2xl max-h-[85vh] flex flex-col overflow-hidden"
+            aria-describedby={undefined}
           >
             <div className="flex items-center justify-between px-5 py-3 border-b border-calm-200 dark:border-slate-700">
-              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+              <DialogTitle className="text-base">
                 Pick from brand store
-              </h2>
+              </DialogTitle>
               <button
                 type="button"
                 onClick={close}
@@ -168,9 +167,8 @@ export function BrandAssetPicker({ imageOnly = true, onPick, triggerLabel, trigg
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+          </DialogContent>
+      </Dialog>
     </>
   )
 }

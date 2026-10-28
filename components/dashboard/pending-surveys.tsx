@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import { ClipboardList, Loader2, X, ChevronRight, Star, Check, AlertCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { clsx } from 'clsx'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 interface PendingSurvey {
   id: string
@@ -139,14 +139,23 @@ export function PendingSurveys() {
         </div>
       )}
 
-      {activeSurvey && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <Dialog open={!!activeSurvey} onOpenChange={(open) => { if (!open) setActiveSurvey(null) }}>
+        {activeSurvey && (
+          <DialogContent
+            size="2xl"
+            showClose={false}
+            // A stray click outside shouldn't throw away a half-finished survey.
+            dismissOnOutsideClick={false}
+            containerClassName="p-2 sm:p-4"
+            className="border-0 flex flex-col overflow-hidden"
+            aria-describedby={undefined}
+          >
             <div className="bg-white dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 px-4 sm:px-6 py-4 flex items-center justify-between rounded-t-2xl flex-shrink-0">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{activeSurvey.title}</h3>
+              <DialogTitle className="dark:text-white">{activeSurvey.title}</DialogTitle>
               <button
                 onClick={() => setActiveSurvey(null)}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-calm-100 dark:hover:bg-slate-700"
+                aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -320,10 +329,9 @@ export function PendingSurveys() {
                 </div>
               </div>
             )}
-          </div>
-        </div>,
-        document.body
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
     </>
   )
 }

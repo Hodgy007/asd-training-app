@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { FileText, X } from 'lucide-react'
 import { getBufferedLogs } from '@/lib/client-log-buffer'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 type FeedbackType = 'BUG' | 'SUGGESTION' | 'QUESTION' | 'OTHER'
 
@@ -33,13 +33,6 @@ export function FeedbackModal({ open, onClose, defaultType, documentContext }: F
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submittedToast, setSubmittedToast] = useState(false)
-  // Portal target is only available after the component has mounted on the
-  // client. Without this gate we'd touch document.body during SSR and crash.
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current)
@@ -55,7 +48,7 @@ export function FeedbackModal({ open, onClose, defaultType, documentContext }: F
     }
   }, [open, defaultType, documentContext?.id])
 
-  if (!open || !mounted) return null
+  if (!open) return null
 
   function reset() {
     setType(defaultType ?? 'BUG')
@@ -115,19 +108,22 @@ export function FeedbackModal({ open, onClose, defaultType, documentContext }: F
 
   const previewLogs = getBufferedLogs()
 
-  // Portal to <body> so the modal escapes any ancestor with a transform/filter
-  // (e.g. .animate-page-enter on the library page). Without this, the
-  // `position: fixed` overlay is contained by that ancestor's containing block
-  // and renders inside the page wrapper instead of the viewport — visible as a
-  // grey panel constrained to the page's max-width.
-  return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+  // The Dialog portals to <body>, so the modal escapes any ancestor with a
+  // transform/filter (e.g. .animate-page-enter on the library page) that would
+  // otherwise trap the `position: fixed` overlay inside the page wrapper.
+  return (
+    <Dialog open onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+      <DialogContent
+        size="lg"
+        showClose={false}
+        containerClassName="z-[60]"
+        className="border-0 shadow-2xl p-6"
+        aria-describedby={undefined}
+      >
         <div className="flex items-start justify-between mb-4">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+          <DialogTitle className="font-bold">
             {documentContext ? 'Suggest a change' : 'Send feedback'}
-          </h2>
+          </DialogTitle>
           <button
             onClick={onClose}
             aria-label="Close"
@@ -243,8 +239,7 @@ ${previewLogs.map((l) => `[${new Date(l.ts).toISOString().slice(11, 19)}] ${l.le
             </div>
           </>
         )}
-      </div>
-    </div>,
-    document.body,
+      </DialogContent>
+    </Dialog>
   )
 }

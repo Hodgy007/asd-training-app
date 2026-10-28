@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Save, Loader2, ArrowUp, ArrowDown, Trash2, Plus, Upload, Eye,
   Image as ImageIcon, Film, LayoutGrid, Type, Layout, Sparkles,
@@ -14,6 +14,8 @@ import { HomeBlocksRenderer } from '@/components/home/home-blocks'
 import { HowToPanel } from '@/components/howto/panel'
 import HomePageBuilderHowTo from '@/components/howto/super-admin/home'
 import { GenerateBannerModal } from '@/components/super-admin/generate-banner-modal'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 type BlockKind = HomeBlock['kind']
 
@@ -37,6 +39,7 @@ const KIND_LABELS: Record<BlockKind, { label: string; icon: typeof Layout }> = {
 }
 
 export default function SuperAdminHomePage() {
+  const confirmAction = useConfirm()
   // null = the platform default homepage; a string targets that org's override.
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null)
   const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([])
@@ -46,13 +49,7 @@ export default function SuperAdminHomePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [previewMode, setPreviewMode] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
-
-  const showToast = useCallback((message: string, type: 'success' | 'error') => {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }, [])
 
   // Organisation list for the picker, loaded once.
   useEffect(() => {
@@ -120,8 +117,8 @@ export default function SuperAdminHomePage() {
     setBlocks(next)
   }
 
-  function removeBlock(idx: number) {
-    if (!confirm('Remove this block?')) return
+  async function removeBlock(idx: number) {
+    if (!(await confirmAction({ title: 'Remove this block?', confirmLabel: 'Remove', tone: 'danger' }))) return
     setBlocks(blocks.filter((_, i) => i !== idx))
   }
 
@@ -216,20 +213,6 @@ export default function SuperAdminHomePage() {
 
           <AddBlockMenu onAdd={addBlock} />
         </>
-      )}
-
-      {toast && (
-        <div
-          role="status"
-          className={
-            'fixed bottom-6 right-6 px-4 py-3 rounded-xl shadow-lg text-sm font-bold ' +
-            (toast.type === 'success'
-              ? 'bg-green-600 text-white'
-              : 'bg-red-600 text-white')
-          }
-        >
-          {toast.message}
-        </div>
       )}
 
       <HowToPanel>

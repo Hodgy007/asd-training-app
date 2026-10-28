@@ -6,6 +6,8 @@ import { ThemeProvider } from '@/components/providers/theme-provider'
 import { ColorThemeProvider } from '@/components/providers/color-theme-provider'
 import { FontProvider } from '@/components/providers/font-provider'
 import { CookieConsent } from '@/components/ui/cookie-consent'
+import { ConfirmProvider } from '@/components/ui/confirm-dialog'
+import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -38,10 +40,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ColorThemeProvider>
           <FontProvider>
           <SessionProvider>
+          <ConfirmProvider>
             <div className="min-h-screen flex flex-col">
               <div className="flex-1">{children}</div>
             </div>
+          </ConfirmProvider>
           </SessionProvider>
+          <Toaster />
           <CookieConsent />
           </FontProvider>
           </ColorThemeProvider>

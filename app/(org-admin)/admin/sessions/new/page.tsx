@@ -12,9 +12,9 @@ import {
   Search,
   X,
   CheckCircle,
-  XCircle,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { showToast } from '@/components/ui/toaster'
 
 interface OrgUser {
   id: string
@@ -66,7 +66,6 @@ export default function CreateSessionPage() {
   const [meetingConfig, setMeetingConfig] = useState<MeetingConfig | null>(null)
 
   const [submitting, setSubmitting] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -148,11 +147,6 @@ export default function CreateSessionPage() {
     setSelectedUsers((prev) => prev.filter((u) => u.id !== userId))
   }
 
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 4000)
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!title.trim() || !scheduledAt || !hostId) return
@@ -198,18 +192,6 @@ export default function CreateSessionPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Breadcrumb */}
       <Link

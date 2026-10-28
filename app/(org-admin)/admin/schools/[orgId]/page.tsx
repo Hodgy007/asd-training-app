@@ -24,6 +24,14 @@ import {
 import { LEAF_ROLES } from '@/types'
 import { ORG_TYPES, ORG_TYPE_LABELS } from '@/lib/rbac'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 const ROLE_LABELS: Record<string, string> = {
   CAREGIVER: 'Practitioner',
@@ -93,7 +101,6 @@ export default function SchoolDetailPage() {
   const [school, setSchool] = useState<SchoolDetail | null>(null)
   const [schoolLoading, setSchoolLoading] = useState(true)
   const [programs, setPrograms] = useState<ProgramOption[]>([])
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Edit form state
   const [editName, setEditName] = useState('')
@@ -139,11 +146,6 @@ export default function SchoolDetailPage() {
     if (status === 'unauthenticated') router.push('/login')
     if (status === 'authenticated' && session?.user?.role !== 'ORG_ADMIN') router.push('/dashboard')
   }, [status, session, router])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   // Populate edit form from school data
   function populateForm(s: SchoolDetail) {
@@ -345,18 +347,6 @@ export default function SchoolDetailPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Back link */}
       <Link
@@ -590,27 +580,24 @@ export default function SchoolDetailPage() {
           </div>
 
           {/* Delete confirmation dialog */}
-          {showDeleteConfirm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 space-y-4">
+          <AlertDialog
+            open={showDeleteConfirm}
+            onOpenChange={(open) => { if (!deleting) setShowDeleteConfirm(open) }}
+          >
+              <AlertDialogContent className="max-w-sm">
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/40">
                     <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white">Delete School</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    <AlertDialogTitle className="text-base">Delete School</AlertDialogTitle>
+                    <AlertDialogDescription className="mt-1">
                       Are you sure you want to permanently delete <strong>{school.name}</strong>? This action cannot be undone.
-                    </p>
+                    </AlertDialogDescription>
                   </div>
                 </div>
                 <div className="flex justify-end gap-3">
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700"
-                  >
-                    Cancel
-                  </button>
+                  <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
                   <button
                     onClick={handleDelete}
                     disabled={deleting}
@@ -620,9 +607,8 @@ export default function SchoolDetailPage() {
                     {deleting ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
+              </AlertDialogContent>
+          </AlertDialog>
 
           {/* Section 2: Users */}
           <div className="card overflow-hidden p-0">

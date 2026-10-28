@@ -15,7 +15,6 @@ import {
   Trash2,
   RefreshCw,
   CheckCircle,
-  XCircle,
   Upload,
   Download,
   UserPlus,
@@ -33,6 +32,8 @@ import {
   CohortEventbriteSection,
   type CohortEventbriteEvent,
 } from '@/components/super-admin/cohort-eventbrite-section'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 interface TrainingProgram {
   id: string
@@ -120,6 +121,7 @@ const PLATFORM_LABELS: Record<string, string> = {
 type Tab = 'members' | 'training' | 'documents' | 'surveys' | 'workshops'
 
 export default function CohortDetailPage() {
+  const confirmAction = useConfirm()
   const { data: session, status } = useSession()
   const router = useRouter()
   const params = useParams()
@@ -132,7 +134,6 @@ export default function CohortDetailPage() {
   const [surveys, setSurveys] = useState<CohortSurvey[]>([])
   const [cohortSessions, setCohortSessions] = useState<CohortSession[]>([])
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Edit state for documents
   const [editingDocuments, setEditingDocuments] = useState(false)
@@ -231,11 +232,6 @@ export default function CohortDetailPage() {
     }
   }
 
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 4000)
-  }
-
   async function handleAddMember(e: React.FormEvent) {
     e.preventDefault()
     setAddingMember(true)
@@ -270,7 +266,7 @@ export default function CohortDetailPage() {
   }
 
   async function handleRemoveMember(userId: string, userName: string) {
-    if (!confirm(`Remove ${userName} from this cohort?`)) return
+    if (!(await confirmAction({ title: `Remove ${userName} from this cohort?`, confirmLabel: 'Remove', tone: 'danger' }))) return
     const res = await fetch(`/api/super-admin/cohorts/${cohortId}/members/${userId}`, {
       method: 'DELETE',
     })
@@ -388,10 +384,18 @@ export default function CohortDetailPage() {
 
   async function handleArchive() {
     if (!cohort) return
-    const confirmMessage = cohort.lifecycleStatus === 'ARCHIVED'
-      ? `Reactivate "${cohort.name}"? Members can be invited again and the cohort reappears in targeting.`
-      : `Archive "${cohort.name}"? Members keep platform access and read-only access to past content. Invites will be disabled.`
-    if (!confirm(confirmMessage)) return
+    const ok = await confirmAction(cohort.lifecycleStatus === 'ARCHIVED'
+      ? {
+          title: `Reactivate "${cohort.name}"?`,
+          description: 'Members can be invited again and the cohort reappears in targeting.',
+          confirmLabel: 'Reactivate',
+        }
+      : {
+          title: `Archive "${cohort.name}"?`,
+          description: 'Members keep platform access and read-only access to past content. Invites will be disabled.',
+          confirmLabel: 'Archive',
+        })
+    if (!ok) return
     setArchiveBusy(true)
     try {
       const method = cohort.lifecycleStatus === 'ARCHIVED' ? 'DELETE' : 'POST'
@@ -484,18 +488,6 @@ export default function CohortDetailPage() {
 
   return (
     <div className="space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Credential card modal */}
       {credCard && (

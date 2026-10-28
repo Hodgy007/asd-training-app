@@ -16,7 +16,6 @@ import {
   Play,
   Square,
   XCircle,
-  CheckCircle,
   RefreshCw,
   Trash2,
   Save,
@@ -25,6 +24,14 @@ import {
   Building2,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 type Platform = 'ZOOM' | 'TEAMS' | 'CUSTOM' | 'IN_PERSON'
@@ -154,7 +161,6 @@ export default function CharitySessionDetailPage() {
   const [generating, setGenerating] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Typed delete confirmation modal
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -164,11 +170,6 @@ export default function CharitySessionDetailPage() {
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   const fetchSession = useCallback(async () => {
     setLoading(true)
@@ -374,28 +375,24 @@ export default function CharitySessionDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div className={clsx(
-          'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-          toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-        )}>
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Delete confirmation modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-red-200 dark:border-red-900/50 p-6 shadow-xl max-w-md w-full mx-4 space-y-4">
-            <h3 className="text-base font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+      <AlertDialog
+        open={showDeleteModal}
+        onOpenChange={(open) => {
+          if (deleting) return
+          setShowDeleteModal(open)
+          if (!open) setDeleteConfirmText('')
+        }}
+      >
+          <AlertDialogContent>
+            <AlertDialogTitle className="text-base font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
               <Trash2 className="h-5 w-5" />
               Delete Session
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
+            </AlertDialogTitle>
+            <AlertDialogDescription>
               This will permanently delete <span className="font-semibold">{data.title}</span> and all attendance records. This cannot be undone.
-            </p>
+            </AlertDialogDescription>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Type <span className="font-mono font-bold text-red-600 dark:text-red-400">{DELETE_CONFIRM_PHRASE}</span> to confirm:
             </p>
@@ -407,12 +404,7 @@ export default function CharitySessionDetailPage() {
               className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 bg-white dark:bg-slate-700 dark:text-slate-100"
             />
             <div className="flex justify-end gap-3">
-              <button
-                onClick={() => { setShowDeleteModal(false); setDeleteConfirmText('') }}
-                className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancel
-              </button>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
               <button
                 onClick={handleDelete}
                 disabled={deleteConfirmText !== DELETE_CONFIRM_PHRASE || deleting}
@@ -422,9 +414,8 @@ export default function CharitySessionDetailPage() {
                 Delete
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </AlertDialogContent>
+      </AlertDialog>
 
       {/* Breadcrumb */}
       <Link

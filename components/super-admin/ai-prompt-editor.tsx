@@ -7,6 +7,7 @@ import { ArrowLeft, Trash2, Plus, Upload, Undo2, RotateCcw, Save, Loader2 } from
 import { clsx } from 'clsx'
 import type { AiModel } from '@/lib/ai-models'
 import { AiPromptTestPanel } from './ai-prompt-test-panel'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 
 interface ContextFile {
   id: string
@@ -41,6 +42,7 @@ interface Props {
 }
 
 export function AiPromptEditor({ prompt, models }: Props) {
+  const confirmAction = useConfirm()
   const router = useRouter()
   const [tone, setTone] = useState(prompt.tone)
   const [requirements, setRequirements] = useState<string[]>(prompt.requirements)
@@ -107,7 +109,7 @@ export function AiPromptEditor({ prompt, models }: Props) {
   }
 
   async function handleReset() {
-    if (!confirm('Reset this prompt to its original defaults?')) return
+    if (!(await confirmAction({ title: 'Reset this prompt to its original defaults?', confirmLabel: 'Reset', tone: 'danger' }))) return
     setBusy('reset')
     setError(null)
     try {

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Send, Check, Loader2 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useConfirm } from './confirm-dialog'
 
 interface SendInviteButtonProps {
   userId: string
@@ -21,12 +22,13 @@ interface SendInviteButtonProps {
  * again for a different user in-session.
  */
 export function SendInviteButton({ userId, userEmail, compact, onSent }: SendInviteButtonProps) {
+  const confirmAction = useConfirm()
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
 
   async function handleClick() {
     if (state === 'sending' || state === 'sent') return
-    if (!confirm(`Send a fresh sign-in link to ${userEmail}?`)) return
+    if (!(await confirmAction({ title: `Send a fresh sign-in link to ${userEmail}?`, confirmLabel: 'Send link' }))) return
 
     setState('sending')
     setError(null)

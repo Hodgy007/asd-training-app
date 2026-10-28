@@ -16,7 +16,6 @@ import {
   Play,
   Square,
   XCircle,
-  CheckCircle,
   RefreshCw,
   Trash2,
   Save,
@@ -24,6 +23,8 @@ import {
   Zap,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 type Platform = 'ZOOM' | 'TEAMS' | 'CUSTOM' | 'IN_PERSON'
@@ -105,6 +106,7 @@ function toLocalDatetime(iso: string): string {
 }
 
 export default function SessionDetailPage() {
+  const confirmAction = useConfirm()
   const { data: session, status } = useSession()
   const router = useRouter()
   const params = useParams()
@@ -135,17 +137,11 @@ export default function SessionDetailPage() {
   const [generating, setGenerating] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
     if (status === 'authenticated' && session?.user?.role !== 'ORG_ADMIN') router.push('/dashboard')
   }, [status, session, router])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   const fetchSession = useCallback(async () => {
     setLoading(true)
@@ -278,7 +274,7 @@ export default function SessionDetailPage() {
   }
 
   async function handleDelete() {
-    if (!confirm('Delete this session? This cannot be undone.')) return
+    if (!(await confirmAction({ title: 'Delete this session?', description: 'This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' }))) return
     setDeleting(true)
     try {
       const res = await fetch(`/api/admin/sessions/${sessionId}`, { method: 'DELETE' })
@@ -333,16 +329,6 @@ export default function SessionDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div className={clsx(
-          'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-          toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-        )}>
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Breadcrumb */}
       <Link href="/admin/sessions" className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">

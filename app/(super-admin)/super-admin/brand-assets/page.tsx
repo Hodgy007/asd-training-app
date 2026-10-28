@@ -21,6 +21,8 @@ import {
   FolderInput,
   Check,
 } from 'lucide-react'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 const TYPE_LABELS: Record<string, string> = {
   LOGO: 'Logo',
@@ -57,9 +59,9 @@ function isImageType(fileType: string): boolean {
 }
 
 export default function BrandAssetsPage() {
+  const confirmAction = useConfirm()
   const [assets, setAssets] = useState<BrandAsset[]>([])
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [filterType, setFilterType] = useState<string>('')
 
   // Upload form state
@@ -87,11 +89,6 @@ export default function BrandAssetsPage() {
   // Move-to-section popover state — only one open at a time
   const [moveMenuOpenId, setMoveMenuOpenId] = useState<string | null>(null)
   const [movingId, setMovingId] = useState<string | null>(null)
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3500)
-  }
 
   const fetchAssets = useCallback(async () => {
     setLoading(true)
@@ -261,7 +258,7 @@ export default function BrandAssetsPage() {
   }
 
   async function handleDelete(a: BrandAsset) {
-    if (!confirm(`Delete "${a.title}"? This removes it from the brand store and its file from storage.`)) return
+    if (!(await confirmAction({ title: `Delete "${a.title}"?`, description: 'This removes it from the brand store and its file from storage.', confirmLabel: 'Delete', tone: 'danger' }))) return
     const res = await fetch(`/api/super-admin/brand-assets/${a.id}`, { method: 'DELETE' })
     if (res.ok) {
       showToast('Brand asset deleted.', 'success')
@@ -276,14 +273,6 @@ export default function BrandAssetsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
-      {toast && (
-        <div className={clsx(
-          'fixed top-6 right-6 z-50 px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium',
-          toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white',
-        )}>
-          {toast.message}
-        </div>
-      )}
 
       <div>
         <Link href="/super-admin/products" className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 mb-2">

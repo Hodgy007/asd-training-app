@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Loader2, Package, X } from 'lucide-react'
 import { upload } from '@vercel/blob/client'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
 interface ScormImportModalProps {
   open: boolean
@@ -139,28 +140,27 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
   if (!open) return null
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="scorm-import-title"
-    >
-      <div className="pointer-events-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+    <Dialog open onOpenChange={(isOpen) => { if (!isOpen && !uploading) onClose() }}>
+      <DialogContent
+        // Action modals deliberately keep the page visible: no dimmed backdrop
+        // and no click-outside close (see CLAUDE.md). Escape matches the X button.
+        overlay={false}
+        dismissOnOutsideClick={false}
+        showClose={false}
+        className="p-6 shadow-2xl"
+      >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-900/40 dark:text-primary-300">
               <Package className="h-5 w-5" />
             </div>
             <div>
-              <h2
-                id="scorm-import-title"
-                className="text-lg font-bold text-slate-900 dark:text-white"
-              >
+              <DialogTitle className="font-bold dark:text-white">
                 Import SCORM Package
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              </DialogTitle>
+              <DialogDescription className="text-xs">
                 Upload a SCORM 1.2 or 2004 .zip to create a new training program.
-              </p>
+              </DialogDescription>
             </div>
           </div>
           <button
@@ -281,7 +281,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

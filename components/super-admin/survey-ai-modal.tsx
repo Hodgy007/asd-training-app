@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { X, Loader2, Sparkles, Upload, FileText } from 'lucide-react'
 import { clsx } from 'clsx'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -141,25 +142,25 @@ export function SurveyAiModal({ isOpen, onClose, onGenerated }: SurveyAiModalPro
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
-      aria-modal="true"
-      role="dialog"
-      aria-labelledby="survey-ai-modal-title"
-    >
-      {/* Card */}
-      <div className="pointer-events-auto relative z-10 w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+    <Dialog open onOpenChange={(open) => { if (!open) handleClose() }}>
+      <DialogContent
+        // Action modals deliberately keep the page visible: no dimmed backdrop
+        // and no click-outside close (see CLAUDE.md). Escape matches the X button.
+        overlay={false}
+        dismissOnOutsideClick={false}
+        showClose={false}
+        size="lg"
+        className="shadow-2xl"
+        aria-describedby={undefined}
+      >
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
             <Sparkles className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           </div>
-          <h2
-            id="survey-ai-modal-title"
-            className="flex-1 text-base font-semibold text-slate-800 dark:text-slate-100"
-          >
+          <DialogTitle className="flex-1 text-base text-slate-800">
             Generate Survey with AI
-          </h2>
+          </DialogTitle>
           <button
             type="button"
             onClick={handleClose}
@@ -330,7 +331,7 @@ export function SurveyAiModal({ isOpen, onClose, onGenerated }: SurveyAiModalPro
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

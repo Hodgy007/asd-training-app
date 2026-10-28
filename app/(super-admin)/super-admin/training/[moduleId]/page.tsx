@@ -19,6 +19,7 @@ import { clsx } from 'clsx'
 import { GATSBY_BENCHMARK_CODES, GATSBY_BENCHMARKS } from '@/lib/gatsby-benchmarks'
 import { RichDescriptionEditor } from '@/components/ui/rich-description-editor'
 import { normaliseHtml } from '@/lib/rich-text'
+import { showToast } from '@/components/ui/toaster'
 
 interface Lesson {
   id: string
@@ -60,7 +61,6 @@ export default function ModuleEditorPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showLessonForm, setShowLessonForm] = useState(false)
   const [exporting, setExporting] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Editable fields
   const [editTitle, setEditTitle] = useState('')
@@ -87,13 +87,6 @@ export default function ModuleEditorPage() {
     fetchModule()
   }, [fetchModule])
 
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 3000)
-      return () => clearTimeout(t)
-    }
-  }, [toast])
-
   const saveModule = async () => {
     setSaving(true)
     try {
@@ -110,10 +103,10 @@ export default function ModuleEditorPage() {
         router.push('/super-admin/training')
         return
       } else {
-        setToast({ message: 'Failed to save module', type: 'error' })
+        showToast('Failed to save module', 'error')
       }
     } catch {
-      setToast({ message: 'Failed to save module', type: 'error' })
+      showToast('Failed to save module', 'error')
     } finally {
       setSaving(false)
     }
@@ -128,7 +121,7 @@ export default function ModuleEditorPage() {
         body: JSON.stringify({ active: !lesson.active }),
       })
       if (res.ok) {
-        setToast({ message: `Lesson ${!lesson.active ? 'activated' : 'deactivated'}`, type: 'success' })
+        showToast(`Lesson ${!lesson.active ? 'activated' : 'deactivated'}`, 'success')
         await fetchModule()
       }
     } finally {
@@ -142,10 +135,7 @@ export default function ModuleEditorPage() {
       const res = await fetch(`/api/super-admin/training/modules/${moduleId}/scorm-export`)
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setToast({
-          message: data.error || 'Failed to export SCORM package',
-          type: 'error',
-        })
+        showToast(data.error || 'Failed to export SCORM package', 'error')
         return
       }
       const blob = await res.blob()
@@ -166,18 +156,15 @@ export default function ModuleEditorPage() {
           const skipped = JSON.parse(decodeURIComponent(skippedHeader)) as Array<{
             lessonTitle: string
           }>
-          setToast({
-            message: `Exported. Skipped ${skipped.length} non-exportable lesson${skipped.length === 1 ? '' : 's'} such as imported SCORM packages or unlinked surveys.`,
-            type: 'success',
-          })
+          showToast(`Exported. Skipped ${skipped.length} non-exportable lesson${skipped.length === 1 ? '' : 's'} such as imported SCORM packages or unlinked surveys.`, 'success')
         } catch {
-          setToast({ message: 'SCORM package downloaded', type: 'success' })
+          showToast('SCORM package downloaded', 'success')
         }
       } else {
-        setToast({ message: 'SCORM package downloaded', type: 'success' })
+        showToast('SCORM package downloaded', 'success')
       }
     } catch {
-      setToast({ message: 'Failed to export SCORM package', type: 'error' })
+      showToast('Failed to export SCORM package', 'error')
     } finally {
       setExporting(false)
     }
@@ -236,19 +223,6 @@ export default function ModuleEditorPage() {
 
   return (
     <div className="space-y-8 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-bold',
-            toast.type === 'success'
-              ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-              : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-          )}
-        >
-          {toast.message}
-        </div>
-      )}
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
@@ -367,7 +341,7 @@ export default function ModuleEditorPage() {
             onCreated={() => {
               fetchModule()
               setShowLessonForm(false)
-              setToast({ message: 'Lesson created', type: 'success' })
+              showToast('Lesson created', 'success')
             }}
             onCancel={() => setShowLessonForm(false)}
           />

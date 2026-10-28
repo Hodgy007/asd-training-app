@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Loader2, Sparkles, X, RefreshCcw, Check } from 'lucide-react'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 interface GenerateBannerModalProps {
   open: boolean
@@ -109,10 +110,19 @@ export function GenerateBannerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-200 dark:border-slate-700">
+    <Dialog open onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+      <DialogContent
+        // Action modals deliberately keep the page visible: no dimmed backdrop
+        // and no click-outside close (see CLAUDE.md). Escape matches the X button.
+        overlay={false}
+        dismissOnOutsideClick={false}
+        showClose={false}
+        size="2xl"
+        className="shadow-2xl"
+        aria-describedby={undefined}
+      >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Generate banner</h2>
+          <DialogTitle className="font-bold">Generate banner</DialogTitle>
           <button
             type="button"
             onClick={onClose}
@@ -209,7 +219,7 @@ export function GenerateBannerModal({
             </>
           ) : null}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

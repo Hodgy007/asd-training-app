@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { showToast } from '@/components/ui/toaster'
 
 type EmailMatchPolicy = 'STRICT' | 'AUTO_INVITE' | 'CLAIM_LINK'
 
@@ -43,7 +44,6 @@ const POLICY_LABELS: Record<EmailMatchPolicy, { title: string; help: string }> =
 
 export default function EventbriteSettingsPage() {
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const [hasToken, setHasToken] = useState(false)
   const [tokenInput, setTokenInput] = useState('')
@@ -54,11 +54,6 @@ export default function EventbriteSettingsPage() {
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   useEffect(() => {
     fetch('/api/super-admin/settings/eventbrite')
@@ -149,17 +144,6 @@ export default function EventbriteSettingsPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white',
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       <Link
         href="/super-admin/settings"

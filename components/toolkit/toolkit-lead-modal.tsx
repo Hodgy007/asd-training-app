@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useId, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useEffect, useRef, useState } from 'react'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, X } from 'lucide-react'
 import { TOOLKIT_FORM_ROLES, TOOLKIT_FORM_ROLE_LABELS, type ToolkitFormRole } from '@/lib/toolkit-registration'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 
 type Props = {
   open: boolean
@@ -37,7 +38,6 @@ const INITIAL: FormState = {
 }
 
 export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onSuccess }: Props) {
-  const headingId = useId()
   const [form, setForm] = useState<FormState>(INITIAL)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -50,32 +50,12 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
     setError(null)
     setErrorIsCollision(false)
     setSuccess(null)
-    firstFieldRef.current?.focus()
   }, [open])
 
-  useEffect(() => {
-    if (!open) return
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape' && !submitting) onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [open, submitting, onClose])
-
-  // Lock background scroll while the modal is open. Without this the
-  // toolkit page behind the dialog scrolls when users hit the down-arrow
-  // on the password field, which feels broken.
-  useEffect(() => {
-    if (!open) return
-    const original = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = original
-    }
-  }, [open])
-
+  // Escape handling, focus trapping and the background scroll lock (without
+  // which the toolkit page scrolled when users hit the down-arrow on the
+  // password field) all come from the Radix dialog below.
   if (!open) return null
-  if (typeof window === 'undefined') return null
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((s) => ({ ...s, [key]: value }))
@@ -146,14 +126,22 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
     }
   }
 
-  return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={headingId}
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-[#001522]/55 p-4 sm:items-center"
-    >
-      <div className="relative flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+  return (
+    <Dialog open onOpenChange={(isOpen) => { if (!isOpen && !submitting) onClose() }}>
+      <DialogContent
+        unstyled
+        size="xl"
+        showClose={false}
+        // The form is long; a stray click outside shouldn't throw it away.
+        dismissOnOutsideClick={false}
+        overlayClassName="bg-[#001522]/55"
+        containerClassName="z-[100] items-end sm:items-center"
+        className="flex max-h-[92vh] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault()
+          firstFieldRef.current?.focus()
+        }}
+      >
         <button
           type="button"
           onClick={onClose}
@@ -166,12 +154,14 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
 
         <div className="px-6 pt-7 pb-2 sm:px-8 sm:pt-8">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-aaa-orange">Free download</p>
-          <h2 id={headingId} className="mt-2 text-2xl font-extrabold text-[#001522] sm:text-3xl">
+          {/* Raw Radix Title/Description so the dark-mode text colours on the
+              styled wrappers don't leak into this always-light modal. */}
+          <DialogPrimitive.Title className="mt-2 text-2xl font-extrabold text-[#001522] sm:text-3xl">
             Tell us a little about you
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-[#475569]">
+          </DialogPrimitive.Title>
+          <DialogPrimitive.Description className="mt-2 text-sm leading-relaxed text-[#475569]">
             Before you download <span className="font-semibold text-[#001522]">{documentTitle}</span>, please share a few details so we can keep our toolkits useful.
-          </p>
+          </DialogPrimitive.Description>
         </div>
 
         {success ? (
@@ -357,8 +347,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
             </div>
           </form>
         )}
-      </div>
-    </div>,
-    document.body,
+      </DialogContent>
+    </Dialog>
   )
 }

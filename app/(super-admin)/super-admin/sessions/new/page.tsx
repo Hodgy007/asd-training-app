@@ -9,7 +9,6 @@ import {
   Calendar,
   Plus,
   RefreshCw,
-  CheckCircle,
   XCircle,
   Users as UsersIcon,
 } from 'lucide-react'
@@ -18,6 +17,7 @@ import {
   SessionAttendeePicker,
   AttendeePickerConfig,
 } from '@/components/super-admin/session-attendee-picker'
+import { showToast } from '@/components/ui/toaster'
 
 interface MeetingConfig {
   platform: string
@@ -67,7 +67,6 @@ export default function CreateCharitySessionPage() {
   const [cohortBannerDismissed, setCohortBannerDismissed] = useState(false)
 
   const [submitting, setSubmitting] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -126,11 +125,6 @@ export default function CreateCharitySessionPage() {
       })
   }, [status])
 
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 4000)
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!title.trim() || !scheduledAt) return
@@ -176,18 +170,6 @@ export default function CreateCharitySessionPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Breadcrumb */}
       <Link

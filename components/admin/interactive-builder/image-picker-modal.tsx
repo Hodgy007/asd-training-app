@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { X, Search, Loader2, ImageIcon } from 'lucide-react'
 import { clsx } from 'clsx'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
 type Folder = 'carousel-images' | 'hotspot-images' | 'all'
 
@@ -56,36 +57,28 @@ export function ImagePickerModal({ open, onClose, onSelect, folder = 'all', titl
       .finally(() => setLoading(false))
   }, [open, folder])
 
-  if (!open) return null
-
   const visible = items.filter((it) => {
     if (!search.trim()) return true
     return fileNameFromPath(it.pathname).toLowerCase().includes(search.toLowerCase())
   })
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+      <DialogContent size="4xl" showClose={false} className="flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 p-5 border-b border-calm-200 dark:border-slate-700">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2">
               <ImageIcon className="h-5 w-5 text-primary-600" />
               {title}
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            </DialogTitle>
+            <DialogDescription className="text-xs mt-0.5">
               {folder === 'all'
                 ? 'Reuse any image you’ve previously uploaded for hotspots or carousels.'
                 : folder === 'hotspot-images'
                   ? 'Images you’ve previously used in hotspot blocks.'
                   : 'Images you’ve previously used in carousel slides.'}
-            </p>
+            </DialogDescription>
           </div>
           <button
             onClick={onClose}
@@ -178,7 +171,7 @@ export function ImagePickerModal({ open, onClose, onSelect, folder = 'all', titl
             Cancel
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

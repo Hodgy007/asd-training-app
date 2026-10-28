@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { LEAF_ROLES } from '@/types'
 import { ORG_TYPES, ORG_TYPE_LABELS } from '@/lib/rbac'
+import { showToast } from '@/components/ui/toaster'
 
 const ROLE_LABELS: Record<string, string> = {
   CAREGIVER: 'Practitioner',
@@ -64,7 +65,6 @@ export default function SchoolsPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Parent org info for the create form
   const [parentOrg, setParentOrg] = useState<ParentOrgInfo | null>(null)
@@ -136,11 +136,6 @@ export default function SchoolsPage() {
       fetchPrograms()
     }
   }, [status, fetchSchools, fetchParentOrg, fetchPrograms])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   async function toggleActive(school: SchoolRow) {
     setActionLoading(school.id)
@@ -240,18 +235,6 @@ export default function SchoolsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex items-center justify-between">
