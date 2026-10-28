@@ -11,6 +11,7 @@ import type { ProgramInfo } from './modules'
 import { getEffectiveOrgSettings } from './org-hierarchy'
 import { isSystemOrg } from './cohort'
 import { mfaVerifyLimiter } from './rate-limit'
+import { logger, errMeta } from './logger'
 
 async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> {
   return getUserPrograms(userId)
@@ -49,6 +50,139 @@ function parseCookieHeader(header: unknown): Map<string, string> {
     if (name && !cookies.has(name)) cookies.set(name, value)
   }
   return cookies
+}
+
+// Single, opaque credentials error. Distinct messages for "no such user" vs
+// "wrong password" vs "uses SSO" let an attacker enumerate valid emails and
+// learn which sign-in method each one uses. Collapse them all to one neutral
+// string; only surface specific copy AFTER we've confirmed the password is
+// correct.
+const INVALID_CREDENTIALS = 'Invalid email or password'
+
+// Shown when sign-in fails for a reason that isn't the user's (database down,
+// unexpected bug). The real error is logged server-side, never displayed.
+export const SIGN_IN_UNAVAILABLE = 'Sign-in is temporarily unavailable. Please try again in a few minutes.'
+
+/**
+ * An error whose message is safe to show on the login page. NextAuth passes
+ * whatever `authorize()` throws straight back to the client, so only these
+ * are let through; everything else is replaced with SIGN_IN_UNAVAILABLE.
+ */
+export class SignInError extends Error {}
+
+async function authorizeCredentials(
+  credentials: Record<'email' | 'password' | 'totpCode', string> | undefined,
+  req: { headers?: Record<string, unknown> } | undefined,
+) {
+  if (!credentials?.email) {
+    throw new SignInError(INVALID_CREDENTIALS)
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: credentials.email },
+    include: { organisation: { select: { active: true } } },
+  })
+
+  // MFA verification step (second call from MFA verify page). The code
+  // is a SECOND factor: it is only honoured for a caller who already
+  // holds a password-only session cookie (mfaPending) for this same
+  // user. Without that check, email + a current code alone would mint
+  // a full session and the password would be skippable.
+  if (credentials.totpCode) {
+    if (!user) throw new SignInError(INVALID_CREDENTIALS)
+
+    const pendingToken = await getToken({
+      req: {
+        headers: req?.headers ?? {},
+        cookies: parseCookieHeader(req?.headers?.cookie),
+      } as unknown as Parameters<typeof getToken>[0]['req'],
+      secret: process.env.NEXTAUTH_SECRET,
+    })
+    if (!pendingToken || pendingToken.mfaPending !== true || pendingToken.id !== user.id) {
+      throw new SignInError(INVALID_CREDENTIALS)
+    }
+
+    // Throttle per user, after the session check so an anonymous caller
+    // can't lock a real user out of verifying.
+    const rl = await mfaVerifyLimiter.check(`mfa:${user.id}`)
+    if (!rl.success) {
+      throw new SignInError('Too many MFA attempts. Please try again later.')
+    }
+
+    const { TOTP } = await import('otpauth')
+    if (!user.totpSecret || !user.totpEnabled) {
+      throw new SignInError('MFA not enabled')
+    }
+    const totp = new TOTP({
+      issuer: 'Ambitious about Autism',
+      label: user.email,
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+      secret: user.totpSecret,
+    })
+    const delta = totp.validate({ token: credentials.totpCode, window: 1 })
+    if (delta === null) {
+      throw new SignInError('Invalid MFA code')
+    }
+
+    // MFA verified — apply the same post-auth checks that the password
+    // path runs (deactivation) before issuing a token.
+    if (!user.active) {
+      throw new SignInError('Your account has been deactivated. Please contact an administrator.')
+    }
+    if (user.organisation && !user.organisation.active) {
+      throw new SignInError('Your organisation has been deactivated. Please contact an administrator.')
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      organisationId: user.organisationId,
+      mustChangePassword: user.mustChangePassword,
+      totpEnabled: true,
+      mfaPending: false,
+    }
+  }
+
+  // Normal password check. Every failure path below collapses to the
+  // generic INVALID_CREDENTIALS error.
+  if (!credentials.password) throw new SignInError(INVALID_CREDENTIALS)
+
+  // Always run a full-cost bcrypt compare, even when the email is
+  // unknown or the account is SSO-only (password null). Returning
+  // early for those cases answered ~250ms faster than a wrong
+  // password did, which let an attacker enumerate valid emails by
+  // timing despite the single opaque error message.
+  const storedHash = user?.password || (await getDummyPasswordHash())
+  const isPasswordValid = await bcrypt.compare(credentials.password, storedHash)
+  if (!user || !user.password || !isPasswordValid) throw new SignInError(INVALID_CREDENTIALS)
+
+  // Password verified — only NOW reveal account-state errors. These
+  // are not enumeration vectors because the attacker already had to
+  // present the correct password to get here.
+  if (!user.active) {
+    throw new SignInError('Your account has been deactivated. Please contact an administrator.')
+  }
+  if (user.organisation && !user.organisation.active) {
+    throw new SignInError('Your organisation has been deactivated. Please contact an administrator.')
+  }
+
+  // Check if MFA is required
+  const mfaPending = user.totpEnabled === true
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    organisationId: user.organisationId,
+    mustChangePassword: user.mustChangePassword,
+    totpEnabled: user.totpEnabled,
+    mfaPending,
+  }
 }
 
 async function getOrgIsParent(organisationId: string | null | undefined): Promise<boolean> {
@@ -125,121 +259,15 @@ export const authOptions: NextAuthOptions = {
         totpCode: { label: 'TOTP Code', type: 'text' },
       },
       async authorize(credentials, req) {
-        // Single, opaque credentials error. Distinct messages for "no such
-        // user" vs "wrong password" vs "uses SSO" let an attacker enumerate
-        // valid emails and learn which sign-in method each one uses.
-        // Collapse them all to one neutral string; only surface specific
-        // copy AFTER we've confirmed the password is correct.
-        const INVALID_CREDENTIALS = 'Invalid email or password'
-
-        if (!credentials?.email) {
-          throw new Error(INVALID_CREDENTIALS)
-        }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          include: { organisation: { select: { active: true } } },
-        })
-
-        // MFA verification step (second call from MFA verify page). The code
-        // is a SECOND factor: it is only honoured for a caller who already
-        // holds a password-only session cookie (mfaPending) for this same
-        // user. Without that check, email + a current code alone would mint
-        // a full session and the password would be skippable.
-        if (credentials.totpCode) {
-          if (!user) throw new Error(INVALID_CREDENTIALS)
-
-          const pendingToken = await getToken({
-            req: {
-              headers: req?.headers ?? {},
-              cookies: parseCookieHeader(req?.headers?.cookie),
-            } as unknown as Parameters<typeof getToken>[0]['req'],
-            secret: process.env.NEXTAUTH_SECRET,
-          })
-          if (!pendingToken || pendingToken.mfaPending !== true || pendingToken.id !== user.id) {
-            throw new Error(INVALID_CREDENTIALS)
-          }
-
-          // Throttle per user, after the session check so an anonymous caller
-          // can't lock a real user out of verifying.
-          const rl = await mfaVerifyLimiter.check(`mfa:${user.id}`)
-          if (!rl.success) {
-            throw new Error('Too many MFA attempts. Please try again later.')
-          }
-
-          const { TOTP } = await import('otpauth')
-          if (!user.totpSecret || !user.totpEnabled) {
-            throw new Error('MFA not enabled')
-          }
-          const totp = new TOTP({
-            issuer: 'Ambitious about Autism',
-            label: user.email,
-            algorithm: 'SHA1',
-            digits: 6,
-            period: 30,
-            secret: user.totpSecret,
-          })
-          const delta = totp.validate({ token: credentials.totpCode, window: 1 })
-          if (delta === null) {
-            throw new Error('Invalid MFA code')
-          }
-
-          // MFA verified — apply the same post-auth checks that the password
-          // path runs (deactivation) before issuing a token.
-          if (!user.active) {
-            throw new Error('Your account has been deactivated. Please contact an administrator.')
-          }
-          if (user.organisation && !user.organisation.active) {
-            throw new Error('Your organisation has been deactivated. Please contact an administrator.')
-          }
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            organisationId: user.organisationId,
-            mustChangePassword: user.mustChangePassword,
-            totpEnabled: true,
-            mfaPending: false,
-          }
-        }
-
-        // Normal password check. Every failure path below collapses to the
-        // generic INVALID_CREDENTIALS error.
-        if (!credentials.password) throw new Error(INVALID_CREDENTIALS)
-
-        // Always run a full-cost bcrypt compare, even when the email is
-        // unknown or the account is SSO-only (password null). Returning
-        // early for those cases answered ~250ms faster than a wrong
-        // password did, which let an attacker enumerate valid emails by
-        // timing despite the single opaque error message.
-        const storedHash = user?.password || (await getDummyPasswordHash())
-        const isPasswordValid = await bcrypt.compare(credentials.password, storedHash)
-        if (!user || !user.password || !isPasswordValid) throw new Error(INVALID_CREDENTIALS)
-
-        // Password verified — only NOW reveal account-state errors. These
-        // are not enumeration vectors because the attacker already had to
-        // present the correct password to get here.
-        if (!user.active) {
-          throw new Error('Your account has been deactivated. Please contact an administrator.')
-        }
-        if (user.organisation && !user.organisation.active) {
-          throw new Error('Your organisation has been deactivated. Please contact an administrator.')
-        }
-
-        // Check if MFA is required
-        const mfaPending = user.totpEnabled === true
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          organisationId: user.organisationId,
-          mustChangePassword: user.mustChangePassword,
-          totpEnabled: user.totpEnabled,
-          mfaPending,
+        try {
+          return await authorizeCredentials(credentials, req)
+        } catch (err) {
+          // Anything we didn't throw on purpose (a Prisma connection error,
+          // a bug) must not reach the login page: NextAuth shows the thrown
+          // message verbatim, and Prisma's include the database host.
+          if (err instanceof SignInError) throw err
+          logger.error('credentials sign-in failed unexpectedly', errMeta(err))
+          throw new Error(SIGN_IN_UNAVAILABLE)
         }
       },
     }),
