@@ -31,7 +31,15 @@ export default function MfaVerifyPage() {
       })
 
       if (result?.error) {
-        setError(result.error === 'CredentialsSignin' ? 'Invalid MFA code. Please try again.' : result.error)
+        // The server only accepts a code alongside a live password-step
+        // session; without one it answers with the generic credentials error.
+        setError(
+          result.error === 'CredentialsSignin'
+            ? 'Invalid MFA code. Please try again.'
+            : result.error === 'Invalid email or password'
+              ? 'Your sign-in has expired. Please sign out and sign in again.'
+              : result.error
+        )
         setCode('')
       } else {
         // Refresh session to clear mfaPending

@@ -37,7 +37,7 @@ import {
   type EventbriteEvent,
   type EventbriteAttendee,
 } from './eventbrite'
-import { hashResetToken } from './reset-token'
+import { hashResetToken, TOKEN_PURPOSE } from './reset-token'
 import { renderWorkshopBookingWelcomeEmail } from './email-templates/workshop-booking'
 import { logger, errMeta } from './logger'
 import { getPublicToolkitOrgId } from './toolkit-registration'
@@ -296,7 +296,12 @@ async function sendWorkshopWelcomeEmail(
   await prisma.$transaction([
     prisma.passwordResetToken.deleteMany({ where: { email } }),
     prisma.passwordResetToken.create({
-      data: { email, token: hashResetToken(rawToken), expires },
+      data: {
+        email,
+        token: hashResetToken(rawToken),
+        expires,
+        purpose: TOKEN_PURPOSE.WELCOME,
+      },
     }),
   ])
   const welcomeUrl = `${process.env.NEXTAUTH_URL ?? ''}/welcome?token=${rawToken}`

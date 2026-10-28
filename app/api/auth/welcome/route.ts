@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { validatePassword } from '@/lib/password-validation'
 import { resetPasswordLimiter, getClientIp } from '@/lib/rate-limit'
-import { hashResetToken } from '@/lib/reset-token'
+import { hashResetToken, TOKEN_PURPOSE } from '@/lib/reset-token'
 import { logger, errMeta } from '@/lib/logger'
 import { getUserPrograms } from '@/lib/modules'
 import { getEffectiveOrgSettings } from '@/lib/org-hierarchy'
@@ -21,7 +21,10 @@ import { getEffectiveOrgSettings } from '@/lib/org-hierarchy'
  *                   NextAuth JWT session cookie, and respond with a redirect.
  *
  * Reuses PasswordResetToken (same SHA-256-hashed-at-rest pattern) so we
- * don't introduce a parallel token system.
+ * don't introduce a parallel token system. Because this endpoint signs the
+ * user in, it only redeems rows with purpose WELCOME — a forgot-password or
+ * admin-activation link must never be exchangeable for a session here, or it
+ * would skip TOTP for MFA-enabled accounts.
  */
 
 const postSchema = z.object({
@@ -37,7 +40,7 @@ export async function GET(req: NextRequest) {
 
   const tokenHash = hashResetToken(token)
   const row = await prisma.passwordResetToken.findUnique({ where: { token: tokenHash } })
-  if (!row || row.expires < new Date()) {
+  if (!row || row.purpose !== TOKEN_PURPOSE.WELCOME || row.expires < new Date()) {
     return NextResponse.json(
       { error: 'This sign-up link is invalid or has expired. Please register again.' },
       { status: 400 },
@@ -95,7 +98,20 @@ export async function POST(req: NextRequest) {
 
   const tokenHash = hashResetToken(token)
   const row = await prisma.passwordResetToken.findUnique({ where: { token: tokenHash } })
-  if (!row || row.expires < new Date()) {
+  if (!row || row.purpose !== TOKEN_PURPOSE.WELCOME || row.expires < new Date()) {
+    return NextResponse.json(
+      { error: 'This sign-up link is invalid or has expired. Please register again.' },
+      { status: 400 },
+    )
+  }
+
+  // A welcome link must never reactivate or sign in a deactivated account.
+  // Same response as a bad token so the link state isn't leaked.
+  const existing = await prisma.user.findUnique({
+    where: { email: row.email },
+    select: { active: true, organisation: { select: { active: true } } },
+  })
+  if (!existing || !existing.active || (existing.organisation && !existing.organisation.active)) {
     return NextResponse.json(
       { error: 'This sign-up link is invalid or has expired. Please register again.' },
       { status: 400 },
@@ -112,9 +128,7 @@ export async function POST(req: NextRequest) {
         data: {
           password: passwordHash,
           mustChangePassword: false,
-          active: true,
         },
-        include: { organisation: { select: { active: true } } },
       })
       await tx.passwordResetToken.delete({ where: { token: tokenHash } })
       return updated
@@ -143,7 +157,9 @@ export async function POST(req: NextRequest) {
       organisationId: user.organisationId,
       mustChangePassword: false,
       totpEnabled: user.totpEnabled ?? false,
-      mfaPending: false,
+      // TOTP-enabled users still have to pass the second factor; the
+      // middleware sends them to /mfa-verify while this is true.
+      mfaPending: user.totpEnabled === true,
       hasPassword: true,
       effectivePrograms,
       charityPermissions: user.charityPermissions ?? [],
