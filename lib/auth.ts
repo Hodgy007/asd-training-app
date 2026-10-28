@@ -2,7 +2,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import AzureADProvider from 'next-auth/providers/azure-ad'
-import { encode } from 'next-auth/jwt'
+import { encode, getToken } from 'next-auth/jwt'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { prisma } from './prisma'
@@ -10,6 +10,7 @@ import { getUserPrograms } from './modules'
 import type { ProgramInfo } from './modules'
 import { getEffectiveOrgSettings } from './org-hierarchy'
 import { isSystemOrg } from './cohort'
+import { mfaVerifyLimiter } from './rate-limit'
 
 async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> {
   return getUserPrograms(userId)
@@ -25,6 +26,29 @@ function getDummyPasswordHash(): Promise<string> {
     dummyPasswordHash = bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12)
   }
   return dummyPasswordHash
+}
+
+// The `req` NextAuth hands to `authorize()` is `{ query, body, headers, method }`
+// — it has no parsed `cookies`, which `getToken()` needs (SessionStore reads
+// `req.cookies`, including the `.0` / `.1` chunk suffixes for large JWTs).
+// Parse the raw Cookie header into a Map, which SessionStore accepts.
+function parseCookieHeader(header: unknown): Map<string, string> {
+  const cookies = new Map<string, string>()
+  if (typeof header !== 'string') return cookies
+  for (const part of header.split(';')) {
+    const idx = part.indexOf('=')
+    if (idx < 0) continue
+    const name = part.slice(0, idx).trim()
+    let value = part.slice(idx + 1).trim()
+    if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1)
+    try {
+      value = decodeURIComponent(value)
+    } catch {
+      // keep the raw value
+    }
+    if (name && !cookies.has(name)) cookies.set(name, value)
+  }
+  return cookies
 }
 
 async function getOrgIsParent(organisationId: string | null | undefined): Promise<boolean> {
@@ -100,7 +124,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
         totpCode: { label: 'TOTP Code', type: 'text' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         // Single, opaque credentials error. Distinct messages for "no such
         // user" vs "wrong password" vs "uses SSO" let an attacker enumerate
         // valid emails and learn which sign-in method each one uses.
@@ -117,11 +141,32 @@ export const authOptions: NextAuthOptions = {
           include: { organisation: { select: { active: true } } },
         })
 
-        // MFA verification step (second call from MFA verify page) — gated
-        // by an existing user with TOTP enabled. Genuinely keyed on a code,
-        // not a password, so it doesn't widen the enumeration surface.
+        // MFA verification step (second call from MFA verify page). The code
+        // is a SECOND factor: it is only honoured for a caller who already
+        // holds a password-only session cookie (mfaPending) for this same
+        // user. Without that check, email + a current code alone would mint
+        // a full session and the password would be skippable.
         if (credentials.totpCode) {
           if (!user) throw new Error(INVALID_CREDENTIALS)
+
+          const pendingToken = await getToken({
+            req: {
+              headers: req?.headers ?? {},
+              cookies: parseCookieHeader(req?.headers?.cookie),
+            } as unknown as Parameters<typeof getToken>[0]['req'],
+            secret: process.env.NEXTAUTH_SECRET,
+          })
+          if (!pendingToken || pendingToken.mfaPending !== true || pendingToken.id !== user.id) {
+            throw new Error(INVALID_CREDENTIALS)
+          }
+
+          // Throttle per user, after the session check so an anonymous caller
+          // can't lock a real user out of verifying.
+          const rl = await mfaVerifyLimiter.check(`mfa:${user.id}`)
+          if (!rl.success) {
+            throw new Error('Too many MFA attempts. Please try again later.')
+          }
+
           const { TOTP } = await import('otpauth')
           if (!user.totpSecret || !user.totpEnabled) {
             throw new Error('MFA not enabled')

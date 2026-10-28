@@ -143,6 +143,11 @@ describe('POST /api/auth/register — existing org', () => {
       }),
     }))
     expect(prisma.passwordResetToken.create).toHaveBeenCalled()
+    // Magic-link welcome tokens must be tagged so /api/auth/welcome accepts them
+    // and forgot-password / provisioning tokens are rejected there.
+    expect(prisma.passwordResetToken.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ purpose: 'WELCOME' }),
+    })
   })
 
   it('400 when role not in allowedRoles', async () => {

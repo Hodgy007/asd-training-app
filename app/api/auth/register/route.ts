@@ -10,7 +10,7 @@ import { getEffectiveOrgSettings } from '@/lib/org-hierarchy'
 import { getPublicToolkitOrgId, mapFormRoleToPlatformRole } from '@/lib/toolkit-registration'
 import { LEAF_ROLES } from '@/types'
 import { ORG_TYPES } from '@/lib/rbac'
-import { hashResetToken } from '@/lib/reset-token'
+import { hashResetToken, TOKEN_PURPOSE } from '@/lib/reset-token'
 import { renderWelcomeSetPasswordEmail } from '@/lib/email-templates/welcome'
 import { logger, errMeta } from '@/lib/logger'
 import type { Role } from '@/types'
@@ -90,7 +90,12 @@ async function issueWelcomeToken(email: string): Promise<string> {
   await prisma.$transaction([
     prisma.passwordResetToken.deleteMany({ where: { email } }),
     prisma.passwordResetToken.create({
-      data: { email, token: hashResetToken(rawToken), expires },
+      data: {
+        email,
+        token: hashResetToken(rawToken),
+        expires,
+        purpose: TOKEN_PURPOSE.WELCOME,
+      },
     }),
   ])
   return rawToken
