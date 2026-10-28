@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, AlertCircle, ShieldCheck } from 'lucide-react'
+import { resolveLoginError } from '@/lib/login-errors'
 
 export default function LoginPage() {
   return (
@@ -14,23 +15,12 @@ export default function LoginPage() {
   )
 }
 
-const SSO_ERROR_MESSAGES: Record<string, string> = {
-  Configuration: 'Single Sign-On is not configured. Please sign in with email and password, or contact your administrator.',
-  OAuthSignin: 'Could not start the sign-in process. Please try again.',
-  OAuthCallback: 'Sign-in was interrupted. Please try again.',
-  OAuthCreateAccount: 'Could not link your account. Please contact your administrator.',
-  OAuthAccountNotLinked: 'This email is already linked to another sign-in method.',
-  AccessDenied: 'Access denied. Your account may be deactivated.',
-  Callback: 'Sign-in failed. Please try again.',
-}
-
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const rawSsoError = searchParams.get('error')
-  const ssoError = rawSsoError
-    ? SSO_ERROR_MESSAGES[rawSsoError] || rawSsoError
-    : null
+  // Only allow-listed text is shown: the query string is attacker-controlled.
+  const ssoError = resolveLoginError(rawSsoError)
   const registeredPending = searchParams.get('registered') === 'pending'
   const registeredOk = searchParams.get('registered') === '1'
   const [email, setEmail] = useState(searchParams.get('email') ?? '')
