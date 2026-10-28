@@ -181,7 +181,7 @@ const dragDropDataSchema = z.object({
   items: z.array(dragItemSchema),
   categories: z.array(dragCategorySchema).optional(),
   correctOrder: z.array(z.string()).optional(),
-  correctMatches: z.record(z.string()).optional(),
+  correctMatches: z.record(z.string(), z.string()).optional(),
 })
 
 const hotspotSchema = z.object({
