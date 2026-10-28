@@ -9,6 +9,9 @@ import { SurveyAiModal } from '@/components/super-admin/survey-ai-modal'
 import Link from 'next/link'
 import { HowToPanel } from '@/components/howto/panel'
 import SurveysHowTo from '@/components/howto/super-admin/surveys'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { showToast } from '@/components/ui/toaster'
 
 /* ──────────────────────────── Types ──────────────────────────── */
 
@@ -88,6 +91,7 @@ function getTargetSummary(
 /* ──────────────────────────── Main Page ──────────────────────────── */
 
 export default function SurveysPage() {
+  const confirmAction = useConfirm()
   const [surveys, setSurveys] = useState<Survey[]>([])
   const [loading, setLoading] = useState(true)
   const [showBuilder, setShowBuilder] = useState(false)
@@ -96,7 +100,6 @@ export default function SurveysPage() {
   const [aiGeneratedData, setAiGeneratedData] = useState<GeneratedSurvey | null>(null)
   const [saving, setSaving] = useState(false)
   const [viewingSurvey, setViewingSurvey] = useState<Survey | null>(null)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   /* ── Fetch surveys ──────────────────────────────────────────────── */
 
@@ -116,17 +119,6 @@ export default function SurveysPage() {
   useEffect(() => {
     fetchSurveys()
   }, [fetchSurveys])
-
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 3000)
-      return () => clearTimeout(t)
-    }
-  }, [toast])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-  }
 
   /* ── Create / update survey ─────────────────────────────────────── */
 
@@ -214,7 +206,7 @@ export default function SurveysPage() {
   /* ── Publish / close ────────────────────────────────────────────── */
 
   async function publishSurvey(surveyId: string, title: string) {
-    const ok = window.confirm(`Publish "${title}"? It will become visible to targeted users.`)
+    const ok = await confirmAction({ title: `Publish "${title}"?`, description: 'It will become visible to targeted users.', confirmLabel: 'Publish' })
     if (!ok) return
     const res = await fetch(`/api/super-admin/surveys/${surveyId}/publish`, { method: 'POST' })
     if (res.ok) {
@@ -227,7 +219,7 @@ export default function SurveysPage() {
   }
 
   async function closeSurvey(surveyId: string, title: string) {
-    const ok = window.confirm(`Close "${title}"? No more responses will be accepted.`)
+    const ok = await confirmAction({ title: `Close "${title}"?`, description: 'No more responses will be accepted.', confirmLabel: 'Close survey', tone: 'danger' })
     if (!ok) return
     const res = await fetch(`/api/super-admin/surveys/${surveyId}/close`, { method: 'POST' })
     if (res.ok) {
@@ -242,7 +234,7 @@ export default function SurveysPage() {
   /* ── Delete ─────────────────────────────────────────────────────── */
 
   async function deleteSurvey(surveyId: string, title: string) {
-    const ok = window.confirm(`Delete "${title}"? This cannot be undone.`)
+    const ok = await confirmAction({ title: `Delete "${title}"?`, description: 'This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' })
     if (!ok) return
     const res = await fetch(`/api/super-admin/surveys/${surveyId}`, { method: 'DELETE' })
     if (res.ok) {
@@ -306,19 +298,6 @@ export default function SurveysPage() {
 
   return (
     <div className="space-y-8 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-bold',
-            toast.type === 'success'
-              ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-              : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-          )}
-        >
-          {toast.message}
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -487,15 +466,15 @@ export default function SurveysPage() {
       />
 
       {/* View Survey Modal */}
-      {viewingSurvey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <Dialog open={!!viewingSurvey} onOpenChange={(open) => { if (!open) setViewingSurvey(null) }}>
+        {viewingSurvey && (
+          <DialogContent size="2xl" showClose={false} className="border-0" aria-describedby={undefined}>
             {/* Header */}
             <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
               <div className="flex items-center gap-3 min-w-0">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate">
+                <DialogTitle className="dark:text-white truncate">
                   {viewingSurvey.title}
-                </h3>
+                </DialogTitle>
                 <span
                   className={clsx(
                     'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0',
@@ -508,6 +487,7 @@ export default function SurveysPage() {
               <button
                 onClick={() => setViewingSurvey(null)}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-calm-100 dark:hover:bg-slate-700 flex-shrink-0"
+                aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -597,9 +577,9 @@ export default function SurveysPage() {
                 Close
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
 
       <HowToPanel>
         <SurveysHowTo />

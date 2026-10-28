@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Pencil, Plus, Trash2, Layers, Save, X } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 
 export interface ManagedSection {
   id: string
@@ -23,6 +24,7 @@ interface Props {
 // up/down reorder pattern from the Training modules list — two PATCH
 // requests per swap, sequential order ints. No drag-and-drop in v1.
 export function SectionsManager({ collectionId, sections, onChanged, onError }: Props) {
+  const confirmAction = useConfirm()
   const [showForm, setShowForm] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newDescription, setNewDescription] = useState('')
@@ -97,10 +99,15 @@ export function SectionsManager({ collectionId, sections, onChanged, onError }: 
 
   async function handleDelete(s: ManagedSection) {
     const docCount = s._count?.documents ?? 0
-    const msg = docCount > 0
-      ? `Delete "${s.title}"? Its ${docCount} document${docCount === 1 ? '' : 's'} will move to the Other resources group (not deleted).`
-      : `Delete "${s.title}"?`
-    if (!confirm(msg)) return
+    const ok = await confirmAction({
+      title: `Delete "${s.title}"?`,
+      description: docCount > 0
+        ? `Its ${docCount} document${docCount === 1 ? '' : 's'} will move to the Other resources group (not deleted).`
+        : undefined,
+      confirmLabel: 'Delete section',
+      tone: 'danger',
+    })
+    if (!ok) return
     setBusyId(s.id)
     try {
       const res = await fetch(`/api/super-admin/library/${collectionId}/sections/${s.id}`, {

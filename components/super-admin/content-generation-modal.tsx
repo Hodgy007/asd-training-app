@@ -14,6 +14,7 @@ import { FileDropZone } from './file-drop-zone'
 import { GenerationProgress } from './generation-progress'
 import type { ProgressPhase } from './generation-progress'
 import { ProgramPreview } from './program-preview'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -359,25 +360,25 @@ export function ContentGenerationModal({
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
-      aria-modal="true"
-      role="dialog"
-      aria-labelledby="modal-title"
-    >
-      {/* Card */}
-      <div className="pointer-events-auto relative z-10 flex w-full max-w-3xl flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 max-h-[90vh]">
+    <Dialog open onOpenChange={(open) => { if (!open) handleClose() }}>
+      <DialogContent
+        // Action modals deliberately keep the page visible: no dimmed backdrop
+        // and no click-outside close (see CLAUDE.md). Escape matches the X button.
+        overlay={false}
+        dismissOnOutsideClick={false}
+        showClose={false}
+        size="3xl"
+        className="flex flex-col overflow-hidden shadow-2xl dark:bg-slate-900"
+        aria-describedby={undefined}
+      >
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
             <HeaderIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           </div>
-          <h2
-            id="modal-title"
-            className="flex-1 text-base font-semibold text-slate-800 dark:text-slate-100"
-          >
+          <DialogTitle className="flex-1 text-base text-slate-800">
             {title}
-          </h2>
+          </DialogTitle>
           <button
             type="button"
             onClick={handleClose}
@@ -640,7 +641,7 @@ export function ContentGenerationModal({
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

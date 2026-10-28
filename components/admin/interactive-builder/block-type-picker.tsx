@@ -2,6 +2,7 @@
 
 import { X, GitBranch, GripVertical, MousePointer, HelpCircle, Images, Video } from 'lucide-react'
 import { InteractiveBlockType } from '@/types/interactive'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 interface BlockTypePickerProps {
   onSelect: (type: InteractiveBlockType) => void
@@ -19,11 +20,11 @@ const BLOCK_TYPES: { type: InteractiveBlockType; label: string; description: str
 
 export function BlockTypePicker({ onSelect, onClose }: BlockTypePickerProps) {
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="shadow-2xl p-6" showClose={false} aria-describedby={undefined}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Add Interactive Block</h3>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <DialogTitle className="font-bold">Add Interactive Block</DialogTitle>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -49,7 +50,7 @@ export function BlockTypePicker({ onSelect, onClose }: BlockTypePickerProps) {
             )
           })}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

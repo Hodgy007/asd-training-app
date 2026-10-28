@@ -26,6 +26,8 @@ import { normaliseHtml, stripHtml } from '@/lib/rich-text'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { HowToPanel } from '@/components/howto/panel'
 import TrainingHowTo from '@/components/howto/super-admin/training'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 /* ──────────────────────────── Types ──────────────────────────── */
 
@@ -77,11 +79,11 @@ const STATUS_LABEL: Record<string, string> = {
 /* ──────────────────────────── Main Page ──────────────────────────── */
 
 export default function TrainingContentPage() {
+  const confirmAction = useConfirm()
   const [programs, setPrograms] = useState<Program[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showNewProgram, setShowNewProgram] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const [generationModalOpen, setGenerationModalOpen] = useState(false)
   const [generationMode, setGenerationMode] = useState<GenerationMode>('generate')
@@ -132,17 +134,6 @@ export default function TrainingContentPage() {
   }, [])
 
   useEffect(() => { fetchPrograms() }, [fetchPrograms])
-
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 3000)
-      return () => clearTimeout(t)
-    }
-  }, [toast])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-  }
 
   async function toggleExpand(programId: string) {
     const next = new Set(expandedIds)
@@ -221,7 +212,12 @@ export default function TrainingContentPage() {
   }
 
   async function deleteModule(moduleId: string, moduleTitle: string, programId: string) {
-    const ok = window.confirm(`Delete "${moduleTitle}"? All lessons, quizzes, and any related training progress will be permanently deleted.`)
+    const ok = await confirmAction({
+      title: `Delete "${moduleTitle}"?`,
+      description: 'All lessons, quizzes, and any related training progress will be permanently deleted.',
+      confirmLabel: 'Delete module',
+      tone: 'danger',
+    })
     if (!ok) return
     setActionLoading(moduleId)
     try {
@@ -267,19 +263,6 @@ export default function TrainingContentPage() {
 
   return (
     <div className="space-y-8 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-bold',
-            toast.type === 'success'
-              ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-              : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-          )}
-        >
-          {toast.message}
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -847,6 +830,7 @@ function EditProgramForm({
   onDeleted: () => void
   onCancel: () => void
 }) {
+  const confirmAction = useConfirm()
   const { data: session } = useSession()
   const [name, setName] = useState(program.name)
   const [description, setDescription] = useState(program.description ?? '')
@@ -948,9 +932,12 @@ function EditProgramForm({
   }
 
   const handleUnpublishFromStripe = async () => {
-    const ok = window.confirm(
-      'Unpublish from Stripe? The Stripe price + product will be archived and the program will be removed from the /courses catalogue. You can re-publish later.'
-    )
+    const ok = await confirmAction({
+      title: 'Unpublish from Stripe?',
+      description: 'The Stripe price + product will be archived and the program will be removed from the /courses catalogue. You can re-publish later.',
+      confirmLabel: 'Unpublish',
+      tone: 'danger',
+    })
     if (!ok) return
     setPublishing(true)
     setPublishMessage(null)
@@ -976,10 +963,14 @@ function EditProgramForm({
 
   const handleDelete = async () => {
     const moduleCount = program._count?.modules ?? 0
-    const msg = moduleCount > 0
-      ? `Delete "${program.name}"? This program has ${moduleCount} module${moduleCount > 1 ? 's' : ''} assigned. All modules, lessons, quizzes, and any related training progress will be permanently deleted. Are you sure?`
-      : `Delete "${program.name}"? This cannot be undone.`
-    const ok = window.confirm(msg)
+    const ok = await confirmAction({
+      title: `Delete "${program.name}"?`,
+      description: moduleCount > 0
+        ? `This program has ${moduleCount} module${moduleCount > 1 ? 's' : ''} assigned. All modules, lessons, quizzes, and any related training progress will be permanently deleted.`
+        : 'This cannot be undone.',
+      confirmLabel: 'Delete program',
+      tone: 'danger',
+    })
     if (!ok) return
     setSubmitting(true)
     try {

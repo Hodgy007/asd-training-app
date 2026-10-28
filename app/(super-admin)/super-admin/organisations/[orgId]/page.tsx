@@ -26,6 +26,14 @@ import { clsx } from 'clsx'
 import { LEAF_ROLES } from '@/types'
 import { ORG_TYPES, ORG_TYPE_LABELS } from '@/lib/rbac'
 import { CredentialCardModal } from '@/components/ui/credential-card-modal'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -157,7 +165,6 @@ export default function OrgDetailPage() {
   const [notFound, setNotFound] = useState(false)
 
   // Toast
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Edit form state (mirrors org data)
   const [editName, setEditName] = useState('')
@@ -269,11 +276,6 @@ export default function OrgDetailPage() {
   useEffect(() => { fetchOrg() }, [fetchOrg])
 
   // ── Toast ──────────────────────────────────────────────────────────────────
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   // ── Edit helpers ───────────────────────────────────────────────────────────
 
@@ -522,18 +524,6 @@ export default function OrgDetailPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-page-enter">
 
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-sage-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Back link + header */}
       <div>
@@ -1332,16 +1322,22 @@ export default function OrgDetailPage() {
       )}
 
       {/* Delete confirmation modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 space-y-4">
+      <AlertDialog
+        open={showDeleteModal}
+        onOpenChange={(open) => {
+          if (deleting) return
+          setShowDeleteModal(open)
+          if (!open) setDeleteConfirmText('')
+        }}
+      >
+          <AlertDialogContent>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
                 <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Delete Organisation</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
+                <AlertDialogTitle>Delete Organisation</AlertDialogTitle>
+                <AlertDialogDescription className="text-slate-500 dark:text-slate-400">This action cannot be undone.</AlertDialogDescription>
               </div>
             </div>
 
@@ -1359,17 +1355,10 @@ export default function OrgDetailPage() {
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder="Type the confirmation phrase..."
               className="input w-full text-sm"
-              autoFocus
             />
 
             <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => { setShowDeleteModal(false); setDeleteConfirmText('') }}
-                className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancel
-              </button>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
               <button
                 type="button"
                 onClick={handleDelete}
@@ -1379,9 +1368,8 @@ export default function OrgDetailPage() {
                 {deleting ? 'Deleting...' : 'Delete Permanently'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </AlertDialogContent>
+      </AlertDialog>
 
       {credentialCard && (
         <CredentialCardModal

@@ -18,6 +18,8 @@ import {
 import { clsx } from 'clsx'
 import { HowToPanel } from '@/components/howto/panel'
 import SsoHowTo from '@/components/howto/org-admin/sso'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 interface SsoConfig {
   id: string
@@ -32,6 +34,7 @@ interface SsoConfig {
 }
 
 export default function SsoSettingsPage() {
+  const confirmAction = useConfirm()
   const { data: session, status } = useSession()
   const router = useRouter()
 
@@ -52,7 +55,6 @@ export default function SsoSettingsPage() {
   const [configured, setConfigured] = useState(false)
 
   const [allowedRoles, setAllowedRoles] = useState<string[]>([])
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -82,11 +84,6 @@ export default function SsoSettingsPage() {
       }
     }).finally(() => setLoading(false))
   }, [status])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   async function handleParseMetadata() {
     if (!metadataUrl.trim()) {
@@ -173,7 +170,12 @@ export default function SsoSettingsPage() {
   }
 
   async function handleDelete() {
-    if (!window.confirm('Remove Enterprise SSO configuration? Users will no longer be able to sign in via SAML SSO.')) {
+    if (!(await confirmAction({
+      title: 'Remove Enterprise SSO configuration?',
+      description: 'Users will no longer be able to sign in via SAML SSO.',
+      confirmLabel: 'Remove SSO',
+      tone: 'danger',
+    }))) {
       return
     }
     setDeleting(true)
@@ -213,16 +215,6 @@ export default function SsoSettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div className={clsx(
-          'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-          toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-        )}>
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Breadcrumb */}
       <Link

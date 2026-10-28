@@ -20,6 +20,8 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.112",
     "@prisma/client": "^5.22.0",
+    "@radix-ui/react-alert-dialog": "1.1.23",
+    "@radix-ui/react-dialog": "1.1.23",
     "@react-pdf/renderer": "^4.3.2",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
@@ -48,7 +50,9 @@
     "resend": "^6.28.0",
     "sanitize-html": "^2.17.7",
     "scorm-again": "^3.0.4",
+    "sonner": "2.0.8",
     "stripe": "^22.0.2",
+    "tailwind-merge": "2.6.0",
     "xml-crypto": "^6.1.2",
     "xml2js": "^0.6.2",
     "zod": "^3.23.8"

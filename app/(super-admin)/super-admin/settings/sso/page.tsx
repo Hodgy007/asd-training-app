@@ -14,6 +14,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { showToast } from '@/components/ui/toaster'
 
 interface SsoConfig {
   displayName: string | null
@@ -34,7 +35,6 @@ interface OAuthSsoConfig {
 
 export default function SsoSettingsPage() {
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const [displayName, setDisplayName] = useState('')
   const [metadataUrl, setMetadataUrl] = useState('')
@@ -50,11 +50,6 @@ export default function SsoSettingsPage() {
 
   const [oauth, setOauth] = useState<OAuthSsoConfig | null>(null)
   const [savingOauth, setSavingOauth] = useState(false)
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   useEffect(() => {
     Promise.all([
@@ -210,17 +205,6 @@ export default function SsoSettingsPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white',
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       <Link
         href="/super-admin/settings"

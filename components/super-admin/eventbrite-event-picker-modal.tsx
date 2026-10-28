@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
 interface EventbriteEventRow {
   id: string
@@ -177,34 +178,26 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
     }
   }
 
-  if (!open) return null
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4 py-6"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="eventbrite-picker-title"
-      onClick={() => !importing && onClose()}
-    >
-      <div
-        className="w-full max-w-2xl max-h-[90vh] rounded-2xl bg-white dark:bg-slate-800 shadow-2xl flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen && !importing) onClose() }}>
+      <DialogContent
+        size="2xl"
+        showClose={false}
+        overlayClassName="bg-slate-900/50 backdrop-blur-sm"
+        containerClassName="px-4 py-6"
+        className="border-0 shadow-2xl flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-4 p-6 pb-4 border-b border-calm-200 dark:border-slate-700">
           <div>
-            <h2
-              id="eventbrite-picker-title"
-              className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2"
-            >
+            <DialogTitle className="font-bold flex items-center gap-2">
               <Ticket className="h-5 w-5 text-orange-600" />
               Import cohorts from Eventbrite
-            </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            </DialogTitle>
+            <DialogDescription className="mt-1">
               Pick the events you want to import — each becomes a cohort that auto-enrolls
               everyone who books on Eventbrite.
-            </p>
+            </DialogDescription>
           </div>
           <button
             type="button"
@@ -408,8 +401,8 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 

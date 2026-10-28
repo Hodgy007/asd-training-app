@@ -13,6 +13,8 @@ import {
 } from 'lucide-react'
 import { HowToPanel } from '@/components/howto/panel'
 import AnnouncementsHowTo from '@/components/howto/super-admin/announcements'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 interface Announcement {
   id: string
@@ -25,11 +27,11 @@ interface Announcement {
 }
 
 export default function AnnouncementsPage() {
+  const confirmAction = useConfirm()
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Create form state
   const [formTitle, setFormTitle] = useState('')
@@ -49,11 +51,6 @@ export default function AnnouncementsPage() {
   }, [])
 
   useEffect(() => { fetchAnnouncements() }, [fetchAnnouncements])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   async function toggleActive(a: Announcement) {
     setActionLoading(a.id + '-toggle')
@@ -76,7 +73,7 @@ export default function AnnouncementsPage() {
   }
 
   async function handleDelete(a: Announcement) {
-    if (!confirm(`Delete "${a.title}"? This cannot be undone.`)) return
+    if (!(await confirmAction({ title: `Delete "${a.title}"?`, description: 'This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' }))) return
     setActionLoading(a.id + '-delete')
     try {
       const res = await fetch(`/api/super-admin/announcements/${a.id}`, { method: 'DELETE' })
@@ -125,18 +122,6 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-sage-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex items-center justify-between">

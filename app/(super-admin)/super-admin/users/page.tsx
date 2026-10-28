@@ -19,6 +19,7 @@ import { clsx } from 'clsx'
 import { PERMISSION_LABELS, ALL_CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { HowToPanel } from '@/components/howto/panel'
 import UsersHowTo from '@/components/howto/super-admin/users'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 
 interface CharityUser {
   id: string
@@ -33,6 +34,7 @@ interface CharityUser {
 type FormMode = 'closed' | 'create' | 'edit'
 
 export default function CharityUsersPage() {
+  const confirmAction = useConfirm()
   const { data: session } = useSession()
   const [users, setUsers] = useState<CharityUser[]>([])
   const [search, setSearch] = useState('')
@@ -170,9 +172,12 @@ export default function CharityUsersPage() {
   const handleDelete = async (user: CharityUser) => {
     const label = user.name?.trim() || user.email
     if (
-      !window.confirm(
-        `Permanently delete ${label}? This cannot be undone. If you only want to suspend access, edit the user and turn Active off instead.`
-      )
+      !(await confirmAction({
+        title: `Permanently delete ${label}?`,
+        description: 'This cannot be undone. If you only want to suspend access, edit the user and turn Active off instead.',
+        confirmLabel: 'Delete user',
+        tone: 'danger',
+      }))
     ) {
       return
     }

@@ -35,6 +35,8 @@ import { registerVideoFormat } from '@/lib/quill-video-format'
 
 import dynamic from 'next/dynamic'
 import type ReactQuillType from 'react-quill-new'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 // Cached Quill constructor after dynamic import; used by the image resize overlay.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,6 +135,7 @@ const VIDEO_MAX_BYTES = 5 * 1024 * 1024 * 1024
 /* ──────────────────────────── Main Page ──────────────────────────── */
 
 export default function LessonEditorPage() {
+  const confirmAction = useConfirm()
   const params = useParams()
   const router = useRouter()
   const moduleId = params.moduleId as string
@@ -141,7 +144,6 @@ export default function LessonEditorPage() {
   const [lesson, setLesson] = useState<LessonData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   // Blocks in the DB that don't match the schema. They can't be shown or edited,
   // and saving replaces the stored array — so the admin has to be told before
   // they save, not after. Deliberately not a toast: this must not auto-dismiss.
@@ -240,7 +242,7 @@ export default function LessonEditorPage() {
         const res = await fetch('/api/super-admin/training/upload', { method: 'POST', body: formData })
         if (!res.ok) {
           const d = await res.json()
-          setToast({ message: d.error || 'Image upload failed', type: 'error' })
+          showToast(d.error || 'Image upload failed', 'error')
           return
         }
         const { url } = await res.json()
@@ -253,7 +255,7 @@ export default function LessonEditorPage() {
           setEditContent(prev => prev + `<img src="${url}" />`)
         }
       } catch {
-        setToast({ message: 'Image upload failed', type: 'error' })
+        showToast('Image upload failed', 'error')
       } finally {
         setUploadingImage(false)
       }
@@ -399,13 +401,6 @@ export default function LessonEditorPage() {
     })
   }, [selectedImage])
 
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 3000)
-      return () => clearTimeout(t)
-    }
-  }, [toast])
-
   const saveLesson = async () => {
     setSaving(true)
     try {
@@ -421,7 +416,7 @@ export default function LessonEditorPage() {
       }
       if (editType === 'SURVEY') {
         if (!editSurveyId) {
-          setToast({ message: 'Choose a published survey for this lesson', type: 'error' })
+          showToast('Choose a published survey for this lesson', 'error')
           setSaving(false)
           return
         }
@@ -433,10 +428,10 @@ export default function LessonEditorPage() {
         body: JSON.stringify(body),
       })
       if (res.ok) {
-        setToast({ message: 'Lesson saved', type: 'success' })
+        showToast('Lesson saved', 'success')
         setTimeout(() => router.push(`/super-admin/training/${moduleId}`), 500)
       } else {
-        setToast({ message: 'Failed to save lesson', type: 'error' })
+        showToast('Failed to save lesson', 'error')
       }
     } finally {
       setSaving(false)
@@ -464,19 +459,6 @@ export default function LessonEditorPage() {
 
   return (
     <div className="space-y-8 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-bold',
-            toast.type === 'success'
-              ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-              : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-          )}
-        >
-          {toast.message}
-        </div>
-      )}
 
       {unreadableBlockCount > 0 && (
         <div
@@ -723,13 +705,13 @@ export default function LessonEditorPage() {
                     if (res.ok) {
                       const att = await res.json()
                       setAttachments((prev) => [...prev, att])
-                      setToast({ message: 'PDF attached', type: 'success' })
+                      showToast('PDF attached', 'success')
                     } else {
                       const d = await res.json()
-                      setToast({ message: d.error || 'Upload failed', type: 'error' })
+                      showToast(d.error || 'Upload failed', 'error')
                     }
                   } catch {
-                    setToast({ message: 'Upload failed', type: 'error' })
+                    showToast('Upload failed', 'error')
                   } finally {
                     setUploadingAttachment(false)
                     e.target.value = ''
@@ -759,15 +741,15 @@ export default function LessonEditorPage() {
                     className="ml-auto p-1 text-slate-400 hover:text-red-500 transition-colors"
                     title="Remove attachment"
                     onClick={async () => {
-                      if (!confirm(`Remove "${att.fileName}"?`)) return
+                      if (!(await confirmAction({ title: `Remove "${att.fileName}"?`, confirmLabel: 'Remove', tone: 'danger' }))) return
                       try {
                         const res = await fetch(`/api/super-admin/training/lessons/${lessonId}/attachments/${att.id}`, { method: 'DELETE' })
                         if (res.ok) {
                           setAttachments((prev) => prev.filter((a) => a.id !== att.id))
-                          setToast({ message: 'Attachment removed', type: 'success' })
+                          showToast('Attachment removed', 'success')
                         }
                       } catch {
-                        setToast({ message: 'Failed to remove', type: 'error' })
+                        showToast('Failed to remove', 'error')
                       }
                     }}
                   >
@@ -829,7 +811,6 @@ export default function LessonEditorPage() {
           expandedQ={expandedQ}
           setExpandedQ={setExpandedQ}
           lessonContent={editContent}
-          setToast={setToast}
           refetch={fetchLesson}
           onHide={() => setQuizVisible(false)}
         />
@@ -864,7 +845,6 @@ interface QuizSectionProps {
   expandedQ: string | null
   setExpandedQ: (id: string | null) => void
   lessonContent: string
-  setToast: (t: { message: string; type: 'success' | 'error' }) => void
   refetch: () => Promise<void>
   onHide: () => void
 }
@@ -876,10 +856,10 @@ function QuizSection({
   expandedQ,
   setExpandedQ,
   lessonContent,
-  setToast,
   refetch,
   onHide,
 }: QuizSectionProps) {
+  const confirmAction = useConfirm()
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showAiPanel, setShowAiPanel] = useState(false)
@@ -895,9 +875,12 @@ function QuizSection({
       onHide()
       return
     }
-    const ok = window.confirm(
-      `Remove this quiz? This will permanently delete ${questions.length} question${questions.length !== 1 ? 's' : ''}.`
-    )
+    const ok = await confirmAction({
+      title: 'Remove this quiz?',
+      description: `This will permanently delete ${questions.length} question${questions.length !== 1 ? 's' : ''}.`,
+      confirmLabel: 'Remove quiz',
+      tone: 'danger',
+    })
     if (!ok) return
     setRemovingQuiz(true)
     try {
@@ -907,14 +890,14 @@ function QuizSection({
         body: JSON.stringify({ questions: [] }),
       })
       if (res.ok) {
-        setToast({ message: 'Quiz removed', type: 'success' })
+        showToast('Quiz removed', 'success')
         await refetch()
         onHide()
       } else {
-        setToast({ message: 'Failed to remove quiz', type: 'error' })
+        showToast('Failed to remove quiz', 'error')
       }
     } catch {
-      setToast({ message: 'Network error removing quiz', type: 'error' })
+      showToast('Network error removing quiz', 'error')
     } finally {
       setRemovingQuiz(false)
     }
@@ -925,7 +908,7 @@ function QuizSection({
     try {
       const res = await fetch(`/api/super-admin/training/quiz/question/${qId}`, { method: 'DELETE' })
       if (res.ok) {
-        setToast({ message: 'Question deleted', type: 'success' })
+        showToast('Question deleted', 'success')
         await refetch()
       }
     } finally {
@@ -946,10 +929,10 @@ function QuizSection({
         const data = await res.json()
         setAiPreview(data.questions)
       } else {
-        setToast({ message: 'Failed to generate quiz', type: 'error' })
+        showToast('Failed to generate quiz', 'error')
       }
     } catch {
-      setToast({ message: 'Network error generating quiz', type: 'error' })
+      showToast('Network error generating quiz', 'error')
     } finally {
       setAiGenerating(false)
     }
@@ -958,7 +941,12 @@ function QuizSection({
   const saveAiQuestions = async () => {
     if (!aiPreview) return
     if (questions.length > 0) {
-      const ok = window.confirm(`This will replace ${questions.length} existing question${questions.length !== 1 ? 's' : ''}. Continue?`)
+      const ok = await confirmAction({
+        title: 'Replace existing questions?',
+        description: `This will replace ${questions.length} existing question${questions.length !== 1 ? 's' : ''}.`,
+        confirmLabel: 'Replace',
+        tone: 'danger',
+      })
       if (!ok) return
     }
     try {
@@ -975,13 +963,13 @@ function QuizSection({
         }),
       })
       if (res.ok) {
-        setToast({ message: 'Quiz questions saved', type: 'success' })
+        showToast('Quiz questions saved', 'success')
         setAiPreview(null)
         setShowAiPanel(false)
         await refetch()
       }
     } catch {
-      setToast({ message: 'Failed to save questions', type: 'error' })
+      showToast('Failed to save questions', 'error')
     }
   }
 
@@ -1077,7 +1065,7 @@ function QuizSection({
           lessonId={lessonId}
           onCreated={() => {
             setShowAddForm(false)
-            setToast({ message: 'Question added', type: 'success' })
+            showToast('Question added', 'success')
             refetch()
           }}
           onCancel={() => setShowAddForm(false)}
@@ -1099,7 +1087,7 @@ function QuizSection({
                 question={q}
                 onSaved={() => {
                   setEditingId(null)
-                  setToast({ message: 'Question updated', type: 'success' })
+                  showToast('Question updated', 'success')
                   refetch()
                 }}
                 onCancel={() => setEditingId(null)}

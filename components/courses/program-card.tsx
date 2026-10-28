@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 
 interface ProgramCardProps {
   programId: string
@@ -241,23 +243,21 @@ function FreeClaimModal({
   // that rule and keep the modal consistently light to match the rest of the
   // public /courses page.
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#001522]/70 px-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="free-claim-title"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md rounded-2xl bg-[#ffffff] p-7 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent
+        unstyled
+        showClose={false}
+        overlayClassName="bg-[#001522]/70 backdrop-blur-sm"
+        className="rounded-2xl bg-[#ffffff] p-7 shadow-2xl"
       >
-        <h2 id="free-claim-title" className="text-xl font-bold leading-tight text-[#001522]">
+        {/* Raw Radix Title/Description: the styled wrappers add dark-mode
+            text colours, which this always-light modal must not pick up. */}
+        <DialogPrimitive.Title className="text-xl font-bold leading-tight text-[#001522]">
           Get free access to {programName}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-[#475569]">
+        </DialogPrimitive.Title>
+        <DialogPrimitive.Description className="mt-2 text-sm leading-relaxed text-[#475569]">
           Enter your email and we&rsquo;ll send your sign-in details so you can start training right away.
-        </p>
+        </DialogPrimitive.Description>
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div>
             <label
@@ -316,7 +316,7 @@ function FreeClaimModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

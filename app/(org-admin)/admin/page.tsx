@@ -25,6 +25,8 @@ import { CredentialCardModal } from '@/components/ui/credential-card-modal'
 import { SendInviteButton } from '@/components/ui/send-invite-button'
 import { HowToPanel } from '@/components/howto/panel'
 import UsersHowTo from '@/components/howto/org-admin/users'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 const ROLE_LABELS: Record<string, string> = {
   CAREER_DEV_OFFICER: 'Careers Professional',
@@ -82,6 +84,7 @@ interface CreateForm {
 }
 
 export default function OrgAdminUsersPage() {
+  const confirmAction = useConfirm()
   const { data: session, status } = useSession()
   const router = useRouter()
 
@@ -92,7 +95,6 @@ export default function OrgAdminUsersPage() {
   const [data, setData] = useState<UsersResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const [showCreate, setShowCreate] = useState(false)
   const [createForm, setCreateForm] = useState<CreateForm>({
@@ -141,11 +143,6 @@ export default function OrgAdminUsersPage() {
     return () => clearTimeout(id)
   }, [fetchUsers])
 
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
-
   async function updateUser(userId: string, patch: Record<string, unknown>) {
     setActionLoading(userId)
     try {
@@ -167,7 +164,7 @@ export default function OrgAdminUsersPage() {
   }
 
   async function deleteUser(userId: string, name: string | null) {
-    if (!confirm(`Permanently delete ${name ?? 'this user'}? This cannot be undone.`)) return
+    if (!(await confirmAction({ title: `Permanently delete ${name ?? 'this user'}?`, description: 'This cannot be undone.', confirmLabel: 'Delete user', tone: 'danger' }))) return
     setActionLoading(userId)
     try {
       const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' })
@@ -184,7 +181,7 @@ export default function OrgAdminUsersPage() {
   }
 
   async function resetProgress(userId: string, name: string | null) {
-    if (!confirm(`Reset all training progress for ${name ?? 'this user'}? This cannot be undone.`)) return
+    if (!(await confirmAction({ title: `Reset all training progress for ${name ?? 'this user'}?`, description: 'This cannot be undone.', confirmLabel: 'Reset progress', tone: 'danger' }))) return
     setActionLoading(userId)
     try {
       const res = await fetch(`/api/admin/users/${userId}/progress`, { method: 'DELETE' })
@@ -246,22 +243,6 @@ export default function OrgAdminUsersPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? (
-            <CheckCircle className="h-4 w-4" />
-          ) : (
-            <XCircle className="h-4 w-4" />
-          )}
-          {toast.message}
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex items-center justify-between">

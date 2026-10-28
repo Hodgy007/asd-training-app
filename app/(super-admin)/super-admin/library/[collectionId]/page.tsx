@@ -35,6 +35,8 @@ import {
   ExternalLink,
   Globe2,
 } from 'lucide-react'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 interface LibraryDoc {
   id: string
@@ -85,12 +87,12 @@ function formatFileSize(bytes: number): string {
 }
 
 export default function CollectionDetailPage() {
+  const confirmAction = useConfirm()
   const { collectionId } = useParams<{ collectionId: string }>()
   const router = useRouter()
   const [collection, setCollection] = useState<Collection | null>(null)
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Add form state
   const [formTitle, setFormTitle] = useState('')
@@ -152,11 +154,6 @@ export default function CollectionDetailPage() {
   useEffect(() => {
     fetchCollection()
   }, [fetchCollection])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   function startEditCollection() {
     if (!collection) return
@@ -393,7 +390,12 @@ export default function CollectionDetailPage() {
       showToast('No documents to delete.', 'error')
       return
     }
-    if (!confirm(`Delete all ${count} document${count !== 1 ? 's' : ''} in this collection? The collection itself will be kept. This cannot be undone.`)) return
+    if (!(await confirmAction({
+      title: `Delete all ${count} document${count !== 1 ? 's' : ''} in this collection?`,
+      description: 'The collection itself will be kept. This cannot be undone.',
+      confirmLabel: 'Delete all',
+      tone: 'danger',
+    }))) return
     setClearingDocs(true)
     try {
       const res = await fetch(`/api/super-admin/library/${collectionId}/documents`, { method: 'DELETE' })
@@ -652,7 +654,7 @@ export default function CollectionDetailPage() {
   }
 
   async function handleDeleteDoc(doc: LibraryDoc) {
-    if (!confirm(`Delete "${doc.title}"? This cannot be undone.`)) return
+    if (!(await confirmAction({ title: `Delete "${doc.title}"?`, description: 'This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' }))) return
     setActionLoading(doc.id + '-delete')
     try {
       const res = await fetch(`/api/super-admin/library/${collectionId}/documents/${doc.id}`, { method: 'DELETE' })
@@ -688,16 +690,6 @@ export default function CollectionDetailPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div className={clsx(
-          'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-          toast.type === 'success' ? 'bg-sage-600 text-white' : 'bg-red-600 text-white'
-        )}>
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4">

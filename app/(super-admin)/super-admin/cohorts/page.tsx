@@ -11,8 +11,6 @@ import {
   Users,
   BookOpen,
   Calendar,
-  CheckCircle,
-  XCircle,
   Ticket,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -20,6 +18,8 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { HowToPanel } from '@/components/howto/panel'
 import CohortsHowTo from '@/components/howto/super-admin/cohorts'
 import { EventbriteEventPickerModal } from '@/components/super-admin/eventbrite-event-picker-modal'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { showToast } from '@/components/ui/toaster'
 
 interface CohortRow {
   id: string
@@ -36,12 +36,12 @@ interface CohortRow {
 type StatusTab = 'ACTIVE' | 'ARCHIVED'
 
 export default function CohortsPage() {
+  const confirmAction = useConfirm()
   const { data: session, status } = useSession()
   const router = useRouter()
 
   const [cohorts, setCohorts] = useState<CohortRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [statusTab, setStatusTab] = useState<StatusTab>('ACTIVE')
   const [eventbriteOpen, setEventbriteOpen] = useState(false)
 
@@ -65,11 +65,6 @@ export default function CohortsPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 4000)
   }
 
   function handleEventbriteImported(summary: {
@@ -103,7 +98,7 @@ export default function CohortsPage() {
   }
 
   async function handleDeactivate(cohortId: string, name: string) {
-    if (!confirm(`Deactivate cohort "${name}"? Members will lose access.`)) return
+    if (!(await confirmAction({ title: `Deactivate cohort "${name}"?`, description: 'Members will lose access.', confirmLabel: 'Deactivate', tone: 'danger' }))) return
     const res = await fetch(`/api/super-admin/cohorts/${cohortId}`, { method: 'DELETE' })
     if (res.ok) {
       showToast('Cohort deactivated.', 'success')
@@ -125,18 +120,6 @@ export default function CohortsPage() {
 
   return (
     <div className="space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

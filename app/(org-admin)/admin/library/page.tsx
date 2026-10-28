@@ -17,11 +17,11 @@ import {
   ChevronRight,
   Pencil,
   Check,
-  X,
 } from 'lucide-react'
 import { HowToPanel } from '@/components/howto/panel'
 import LibraryHowTo from '@/components/howto/org-admin/library'
 import { groupDocumentsBySection, isSectionedCollection, UNSECTIONED_GROUP_TITLE } from '@/lib/library-sections'
+import { showToast } from '@/components/ui/toaster'
 
 interface LibraryDoc {
   id: string
@@ -88,7 +88,6 @@ export default function OrgAdminLibraryPage() {
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [editSaving, setEditSaving] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const fetchCollections = useCallback(async () => {
     setLoading(true)
@@ -103,11 +102,6 @@ export default function OrgAdminLibraryPage() {
   useEffect(() => {
     fetchCollections()
   }, [fetchCollections])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   function startEditing() {
     if (!selectedCollection) return
@@ -182,16 +176,6 @@ export default function OrgAdminLibraryPage() {
 
     return (
       <div className="max-w-5xl mx-auto space-y-6 animate-page-enter">
-        {/* Toast */}
-        {toast && (
-          <div className={clsx(
-            'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-            toast.type === 'success' ? 'bg-sage-600 text-white' : 'bg-red-600 text-white'
-          )}>
-            {toast.type === 'success' ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
-            {toast.message}
-          </div>
-        )}
 
         <div>
           <button onClick={() => { setSelectedCollection(null); setSearch(''); setEditing(false) }} className="flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 mb-2 transition-colors">

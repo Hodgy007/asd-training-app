@@ -17,6 +17,7 @@ import {
 import { clsx } from 'clsx'
 import { HowToPanel } from '@/components/howto/panel'
 import MeetingsHowTo from '@/components/howto/org-admin/meetings'
+import { showToast } from '@/components/ui/toaster'
 
 type MeetingPlatform = 'ZOOM' | 'TEAMS'
 
@@ -42,7 +43,6 @@ export default function MeetingSettingsPage() {
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -74,11 +74,6 @@ export default function MeetingSettingsPage() {
       })
       .finally(() => setLoading(false))
   }, [status])
-
-  function showToast(message: string, type: 'success' | 'error') {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
-  }
 
   async function handleSave() {
     setSaving(true)
@@ -153,16 +148,6 @@ export default function MeetingSettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-page-enter">
-      {/* Toast */}
-      {toast && (
-        <div className={clsx(
-          'fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2',
-          toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-        )}>
-          {toast.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-          {toast.message}
-        </div>
-      )}
 
       {/* Breadcrumb */}
       <Link
