@@ -5,7 +5,8 @@ import { LEAF_ROLES } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params
   const org = await prisma.organisation.findUnique({
     where: { id: params.id },
     select: { id: true, name: true, active: true, pendingApproval: true, orgType: true },

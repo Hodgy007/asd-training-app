@@ -4,10 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { renderCertificateToBuffer } from '@/lib/certificate-template'
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { moduleId: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ moduleId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

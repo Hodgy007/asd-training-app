@@ -5,10 +5,11 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import prisma from '@/lib/prisma'
 
 interface Params {
-  params: { questionId: string }
+  params: Promise<{ questionId: string }>
 }
 
-export async function PATCH(req: NextRequest, { params }: Params) {
+export async function PATCH(req: NextRequest, props: Params) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -36,7 +37,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(_req: NextRequest, props: Params) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -10,7 +10,7 @@ Developer and DevOps reference for setup, deployment, and operation of the AAA D
 
 | Layer | Technology | Hosted at |
 |---|---|---|
-| Frontend & API | Next.js 14 App Router, TypeScript | Vercel (`asd-training-app-v2`) |
+| Frontend & API | Next.js 15 App Router, TypeScript | Vercel (`asd-training-app-v2`) |
 | Database | PostgreSQL, Prisma ORM | Neon (pooler port 6543) |
 | Authentication | NextAuth v4 JWT sessions, TOTP MFA | In-app |
 | File storage | Vercel Blob | Vercel |

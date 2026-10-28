@@ -4,7 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { canAccessJobs } from '@/lib/rbac'
 import { getJobForUser, resolveJobVisibilityUser } from '@/lib/jobs'
 
-export async function GET(_req: NextRequest, { params }: { params: { jobId: string } }) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!canAccessJobs(session) || !session?.user) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

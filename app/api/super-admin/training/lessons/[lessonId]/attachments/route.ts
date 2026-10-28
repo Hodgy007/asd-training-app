@@ -7,10 +7,11 @@ import { put } from '@vercel/blob'
 import { validateUpload, MAX_FILE_SIZE } from '@/lib/upload-validation'
 
 interface Params {
-  params: { lessonId: string }
+  params: Promise<{ lessonId: string }>
 }
 
-export async function POST(req: NextRequest, { params }: Params) {
+export async function POST(req: NextRequest, props: Params) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

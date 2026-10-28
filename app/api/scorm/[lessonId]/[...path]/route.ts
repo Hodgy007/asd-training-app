@@ -145,8 +145,9 @@ function getCaptivateRuntimeFallback(relPath: string): string | null {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { lessonId: string; path: string[] } },
+  props: { params: Promise<{ lessonId: string; path: string[] }> }
 ) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return new NextResponse('Unauthorised', { status: 401 })

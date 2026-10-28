@@ -14,10 +14,8 @@ import { isAiUnavailable } from '@/lib/ai-runner'
 
 export const maxDuration = 120
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { surveyId: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ surveyId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SURVEYS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -27,10 +25,8 @@ export async function GET(
   return NextResponse.json(insights)
 }
 
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: { surveyId: string } }
-) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ surveyId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SURVEYS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

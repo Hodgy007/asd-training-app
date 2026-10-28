@@ -1,3 +1,8 @@
+// `next dev` evaluates code with eval() for React Refresh, so without this the
+// dev server's pages never hydrate. Production builds don't need it and keep
+// the stricter policy.
+const devScriptSrc = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -38,7 +43,7 @@ const nextConfig = {
               // Stripe: js.stripe.com serves Stripe.js + Checkout + Billing Portal scripts.
               // 'unsafe-eval' dropped — modern Stripe.js doesn't need it. 'unsafe-inline'
               // stays for now; eliminating it requires nonce-based CSP (separate work).
-              "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+              `script-src 'self' 'unsafe-inline'${devScriptSrc} https://js.stripe.com`,
               // fonts.googleapis.com — Google Fonts stylesheets (Lexend).
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://via.placeholder.com https://placehold.co https://*.public.blob.vercel-storage.com https://*.stripe.com",

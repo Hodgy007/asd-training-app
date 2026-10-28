@@ -22,7 +22,11 @@ const updateSchema = z.object({
 })
 
 // PATCH — update a document's title, description, thumbnail, or active status
-export async function PATCH(req: NextRequest, { params }: { params: { id: string; docId: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  props: { params: Promise<{ id: string; docId: string }> }
+) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -73,7 +77,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 // DELETE — remove a document from a collection
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string; docId: string } }) {
+export async function DELETE(
+  _req: NextRequest,
+  props: { params: Promise<{ id: string; docId: string }> }
+) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

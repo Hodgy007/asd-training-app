@@ -29,7 +29,8 @@ async function loadOwnedJob(
   return (await canAdminManageOrg(session, job.organisationId)) ? job : null
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { jobId: string } }) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!(await loadOwnedJob(session, params.jobId))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -49,7 +50,8 @@ export async function GET(_req: NextRequest, { params }: { params: { jobId: stri
   return NextResponse.json({ job })
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { jobId: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!(await loadOwnedJob(session, params.jobId))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -68,7 +70,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { jobId: str
   return NextResponse.json({ job })
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { jobId: string } }) {
+export async function DELETE(_req: NextRequest, props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!(await loadOwnedJob(session, params.jobId))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })

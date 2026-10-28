@@ -34,10 +34,11 @@ function validateVideoUrl(value: unknown): { ok: true; value: string | null } | 
 }
 
 interface Params {
-  params: { lessonId: string }
+  params: Promise<{ lessonId: string }>
 }
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(_req: NextRequest, props: Params) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -84,7 +85,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
   return NextResponse.json(sanitised)
 }
 
-export async function PATCH(req: NextRequest, { params }: Params) {
+export async function PATCH(req: NextRequest, props: Params) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -218,7 +220,8 @@ async function prewarmLessonTts(content: string, interactiveBlocks: unknown): Pr
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, texts.length) }, next))
 }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(_req: NextRequest, props: Params) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

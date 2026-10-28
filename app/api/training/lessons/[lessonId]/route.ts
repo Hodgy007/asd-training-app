@@ -4,10 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isCharityLevel } from '@/lib/rbac'
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { lessonId: string } }
-) {
+export async function GET(_req: Request, props: { params: Promise<{ lessonId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

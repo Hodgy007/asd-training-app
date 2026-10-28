@@ -12,10 +12,8 @@ import { hashResetToken } from '@/lib/reset-token'
 const FROM = 'Ambitious About Autism <onboarding@resend.dev>'
 const TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000
 
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: { userId: string } },
-) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ userId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

@@ -6,10 +6,8 @@ import { canManageSessionWithChildren, getSessionById, resolveAttendees } from '
 import { canManageChildOrg } from '@/lib/org-hierarchy'
 import type { Role } from '@prisma/client'
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { sessionId: string } }
-) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ sessionId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

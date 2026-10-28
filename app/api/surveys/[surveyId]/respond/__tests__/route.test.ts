@@ -20,7 +20,7 @@ function req(body: unknown) {
   })
 }
 
-const params = { params: { surveyId: 's1' } }
+const params = { params: Promise.resolve({ surveyId: 's1' }) }
 
 beforeEach(() => {
   vi.clearAllMocks()

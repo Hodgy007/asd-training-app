@@ -6,10 +6,11 @@ import prisma from '@/lib/prisma'
 import { LessonType } from '@prisma/client'
 
 interface Params {
-  params: { moduleId: string }
+  params: Promise<{ moduleId: string }>
 }
 
-export async function POST(req: NextRequest, { params }: Params) {
+export async function POST(req: NextRequest, props: Params) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

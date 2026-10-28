@@ -33,10 +33,8 @@ const updateSchema = z.object({
   observationRetentionDays: z.number().int().min(1).max(10000).optional(),
 })
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { orgId: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ orgId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -100,10 +98,8 @@ export async function GET(
   return NextResponse.json(orgWithSso)
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { orgId: string } }
-) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ orgId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -212,10 +208,8 @@ export async function PATCH(
   return NextResponse.json(updated)
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { orgId: string } }
-) {
+export async function DELETE(_req: NextRequest, props: { params: Promise<{ orgId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -16,7 +16,7 @@ import { DELETE } from '../route'
 function req() {
   return new NextRequest('http://localhost/api/super-admin/users/u2', { method: 'DELETE' })
 }
-const ctx = { params: { userId: 'u2' } }
+const ctx = { params: Promise.resolve({ userId: 'u2' }) }
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -38,7 +38,7 @@ describe('DELETE /api/super-admin/users/[userId]', () => {
   })
 
   it('400 when trying to delete your own account', async () => {
-    const res = await DELETE(req(), { params: { userId: 'me' } })
+    const res = await DELETE(req(), { params: Promise.resolve({ userId: 'me' }) })
     expect(res.status).toBe(400)
     expect(vi.mocked(prisma.user.delete)).not.toHaveBeenCalled()
   })

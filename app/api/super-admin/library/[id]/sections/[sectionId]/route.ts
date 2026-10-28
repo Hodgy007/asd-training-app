@@ -20,8 +20,9 @@ async function requireSection(collectionId: string, sectionId: string) {
 // PATCH — rename / re-describe / reorder.
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string; sectionId: string } },
+  props: { params: Promise<{ id: string; sectionId: string }> }
 ) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -47,8 +48,9 @@ export async function PATCH(
 // the schema-level `onDelete: SetNull` — never deleted.
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string; sectionId: string } },
+  props: { params: Promise<{ id: string; sectionId: string }> }
 ) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_LIBRARY)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -7,10 +7,8 @@ import { isPaymentsEnabled, requireStripe } from '@/lib/stripe'
 
 export const runtime = 'nodejs'
 
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: { programId: string } }
-) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ programId: string }> }) {
+  const params = await props.params
   if (!isPaymentsEnabled) {
     return NextResponse.json({ error: 'Payments are not enabled' }, { status: 404 })
   }
@@ -116,10 +114,8 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { programId: string } }
-) {
+export async function DELETE(_req: NextRequest, props: { params: Promise<{ programId: string }> }) {
+  const params = await props.params
   if (!isPaymentsEnabled) {
     return NextResponse.json({ error: 'Payments are not enabled' }, { status: 404 })
   }

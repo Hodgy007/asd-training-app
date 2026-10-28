@@ -40,10 +40,8 @@ function isInlineViewable(fileType: string | null | undefined): boolean {
   )
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { docId: string } },
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ docId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

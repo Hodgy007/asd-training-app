@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, use } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { sanitizeHtml } from '@/lib/sanitize'
@@ -19,7 +19,7 @@ import { SurveyLesson } from '@/components/training/survey-lesson'
 import { clsx } from 'clsx'
 
 interface LessonPageProps {
-  params: { programId: string; moduleId: string; lessonId: string }
+  params: Promise<{ programId: string; moduleId: string; lessonId: string }>
 }
 
 interface LessonData {
@@ -69,7 +69,8 @@ interface LessonData {
   }
 }
 
-export default function ProgramLessonPage({ params: rawParams }: LessonPageProps) {
+export default function ProgramLessonPage(props: LessonPageProps) {
+  const rawParams = use(props.params)
   // Next.js App Router sometimes leaves URL-encoded dynamic segments undecoded
   // (e.g. "Module%201%20ID" instead of "Module 1 ID"). Decode defensively so
   // ids with spaces or other encoded chars still match the DB.

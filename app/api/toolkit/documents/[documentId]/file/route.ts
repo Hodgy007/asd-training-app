@@ -21,10 +21,8 @@ function isInlineViewable(fileType: string | null | undefined): boolean {
 // Public Vercel Blob URLs are world-readable forever once leaked, so the
 // raw fileUrl never leaves the server. Three-way auth: a NextAuth session
 // (any role) OR a verified toolkit-session cookie OR rejection.
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { documentId: string } },
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ documentId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   const registrant = session?.user?.id ? null : await getToolkitRegistrant()
 

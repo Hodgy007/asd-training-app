@@ -13,10 +13,8 @@ function isAnswered(value: string | undefined): boolean {
   return true
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { lessonId: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ lessonId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

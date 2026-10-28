@@ -24,10 +24,8 @@ const bodySchema = z.object({
 // 10 test runs per 5 minutes per user. Backed by Upstash when configured.
 const promptTestLimiter = createRateLimiter('ai-prompt-test', 5 * 60 * 1000, 10)
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_AI_PROMPTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -6,10 +6,8 @@ import { isCharityLevel } from '@/lib/rbac'
 import { getUserPrograms } from '@/lib/modules'
 import { renderProgramCertificateToBuffer } from '@/lib/certificate-template'
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { programId: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ programId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

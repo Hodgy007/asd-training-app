@@ -6,10 +6,11 @@ import { prisma } from '@/lib/prisma'
 import { del } from '@vercel/blob'
 
 interface Params {
-  params: { lessonId: string; attachmentId: string }
+  params: Promise<{ lessonId: string; attachmentId: string }>
 }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(_req: NextRequest, props: Params) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

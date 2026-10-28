@@ -8,10 +8,8 @@ import { isCharityLevel } from '@/lib/rbac'
 // URL never leaves the server — every request re-checks that the user has
 // the lesson's program in their effectivePrograms (or is a charity-level
 // previewer).
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { attachmentId: string } },
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ attachmentId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

@@ -7,7 +7,8 @@ import { JobsClient } from '../jobs-client'
 
 export const dynamic = 'force-dynamic'
 
-export default async function JobDeepLink({ params }: { params: { jobId: string } }) {
+export default async function JobDeepLink(props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!canAccessJobs(session) || !session?.user) redirect('/dashboard')
 

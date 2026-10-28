@@ -9,7 +9,8 @@ import { Award, Download } from 'lucide-react'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { isHtml } from '@/lib/rich-text'
 
-export default async function ProgramPage({ params }: { params: { programId: string } }) {
+export default async function ProgramPage(props: { params: Promise<{ programId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 

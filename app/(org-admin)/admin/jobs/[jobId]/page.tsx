@@ -8,7 +8,8 @@ import { JobBuilderForm } from '@/components/jobs/job-builder-form'
 
 export const dynamic = 'force-dynamic'
 
-export default async function EditOrgJobPage({ params }: { params: { jobId: string } }) {
+export default async function EditOrgJobPage(props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!isOrgAdmin(session) || !session?.user?.organisationId) redirect('/admin')
 

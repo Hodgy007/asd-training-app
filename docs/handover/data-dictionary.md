@@ -2,7 +2,7 @@
 
 **Version 3.0 · 11 May 2026 · Confidential — Ambitious about Autism**
 
-Database schema reference for every Prisma model used by the Next.js 14 application deployed at `asd-training-app-v2.vercel.app`. Database backend: Neon PostgreSQL accessed via Prisma ORM.
+Database schema reference for every Prisma model used by the Next.js 15 application deployed at `asd-training-app-v2.vercel.app`. Database backend: Neon PostgreSQL accessed via Prisma ORM.
 
 This document is regenerated from markdown via `npm run handover:build` — see `docs/handover/README.md` for the build process.
 

@@ -4,10 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { getSurveyResults, getTargetedUserCount } from '@/lib/survey-db'
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { surveyId: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ surveyId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SURVEYS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

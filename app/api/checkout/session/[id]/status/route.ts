@@ -4,7 +4,8 @@ import { isPaymentsEnabled, requireStripe } from '@/lib/stripe'
 
 export const runtime = 'nodejs'
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params
   if (!isPaymentsEnabled) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }

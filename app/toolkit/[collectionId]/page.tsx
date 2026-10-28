@@ -34,11 +34,12 @@ function fileTypeLabel(fileType: string, fileName: string): string {
   return ext || 'File'
 }
 
-export default async function ToolkitCollectionPage({
-  params,
-}: {
-  params: { collectionId: string }
-}) {
+export default async function ToolkitCollectionPage(
+  props: {
+    params: Promise<{ collectionId: string }>
+  }
+) {
+  const params = await props.params
   const collection = await prisma.libraryCollection.findFirst({
     where: {
       id: params.collectionId,

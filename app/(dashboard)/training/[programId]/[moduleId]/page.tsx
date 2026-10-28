@@ -18,11 +18,12 @@ import { clsx } from 'clsx'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { isHtml } from '@/lib/rich-text'
 
-export default async function ProgramModulePage({
-  params,
-}: {
-  params: { programId: string; moduleId: string }
-}) {
+export default async function ProgramModulePage(
+  props: {
+    params: Promise<{ programId: string; moduleId: string }>
+  }
+) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 

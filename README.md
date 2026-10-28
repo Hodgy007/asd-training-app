@@ -4,7 +4,7 @@ A multi-tenant SaaS platform for ASD awareness training, virtual workshops, and 
 
 **Live URL:** https://asd-training-app-v2.vercel.app
 **Repository:** https://github.com/Hodgy007/asd-training-app
-**Stack:** Next.js 14 (App Router) · TypeScript · Prisma · PostgreSQL (Neon) · NextAuth v4 · Vercel AI Gateway (Gemini / Claude / GPT) · `scorm-again` · Tailwind CSS · Vercel
+**Stack:** Next.js 15 (App Router, React 19) · TypeScript · Prisma · PostgreSQL (Neon) · NextAuth v4 · Vercel AI Gateway (Gemini / Claude / GPT) · `scorm-again` · Tailwind CSS · Vercel
 
 ---
 
