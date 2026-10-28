@@ -5,7 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { canManageJobs } from '@/lib/rbac'
 import { assignJobSchema } from '@/lib/validators/jobs'
 
-export async function POST(req: NextRequest, { params }: { params: { jobId: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!canManageJobs(session) || !session?.user) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

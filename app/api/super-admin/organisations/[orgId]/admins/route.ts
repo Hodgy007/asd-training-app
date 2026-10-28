@@ -26,10 +26,8 @@ const createAdminSchema = z.object({
   surveyIds: z.array(z.string()).optional(),
 })
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { orgId: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ orgId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

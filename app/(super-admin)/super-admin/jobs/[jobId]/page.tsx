@@ -9,7 +9,8 @@ import { JobAssignmentsPanel } from '@/components/jobs/job-assignments-panel'
 
 export const dynamic = 'force-dynamic'
 
-export default async function EditJobPage({ params }: { params: { jobId: string } }) {
+export default async function EditJobPage(props: { params: Promise<{ jobId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!canManageJobs(session)) redirect('/super-admin')
 

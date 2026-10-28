@@ -4,10 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { getSurveyForUser } from '@/lib/survey-db'
 import type { Role } from '@prisma/client'
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { surveyId: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ surveyId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

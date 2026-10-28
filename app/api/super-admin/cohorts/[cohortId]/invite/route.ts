@@ -23,7 +23,8 @@ function summarise(org: { inviteCode: string | null; inviteEnabled: boolean; inv
   }
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { cohortId: string } }) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ cohortId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -34,7 +35,8 @@ export async function GET(_req: NextRequest, { params }: { params: { cohortId: s
 }
 
 /** Generate (or regenerate) the invite code. The previous code is invalidated. */
-export async function POST(_req: NextRequest, { params }: { params: { cohortId: string } }) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ cohortId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -64,7 +66,8 @@ export async function POST(_req: NextRequest, { params }: { params: { cohortId: 
 }
 
 /** Toggle enabled/disabled or update expiry. */
-export async function PATCH(req: NextRequest, { params }: { params: { cohortId: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ cohortId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

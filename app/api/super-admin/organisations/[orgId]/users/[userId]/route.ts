@@ -26,8 +26,9 @@ const patchSchema = z.object({
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { orgId: string; userId: string } }
+  props: { params: Promise<{ orgId: string; userId: string }> }
 ) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

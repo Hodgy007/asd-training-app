@@ -13,7 +13,7 @@ import {
 } from '@/lib/tts-blob'
 
 interface Params {
-  params: { lessonId: string }
+  params: Promise<{ lessonId: string }>
 }
 
 // Synthesis is slow (seconds per call) and we don't want to hammer ElevenLabs,
@@ -37,7 +37,8 @@ async function processQueue<T>(items: T[], worker: (item: T) => Promise<void>) {
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, items.length) }, next))
 }
 
-export async function POST(_req: NextRequest, { params }: Params) {
+export async function POST(_req: NextRequest, props: Params) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

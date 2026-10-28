@@ -20,10 +20,8 @@ const createUserSchema = z.object({
   password: z.string().max(128).optional(),
 })
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { orgId: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ orgId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !isOrgAdmin(session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -85,10 +83,8 @@ export async function GET(
   })
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { orgId: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ orgId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !isOrgAdmin(session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

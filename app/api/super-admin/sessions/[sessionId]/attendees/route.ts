@@ -5,10 +5,8 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { getSessionById, resolveCharitySessionAttendees } from '@/lib/sessions'
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { sessionId: string } }
-) {
+export async function PUT(req: NextRequest, props: { params: Promise<{ sessionId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SESSIONS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

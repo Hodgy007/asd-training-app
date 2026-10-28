@@ -6,7 +6,8 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { AiPromptEditor } from '@/components/super-admin/ai-prompt-editor'
 import { AI_MODELS } from '@/lib/ai-models'
 
-export default async function AiPromptEditorPage({ params }: { params: { id: string } }) {
+export default async function AiPromptEditorPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
   if (!hasPermission(session, CHARITY_PERMISSIONS.MANAGE_AI_PROMPTS)) redirect('/super-admin')

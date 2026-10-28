@@ -10,7 +10,8 @@ const eventSchema = z.object({
   action: z.enum(['view', 'download']),
 })
 
-export async function POST(req: NextRequest, { params }: { params: { documentId: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ documentId: string }> }) {
+  const params = await props.params
   const body = await req.json().catch(() => ({}))
   const parsed = eventSchema.safeParse(body)
   if (!parsed.success) {

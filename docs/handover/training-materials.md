@@ -37,7 +37,7 @@ User management · Organisation hierarchy · Cohort management (with optional Ev
 
 ### Technology
 
-Built on Next.js 14, hosted on Vercel, database on Neon PostgreSQL. AI via the Vercel AI Gateway (Gemini / Claude / GPT). Text-to-speech via ElevenLabs (Lily voice). Email via Resend.
+Built on Next.js 15, hosted on Vercel, database on Neon PostgreSQL. AI via the Vercel AI Gateway (Gemini / Claude / GPT). Text-to-speech via ElevenLabs (Lily voice). Email via Resend.
 
 ## Onboarding Checklists by Role
 

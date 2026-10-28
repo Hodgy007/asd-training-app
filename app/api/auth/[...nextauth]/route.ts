@@ -7,9 +7,9 @@ const handler = NextAuth(authOptions)
 
 export { handler as GET }
 
-export async function POST(req: NextRequest, ctx: { params: { nextauth: string[] } }) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ nextauth: string[] }> }) {
   // Only rate-limit the credentials sign-in callback, not other NextAuth POST routes
-  const segments = ctx.params.nextauth
+  const segments = (await ctx.params).nextauth
   const isCredentialsSignIn =
     segments?.[0] === 'callback' && segments?.[1] === 'credentials'
 
@@ -24,5 +24,6 @@ export async function POST(req: NextRequest, ctx: { params: { nextauth: string[]
     }
   }
 
+  // next-auth >= 4.24.10 awaits ctx.params itself, so pass it through untouched.
   return handler(req, ctx)
 }

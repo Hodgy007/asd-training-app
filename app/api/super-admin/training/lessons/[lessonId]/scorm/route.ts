@@ -12,10 +12,8 @@ export const maxDuration = 60
 
 const MAX_ZIP_BYTES = 200 * 1024 * 1024 // 200 MB
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { lessonId: string } },
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ lessonId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !isSuperAdmin(session)) {
     return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
@@ -104,10 +102,8 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { lessonId: string } },
-) {
+export async function DELETE(_req: NextRequest, props: { params: Promise<{ lessonId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !isSuperAdmin(session)) {
     return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })

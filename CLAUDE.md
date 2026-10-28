@@ -52,7 +52,7 @@ Copy `.env.example` to `.env.local` for local dev. For production (Vercel), the 
 
 ## Architecture
 
-Next.js 14 App Router app. TypeScript throughout. Deployed to Vercel (`asd-training-app-v2`); database is PostgreSQL via **Neon** (migrated from Supabase -- Supabase was IPv6-only, incompatible with Vercel Lambda); AI runs through the **Vercel AI Gateway** (AI SDK v6) with a DB-backed prompt registry — default model is `google/gemini-2.5-flash`, but Claude and GPT variants are swappable per-prompt.
+Next.js 15 App Router app (React 19). TypeScript throughout. Deployed to Vercel (`asd-training-app-v2`); database is PostgreSQL via **Neon** (migrated from Supabase -- Supabase was IPv6-only, incompatible with Vercel Lambda); AI runs through the **Vercel AI Gateway** (AI SDK v6) with a DB-backed prompt registry — default model is `google/gemini-2.5-flash`, but Claude and GPT variants are swappable per-prompt.
 
 **Route groups:**
 - `app/(auth)/` -- login, register, forgot-password, reset-password pages; no auth required
@@ -225,6 +225,8 @@ Visibility lives in `lib/jobs.ts` with unit tests. **`targetRoles` is vestigial*
 - **Preview verification limits:** The `preview_*` tools can't render authenticated routes anonymously — `fetch('/dashboard')` returns `status: 0` because middleware redirects to `/login`. Only `/login`, `/privacy`, and password-reset flows are previewable without a session. For auth-gated pages, rely on type/build checks instead of visual verification.
 
 ## Recent Changes
+
+- **Next.js 15.5 + React 19 (Oct 2026):** Upgraded from Next 14.2.35, which no longer received security fixes (25 advisories including critical image-optimizer RCEs). Dynamic route `params` / `searchParams` and `cookies()` / `headers()` are now **async**: route handlers take `props: { params: Promise<{ id: string }> }` and `await props.params`; client pages read them with React's `use(props.params)`; route-handler tests must pass `{ params: Promise.resolve({...}) }`. GET route handlers and `fetch` are no longer cached by default (the app relied on neither). NextAuth v4.24.15 supports Next 15 and awaits `ctx.params` itself, so `app/api/auth/[...nextauth]/route.ts` passes `ctx` straight through. `next.config.js` adds `'unsafe-eval'` to `script-src` **only under `next dev`** (React Refresh needs it; without it local pages never hydrated) — production CSP is unchanged.
 
 - **Dialogs, confirmations and toasts unified (Oct 2026):** Added Radix-based `Dialog` / `AlertDialog`, a promise-based `useConfirm()`, and sonner toasts (see "Dialogs, confirmations and toasts" above). Every `window.confirm()` call (29 sites in 19 files) now goes through `useConfirm()`, the 29 pages that each hand-rolled a toast banner now call the shared `showToast`, and every hand-rolled `fixed inset-0` modal (pickers, survey viewer, feedback, toolkit lead form, lightbox, delete confirmations, mobile sidebar, the four action modals) now uses the primitives, gaining focus trap, Escape and focus return. `components/ui/modal.tsx` is now a thin wrapper over `Dialog`.
 

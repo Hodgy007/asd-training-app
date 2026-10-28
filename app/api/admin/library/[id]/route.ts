@@ -12,10 +12,8 @@ const updateSchema = z.object({
 })
 
 // PATCH — org admin can update title/description of collections assigned to their org
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !isOrgAdmin(session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

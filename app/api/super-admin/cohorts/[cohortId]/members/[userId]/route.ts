@@ -6,8 +6,9 @@ import { prisma } from '@/lib/prisma'
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { cohortId: string; userId: string } },
+  props: { params: Promise<{ cohortId: string; userId: string }> }
 ) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

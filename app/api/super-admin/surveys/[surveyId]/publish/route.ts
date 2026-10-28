@@ -4,10 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: { surveyId: string } }
-) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ surveyId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SURVEYS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

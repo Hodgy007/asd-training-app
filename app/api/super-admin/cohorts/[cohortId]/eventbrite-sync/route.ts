@@ -16,10 +16,8 @@ export const runtime = 'nodejs'
  * Manual "Refresh from Eventbrite" + sync attendees button on the cohort
  * detail page. Delegates entirely to the sync library.
  */
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: { cohortId: string } },
-) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ cohortId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -22,7 +22,7 @@ function makeReq(path = 'vr/Vi1503.mp4', range?: string) {
 }
 
 function ctx(path = ['vr', 'Vi1503.mp4']) {
-  return { params: { lessonId: 'lesson-1', path } }
+  return { params: Promise.resolve({ lessonId: 'lesson-1', path }) }
 }
 
 describe('GET /api/scorm/[lessonId]/[...path]', () => {

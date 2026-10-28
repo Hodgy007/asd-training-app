@@ -25,10 +25,8 @@ function safeZipName(title: string): string {
   return title.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'module'
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { moduleId: string } },
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ moduleId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

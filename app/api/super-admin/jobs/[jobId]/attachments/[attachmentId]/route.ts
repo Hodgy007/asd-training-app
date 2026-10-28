@@ -9,8 +9,9 @@ export const runtime = 'nodejs'
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { jobId: string; attachmentId: string } },
+  props: { params: Promise<{ jobId: string; attachmentId: string }> }
 ) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!canManageJobs(session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

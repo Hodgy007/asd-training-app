@@ -10,7 +10,8 @@ import { validatePassword } from '@/lib/password-validation'
  * Returns minimal cohort details and the validity status. Never reveals member
  * counts or other internal data.
  */
-export async function GET(_req: NextRequest, { params }: { params: { code: string } }) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ code: string }> }) {
+  const params = await props.params
   const cohort = await prisma.organisation.findUnique({
     where: { inviteCode: params.code },
     select: {
@@ -41,7 +42,8 @@ const joinSchema = z.object({
   password: z.string().min(8).max(200),
 })
 
-export async function POST(req: NextRequest, { params }: { params: { code: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ code: string }> }) {
+  const params = await props.params
   const ip = getClientIp(req)
   const limit = await joinLimiter.check(ip)
   if (!limit.success) {

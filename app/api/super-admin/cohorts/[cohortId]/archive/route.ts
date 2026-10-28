@@ -9,7 +9,8 @@ async function findCohort(cohortId: string) {
   return prisma.organisation.findFirst({ where: { id: cohortId, orgType: 'COHORT' } })
 }
 
-export async function POST(_req: NextRequest, { params }: { params: { cohortId: string } }) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ cohortId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -20,7 +21,8 @@ export async function POST(_req: NextRequest, { params }: { params: { cohortId: 
   return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { cohortId: string } }) {
+export async function DELETE(_req: NextRequest, props: { params: Promise<{ cohortId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -82,7 +82,7 @@ export type ToolkitSessionRegistrant = {
 }
 
 export async function getToolkitRegistrant(): Promise<ToolkitSessionRegistrant | null> {
-  const token = cookies().get(TOOLKIT_SESSION_COOKIE)?.value
+  const token = (await cookies()).get(TOOLKIT_SESSION_COOKIE)?.value
   const verified = verifyToolkitSession(token)
   if (!verified) return null
 

@@ -5,10 +5,8 @@ import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { getSurveyById } from '@/lib/survey-db'
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { surveyId: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ surveyId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SURVEYS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -22,10 +20,8 @@ export async function GET(
   return NextResponse.json(survey)
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { surveyId: string } }
-) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ surveyId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SURVEYS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -101,10 +97,8 @@ export async function PATCH(
   return NextResponse.json(updated)
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { surveyId: string } }
-) {
+export async function DELETE(_req: NextRequest, props: { params: Promise<{ surveyId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SURVEYS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -19,11 +19,12 @@ function parseAudience(value: string | string[] | undefined): Audience | null {
   return upper === 'EDUCATION' || upper === 'EMPLOYER' ? upper : null
 }
 
-export default async function TrainingPage({
-  searchParams,
-}: {
-  searchParams?: { audience?: string | string[] }
-}) {
+export default async function TrainingPage(
+  props: {
+    searchParams?: Promise<{ audience?: string | string[] }>
+  }
+) {
+  const searchParams = await props.searchParams
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 

@@ -6,10 +6,8 @@ import { prisma } from '@/lib/prisma'
 import { getSessionById } from '@/lib/sessions'
 import { generateCharityMeetingLink } from '@/lib/meetings'
 
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: { sessionId: string } }
-) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ sessionId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_SESSIONS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

@@ -12,10 +12,8 @@ const VALID_AUDIENCES = new Set(['EDUCATION', 'EMPLOYER'])
  * Toggle catalogue visibility + audience on the cohort's Eventbrite event row.
  * Used by the cohort detail page when the cohort is Eventbrite-sourced.
  */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { cohortId: string } },
-) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ cohortId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_COHORTS)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

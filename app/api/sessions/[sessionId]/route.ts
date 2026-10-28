@@ -7,10 +7,8 @@ import type { Role } from '@prisma/client'
 
 const PLATFORMS = ['ZOOM', 'TEAMS', 'CUSTOM', 'IN_PERSON'] as const
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { sessionId: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ sessionId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -37,10 +35,8 @@ export async function GET(
   return NextResponse.json(classSession)
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { sessionId: string } }
-) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ sessionId: string }> }) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

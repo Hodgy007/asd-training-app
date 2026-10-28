@@ -89,11 +89,12 @@ function SectionHeader({
   )
 }
 
-export default async function CoursesPage({
-  searchParams,
-}: {
-  searchParams?: { audience?: string | string[] }
-}) {
+export default async function CoursesPage(
+  props: {
+    searchParams?: Promise<{ audience?: string | string[] }>
+  }
+) {
+  const searchParams = await props.searchParams
   if (!isPaymentsEnabled) {
     notFound()
   }
