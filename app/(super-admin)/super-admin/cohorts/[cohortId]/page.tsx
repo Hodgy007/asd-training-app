@@ -842,7 +842,7 @@ export default function CohortDetailPage() {
                               title="Auto-enrolled from an Eventbrite booking"
                               className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
                             >
-                              <Ticket className="h-2.5 w-2.5" />
+                              <Ticket className="h-3.5 w-3.5" />
                               Eventbrite
                             </span>
                           )}

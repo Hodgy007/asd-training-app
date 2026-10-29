@@ -1,7 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { Briefcase } from 'lucide-react'
 import { JobCard, type JobCardData } from './job-card'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export function JobList({
   jobs,
@@ -65,7 +67,17 @@ export function JobList({
           </li>
         ))}
         {filtered.length === 0 && (
-          <li className="p-6 text-center text-slate-500 text-sm">No opportunities to show yet — check back soon.</li>
+          <li>
+            <EmptyState
+              icon={Briefcase}
+              title={search.trim() ? 'No jobs match your search' : 'No opportunities yet'}
+              description={
+                search.trim()
+                  ? 'Try a different word, or clear the search.'
+                  : 'New jobs, apprenticeships and placements will appear here. Check back soon.'
+              }
+            />
+          </li>
         )}
       </ul>
     </div>

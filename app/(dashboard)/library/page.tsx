@@ -25,6 +25,7 @@ import LibraryHowTo from '@/components/howto/learner/library'
 import { ImageLightbox } from '@/components/ui/image-lightbox'
 import { groupDocumentsBySection, isSectionedCollection, UNSECTIONED_GROUP_TITLE } from '@/lib/library-sections'
 import type { FeedbackDocumentContext } from '@/components/feedback/feedback-modal'
+import { EmptyState } from '@/components/ui/empty-state'
 
 const FeedbackModal = dynamic(
   () => import('@/components/feedback/feedback-modal').then((m) => m.FeedbackModal),
@@ -333,12 +334,11 @@ function LibraryPage() {
         </div>
 
         {docs.length === 0 ? (
-          <div className="text-center py-16">
-            <FileText className="h-12 w-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
-            <p className="text-slate-500 dark:text-slate-400 font-medium">
-              {search ? 'No documents match your search.' : 'No documents in this collection yet.'}
-            </p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title={search ? 'No documents match your search' : 'No documents in this collection yet'}
+            description={search ? 'Try a different word, or clear the search.' : "Documents will appear here once they're added."}
+          />
         ) : (() => {
           // Sections-aware render. With no sections we keep the legacy flat
           // grid (single group, no heading). With sections we render labelled
@@ -653,12 +653,12 @@ function LibraryPage() {
           Loading…
         </div>
       ) : filteredCollections.length === 0 ? (
-        <div className="text-center py-16">
-          <FolderOpen className="h-12 w-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
-          <p className="text-slate-500 dark:text-slate-400 font-medium">
-            {search ? 'No collections match your search.' : 'No document collections available yet.'}
-          </p>
-        </div>
+        <EmptyState
+          icon={FolderOpen}
+          title={search ? 'No collections match your search' : 'No document collections yet'}
+          description={search ? 'Try a different word, or clear the search.' : "Collections shared with you will appear here."}
+          action={search ? undefined : { href: '/dashboard', label: 'Go to dashboard' }}
+        />
       ) : tileSize === 'small' ? (
         <div className="divide-y divide-calm-100 dark:divide-slate-700 bg-white dark:bg-slate-800 rounded-2xl shadow-md overflow-hidden">
           {filteredCollections.map((col, idx) => {

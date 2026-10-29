@@ -17,6 +17,7 @@ import {
 import { format } from 'date-fns'
 import { HowToPanel } from '@/components/howto/panel'
 import WorkshopsHowTo from '@/components/howto/learner/workshops'
+import { EmptyState } from '@/components/ui/empty-state'
 
 interface SessionHost {
   id: string
@@ -181,15 +182,13 @@ export default function SessionsPage() {
       </div>
 
       {sessions.length === 0 ? (
-        <div className="card flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-16 h-16 bg-calm-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mb-4">
-            <Calendar className="h-8 w-8 text-slate-400" />
-          </div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">No upcoming workshops</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            You don&apos;t have any scheduled or in-progress workshops right now.
-          </p>
-        </div>
+        <EmptyState
+          className="card py-16"
+          icon={Calendar}
+          title="No upcoming workshops"
+          description="When you're invited to a workshop, it'll appear here with the date and joining link."
+          action={{ href: '/dashboard', label: 'Go to dashboard' }}
+        />
       ) : (
         <>
           {hosted.length > 0 && (
