@@ -1,11 +1,16 @@
+// Prisma 7: the client is generated into the repo (git-ignored) and talks to
+// Postgres through the `pg` driver adapter — see lib/prisma.ts. Connection
+// URLs for the CLI live in prisma.config.ts.
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+  // CommonJS so tsx-run scripts and seeds can load it (package.json has no
+  // "type": "module"); Next and Vitest are happy with either.
+  moduleFormat = "cjs"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 model User {

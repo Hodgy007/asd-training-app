@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { canManageSessionWithChildren, getSessionById } from '@/lib/sessions'
 import { canManageChildOrg } from '@/lib/org-hierarchy'
-import type { Role } from '@prisma/client'
+import type { Role } from '@/lib/generated/prisma/client'
 
 export async function PATCH(req: NextRequest, props: { params: Promise<{ sessionId: string }> }) {
   const params = await props.params

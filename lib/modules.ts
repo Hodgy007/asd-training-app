@@ -1,4 +1,4 @@
-import type { SubscriptionStatus } from '@prisma/client'
+import type { SubscriptionStatus } from '@/lib/generated/prisma/client'
 import prisma from './prisma'
 import { getEffectiveOrgSettings } from './org-hierarchy'
 import { isSystemOrg } from './cohort'

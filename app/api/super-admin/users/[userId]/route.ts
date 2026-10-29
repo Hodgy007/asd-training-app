@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { validatePassword } from '@/lib/password-validation'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@/lib/generated/prisma/client'
 
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),

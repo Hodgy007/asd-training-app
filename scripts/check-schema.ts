@@ -1,8 +1,11 @@
-import { PrismaClient } from '@prisma/client'
+// Run with: npx tsx scripts/check-schema.ts
+import 'dotenv/config'
+import { createPrismaClient } from '../lib/prisma'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
-const checks = await prisma.$queryRaw`
+async function main() {
+  const checks = await prisma.$queryRaw<{ check_name: string; present: boolean }[]>`
   SELECT 'User.lastStripeEventAt' AS check_name,
          EXISTS (SELECT 1 FROM information_schema.columns
                  WHERE table_name = 'User' AND column_name = 'lastStripeEventAt') AS present
@@ -23,9 +26,10 @@ const checks = await prisma.$queryRaw`
                    AND rc.delete_rule = 'RESTRICT')
 `
 
-console.log(`\nDB host: ${new URL(process.env.DATABASE_URL).host}\n`)
-for (const row of checks) {
-  console.log(`  ${row.present ? '✓' : '✗'}  ${row.check_name}`)
+  console.log(`\nDB host: ${new URL(process.env.DATABASE_URL ?? '').host}\n`)
+  for (const row of checks) {
+    console.log(`  ${row.present ? '✓' : '✗'}  ${row.check_name}`)
+  }
 }
 
-await prisma.$disconnect()
+main().finally(() => prisma.$disconnect())

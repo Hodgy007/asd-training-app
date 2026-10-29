@@ -1,6 +1,8 @@
-import { PrismaClient } from '@prisma/client'
+// Prisma 7's client no longer loads .env itself.
+import 'dotenv/config'
+import { createPrismaClient } from '../lib/prisma'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 const SUGGEST_PROMPT_KEY = 'homepage.heroImage.suggestPrompt'
 const GENERATE_KEY = 'homepage.heroImage.generate'

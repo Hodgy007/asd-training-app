@@ -30,9 +30,9 @@
  * Run against the dev branch first. After it succeeds, run `npx prisma db push`
  * so the rest of the schema (the CHARITY OrganisationType value) lands too.
  */
-import { PrismaClient } from '@prisma/client'
+import { createPrismaClient } from '../lib/prisma'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 const apply = process.argv.includes('--apply')
 
 const RETIRED_ROLES = [

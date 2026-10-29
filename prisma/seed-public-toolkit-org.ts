@@ -1,6 +1,9 @@
-import { PrismaClient } from '@prisma/client'
+// Prisma 7's client no longer loads .env itself.
+import 'dotenv/config'
+import { createPrismaClient } from '../lib/prisma'
+import type { PrismaClient } from '../lib/generated/prisma/client'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 const SLUG = 'public-toolkit'
 const REQUIRED_ALLOWED_ROLES = ['LEARNER']

@@ -12,9 +12,9 @@
  *   npx dotenv-cli -e .env.production -- npx tsx scripts/blob-orphan-scan.ts
  */
 import { list } from '@vercel/blob'
-import { PrismaClient } from '@prisma/client'
+import { createPrismaClient } from '../lib/prisma'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 interface Blob {
   url: string

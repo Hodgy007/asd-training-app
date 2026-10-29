@@ -1,5 +1,5 @@
 import prisma from './prisma'
-import type { Module, Lesson, QuizQuestion } from '@prisma/client'
+import type { Module, Lesson, QuizQuestion } from '@/lib/generated/prisma/client'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

@@ -1,9 +1,11 @@
-import { PrismaClient } from '@prisma/client'
+// Prisma 7's client no longer loads .env itself.
+import 'dotenv/config'
+import { createPrismaClient } from '../lib/prisma'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { seedPublicToolkitOrg } from './seed-public-toolkit-org'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 const trainingModules = [
   {

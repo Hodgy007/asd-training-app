@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isCharityLevel } from '@/lib/rbac'
 import { submitSurveyResponse } from '@/lib/survey-db'
-import { LessonType } from '@prisma/client'
+import { LessonType } from '@/lib/generated/prisma/client'
 
 function isAnswered(value: string | undefined): boolean {
   if (value === undefined) return false

@@ -1,23 +1,11 @@
 import { prisma } from './prisma'
 
+// The form-role constants live in a client-safe module so the toolkit lead
+// form can import them without pulling the database driver into the browser.
+export { TOOLKIT_FORM_ROLES, TOOLKIT_FORM_ROLE_LABELS, type ToolkitFormRole } from './toolkit-form-roles'
+import type { ToolkitFormRole } from './toolkit-form-roles'
+
 export const PUBLIC_TOOLKIT_ORG_SLUG = 'public-toolkit'
-
-export const TOOLKIT_FORM_ROLES = [
-  'autistic',
-  'parent_carer',
-  'practitioner',
-  'employer',
-  'supporter',
-] as const
-export type ToolkitFormRole = (typeof TOOLKIT_FORM_ROLES)[number]
-
-export const TOOLKIT_FORM_ROLE_LABELS: Record<ToolkitFormRole, string> = {
-  autistic: 'I am autistic',
-  parent_carer: 'I am the parent/carer/relative of an autistic young person',
-  practitioner: 'I am a professional working with autistic people',
-  employer: 'I am an employer',
-  supporter: 'I am a supporter',
-}
 
 // Every toolkit form role now maps to the single LEARNER platform role — what a
 // person sees comes from their organisation's assigned programmes, not their role.

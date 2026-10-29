@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getSessionById, canManageSession } from '@/lib/sessions'
-import type { Role } from '@prisma/client'
+import type { Role } from '@/lib/generated/prisma/client'
 
 export async function PATCH(req: NextRequest, props: { params: Promise<{ sessionId: string }> }) {
   const params = await props.params

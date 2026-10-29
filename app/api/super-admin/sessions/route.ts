@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { getCharitySessions, isActiveUser, resolveCharitySessionAttendees } from '@/lib/sessions'
-import type { SessionStatus } from '@prisma/client'
+import type { SessionStatus } from '@/lib/generated/prisma/client'
 
 const PLATFORMS = ['ZOOM', 'TEAMS', 'CUSTOM', 'IN_PERSON'] as const
 

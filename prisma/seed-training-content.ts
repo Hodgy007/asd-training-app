@@ -1,8 +1,10 @@
-import { PrismaClient } from '@prisma/client'
+// Prisma 7's client no longer loads .env itself.
+import 'dotenv/config'
+import { createPrismaClient } from '../lib/prisma'
 import { TRAINING_MODULES } from '../lib/training-data'
 import { CAREERS_MODULES } from '../lib/careers-training-data'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 // ---------------------------------------------------------------------------
 // Markdown → clean HTML converter

@@ -5,7 +5,7 @@ import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { canManageSessionWithChildren, getSessionById, isActiveOrgUser } from '@/lib/sessions'
 import { canManageChildOrg } from '@/lib/org-hierarchy'
-import type { Role, SessionStatus } from '@prisma/client'
+import type { Role, SessionStatus } from '@/lib/generated/prisma/client'
 
 const PLATFORMS = ['ZOOM', 'TEAMS', 'CUSTOM', 'IN_PERSON'] as const
 

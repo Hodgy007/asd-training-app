@@ -11,7 +11,7 @@
 // Callers gate this behind a useBrandStore boolean on the API, so a
 // generation can opt in/out per request.
 
-import type { PrismaClient } from '@prisma/client'
+import type { PrismaClient } from '@/lib/generated/prisma/client'
 
 type BrandAssetLite = {
   id: string

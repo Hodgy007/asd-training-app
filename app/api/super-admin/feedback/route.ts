@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import type { FeedbackStatus, FeedbackType, Prisma } from '@prisma/client'
+import type { FeedbackStatus, FeedbackType, Prisma } from '@/lib/generated/prisma/client'
 
 const PAGE_SIZE_DEFAULT = 25
 

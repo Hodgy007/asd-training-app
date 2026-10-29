@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import type { Session } from 'next-auth'
-import type { Role } from '@prisma/client'
+import type { Role } from '@/lib/generated/prisma/client'
 
 export type NotificationKind = 'survey' | 'workshop' | 'module' | 'library'
 

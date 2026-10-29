@@ -34,12 +34,12 @@
  *   • Stripe purchases (replayable from Stripe webhook history)
  */
 
-import { PrismaClient } from '@prisma/client'
+import { createPrismaClient } from '../lib/prisma'
 import bcrypt from 'bcryptjs'
 import { TRAINING_MODULES, type TrainingModule } from '../lib/training-data'
 import { CAREERS_MODULES } from '../lib/careers-training-data'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 const BOOTSTRAP_ADMIN_EMAIL = process.env.RESTORE_ADMIN_EMAIL ?? 'admin@asdawareness.org.uk'
 const BOOTSTRAP_ADMIN_PASSWORD = process.env.RESTORE_ADMIN_PASSWORD ?? 'TempAdmin!2026'
