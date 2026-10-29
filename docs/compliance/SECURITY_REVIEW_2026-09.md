@@ -118,7 +118,7 @@ At the password step, in addition to setting the pending flag, issue a short-liv
 | H1 | TOTP code alone no longer signs a user in; the code is only accepted alongside a password-step session for the same account, with a per-account limiter. Password-reset links can no longer be redeemed at `/welcome` to skip TOTP. | #99 |
 | H5 | Upgraded to Next.js 15.5.28 and React 19. Every Next.js advisory is cleared. | #102 |
 | New (High) | The login page displayed raw server errors, so a database outage showed users Prisma's message including the database hostname. Unexpected sign-in errors are now logged and replaced with a neutral message. `/login?error=` no longer displays arbitrary text from the URL (content spoofing); only known codes and the app's own messages are shown. | #103 |
-| New (Medium) | TOTP codes were reusable for their ~90-second validity window. Each code is now single-use per account, for sign-in and for disabling MFA (used steps are recorded in Upstash Redis, falling back to per-instance memory). | this PR |
+| New (Medium) | TOTP codes were reusable for their ~90-second validity window. Each code is now single-use per account, for sign-in and for disabling MFA (used steps are recorded in Upstash Redis, falling back to per-instance memory). | #105 |
 | Dependencies | `sanitize-html` 2.18.1 (three XSS bypasses), `undici` 6.29.1 (TLS validation bypass), Next's bundled `postcss` lifted to 8.5.32, `zod` 4.6.7 (memory-exhaustion advisory). `npm audit` now reports only the two low Quill findings accepted in §4. | #101, #102, #104 |
 
 Still open from §3 and §4: **H3** (org-join policy, a product decision), the deferred Medium/Low items in §4, and SAML admin TOTP enforcement (needs every SAML-using admin enrolled first).
