@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, Search, Loader2, ImageIcon } from 'lucide-react'
+import { X, Search, LoaderCircle, ImageIcon } from 'lucide-react'
 import { clsx } from 'clsx'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
@@ -107,7 +107,7 @@ export function ImagePickerModal({ open, onClose, onSelect, folder = 'all', titl
         <div className="flex-1 overflow-y-auto p-5">
           {loading && (
             <div className="flex items-center justify-center h-40 text-slate-500 dark:text-slate-400">
-              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+              <LoaderCircle className="h-5 w-5 animate-spin mr-2" />
               Loading images…
             </div>
           )}

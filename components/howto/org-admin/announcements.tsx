@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash } from 'lucide-react'
 import { Tip } from '@/components/howto/panel'
 
 export default function AnnouncementsHowTo() {
@@ -24,7 +24,7 @@ export default function AnnouncementsHowTo() {
           <span>Edit announcements to update their content or extend the expiry date.</span>
         </li>
         <li className="flex items-start gap-2">
-          <Trash2 className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
+          <Trash className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
           <span>Delete announcements that are no longer relevant.</span>
         </li>
       </ul>

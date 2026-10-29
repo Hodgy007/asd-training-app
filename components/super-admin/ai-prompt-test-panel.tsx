@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Play, Loader2 } from 'lucide-react'
+import { Play, LoaderCircle } from 'lucide-react'
 
 interface Draft {
   tone: string
@@ -72,7 +72,7 @@ export function AiPromptTestPanel({ promptId, inputVariables, draft }: Props) {
         disabled={running}
         className="btn-primary w-full inline-flex items-center justify-center gap-2"
       >
-        {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+        {running ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
         Test
       </button>
 

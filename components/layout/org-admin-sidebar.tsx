@@ -7,14 +7,14 @@ import {
   Users,
   Calendar,
   Megaphone,
-  BarChart3,
+  ChartColumn,
   Video,
   Shield,
   Briefcase,
   LogOut,
   X,
   FolderOpen,
-  Building2,
+  BuildingComplex,
   Settings,
   CreditCard,
   Home,
@@ -42,7 +42,7 @@ const BASE_NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: 'Users', icon: Users, exact: true },
 ]
 
-const PARENT_ORG_NAV: NavItem = { href: '/admin/schools', label: 'Schools', icon: Building2 }
+const PARENT_ORG_NAV: NavItem = { href: '/admin/schools', label: 'Schools', icon: BuildingComplex }
 
 const MIDDLE_NAV_ITEMS: NavItem[] = [
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
@@ -53,7 +53,7 @@ const MIDDLE_NAV_ITEMS: NavItem[] = [
   { href: '/admin/jobs', label: 'Job Openings', icon: Briefcase },
   { href: '/home', label: 'Home', icon: Home },
   { href: '/admin/settings/meetings', label: 'Meeting Settings', icon: Video },
-  { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/admin/reports', label: 'Reports', icon: ChartColumn },
   { href: '/admin/sessions', label: 'Workshops', icon: Calendar },
 ]
 

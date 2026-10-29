@@ -6,7 +6,7 @@ import { isCharityLevel } from '@/lib/rbac'
 import Link from 'next/link'
 import {
   ArrowLeft,
-  CheckCircle,
+  CircleCheckBig,
   Circle,
   Video,
   FileText,
@@ -117,7 +117,7 @@ export default async function ProgramModulePage(
         {isComplete && (
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-sage-600 font-medium">
-              <CheckCircle className="h-5 w-5" />
+              <CircleCheckBig className="h-5 w-5" />
               Module complete!
             </div>
             <a
@@ -155,7 +155,7 @@ export default async function ProgramModulePage(
               >
                 <div className="shrink-0">
                   {isLessonComplete ? (
-                    <CheckCircle className="h-6 w-6 text-sage-500" />
+                    <CircleCheckBig className="h-6 w-6 text-sage-500" />
                   ) : (
                     <Circle className="h-6 w-6 text-slate-300" />
                   )}

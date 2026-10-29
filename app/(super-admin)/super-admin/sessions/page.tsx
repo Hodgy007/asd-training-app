@@ -268,7 +268,7 @@ export default function CharitySessionListPage() {
                         PLATFORM_STYLES[s.platform]
                       )}
                     >
-                      <PlatformIcon className="h-3 w-3" />
+                      <PlatformIcon className="h-3.5 w-3.5" />
                       {PLATFORM_LABELS[s.platform]}
                     </span>
                     <span

@@ -12,10 +12,10 @@ import {
   Video,
   ExternalLink,
   Play,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   Save,
-  Loader2,
+  LoaderCircle,
   Link as LinkIcon,
   Film,
   MapPin,
@@ -62,7 +62,7 @@ function PlatformBadge({ platform }: { platform: ClassSession['platform'] }) {
   const Icon = platform === 'IN_PERSON' ? MapPin : Video
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${styles[platform]}`}>
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3.5 w-3.5" />
       {labels[platform]}
     </span>
   )
@@ -202,7 +202,7 @@ export default function SessionDetailPage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto flex items-center justify-center py-24">
-        <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
+        <LoaderCircle className="h-6 w-6 animate-spin text-primary-500" />
       </div>
     )
   }
@@ -326,7 +326,7 @@ export default function SessionDetailPage() {
                   disabled={updatingStatus}
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-500 hover:bg-slate-600 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors"
                 >
-                  <CheckCircle className="h-3.5 w-3.5" /> Complete
+                  <CircleCheckBig className="h-3.5 w-3.5" /> Complete
                 </button>
               )}
               {session.status !== 'CANCELLED' && session.status !== 'COMPLETED' && (
@@ -335,10 +335,10 @@ export default function SessionDetailPage() {
                   disabled={updatingStatus}
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors"
                 >
-                  <XCircle className="h-3.5 w-3.5" /> Cancel
+                  <CircleX className="h-3.5 w-3.5" /> Cancel
                 </button>
               )}
-              {updatingStatus && <Loader2 className="h-4 w-4 animate-spin text-slate-400" />}
+              {updatingStatus && <LoaderCircle className="h-4 w-4 animate-spin text-slate-400" />}
             </div>
           </div>
 
@@ -379,12 +379,12 @@ export default function SessionDetailPage() {
                 disabled={savingLinks}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors"
               >
-                {savingLinks ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                {savingLinks ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                 Save Links
               </button>
               {linksSaved && (
                 <span className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
-                  <CheckCircle className="h-3.5 w-3.5" /> Saved
+                  <CircleCheckBig className="h-3.5 w-3.5" /> Saved
                 </span>
               )}
             </div>
@@ -458,7 +458,7 @@ export default function SessionDetailPage() {
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors"
             >
               {savingAttendance ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <Save className="h-3.5 w-3.5" />
               )}
@@ -466,7 +466,7 @@ export default function SessionDetailPage() {
             </button>
             {attendanceSaved && (
               <span className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
-                <CheckCircle className="h-3.5 w-3.5" /> Saved
+                <CircleCheckBig className="h-3.5 w-3.5" /> Saved
               </span>
             )}
           </div>

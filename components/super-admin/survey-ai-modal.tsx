@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Loader2, Sparkles, Upload, FileText } from 'lucide-react'
+import { X, LoaderCircle, Sparkles, Upload, FileText } from 'lucide-react'
 import { clsx } from 'clsx'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
@@ -320,7 +320,7 @@ export function SurveyAiModal({ isOpen, onClose, onGenerated }: SurveyAiModalPro
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <LoaderCircle className="h-4 w-4 animate-spin" />
                 Generating...
               </>
             ) : (

@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
-  Building2,
-  BarChart3,
+  BuildingComplex,
+  ChartColumn,
   LogOut,
   X,
   Users,
@@ -40,9 +40,9 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/super-admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/super-admin/feedback', label: 'Feedback', icon: MessageSquare, charityAdminOnly: true },
-  { href: '/super-admin/organisations', label: 'Organisations', icon: Building2, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
+  { href: '/super-admin/organisations', label: 'Organisations', icon: BuildingComplex, permission: CHARITY_PERMISSIONS.MANAGE_ORGANISATIONS },
   { href: '/super-admin/products', label: 'Products', icon: Package },
-  { href: '/super-admin/reports', label: 'Reports', icon: BarChart3, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
+  { href: '/super-admin/reports', label: 'Reports', icon: ChartColumn, permission: CHARITY_PERMISSIONS.VIEW_REPORTS },
   { href: '/super-admin/subscribers', label: 'Subscribers', icon: CreditCard, charityAdminOnly: true },
   { href: '/super-admin/users', label: 'Users', icon: Users, charityAdminOnly: true },
 ]

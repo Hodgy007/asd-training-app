@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { AlertCircle, Check, CheckCircle, ClipboardList, Loader2, Star } from 'lucide-react'
+import { CircleAlert, Check, CircleCheckBig, ClipboardList, LoaderCircle, Star } from 'lucide-react'
 import { clsx } from 'clsx'
 
 type QuestionType = 'MULTIPLE_CHOICE' | 'YES_NO' | 'FREE_TEXT' | 'RATING_SCALE' | 'MULTI_SELECT'
@@ -129,7 +129,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
   if (!survey) {
     return (
       <div className="card text-center py-10">
-        <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-3" />
+        <CircleAlert className="h-8 w-8 text-amber-500 mx-auto mb-3" />
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Survey not linked</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           This training step needs a survey before learners can complete it.
@@ -144,7 +144,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
   if (!isOpen) {
     return (
       <div className="card text-center py-10">
-        <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-3" />
+        <CircleAlert className="h-8 w-8 text-amber-500 mx-auto mb-3" />
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Survey unavailable</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           This survey is not currently open. Please ask an administrator to publish or reopen it.
@@ -157,7 +157,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
     return (
       <div className="card text-center py-10">
         <div className="w-14 h-14 bg-sage-100 dark:bg-sage-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <CheckCircle className="h-8 w-8 text-sage-600 dark:text-sage-400" />
+          <CircleCheckBig className="h-8 w-8 text-sage-600 dark:text-sage-400" />
         </div>
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Survey complete</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -186,7 +186,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
 
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
-          <AlertCircle className="h-4 w-4 shrink-0" />
+          <CircleAlert className="h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
@@ -224,7 +224,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
                             : 'border-slate-300 dark:border-slate-500'
                         )}
                       >
-                        {answers[question.id] === option && <Check className="h-3 w-3 text-white" />}
+                        {answers[question.id] === option && <Check className="h-3.5 w-3.5 text-white" />}
                       </span>
                       {option}
                     </button>
@@ -315,7 +315,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
                               : 'border-slate-300 dark:border-slate-500'
                           )}
                         >
-                          {isSelected && <Check className="h-3 w-3 text-white" />}
+                          {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
                         </span>
                         {option}
                       </button>
@@ -334,7 +334,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
           disabled={submitting}
           className="btn-primary px-6 disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
         >
-          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
           Submit survey
         </button>
       </div>

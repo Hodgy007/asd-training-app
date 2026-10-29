@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { AlertCircle, ArrowLeft, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { CircleAlert, ArrowLeft, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { IconTile } from '@/components/ui/icon-tile'
 
 export default function WelcomePage() {
   return (
@@ -97,9 +98,7 @@ function WelcomeForm() {
 
         <div className="card border-t-4 border-t-warm-500">
           <div className="flex items-start gap-3 mb-4">
-            <div className="shrink-0 inline-flex items-center justify-center w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
-              <ShieldCheck className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-            </div>
+            <IconTile icon={ShieldCheck} className="inline-flex" />
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 {name ? `Welcome, ${name.split(' ')[0]}` : 'Welcome'}
@@ -114,7 +113,7 @@ function WelcomeForm() {
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+              <CircleAlert className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
@@ -189,7 +188,7 @@ function WelcomeForm() {
                 />
                 {confirmPassword && !passwordsMatch && (
                   <p className="flex items-center gap-1 text-xs text-red-600 mt-1">
-                    <AlertCircle className="h-3 w-3" /> Passwords do not match.
+                    <CircleAlert className="h-3.5 w-3.5" /> Passwords do not match.
                   </p>
                 )}
               </div>

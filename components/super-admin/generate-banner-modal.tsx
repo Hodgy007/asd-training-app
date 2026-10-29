@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, Sparkles, X, RefreshCcw, Check } from 'lucide-react'
+import { LoaderCircle, Sparkles, X, RefreshCcw, Check } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 interface GenerateBannerModalProps {
@@ -136,7 +136,7 @@ export function GenerateBannerModal({
         <div className="px-6 py-5 space-y-4">
           {status === 'suggesting' ? (
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <Loader2 className="h-4 w-4 animate-spin" /> Thinking up a prompt for you…
+              <LoaderCircle className="h-4 w-4 animate-spin" /> Thinking up a prompt for you…
             </div>
           ) : null}
 
@@ -176,7 +176,7 @@ export function GenerateBannerModal({
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 text-white font-bold hover:bg-primary-600 disabled:opacity-50"
               >
                 {status === 'generating' ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
                 ) : (
                   <Sparkles className="h-4 w-4" />
                 )}

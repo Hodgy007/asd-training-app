@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Play, Pause, Volume2, VolumeX, AudioLines, Loader2 } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, AudioLines, LoaderCircle } from 'lucide-react'
 
 interface TtsAudioPlayerProps {
   text: string
@@ -161,7 +161,7 @@ export function TtsAudioPlayer({ text, ariaLabel }: TtsAudioPlayerProps) {
         className="flex items-center justify-center h-8 w-8 rounded-full text-slate-800 dark:text-slate-100 hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors shrink-0"
       >
         {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <LoaderCircle className="h-4 w-4 animate-spin" />
         ) : playing ? (
           <Pause className="h-4 w-4" fill="currentColor" />
         ) : (

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Trash, ChevronDown, ChevronRight } from 'lucide-react'
 import { ScenarioNode, ScenarioChoice } from '@/types/interactive'
 
 interface ScenarioNodeEditorProps {
@@ -50,7 +50,7 @@ export function ScenarioNodeEditor({ node, allNodeIds, onChange, onDelete, isSta
         </button>
         {!isStart && (
           <button onClick={onDelete} className="text-red-400 hover:text-red-600 p-1">
-            <Trash2 className="h-4 w-4" />
+            <Trash className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -138,7 +138,7 @@ export function ScenarioNodeEditor({ node, allNodeIds, onChange, onDelete, isSta
                       </select>
                     </div>
                     <button onClick={() => removeChoice(idx)} className="text-red-400 hover:text-red-600 p-1 mt-1">
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ))}
@@ -147,7 +147,7 @@ export function ScenarioNodeEditor({ node, allNodeIds, onChange, onDelete, isSta
                 onClick={addChoice}
                 className="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 font-medium mt-2 hover:underline"
               >
-                <Plus className="h-3 w-3" /> Add choice
+                <Plus className="h-3.5 w-3.5" /> Add choice
               </button>
             </div>
           )}

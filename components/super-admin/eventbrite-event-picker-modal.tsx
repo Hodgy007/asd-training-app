@@ -6,8 +6,8 @@ import {
   Ticket,
   RefreshCw,
   Search,
-  AlertCircle,
-  CheckCircle,
+  CircleAlert,
+  CircleCheckBig,
   ExternalLink,
   Settings as SettingsIcon,
   X,
@@ -241,7 +241,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
 
           {phase.kind === 'error' && (
             <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-sm text-red-700 dark:text-red-300">
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <CircleAlert className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{phase.message}</span>
             </div>
           )}
@@ -318,7 +318,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
                     />
                     {urlError && (
                       <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-xs text-red-700 dark:text-red-300">
-                        <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                        <CircleAlert className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                         <span>{urlError}</span>
                       </div>
                     )}
@@ -351,7 +351,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
           <div className="border-t border-calm-200 dark:border-slate-700 p-6 space-y-3">
             {importError && (
               <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-sm text-red-700 dark:text-red-300">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <CircleAlert className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>{importError}</span>
               </div>
             )}
@@ -466,7 +466,7 @@ function EventRow({
           </p>
           {event.alreadyLinked && (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 shrink-0">
-              <CheckCircle className="h-3 w-3" />
+              <CircleCheckBig className="h-3.5 w-3.5" />
               Already imported
             </span>
           )}
@@ -483,7 +483,7 @@ function EventRow({
             className="mt-1 inline-flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 hover:underline"
           >
             View cohort
-            <ExternalLink className="h-3 w-3" />
+            <ExternalLink className="h-3.5 w-3.5" />
           </Link>
         )}
       </div>

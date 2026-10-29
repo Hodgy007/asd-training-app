@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Plus, Trash2, Upload, Loader2, ImageIcon } from 'lucide-react'
+import { Plus, Trash, Upload, LoaderCircle, ImageIcon } from 'lucide-react'
 import {
   InteractiveBlock,
   HotspotData,
@@ -235,7 +235,7 @@ export function HotspotBuilder({ block, onChange }: HotspotBuilderProps) {
                   disabled={uploading}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-calm-300 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary-400 dark:hover:border-primary-500 transition-colors disabled:opacity-50"
                 >
-                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  {uploading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                   {uploading ? 'Uploading...' : 'Upload new'}
                 </button>
                 <button
@@ -303,7 +303,7 @@ export function HotspotBuilder({ block, onChange }: HotspotBuilderProps) {
                       className="p-1 text-slate-400 hover:text-red-500 rounded-sm"
                       aria-label="Delete hotspot"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash className="h-4 w-4" />
                     </button>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
@@ -395,7 +395,7 @@ export function HotspotBuilder({ block, onChange }: HotspotBuilderProps) {
                     className="p-1 text-slate-400 hover:text-red-500 rounded-sm"
                     aria-label="Delete card"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">

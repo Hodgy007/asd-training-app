@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
-import { AlertTriangle, Trash2 } from 'lucide-react'
+import { TriangleAlert, Trash } from 'lucide-react'
 import { SettingsSubpage } from '@/components/settings/subpage'
 
 export default function SettingsDangerPage() {
@@ -35,7 +35,7 @@ export default function SettingsDangerPage() {
     <SettingsSubpage
       title="Danger Zone"
       description="Permanently delete your account and all associated data."
-      icon={AlertTriangle}
+      icon={TriangleAlert}
       iconColor="text-red-600 dark:text-red-400"
       iconBg="bg-red-50 dark:bg-red-900/20"
     >
@@ -77,7 +77,7 @@ export default function SettingsDangerPage() {
               disabled={confirmText !== 'DELETE' || deleting}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash className="h-4 w-4" />
               {deleting ? 'Deleting…' : 'Delete my account and all data'}
             </button>
           </>

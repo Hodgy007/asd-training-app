@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, Upload, Video, CheckCircle } from 'lucide-react'
+import { LoaderCircle, Upload, Video, CircleCheckBig } from 'lucide-react'
 import { InteractiveBlock, VideoData } from '@/types/interactive'
 import { clsx } from 'clsx'
 import { VideoPlayer } from '@/components/training/video-player'
@@ -90,7 +90,7 @@ export function VideoBuilder({ block, onChange }: VideoBuilderProps) {
           'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-calm-200 dark:border-slate-600 text-xs font-medium cursor-pointer hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors',
           uploading && 'opacity-50 pointer-events-none'
         )}>
-          {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+          {uploading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
           {uploading ? 'Uploading…' : 'Upload video file (MP4 / WebM, max 500 MB)'}
           <input
             type="file"
@@ -106,7 +106,7 @@ export function VideoBuilder({ block, onChange }: VideoBuilderProps) {
         </label>
         {data.url && data.url.includes('blob.vercel-storage.com') && (
           <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-            <CheckCircle className="h-3.5 w-3.5" /> Hosted
+            <CircleCheckBig className="h-3.5 w-3.5" /> Hosted
           </span>
         )}
       </div>

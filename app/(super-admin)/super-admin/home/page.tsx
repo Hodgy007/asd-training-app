@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import {
-  Save, Loader2, ArrowUp, ArrowDown, Trash2, Plus, Upload, Eye,
+  Save, LoaderCircle, ArrowUp, ArrowDown, Trash, Plus, Upload, Eye,
   Image as ImageIcon, Film, LayoutGrid, Type, Layout, Sparkles,
 } from 'lucide-react'
 import {
@@ -139,7 +139,7 @@ export default function SuperAdminHomePage() {
             disabled={saving || loading}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary-500 text-white text-sm font-bold hover:bg-primary-600 disabled:opacity-50"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save
           </button>
         </div>
@@ -178,7 +178,7 @@ export default function SuperAdminHomePage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+          <LoaderCircle className="h-6 w-6 animate-spin text-slate-400" />
         </div>
       ) : previewMode ? (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
@@ -267,7 +267,7 @@ function BlockCard({
         <div className="flex items-center gap-1">
           <IconButton onClick={onMoveUp} disabled={isFirst} aria-label="Move up"><ArrowUp className="h-4 w-4" /></IconButton>
           <IconButton onClick={onMoveDown} disabled={isLast} aria-label="Move down"><ArrowDown className="h-4 w-4" /></IconButton>
-          <IconButton onClick={onRemove} aria-label="Remove" className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"><Trash2 className="h-4 w-4" /></IconButton>
+          <IconButton onClick={onRemove} aria-label="Remove" className="hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"><Trash className="h-4 w-4" /></IconButton>
         </div>
       </div>
       <BlockEditor block={block} scopeLabel={scopeLabel} onUpdate={onUpdate} />
@@ -370,7 +370,7 @@ function TilesEditor({ block, onUpdate }: { block: Extract<HomeBlock, { kind: 't
           <div key={tile.id} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Tile {idx + 1}</span>
-              <IconButton onClick={() => removeTile(idx)} aria-label="Remove tile" className="hover:text-red-600"><Trash2 className="h-4 w-4" /></IconButton>
+              <IconButton onClick={() => removeTile(idx)} aria-label="Remove tile" className="hover:text-red-600"><Trash className="h-4 w-4" /></IconButton>
             </div>
             <div className="grid md:grid-cols-2 gap-2">
               <input className={inputClass} placeholder="Title" value={tile.title} maxLength={120} onChange={(e) => setTile(idx, { ...tile, title: e.target.value })} />
@@ -501,7 +501,7 @@ function MediaUpload({
           disabled={uploading}
           className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 whitespace-nowrap"
         >
-          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          {uploading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
           Upload
         </button>
         {aiContext && kind === 'image' && (

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ClipboardList, Loader2, X, ChevronRight, Star, Check, AlertCircle } from 'lucide-react'
+import { ClipboardList, LoaderCircle, X, ChevronRight, Star, Check, CircleAlert } from 'lucide-react'
 import { format } from 'date-fns'
 import { clsx } from 'clsx'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { IconTile } from '@/components/ui/icon-tile'
 
 interface PendingSurvey {
   id: string
@@ -97,7 +98,7 @@ export function PendingSurveys() {
     return (
       <div className="card">
         <div className="flex items-center justify-center py-6">
-          <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+          <LoaderCircle className="h-5 w-5 animate-spin text-slate-400" />
         </div>
       </div>
     )
@@ -163,9 +164,7 @@ export function PendingSurveys() {
 
             {submitted ? (
               <div className="p-6 text-center space-y-3 overflow-y-auto flex-1 min-h-0">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto">
-                  <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
-                </div>
+                <IconTile icon={Check} tone="success" size="lg" className="mx-auto" />
                 <p className="text-lg font-medium text-slate-900 dark:text-white">Thank you!</p>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Your response has been recorded.</p>
                 <button
@@ -179,7 +178,7 @@ export function PendingSurveys() {
               <div className="p-4 sm:p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
                 {error && (
                   <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <CircleAlert className="h-4 w-4 shrink-0" />
                     {error}
                   </div>
                 )}
@@ -211,7 +210,7 @@ export function PendingSurveys() {
                                 ? 'border-primary-500 bg-primary-500'
                                 : 'border-slate-300 dark:border-slate-500'
                             )}>
-                              {answers[q.id] === opt && <Check className="h-3 w-3 text-white" />}
+                              {answers[q.id] === opt && <Check className="h-3.5 w-3.5 text-white" />}
                             </div>
                             {opt}
                           </button>
@@ -300,7 +299,7 @@ export function PendingSurveys() {
                                   ? 'border-primary-500 bg-primary-500'
                                   : 'border-slate-300 dark:border-slate-500'
                               )}>
-                                {isSelected && <Check className="h-3 w-3 text-white" />}
+                                {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
                               </div>
                               {opt}
                             </button>
@@ -323,7 +322,7 @@ export function PendingSurveys() {
                     disabled={submitting}
                     className="px-4 py-2 bg-primary-500 hover:bg-primary-600 disabled:bg-primary-300 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
                   >
-                    {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
                     Submit Survey
                   </button>
                 </div>

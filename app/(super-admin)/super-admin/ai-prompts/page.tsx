@@ -93,7 +93,7 @@ export default async function AiPromptsListPage() {
                   </span>
                   {p._count.contextFiles > 0 && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-medium">
-                      <FileText className="h-3 w-3" />
+                      <FileText className="h-3.5 w-3.5" />
                       {p._count.contextFiles} file{p._count.contextFiles === 1 ? '' : 's'}
                     </span>
                   )}

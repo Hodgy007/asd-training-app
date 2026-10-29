@@ -7,11 +7,11 @@ import {
   Shield,
   ShieldCheck,
   RefreshCw,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   Save,
-  Loader2,
-  AlertTriangle,
+  LoaderCircle,
+  TriangleAlert,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { showToast } from '@/components/ui/toaster'
@@ -232,7 +232,7 @@ export default function SsoSettingsPage() {
               : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400',
           )}
         >
-          {configured ? <CheckCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+          {configured ? <CircleCheckBig className="h-3.5 w-3.5" /> : <CircleX className="h-3.5 w-3.5" />}
           {configured ? 'Configured' : 'Not configured'}
         </span>
       </div>
@@ -269,7 +269,7 @@ export default function SsoSettingsPage() {
               className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 disabled:opacity-60 transition-colors flex items-center gap-2 whitespace-nowrap"
             >
               {parsingMetadata ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <RefreshCw className="h-3.5 w-3.5" />
               )}
@@ -352,9 +352,9 @@ export default function SsoSettingsPage() {
             )}
           >
             {testResult.success ? (
-              <CheckCircle className="h-4 w-4 shrink-0" />
+              <CircleCheckBig className="h-4 w-4 shrink-0" />
             ) : (
-              <XCircle className="h-4 w-4 shrink-0" />
+              <CircleX className="h-4 w-4 shrink-0" />
             )}
             {testResult.message}
           </div>
@@ -366,7 +366,7 @@ export default function SsoSettingsPage() {
             disabled={testing || !ssoUrl.trim() || !entityId.trim() || !certificate.trim()}
             className={secondaryBtnCls}
           >
-            {testing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Shield className="h-3.5 w-3.5" />}
+            {testing ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Shield className="h-3.5 w-3.5" />}
             Test SSO
           </button>
           <button onClick={handleSave} disabled={saving} className={primaryBtnCls}>
@@ -481,7 +481,7 @@ function ProviderToggle({
 
       {!available && (
         <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-800 dark:text-amber-300">
-          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+          <TriangleAlert className="h-3.5 w-3.5 mt-0.5 shrink-0" />
           <span>
             Credentials missing. Set <span className="font-mono">{credentialEnvVars.join(', ')}</span> on Vercel,
             redeploy, then return here to enable.

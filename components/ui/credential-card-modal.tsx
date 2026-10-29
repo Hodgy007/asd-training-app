@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Modal } from './modal'
-import { QrCode, Printer, Mail, Check, Loader2 } from 'lucide-react'
+import { QrCode, Printer, Mail, Check, LoaderCircle } from 'lucide-react'
 
 interface CredentialCardModalProps {
   isOpen: boolean
@@ -139,7 +139,7 @@ export function CredentialCardModal({
         >
           {inviteState === 'sending' ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <LoaderCircle className="h-4 w-4 animate-spin" />
               Sending...
             </>
           ) : inviteState === 'sent' ? (

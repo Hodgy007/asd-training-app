@@ -8,8 +8,8 @@ import {
   ArrowLeft,
   Video,
   RefreshCw,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   Save,
   Wifi,
   WifiOff,
@@ -293,7 +293,7 @@ export default function MeetingSettingsPage() {
               ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
               : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
           )}>
-            {testResult.success ? <CheckCircle className="h-4 w-4 shrink-0" /> : <XCircle className="h-4 w-4 shrink-0" />}
+            {testResult.success ? <CircleCheckBig className="h-4 w-4 shrink-0" /> : <CircleX className="h-4 w-4 shrink-0" />}
             {testResult.message}
           </div>
         )}

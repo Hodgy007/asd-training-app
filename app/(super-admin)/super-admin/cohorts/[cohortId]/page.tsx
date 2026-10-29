@@ -12,9 +12,9 @@ import {
   FolderOpen,
   Calendar,
   Plus,
-  Trash2,
+  Trash,
   RefreshCw,
-  CheckCircle,
+  CircleCheckBig,
   Upload,
   Download,
   UserPlus,
@@ -873,7 +873,7 @@ export default function CohortDetailPage() {
                             className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                             title="Remove from cohort"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -958,7 +958,7 @@ export default function CohortDetailPage() {
                       />
                     )}
                     {!editingPrograms && isAssigned && (
-                      <CheckCircle className="h-4 w-4 text-emerald-500" />
+                      <CircleCheckBig className="h-4 w-4 text-emerald-500" />
                     )}
                   </div>
                 )
@@ -1049,7 +1049,7 @@ export default function CohortDetailPage() {
                         readOnly
                       />
                     ) : isAssigned ? (
-                      <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <CircleCheckBig className="h-4 w-4 text-emerald-500 shrink-0" />
                     ) : null}
                   </div>
                 )
@@ -1151,7 +1151,7 @@ export default function CohortDetailPage() {
                         readOnly
                       />
                     ) : isAssigned ? (
-                      <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <CircleCheckBig className="h-4 w-4 text-emerald-500 shrink-0" />
                     ) : null}
                   </div>
                 )

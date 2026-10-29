@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { BarChart3, RefreshCw, ChevronDown, ChevronUp, Users, FolderOpen, FileText, Download, ChevronRight, FileDown, Briefcase } from 'lucide-react'
+import { ChartColumn, RefreshCw, ChevronDown, ChevronUp, Users, FolderOpen, FileText, Download, ChevronRight, FileDown, Briefcase } from 'lucide-react'
 import { clsx } from 'clsx'
 import { GATSBY_BENCHMARK_CODES, GATSBY_BENCHMARKS } from '@/lib/gatsby-benchmarks'
 import { HowToPanel } from '@/components/howto/panel'
@@ -150,7 +150,7 @@ function ModuleRow({
                     key={u.id}
                     className="inline-flex items-center gap-1 text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full"
                   >
-                    <Users className="h-3 w-3" />
+                    <Users className="h-3.5 w-3.5" />
                     {u.name ?? u.email ?? u.id}
                   </span>
                 ))}
@@ -231,7 +231,7 @@ export default function OrgReportsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-emerald-600" />
+            <ChartColumn className="h-6 w-6 text-emerald-600" />
             Training Reports
           </h1>
           <p className="text-slate-500 mt-1">Module completion overview for your organisation.</p>
@@ -358,7 +358,7 @@ export default function OrgReportsPage() {
               ) : !data || data.modules.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="px-4 py-12 text-center text-slate-400">
-                    <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <ChartColumn className="h-8 w-8 mx-auto mb-2 opacity-30" />
                     {data?.totalUsers === 0
                       ? 'No members in this organisation yet.'
                       : 'No modules are assigned to this organisation.'}
@@ -581,7 +581,7 @@ function OrgLibCollectionRow({ col, isExpanded, onToggle }: { col: LibCollection
                       <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{doc.fileName}</p>
                     </div>
                     <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 shrink-0">
-                      <Download className="h-3 w-3" /> {doc.downloads}
+                      <Download className="h-3.5 w-3.5" /> {doc.downloads}
                     </span>
                   </div>
                 ))}

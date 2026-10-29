@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle } from 'lucide-react'
+import { ArrowLeft, CircleCheckBig } from 'lucide-react'
+import { IconTile } from '@/components/ui/icon-tile'
 
 export default function PendingSchoolPage() {
   return (
@@ -11,9 +12,7 @@ export default function PendingSchoolPage() {
         </div>
 
         <div className="card border-t-4 border-t-sage-500 text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-sage-100 dark:bg-sage-900/30 rounded-full mx-auto">
-            <CheckCircle className="h-7 w-7 text-sage-600 dark:text-sage-400" />
-          </div>
+          <IconTile icon={CircleCheckBig} tone="success" size="xl" className="inline-flex mx-auto" />
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">
             Your school is awaiting approval
           </h2>

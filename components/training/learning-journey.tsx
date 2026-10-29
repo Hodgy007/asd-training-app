@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { CheckCircle, Lock, BookOpen } from 'lucide-react'
+import { CircleCheckBig, Lock, BookOpen } from 'lucide-react'
+import { IconTile } from '@/components/ui/icon-tile'
 
 export interface JourneyModule {
   id: string
@@ -27,9 +28,7 @@ function truncate(text: string, max: number) {
 function StepCircle({ module }: { module: JourneyModule }) {
   if (module.status === 'complete') {
     return (
-      <div className="relative flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/40 border-2 border-green-500 dark:border-green-400">
-        <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-      </div>
+      <IconTile icon={CircleCheckBig} tone="success" size="lg" className="relative border-2 border-green-500 dark:border-green-400" />
     )
   }
 

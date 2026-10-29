@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { CheckCircle, XCircle, RotateCcw, GripVertical } from 'lucide-react'
+import { CircleCheckBig, CircleX, RotateCcw, GripVertical } from 'lucide-react'
 import { DragDropData, DragItem } from '@/types/interactive'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
@@ -215,8 +215,8 @@ function CategorizeVariant({
                           : 'border-calm-200 dark:border-slate-600 bg-calm-50 dark:bg-slate-700 text-slate-900 dark:text-white'
                       }`}
                     >
-                      {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />}
-                      {res === 'wrong' && <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
+                      {res === 'correct' && <CircleCheckBig className="h-4 w-4 text-green-500 shrink-0" />}
+                      {res === 'wrong' && <CircleX className="h-4 w-4 text-red-500 shrink-0" />}
                       {item.imageUrl && (
                         <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded-sm" />
                       )}
@@ -227,7 +227,7 @@ function CategorizeVariant({
                           className="text-slate-400 hover:text-red-500 p-0.5"
                           aria-label={`Remove ${item.label}`}
                         >
-                          <XCircle className="h-4 w-4" />
+                          <CircleX className="h-4 w-4" />
                         </button>
                       )}
                     </div>
@@ -350,8 +350,8 @@ function MatchVariant({
                     : 'border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white hover:border-primary-300 dark:hover:border-primary-600'
                 }`}
               >
-                {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />}
-                {res === 'wrong' && <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
+                {res === 'correct' && <CircleCheckBig className="h-4 w-4 text-green-500 shrink-0" />}
+                {res === 'wrong' && <CircleX className="h-4 w-4 text-red-500 shrink-0" />}
                 {item.imageUrl && (
                   <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded-sm" />
                 )}
@@ -542,8 +542,8 @@ function OrderVariant({
             >
               <span className="text-xs text-slate-400 dark:text-slate-500 font-bold w-5">{idx + 1}</span>
               <GripVertical className="h-4 w-4 text-slate-400 shrink-0" />
-              {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />}
-              {res === 'wrong' && <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
+              {res === 'correct' && <CircleCheckBig className="h-4 w-4 text-green-500 shrink-0" />}
+              {res === 'wrong' && <CircleX className="h-4 w-4 text-red-500 shrink-0" />}
               {item.imageUrl && (
                 <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded-sm" />
               )}
@@ -665,12 +665,12 @@ export function DragDropActivity({ title, instructions, data, completed, onCompl
           >
             {Object.values(results).every(Boolean) ? (
               <span className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
+                <CircleCheckBig className="h-4 w-4" />
                 All correct — well done!
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                <XCircle className="h-4 w-4" />
+                <CircleX className="h-4 w-4" />
                 {Object.values(results).filter(Boolean).length} of {Object.values(results).length} correct. Have another go!
               </span>
             )}

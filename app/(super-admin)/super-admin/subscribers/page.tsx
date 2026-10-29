@@ -6,8 +6,8 @@ import {
   CreditCard,
   Search,
   ExternalLink,
-  Loader2,
-  AlertCircle,
+  LoaderCircle,
+  CircleAlert,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -131,14 +131,14 @@ export default function SubscribersPage() {
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-900/20 p-4 flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
-          <AlertCircle className="h-4 w-4" />
+          <CircleAlert className="h-4 w-4" />
           {error}
         </div>
       )}
 
       {loading ? (
         <div className="card p-12 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-primary-600 dark:text-primary-400" />
+          <LoaderCircle className="h-6 w-6 animate-spin text-primary-600 dark:text-primary-400" />
         </div>
       ) : subscribers.length === 0 ? (
         <div className="card p-10 text-center">
@@ -227,7 +227,7 @@ export default function SubscribersPage() {
                           className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
                         >
                           Open
-                          <ExternalLink className="h-3 w-3" />
+                          <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                       ) : (
                         <span className="text-xs text-slate-400">—</span>

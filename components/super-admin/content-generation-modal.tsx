@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { X, Upload, Sparkles, CheckCircle, Loader2, AlertCircle } from 'lucide-react'
+import { X, Upload, Sparkles, CircleCheckBig, LoaderCircle, CircleAlert } from 'lucide-react'
 import { clsx } from 'clsx'
 import type {
   GenerationMode,
@@ -474,7 +474,7 @@ export function ContentGenerationModal({
               {/* Error */}
               {uploadError && (
                 <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-700/50 dark:bg-red-900/20">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+                  <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                   <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
                 </div>
               )}
@@ -503,7 +503,7 @@ export function ContentGenerationModal({
               />
               {saveError && (
                 <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-700/50 dark:bg-red-900/20">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+                  <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                   <p className="text-sm text-red-600 dark:text-red-400">{saveError}</p>
                 </div>
               )}
@@ -514,7 +514,7 @@ export function ContentGenerationModal({
           {step === 'done' && (
             <div className="flex flex-col items-center justify-center gap-4 py-10 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                <CheckCircle className="h-9 w-9 text-green-500" />
+                <CircleCheckBig className="h-9 w-9 text-green-500" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
@@ -622,7 +622,7 @@ export function ContentGenerationModal({
               disabled
               className="flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white opacity-70 cursor-not-allowed"
             >
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <LoaderCircle className="h-4 w-4 animate-spin" />
               Saving...
             </button>
           )}

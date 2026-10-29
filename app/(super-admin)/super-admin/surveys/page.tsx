@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Loader2, BarChart3, Pencil, Trash2, Send, XCircle, Sparkles, Eye, X } from 'lucide-react'
+import { Plus, LoaderCircle, ChartColumn, Pencil, Trash, Send, CircleX, Sparkles, Eye, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { clsx } from 'clsx'
 import { SurveyBuilder } from '@/components/super-admin/survey-builder'
@@ -342,12 +342,12 @@ export default function SurveysPage() {
       ) : loading ? (
         /* Loading state */
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+          <LoaderCircle className="h-8 w-8 animate-spin text-primary-500" />
         </div>
       ) : surveys.length === 0 ? (
         /* Empty state */
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-8 text-center">
-          <BarChart3 className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+          <ChartColumn className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
           <p className="text-sm text-slate-500 dark:text-slate-400">
             No surveys yet. Create one to start gathering feedback.
           </p>
@@ -429,7 +429,7 @@ export default function SurveysPage() {
                       title="Close"
                       className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
                     >
-                      <XCircle className="h-3.5 w-3.5" />
+                      <CircleX className="h-3.5 w-3.5" />
                       Close
                     </button>
                   )}
@@ -439,7 +439,7 @@ export default function SurveysPage() {
                       href={`/super-admin/surveys/${survey.id}/results`}
                       className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20 transition-colors"
                     >
-                      <BarChart3 className="h-3.5 w-3.5" />
+                      <ChartColumn className="h-3.5 w-3.5" />
                       Results
                     </Link>
                   )}
@@ -449,7 +449,7 @@ export default function SurveysPage() {
                     title="Delete"
                     className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>

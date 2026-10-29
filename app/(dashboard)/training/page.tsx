@@ -9,6 +9,7 @@ import { BookOpen, ChevronRight } from 'lucide-react'
 import { stripHtml } from '@/lib/rich-text'
 import { HowToPanel } from '@/components/howto/panel'
 import TrainingHowTo from '@/components/howto/learner/training'
+import { IconTile } from '@/components/ui/icon-tile'
 
 type Audience = 'EDUCATION' | 'EMPLOYER'
 
@@ -146,9 +147,7 @@ export default async function TrainingPage(
                 className="card hover:shadow-md hover:border-primary-200 transition-all group"
               >
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-primary-100">
-                    <BookOpen className="h-5 w-5 text-primary-600" />
-                  </div>
+                  <IconTile icon={BookOpen} />
                   <div className="flex-1 min-w-0">
                     <h2 className="font-bold text-slate-900 group-hover:text-primary-600 transition-colors">
                       {program.name}

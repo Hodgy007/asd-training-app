@@ -6,8 +6,8 @@ import {
   ArrowLeft,
   Video,
   RefreshCw,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   Save,
   Wifi,
   WifiOff,
@@ -288,9 +288,9 @@ export default function MeetingsSettingsPage() {
             )}
           >
             {testResult.success ? (
-              <CheckCircle className="h-4 w-4 shrink-0" />
+              <CircleCheckBig className="h-4 w-4 shrink-0" />
             ) : (
-              <XCircle className="h-4 w-4 shrink-0" />
+              <CircleX className="h-4 w-4 shrink-0" />
             )}
             {testResult.message}
           </div>

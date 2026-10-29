@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { sanitizeHtml } from '@/lib/sanitize'
-import { ArrowLeft, Loader2, BarChart3, Sparkles, RefreshCw, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, LoaderCircle, ChartColumn, Sparkles, RefreshCw, TriangleAlert } from 'lucide-react'
 import { SurveyResultsView } from '@/components/super-admin/survey-results-view'
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -181,7 +181,7 @@ export default function SurveyResultsPage() {
           Back to Surveys
         </Link>
         <div className="card text-center py-12">
-          <AlertTriangle className="h-8 w-8 text-red-400 mx-auto mb-3" />
+          <TriangleAlert className="h-8 w-8 text-red-400 mx-auto mb-3" />
           <p className="text-red-500">{error}</p>
           <button
             onClick={fetchData}
@@ -213,7 +213,7 @@ export default function SurveyResultsPage() {
         </Link>
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary-600" />
+            <ChartColumn className="h-6 w-6 text-primary-600" />
             {survey.title}
           </h1>
           <span
@@ -230,7 +230,7 @@ export default function SurveyResultsPage() {
       {/* Error banner (non-fatal) */}
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+          <TriangleAlert className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
         </div>
       )}
@@ -280,7 +280,7 @@ export default function SurveyResultsPage() {
           >
             {generatingInsights ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <LoaderCircle className="h-4 w-4 animate-spin" />
                 Generating...
               </>
             ) : insights.length > 0 ? (
@@ -305,7 +305,7 @@ export default function SurveyResultsPage() {
 
         {generatingInsights && (
           <div className="card text-center py-10">
-            <Loader2 className="h-8 w-8 animate-spin text-primary-500 mx-auto mb-3" />
+            <LoaderCircle className="h-8 w-8 animate-spin text-primary-500 mx-auto mb-3" />
             <p className="text-slate-500 dark:text-slate-400 text-sm">
               Analysing responses and generating insights... This may take a moment.
             </p>

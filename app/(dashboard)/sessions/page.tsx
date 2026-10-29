@@ -9,7 +9,7 @@ import {
   Users,
   Video,
   ExternalLink,
-  Loader2,
+  LoaderCircle,
   Settings,
   Plus,
   MapPin,
@@ -58,7 +58,7 @@ function PlatformBadge({ platform }: { platform: ClassSession['platform'] }) {
   const Icon = platform === 'IN_PERSON' ? MapPin : Video
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${styles[platform]}`}>
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3.5 w-3.5" />
       {labels[platform]}
     </span>
   )
@@ -155,7 +155,7 @@ export default function SessionsPage() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto flex items-center justify-center py-24">
-        <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
+        <LoaderCircle className="h-6 w-6 animate-spin text-primary-500" />
       </div>
     )
   }

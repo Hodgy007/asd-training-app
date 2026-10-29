@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ArrowRight, Check } from 'lucide-react'
 
 interface SubscriptionCardProps {
   yearlyPrice: string | null
@@ -69,9 +70,7 @@ export function SubscriptionCard({ yearlyPrice }: SubscriptionCardProps) {
                   className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-aaa-green text-white"
                   aria-hidden="true"
                 >
-                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="h-3.5 w-3.5" strokeWidth={3} />
                 </span>
                 <span>{feature}</span>
               </li>
@@ -101,9 +100,7 @@ export function SubscriptionCard({ yearlyPrice }: SubscriptionCardProps) {
             ) : (
               <>
                 Subscribe now
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
+                <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
               </>
             )}
           </button>

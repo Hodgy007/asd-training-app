@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { ToolkitSessionStatus } from '@/components/toolkit/toolkit-session-status'
+import { ArrowDown, ArrowRight, FileText, Folder } from 'lucide-react'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -53,9 +54,7 @@ function ToolkitTile({
         ) : (
           <div className="relative flex h-full w-full items-center justify-center">
             <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white/80 shadow-xs">
-              <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke={theme.accent} strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-              </svg>
+              <Folder className="h-12 w-12" color={theme.accent} />
             </div>
           </div>
         )}
@@ -73,9 +72,7 @@ function ToolkitTile({
 
         <div className="mt-auto flex items-center justify-between pt-2">
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#475569]">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+            <FileText className="h-4 w-4" />
             {collection._count.documents} {collection._count.documents === 1 ? 'resource' : 'resources'}
           </span>
           <span
@@ -83,9 +80,7 @@ function ToolkitTile({
             style={{ backgroundColor: theme.accent }}
           >
             Open
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
+            <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
           </span>
         </div>
       </div>
@@ -137,9 +132,7 @@ export default async function ToolkitPage() {
             <div className="mt-9 flex flex-wrap gap-3">
               <a href="#toolkits" className="inline-flex items-center justify-center gap-2 rounded-full bg-aaa-orange px-7 py-4 text-base font-bold text-white shadow-lg shadow-aaa-orange/30 transition hover:scale-[1.02]">
                 Show me the toolkits
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
+                <ArrowDown className="h-5 w-5" strokeWidth={2.5} />
               </a>
               <Link href="/courses" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 text-base font-bold text-[#001522] shadow-xs transition hover:bg-[#FFEDD2]">
                 Or see the courses

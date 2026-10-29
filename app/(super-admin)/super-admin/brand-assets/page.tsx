@@ -9,7 +9,7 @@ import {
   Image as ImageIcon,
   Plus,
   Pencil,
-  Trash2,
+  Trash,
   Eye,
   EyeOff,
   Sparkles,
@@ -585,7 +585,7 @@ export default function BrandAssetsPage() {
                                 )}
                                 title={a.active ? 'Deactivate (hides from picker / AI)' : 'Activate'}
                               >
-                                {a.active ? <><Eye className="h-3 w-3" />Active</> : <><EyeOff className="h-3 w-3" />Inactive</>}
+                                {a.active ? <><Eye className="h-3.5 w-3.5" />Active</> : <><EyeOff className="h-3.5 w-3.5" />Inactive</>}
                               </button>
                               <div className="flex items-center gap-0.5">
                                 <a
@@ -657,7 +657,7 @@ export default function BrandAssetsPage() {
                                   className="p-1.5 rounded-sm text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                   title="Delete"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash className="h-4 w-4" />
                                 </button>
                               </div>
                             </div>

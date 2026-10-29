@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, HelpCircle, Lightbulb } from 'lucide-react'
+import { ChevronDown, CircleQuestionMark, Lightbulb } from 'lucide-react'
 
 interface HowToPanelProps {
   title?: string
@@ -20,7 +20,7 @@ export function HowToPanel({ title = 'How to use this page', children }: HowToPa
         aria-expanded={open}
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-          <HelpCircle className="h-4 w-4 text-slate-400" />
+          <CircleQuestionMark className="h-4 w-4 text-slate-400" />
           {title}
         </span>
         <ChevronDown

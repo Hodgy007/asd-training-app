@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react'
+import { CircleAlert, CircleCheckBig, ArrowLeft } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
         <div className="card border-t-4 border-t-primary-500">
           {submitted ? (
             <div className="text-center space-y-4">
-              <CheckCircle className="h-12 w-12 text-sage-500 mx-auto" />
+              <CircleCheckBig className="h-12 w-12 text-sage-500 mx-auto" />
               <h2 className="text-xl font-bold text-slate-900">Check your email</h2>
               <p className="text-slate-500 text-sm">
                 If an account exists for <strong>{email}</strong>, we&apos;ve sent a password reset
@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
 
               {error && (
                 <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-5">
-                  <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                  <CircleAlert className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
                   <p className="text-sm text-red-700">{error}</p>
                 </div>
               )}
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
 
               <div className="mt-5 pt-4 border-t border-calm-200 text-center">
                 <Link href="/login" className="text-sm text-primary-600 hover:text-primary-700 flex items-center justify-center gap-1">
-                  <ArrowLeft className="h-3 w-3" />
+                  <ArrowLeft className="h-3.5 w-3.5" />
                   Back to sign in
                 </Link>
               </div>

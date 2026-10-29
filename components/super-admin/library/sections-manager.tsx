@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Pencil, Plus, Trash2, Layers, Save, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Pencil, Plus, Trash, Layers, Save, X } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 
@@ -318,7 +318,7 @@ export function SectionsManager({ collectionId, sections, onChanged, onError }: 
                       )}
                       title="Delete section"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash className="h-4 w-4" />
                     </button>
                   </div>
                 )}

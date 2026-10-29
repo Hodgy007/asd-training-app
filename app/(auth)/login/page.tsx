@@ -4,8 +4,9 @@ import { Suspense, useState, useEffect, useRef } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, AlertCircle, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, CircleAlert, ShieldCheck } from 'lucide-react'
 import { resolveLoginError } from '@/lib/login-errors'
+import { IconTile } from '@/components/ui/icon-tile'
 
 export default function LoginPage() {
   return (
@@ -136,7 +137,7 @@ function LoginForm() {
 
           {registeredPending && (
             <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+              <CircleAlert className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
               <p className="text-sm text-amber-800">
                 Your account has been created and is awaiting approval by your organisation admin. You will be able to sign in once approved.
               </p>
@@ -145,7 +146,7 @@ function LoginForm() {
 
           {registeredOk && (
             <div className="flex items-start gap-2 bg-sage-50 border border-sage-200 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-sage-600 mt-0.5 shrink-0" />
+              <CircleAlert className="h-4 w-4 text-sage-600 mt-0.5 shrink-0" />
               <p className="text-sm text-sage-800">
                 Your account is ready. Sign in below with the email and password you just chose.
               </p>
@@ -154,7 +155,7 @@ function LoginForm() {
 
           {(error || ssoError) && (
             <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+              <CircleAlert className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700">{error || ssoError}</p>
             </div>
           )}
@@ -180,9 +181,7 @@ function LoginForm() {
           {ssoOrg?.sso === true && (ssoOrg.type !== 'charity' || ssoOrg.enforced) ? (
             /* Full-screen SSO branch (org SSO or enforced charity SSO) */
             <div className="space-y-4 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl mx-auto">
-                <ShieldCheck className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-              </div>
+              <IconTile icon={ShieldCheck} size="lg" className="inline-flex mx-auto" />
               <div>
                 <p className="text-sm text-slate-500 mb-4">
                   {ssoOrg.type === 'charity'

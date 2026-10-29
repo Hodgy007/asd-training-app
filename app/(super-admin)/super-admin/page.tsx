@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Building2,
+  BuildingComplex,
   Briefcase,
   Download,
   TrendingUp,
@@ -12,13 +12,14 @@ import {
   Calendar,
   Activity,
   ArrowRight,
-  CheckCircle2,
+  CircleCheck,
   ClipboardList,
   BookOpen,
 } from 'lucide-react'
 import { isCharityLevel, hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { HowToPanel } from '@/components/howto/panel'
 import OverviewHowTo from '@/components/howto/super-admin/overview'
+import { IconTile } from '@/components/ui/icon-tile'
 
 type AttentionTone = 'amber' | 'sky' | 'rose' | 'slate' | 'sage'
 
@@ -280,7 +281,7 @@ export default async function SuperAdminPage() {
     key: string
     label: string
     count: number
-    icon: typeof Building2
+    icon: typeof BuildingComplex
     tone: AttentionTone
     href: string
   }> = []
@@ -384,13 +385,11 @@ export default async function SuperAdminPage() {
                   <p className="text-sm text-slate-500 dark:text-slate-400">Lessons completed</p>
                   <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{completionsLast30}</p>
                 </div>
-                <div className="w-10 h-10 bg-warm-100 dark:bg-warm-900/30 rounded-xl flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-warm-500 dark:text-warm-400" />
-                </div>
+                <IconTile icon={CircleCheck} tone="warning" />
               </div>
               {completionsDeltaPct !== null && (
                 <p className={`text-xs mt-2 ${completionsDelta >= 0 ? 'text-sage-600 dark:text-sage-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                  <TrendingUp className="inline h-3 w-3" /> {completionsDelta >= 0 ? '+' : ''}
+                  <TrendingUp className="inline h-3.5 w-3.5" /> {completionsDelta >= 0 ? '+' : ''}
                   {completionsDeltaPct}% vs previous 30 days
                 </p>
               )}
@@ -401,9 +400,7 @@ export default async function SuperAdminPage() {
                   <p className="text-sm text-slate-500 dark:text-slate-400">Active learners</p>
                   <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{activeUsers30}</p>
                 </div>
-                <div className="w-10 h-10 bg-sage-100 dark:bg-sage-900/30 rounded-xl flex items-center justify-center">
-                  <Users className="h-5 w-5 text-sage-600 dark:text-sage-400" />
-                </div>
+                <IconTile icon={Users} tone="success" />
               </div>
               <p className="text-xs mt-2 text-slate-400 dark:text-slate-500">
                 Users with training activity in the last 30 days
@@ -426,7 +423,7 @@ export default async function SuperAdminPage() {
                 href="/super-admin/sessions"
                 className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
               >
-                View all <ArrowRight className="h-3 w-3" />
+                View all <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
             {upcomingWorkshops.length === 0 ? (
@@ -495,10 +492,10 @@ export default async function SuperAdminPage() {
                     event.icon === 'user'
                       ? Users
                       : event.icon === 'org'
-                        ? Building2
+                        ? BuildingComplex
                         : event.icon === 'training'
                           ? BookOpen
-                          : CheckCircle2
+                          : CircleCheck
                   const iconColor =
                     event.icon === 'user'
                       ? 'text-sage-600 dark:text-sage-400'

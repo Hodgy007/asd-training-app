@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Users, Building2, Check } from 'lucide-react'
+import { Users, BuildingComplex, Check } from 'lucide-react'
 import { clsx } from 'clsx'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -252,7 +252,7 @@ export function SurveyTargetPicker({ value, onChange }: SurveyTargetPickerProps)
       {/* ── Target Organisations ──────────────────────────────────────────── */}
       <div>
         <div className="mb-2 flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+          <BuildingComplex className="h-4 w-4 text-slate-500 dark:text-slate-400" />
           <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
             Target Organisations
           </span>

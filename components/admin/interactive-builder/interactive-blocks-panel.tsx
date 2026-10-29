@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2, ChevronDown, ChevronRight, Zap } from 'lucide-react'
+import { Plus, Trash, ChevronDown, ChevronRight, Zap } from 'lucide-react'
 import { InteractiveBlock, InteractiveBlockType, ScenarioData, KnowledgeCheckData, CarouselData, VideoData } from '@/types/interactive'
 import { BlockTypePicker } from './block-type-picker'
 import { ScenarioBuilder } from './scenario-builder'
@@ -120,7 +120,7 @@ export function InteractiveBlocksPanel({ blocks, onChange, onInsertPlaceholder, 
               className="text-red-400 hover:text-red-600 p-1"
               title="Delete block"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash className="h-4 w-4" />
             </button>
           </div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { CheckCircle, XCircle, MinusCircle, RotateCcw } from 'lucide-react'
+import { CircleCheckBig, CircleX, CircleMinus, RotateCcw } from 'lucide-react'
 import { ScenarioData, ScenarioNode } from '@/types/interactive'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
@@ -49,9 +49,9 @@ export function ScenarioPlayer({ title, instructions, data, completed, onComplet
   }
 
   const stepNumber = history.length + 1
-  const endingIcon = currentNode.endingType === 'positive' ? CheckCircle
-    : currentNode.endingType === 'negative' ? XCircle
-    : MinusCircle
+  const endingIcon = currentNode.endingType === 'positive' ? CircleCheckBig
+    : currentNode.endingType === 'negative' ? CircleX
+    : CircleMinus
   const endingColor = currentNode.endingType === 'positive'
     ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
     : currentNode.endingType === 'negative'

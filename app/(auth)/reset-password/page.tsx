@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import { CircleAlert, CircleCheckBig, Eye, EyeOff } from 'lucide-react'
 
 function ResetPasswordForm() {
   const router = useRouter()
@@ -90,7 +90,7 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="text-center space-y-4">
-        <AlertCircle className="h-12 w-12 text-red-400 mx-auto" />
+        <CircleAlert className="h-12 w-12 text-red-400 mx-auto" />
         <h2 className="text-xl font-bold text-slate-900">Invalid link</h2>
         <p className="text-slate-500 text-sm">This reset link is missing or invalid.</p>
         <Link href="/forgot-password" className="btn-primary inline-block">Request a new link</Link>
@@ -101,7 +101,7 @@ function ResetPasswordForm() {
   if (success) {
     return (
       <div className="text-center space-y-4">
-        <CheckCircle className="h-12 w-12 text-sage-500 mx-auto" />
+        <CircleCheckBig className="h-12 w-12 text-sage-500 mx-auto" />
         <h2 className="text-xl font-bold text-slate-900">Password updated!</h2>
         <p className="text-slate-500 text-sm">Redirecting you to sign in…</p>
       </div>
@@ -121,7 +121,7 @@ function ResetPasswordForm() {
 
       {error && (
         <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-5">
-          <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+          <CircleAlert className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}

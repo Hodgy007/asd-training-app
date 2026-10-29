@@ -8,7 +8,7 @@ import {
   Palette,
   Lock,
   Shield,
-  AlertTriangle,
+  TriangleAlert,
   Settings as SettingsIcon,
   ChevronRight,
 } from 'lucide-react'
@@ -80,7 +80,7 @@ export default function SettingsPage() {
       href: '/settings/danger',
       title: 'Danger Zone',
       description: 'Permanently delete your account and all data.',
-      icon: AlertTriangle,
+      icon: TriangleAlert,
       iconColor: 'text-red-600 dark:text-red-400',
       iconBg: 'bg-red-50 dark:bg-red-900/20',
     },

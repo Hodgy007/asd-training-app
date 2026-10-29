@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Calendar, Video, ExternalLink, Loader2, ArrowRight, MapPin } from 'lucide-react'
+import { Calendar, Video, ExternalLink, LoaderCircle, ArrowRight, MapPin } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface SessionHost {
@@ -58,7 +58,7 @@ export function UpcomingSessions() {
     return (
       <div className="card">
         <div className="flex items-center justify-center py-6">
-          <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+          <LoaderCircle className="h-5 w-5 animate-spin text-slate-400" />
         </div>
       </div>
     )
@@ -79,7 +79,7 @@ export function UpcomingSessions() {
           href="/sessions"
           className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 flex items-center gap-1"
         >
-          View all <ArrowRight className="h-3 w-3" />
+          View all <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
       <div className="space-y-2">
@@ -116,7 +116,7 @@ export function UpcomingSessions() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium rounded-lg transition-colors shrink-0"
                 >
-                  Join <ExternalLink className="h-3 w-3" />
+                  Join <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               )}
             </div>

@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react'
+import { CircleAlert, ArrowLeft, ShieldCheck } from 'lucide-react'
+import { IconTile } from '@/components/ui/icon-tile'
 
 type FormRole = 'autistic' | 'parent_carer' | 'supporter' | 'practitioner'
 
@@ -124,9 +125,7 @@ function SsoCompleteForm() {
 
         <div className="card border-t-4 border-t-warm-500">
           <div className="flex items-start gap-3 mb-4">
-            <div className="shrink-0 inline-flex items-center justify-center w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
-              <ShieldCheck className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-            </div>
+            <IconTile icon={ShieldCheck} className="inline-flex" />
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                 Welcome{name ? `, ${name.split(' ')[0]}` : ''}
@@ -141,7 +140,7 @@ function SsoCompleteForm() {
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+              <CircleAlert className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}

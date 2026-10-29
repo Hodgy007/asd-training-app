@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Plus, Trash2, Upload, Loader2, ChevronUp, ChevronDown, ImageIcon } from 'lucide-react'
+import { Plus, Trash, Upload, LoaderCircle, ChevronUp, ChevronDown, ImageIcon } from 'lucide-react'
 import { InteractiveBlock, CarouselData, CarouselSlide } from '@/types/interactive'
 import { RichDescriptionEditor } from '@/components/ui/rich-description-editor'
 import { ImagePickerModal } from './image-picker-modal'
@@ -160,7 +160,7 @@ export function CarouselBuilder({ block, onChange }: CarouselBuilderProps) {
                     className="p-1 text-slate-400 hover:text-red-500 rounded-sm"
                     aria-label="Delete slide"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -211,7 +211,7 @@ export function CarouselBuilder({ block, onChange }: CarouselBuilderProps) {
                       className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-calm-300 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary-400 dark:hover:border-primary-500 transition-colors disabled:opacity-50"
                     >
                       {uploadingSlideId === slide.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
                       ) : (
                         <Upload className="h-4 w-4" />
                       )}

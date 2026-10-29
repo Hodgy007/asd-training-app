@@ -7,20 +7,20 @@ import 'react-quill-new/dist/quill.snow.css'
 import {
   ArrowLeft,
   Save,
-  Loader2,
+  LoaderCircle,
   Plus,
-  Trash2,
+  Trash,
   ChevronDown,
   ChevronRight,
   Sparkles,
   Wand2,
-  CheckCircle,
+  CircleCheckBig,
   X,
   Upload,
   FileText,
   Paperclip,
   Video,
-  HelpCircle,
+  CircleQuestionMark,
   ClipboardList,
 } from 'lucide-react'
 import { upload } from '@vercel/blob/client'
@@ -441,7 +441,7 @@ export default function LessonEditorPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-primary-500" />
       </div>
     )
   }
@@ -572,7 +572,7 @@ export default function LessonEditorPage() {
                 'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-calm-200 dark:border-slate-600 text-xs font-medium cursor-pointer hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors',
                 videoUploading && 'opacity-50 pointer-events-none'
               )}>
-                {videoUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Video className="h-3.5 w-3.5" />}
+                {videoUploading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Video className="h-3.5 w-3.5" />}
                 {videoUploading ? 'Uploading…' : 'Upload video file (MP4 / WebM, up to 5 GB)'}
                 <input
                   type="file"
@@ -584,7 +584,7 @@ export default function LessonEditorPage() {
               </label>
               {editVideoUrl && editVideoUrl.includes('blob.vercel-storage.com') && (
                 <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                  <CheckCircle className="h-3.5 w-3.5" /> Hosted — works through school firewalls
+                  <CircleCheckBig className="h-3.5 w-3.5" /> Hosted — works through school firewalls
                 </span>
               )}
             </div>
@@ -637,7 +637,7 @@ export default function LessonEditorPage() {
 
         {uploadingImage && (
           <div className="flex items-center gap-2 text-sm text-primary-600">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <LoaderCircle className="h-4 w-4 animate-spin" />
             Uploading image...
           </div>
         )}
@@ -684,7 +684,7 @@ export default function LessonEditorPage() {
               'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-calm-200 dark:border-slate-600 text-xs font-medium cursor-pointer hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors',
               uploadingAttachment && 'opacity-50 pointer-events-none'
             )}>
-              {uploadingAttachment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              {uploadingAttachment ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
               Upload PDF
               <input
                 type="file"
@@ -753,7 +753,7 @@ export default function LessonEditorPage() {
                       }
                     }}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ))}
@@ -790,7 +790,7 @@ export default function LessonEditorPage() {
             disabled={saving}
             className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Lesson
           </button>
           <Link
@@ -817,7 +817,7 @@ export default function LessonEditorPage() {
       ) : (
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-calm-200 dark:border-slate-700 p-6 shadow-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <HelpCircle className="h-5 w-5 text-slate-400" />
+            <CircleQuestionMark className="h-5 w-5 text-slate-400" />
             <div>
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Knowledge Quiz</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">Optional. Add a quiz to check learners&apos; understanding.</p>
@@ -1005,9 +1005,9 @@ function QuizSection({
             aria-label="Remove quiz"
           >
             {removingQuiz ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <LoaderCircle className="h-4 w-4 animate-spin" />
             ) : (
-              <Trash2 className="h-4 w-4" />
+              <Trash className="h-4 w-4" />
             )}
             Remove Quiz
           </button>
@@ -1023,7 +1023,7 @@ function QuizSection({
           </div>
           {aiGenerating ? (
             <div className="flex items-center gap-3 py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-primary-600" />
+              <LoaderCircle className="h-5 w-5 animate-spin text-primary-600" />
               <span className="text-sm text-primary-700 dark:text-primary-300 font-semibold">Generating quiz questions...</span>
             </div>
           ) : (
@@ -1121,7 +1121,7 @@ function QuizSection({
                                 : 'text-slate-700 dark:text-slate-300'
                             )}
                           >
-                            {isCorrect && <CheckCircle className="h-4 w-4 shrink-0" />}
+                            {isCorrect && <CircleCheckBig className="h-4 w-4 shrink-0" />}
                             <span className="font-semibold mr-1">{letter}.</span>
                             {opt}
                           </div>
@@ -1396,7 +1396,7 @@ function AddQuestionForm({ lessonId, onCreated, onCancel }: AddQuestionFormProps
           disabled={submitting}
           className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
         >
-          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
           Add Question
         </button>
         <button
@@ -1509,7 +1509,7 @@ function EditQuestionForm({ question: q, onSaved, onCancel }: EditQuestionFormPr
           disabled={submitting}
           className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
         >
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save
         </button>
         <button

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import Link from 'next/link'
-import { AlertCircle, CheckCircle2, X } from 'lucide-react'
+import { CircleAlert, CircleCheck, X } from 'lucide-react'
 import { TOOLKIT_FORM_ROLES, TOOLKIT_FORM_ROLE_LABELS, type ToolkitFormRole } from '@/lib/toolkit-form-roles'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 
@@ -167,7 +167,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
         {success ? (
           <div className="px-6 pb-7 pt-4 sm:px-8 sm:pb-8">
             <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 p-4 text-emerald-900">
-              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
+              <CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
               <div>
                 <p className="font-semibold">Thanks — your download is starting now.</p>
                 {success.registered ? (
@@ -188,7 +188,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
           <form onSubmit={onSubmit} className="space-y-4 overflow-y-auto px-6 pb-7 pt-4 sm:px-8 sm:pb-8">
             {error ? (
               <div className="flex items-start gap-3 rounded-2xl bg-rose-50 p-4 text-rose-900">
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" aria-hidden="true" />
+                <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" aria-hidden="true" />
                 <div className="text-sm">
                   <p>{error}</p>
                   {errorIsCollision ? (

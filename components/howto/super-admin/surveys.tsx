@@ -1,4 +1,4 @@
-import { Sparkles, Send, XCircle, Eye, Trash2 } from 'lucide-react'
+import { Sparkles, Send, CircleX, Eye, Trash } from 'lucide-react'
 import { Tip } from '@/components/howto/panel'
 
 export default function SurveysHowTo() {
@@ -44,7 +44,7 @@ export default function SurveysHowTo() {
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Publishing and closing surveys</h3>
       <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
         <li><strong>Publishing</strong> <Send className="inline h-3.5 w-3.5 text-slate-400" /> &mdash; makes the survey visible to the targeted users. Users will see it in their dashboard.</li>
-        <li><strong>Closing</strong> <XCircle className="inline h-3.5 w-3.5 text-slate-400" /> &mdash; stops the survey from accepting new responses. Existing responses are preserved.</li>
+        <li><strong>Closing</strong> <CircleX className="inline h-3.5 w-3.5 text-slate-400" /> &mdash; stops the survey from accepting new responses. Existing responses are preserved.</li>
       </ol>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Viewing survey details and results</h3>
@@ -67,7 +67,7 @@ export default function SurveysHowTo() {
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Deleting a survey</h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        Click the <strong>Delete</strong> <Trash2 className="inline h-3.5 w-3.5 text-slate-400" /> button on a survey to permanently remove it and all its responses. This action cannot be undone.
+        Click the <strong>Delete</strong> <Trash className="inline h-3.5 w-3.5 text-slate-400" /> button on a survey to permanently remove it and all its responses. This action cannot be undone.
       </p>
 
       <Tip>Publish a survey only after you have finalised all questions and configured the target audience. Once published, questions cannot be edited to ensure response consistency.</Tip>
