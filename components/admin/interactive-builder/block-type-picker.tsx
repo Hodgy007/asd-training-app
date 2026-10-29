@@ -38,7 +38,7 @@ export function BlockTypePicker({ onSelect, onClose }: BlockTypePickerProps) {
                 disabled={!bt.available}
                 className="w-full text-left flex items-start gap-3 p-3 rounded-xl border-2 border-calm-200 dark:border-slate-600 hover:border-primary-400 dark:hover:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <Icon className="h-5 w-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                <Icon className="h-5 w-5 text-primary-500 mt-0.5 shrink-0" />
                 <div>
                   <p className="font-semibold text-slate-900 dark:text-white text-sm">
                     {bt.label}

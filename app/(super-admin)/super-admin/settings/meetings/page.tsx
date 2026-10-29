@@ -119,10 +119,10 @@ export default function MeetingsSettingsPage() {
   }
 
   const inputCls =
-    'w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100'
+    'w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100'
   const labelCls = 'block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1'
   const cardCls =
-    'bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-5'
+    'bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-5'
   const primaryBtnCls =
     'px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-bold transition-colors flex items-center gap-2'
   const secondaryBtnCls =
@@ -288,9 +288,9 @@ export default function MeetingsSettingsPage() {
             )}
           >
             {testResult.success ? (
-              <CheckCircle className="h-4 w-4 flex-shrink-0" />
+              <CheckCircle className="h-4 w-4 shrink-0" />
             ) : (
-              <XCircle className="h-4 w-4 flex-shrink-0" />
+              <XCircle className="h-4 w-4 shrink-0" />
             )}
             {testResult.message}
           </div>

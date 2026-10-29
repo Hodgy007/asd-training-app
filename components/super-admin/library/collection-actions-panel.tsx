@@ -372,7 +372,7 @@ export function CollectionActionsPanel({
         )}>
           <div className="flex items-start gap-2">
             {zipResults.errors.length > 0 ? (
-              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
             ) : null}
             <div className="flex-1 text-sm">
               <p className="font-medium text-slate-900 dark:text-slate-100">

@@ -297,7 +297,7 @@ export default function TrainingContentPage() {
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3 border-b border-calm-100 dark:border-slate-700"
                 >
-                  <Plus className="h-4 w-4 mt-0.5 text-primary-600 flex-shrink-0" />
+                  <Plus className="h-4 w-4 mt-0.5 text-primary-600 shrink-0" />
                   <div>
                     <p className="font-bold text-sm text-slate-900 dark:text-white">Blank program</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -314,7 +314,7 @@ export default function TrainingContentPage() {
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3 border-b border-calm-100 dark:border-slate-700"
                 >
-                  <Sparkles className="h-4 w-4 mt-0.5 text-emerald-600 flex-shrink-0" />
+                  <Sparkles className="h-4 w-4 mt-0.5 text-emerald-600 shrink-0" />
                   <div>
                     <p className="font-bold text-sm text-slate-900 dark:text-white">Generate from files</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -330,7 +330,7 @@ export default function TrainingContentPage() {
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-calm-50 dark:hover:bg-slate-700 flex items-start gap-3"
                 >
-                  <Package className="h-4 w-4 mt-0.5 text-primary-600 flex-shrink-0" />
+                  <Package className="h-4 w-4 mt-0.5 text-primary-600 shrink-0" />
                   <div>
                     <p className="font-bold text-sm text-slate-900 dark:text-white">Import SCORM</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -372,24 +372,24 @@ export default function TrainingContentPage() {
           {programs.map((program, idx) => (
             <div
               key={program.id}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 shadow-sm overflow-hidden"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 shadow-xs overflow-hidden"
             >
               {/* Program Header */}
               <div className="p-6">
                 <div className="flex items-start gap-4">
                   {/* Reorder arrows */}
-                  <div className="flex flex-col gap-1 pt-1 flex-shrink-0">
+                  <div className="flex flex-col gap-1 pt-1 shrink-0">
                     <button
                       onClick={() => swapProgramOrder(idx, 'up')}
                       disabled={idx === 0 || actionLoading === program.id}
-                      className="p-1 rounded hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="p-1 rounded-sm hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       <ChevronUp className="h-4 w-4 text-slate-500" />
                     </button>
                     <button
                       onClick={() => swapProgramOrder(idx, 'down')}
                       disabled={idx === programs.length - 1 || actionLoading === program.id}
-                      className="p-1 rounded hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="p-1 rounded-sm hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       <ChevronDown className="h-4 w-4 text-slate-500" />
                     </button>
@@ -429,7 +429,7 @@ export default function TrainingContentPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => setEditingProgramId(editingProgramId === program.id ? null : program.id)}
                       className="inline-flex items-center gap-1 border border-calm-200 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 transition-colors"
@@ -540,18 +540,18 @@ export default function TrainingContentPage() {
                         className="bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 p-4 flex items-start gap-3"
                       >
                         {/* Module order arrows */}
-                        <div className="flex flex-col gap-0.5 pt-0.5 flex-shrink-0">
+                        <div className="flex flex-col gap-0.5 pt-0.5 shrink-0">
                           <button
                             onClick={() => swapModuleOrder(program.id, program.modules!, midx, 'up')}
                             disabled={midx === 0 || actionLoading === mod.id}
-                            className="p-0.5 rounded hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="p-0.5 rounded-sm hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
                           >
                             <ChevronUp className="h-3.5 w-3.5 text-slate-500" />
                           </button>
                           <button
                             onClick={() => swapModuleOrder(program.id, program.modules!, midx, 'down')}
                             disabled={midx === (program.modules?.length ?? 0) - 1 || actionLoading === mod.id}
-                            className="p-0.5 rounded hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="p-0.5 rounded-sm hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
                           >
                             <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
                           </button>
@@ -583,7 +583,7 @@ export default function TrainingContentPage() {
                         </div>
 
                         {/* Module actions */}
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             onClick={() => toggleModuleActive(mod.id, mod.active, program.id)}
                             disabled={actionLoading === mod.id}
@@ -700,7 +700,7 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white dark:bg-slate-800 rounded-2xl border border-primary-200 dark:border-primary-700 p-6 shadow-sm space-y-4"
+      className="bg-white dark:bg-slate-800 rounded-2xl border border-primary-200 dark:border-primary-700 p-6 shadow-xs space-y-4"
     >
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-slate-900 dark:text-white">New Training Program</h3>
@@ -1016,7 +1016,7 @@ function EditProgramForm({
                 type="checkbox"
                 checked={active}
                 onChange={(e) => setActive(e.target.checked)}
-                className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+                className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Active</span>
             </label>
@@ -1105,7 +1105,7 @@ function EditProgramForm({
                   type="checkbox"
                   checked={purchasable}
                   onChange={(e) => setPurchasable(e.target.checked)}
-                  className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+                  className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Listed on /courses

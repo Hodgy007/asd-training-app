@@ -492,7 +492,7 @@ export default function LessonEditorPage() {
       </div>
 
       {/* ─── Section 1: Lesson Editor ─── */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Edit Lesson</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -523,7 +523,7 @@ export default function LessonEditorPage() {
         {editType === 'SURVEY' && (
           <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-900/20 p-4 space-y-3">
             <div className="flex items-start gap-3">
-              <ClipboardList className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <ClipboardList className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <label className="block text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">
                   Linked published survey
@@ -625,7 +625,7 @@ export default function LessonEditorPage() {
 
         <div>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Content</label>
-          <div ref={editorContainerRef} className="rounded-xl border border-calm-200 dark:border-slate-600 overflow-hidden [&_.ql-toolbar]:border-calm-200 [&_.ql-toolbar]:dark:border-slate-600 [&_.ql-toolbar]:bg-calm-50 [&_.ql-toolbar]:dark:bg-slate-700 [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[200px] [&_.ql-editor]:text-sm [&_.ql-editor]:text-slate-900 [&_.ql-editor]:dark:text-white [&_.ql-editor]:bg-white [&_.ql-editor]:dark:bg-slate-700">
+          <div ref={editorContainerRef} className="rounded-xl border border-calm-200 dark:border-slate-600 overflow-hidden [&_.ql-toolbar]:border-calm-200 dark:[&_.ql-toolbar]:border-slate-600 [&_.ql-toolbar]:bg-calm-50 dark:[&_.ql-toolbar]:bg-slate-700 [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[200px] [&_.ql-editor]:text-sm [&_.ql-editor]:text-slate-900 dark:[&_.ql-editor]:text-white [&_.ql-editor]:bg-white dark:[&_.ql-editor]:bg-slate-700">
             <ReactQuill
               theme="snow"
               value={editContent}
@@ -660,7 +660,7 @@ export default function LessonEditorPage() {
                   type="button"
                   onClick={() => resizeSelectedImage(s.value)}
                   className={clsx(
-                    'text-xs font-medium px-2 py-1 rounded transition-colors',
+                    'text-xs font-medium px-2 py-1 rounded-sm transition-colors',
                     isActive
                       ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
                       : 'text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700'
@@ -727,11 +727,11 @@ export default function LessonEditorPage() {
             <div className="space-y-2">
               {attachments.map((att) => (
                 <div key={att.id} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 bg-calm-50 dark:bg-slate-700">
-                  <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
+                  <FileText className="h-4 w-4 text-red-500 shrink-0" />
                   <a href={`/api/training/attachments/${att.id}/file`} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate hover:underline">
                     {att.fileName}
                   </a>
-                  <span className="text-xs text-slate-400 flex-shrink-0">
+                  <span className="text-xs text-slate-400 shrink-0">
                     {att.fileSize < 1024 * 1024
                       ? `${Math.round(att.fileSize / 1024)} KB`
                       : `${(att.fileSize / (1024 * 1024)).toFixed(1)} MB`}
@@ -815,7 +815,7 @@ export default function LessonEditorPage() {
           onHide={() => setQuizVisible(false)}
         />
       ) : (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-calm-200 dark:border-slate-700 p-6 shadow-sm flex items-center justify-between gap-3">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-calm-200 dark:border-slate-700 p-6 shadow-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <HelpCircle className="h-5 w-5 text-slate-400" />
             <div>
@@ -974,7 +974,7 @@ function QuizSection({
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Quiz Questions</h2>
@@ -992,7 +992,7 @@ function QuizSection({
           </button>
           <button
             onClick={() => { setShowAiPanel(!showAiPanel); setShowAddForm(false); setAiPreview(null) }}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+            className="inline-flex items-center gap-2 bg-linear-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors"
           >
             <Sparkles className="h-4 w-4" />
             Generate Quiz with AI
@@ -1099,9 +1099,9 @@ function QuizSection({
                   className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-calm-50 dark:hover:bg-slate-700/50 transition-colors"
                 >
                   {expandedQ === q.id ? (
-                    <ChevronDown className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                    <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
                   )}
                   <span className="font-semibold text-sm text-slate-900 dark:text-white flex-1">{q.question}</span>
                 </button>
@@ -1121,7 +1121,7 @@ function QuizSection({
                                 : 'text-slate-700 dark:text-slate-300'
                             )}
                           >
-                            {isCorrect && <CheckCircle className="h-4 w-4 flex-shrink-0" />}
+                            {isCorrect && <CheckCircle className="h-4 w-4 shrink-0" />}
                             <span className="font-semibold mr-1">{letter}.</span>
                             {opt}
                           </div>

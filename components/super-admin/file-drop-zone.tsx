@@ -137,7 +137,7 @@ export function FileDropZone({ files, onFilesChange, disabled = false }: FileDro
                 key={`${file.name}-${file.size}`}
                 className="flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2"
               >
-                <IconComponent className={clsx('h-5 w-5 flex-shrink-0', iconColor)} />
+                <IconComponent className={clsx('h-5 w-5 shrink-0', iconColor)} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-slate-700 dark:text-slate-200" title={file.name}>
                     {truncated}
@@ -148,7 +148,7 @@ export function FileDropZone({ files, onFilesChange, disabled = false }: FileDro
                   type="button"
                   onClick={() => removeFile(index)}
                   disabled={disabled}
-                  className="flex-shrink-0 rounded p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:cursor-not-allowed"
+                  className="shrink-0 rounded-sm p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:cursor-not-allowed"
                   aria-label={`Remove ${file.name}`}
                 >
                   <X className="h-4 w-4" />

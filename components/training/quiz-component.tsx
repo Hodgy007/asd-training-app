@@ -121,7 +121,7 @@ export function QuizComponent({ questions, onComplete }: QuizComponentProps) {
               )}
             >
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 mt-0.5">
+                <div className="shrink-0 mt-0.5">
                   {showResult && isThisCorrect ? (
                     <CheckCircle className="h-5 w-5 text-sage-500" />
                   ) : showResult && isSelected && !isThisCorrect ? (

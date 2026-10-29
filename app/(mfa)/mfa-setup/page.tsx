@@ -96,7 +96,7 @@ export default function MfaSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 flex items-center justify-center p-4 animate-page-enter">
+    <div className="min-h-screen bg-linear-to-br from-primary-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 flex items-center justify-center p-4 animate-page-enter">
       <div className="w-full max-w-md">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
@@ -121,7 +121,7 @@ export default function MfaSetupPage() {
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
             </div>
           )}
@@ -140,11 +140,11 @@ export default function MfaSetupPage() {
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">You will need:</p>
                 <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-4 w-4 text-sage-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="h-4 w-4 text-sage-500 mt-0.5 shrink-0" />
                     An authenticator app (Google Authenticator, Microsoft Authenticator, Authy, etc.)
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-4 w-4 text-sage-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="h-4 w-4 text-sage-500 mt-0.5 shrink-0" />
                     Your phone or tablet to scan a QR code
                   </li>
                 </ul>
@@ -193,7 +193,7 @@ export default function MfaSetupPage() {
                   </code>
                   <button
                     onClick={handleCopySecret}
-                    className="flex-shrink-0 p-1.5 rounded-lg hover:bg-calm-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    className="shrink-0 p-1.5 rounded-lg hover:bg-calm-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                     aria-label="Copy secret"
                   >
                     {copied ? <Check className="h-4 w-4 text-sage-500" /> : <Copy className="h-4 w-4" />}

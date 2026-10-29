@@ -51,7 +51,7 @@ export function DashboardAnnouncements() {
           <div
             key={a.id}
             className={clsx(
-              'rounded-xl p-5 border-l-[6px] relative shadow-sm',
+              'rounded-xl p-5 border-l-[6px] relative shadow-xs',
               isGlobal
                 ? 'bg-primary-100 border-l-primary-600 dark:bg-primary-900/30 dark:border-l-primary-400'
                 : 'bg-amber-100 border-l-amber-600 dark:bg-amber-900/30 dark:border-l-amber-400'
@@ -66,7 +66,7 @@ export function DashboardAnnouncements() {
             <div className="flex items-start gap-4 pr-8">
               <div
                 className={clsx(
-                  'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center',
+                  'shrink-0 w-12 h-12 rounded-full flex items-center justify-center',
                   isGlobal
                     ? 'bg-primary-600 dark:bg-primary-500'
                     : 'bg-amber-600 dark:bg-amber-500'

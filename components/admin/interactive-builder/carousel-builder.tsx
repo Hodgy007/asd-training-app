@@ -142,7 +142,7 @@ export function CarouselBuilder({ block, onChange }: CarouselBuilderProps) {
                   <button
                     onClick={() => moveSlide(idx, -1)}
                     disabled={idx === 0}
-                    className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded disabled:opacity-30"
+                    className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-sm disabled:opacity-30"
                     aria-label="Move up"
                   >
                     <ChevronUp className="h-4 w-4" />
@@ -150,14 +150,14 @@ export function CarouselBuilder({ block, onChange }: CarouselBuilderProps) {
                   <button
                     onClick={() => moveSlide(idx, 1)}
                     disabled={idx === slides.length - 1}
-                    className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded disabled:opacity-30"
+                    className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-sm disabled:opacity-30"
                     aria-label="Move down"
                   >
                     <ChevronDown className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => deleteSlide(slide.id)}
-                    className="p-1 text-slate-400 hover:text-red-500 rounded"
+                    className="p-1 text-slate-400 hover:text-red-500 rounded-sm"
                     aria-label="Delete slide"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -183,7 +183,7 @@ export function CarouselBuilder({ block, onChange }: CarouselBuilderProps) {
                     <img
                       src={slide.imageUrl}
                       alt=""
-                      className="h-16 w-28 object-cover rounded border border-calm-200 dark:border-slate-600"
+                      className="h-16 w-28 object-cover rounded-sm border border-calm-200 dark:border-slate-600"
                     />
                     <button
                       onClick={() => updateSlide(slide.id, { imageUrl: '' })}

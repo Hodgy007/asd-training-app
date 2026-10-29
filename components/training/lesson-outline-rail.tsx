@@ -49,9 +49,9 @@ export function LessonOutlineRail({
                 )}
               >
                 {isDone ? (
-                  <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 shrink-0" />
                 ) : (
-                  <Circle className="h-4 w-4 flex-shrink-0 opacity-60" />
+                  <Circle className="h-4 w-4 shrink-0 opacity-60" />
                 )}
                 <span className="truncate">{lesson.title}</span>
               </Link>

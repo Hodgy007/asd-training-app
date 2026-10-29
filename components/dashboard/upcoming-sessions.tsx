@@ -114,7 +114,7 @@ export function UpcomingSessions() {
                   href={s.meetingUrl!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium rounded-lg transition-colors flex-shrink-0"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-500 hover:bg-primary-600 text-white text-xs font-medium rounded-lg transition-colors shrink-0"
                 >
                   Join <ExternalLink className="h-3 w-3" />
                 </a>

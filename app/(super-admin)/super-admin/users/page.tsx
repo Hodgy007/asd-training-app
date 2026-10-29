@@ -226,7 +226,7 @@ export default function CharityUsersPage() {
         {formMode === 'closed' && (
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-primary-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             Add User
@@ -342,7 +342,7 @@ export default function CharityUsersPage() {
                       type="checkbox"
                       checked={formPermissions.includes(perm)}
                       onChange={() => togglePermission(perm)}
-                      className="h-4 w-4 rounded border-calm-300 text-primary-600 focus:ring-primary-500 dark:border-slate-500 dark:bg-slate-700"
+                      className="h-4 w-4 rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500 dark:border-slate-500 dark:bg-slate-700"
                     />
                     <span className="text-sm text-slate-700 dark:text-slate-300">{PERMISSION_LABELS[perm]}</span>
                   </label>
@@ -405,7 +405,7 @@ export default function CharityUsersPage() {
               type="button"
               onClick={handleSubmit}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               {formMode === 'create' ? 'Create User' : 'Save Changes'}
@@ -451,7 +451,7 @@ export default function CharityUsersPage() {
             </span>
           </div>
           {/* Scrollable table — max ~5 rows visible, scroll the rest. Sticky header. */}
-          <div className="overflow-auto max-h-[22rem]">
+          <div className="overflow-auto max-h-88">
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10">
                 <tr className="border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">
@@ -514,7 +514,7 @@ export default function CharityUsersPage() {
                           {user.charityPermissions.map((p) => (
                             <span
                               key={p}
-                              className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded"
+                              className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded-sm"
                             >
                               {PERMISSION_LABELS[p] ?? p}
                             </span>

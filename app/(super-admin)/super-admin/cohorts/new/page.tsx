@@ -99,7 +99,7 @@ export default function NewCohortPage() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Basic details */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-5">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-5">
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <UsersRound className="h-5 w-5 text-emerald-600" />
             Cohort Details
@@ -115,7 +115,7 @@ export default function NewCohortPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Spring Community Workshop 2026"
-              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
             />
           </div>
 
@@ -128,13 +128,13 @@ export default function NewCohortPage() {
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Optional — e.g. Participants from the April 2026 community event"
-              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 resize-none"
+              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 resize-none"
             />
           </div>
         </div>
 
         {/* Training programs */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-emerald-600" />
             Training Programs
@@ -159,7 +159,7 @@ export default function NewCohortPage() {
                 >
                   <input
                     type="checkbox"
-                    className="rounded accent-emerald-600"
+                    className="rounded-sm accent-emerald-600"
                     checked={selectedProgramIds.includes(program.id)}
                     onChange={() => toggleProgram(program.id)}
                   />

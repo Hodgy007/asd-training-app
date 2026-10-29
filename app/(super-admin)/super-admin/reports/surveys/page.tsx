@@ -170,7 +170,7 @@ function SurveyReportRow({ survey, isExpanded, onToggle }: { survey: SurveyRepor
                   {survey.orgBreakdown.map((ob, idx) => (
                     <div key={idx} className="flex items-center justify-between bg-white dark:bg-slate-700 rounded-lg px-3 py-2 border border-calm-200 dark:border-slate-600">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate mr-3">{ob.orgName}</span>
-                      <span className="text-xs font-semibold text-primary-600 dark:text-primary-400 flex-shrink-0">{ob.responses}</span>
+                      <span className="text-xs font-semibold text-primary-600 dark:text-primary-400 shrink-0">{ob.responses}</span>
                     </div>
                   ))}
                 </div>
@@ -185,7 +185,7 @@ function SurveyReportRow({ survey, isExpanded, onToggle }: { survey: SurveyRepor
                     <div key={qs.questionId} className="bg-white dark:bg-slate-700 rounded-lg px-4 py-3 border border-calm-200 dark:border-slate-600">
                       <div className="flex items-start justify-between gap-3 mb-1">
                         <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{qs.question}</p>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-calm-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300 flex-shrink-0">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-calm-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300 shrink-0">
                           {qs.type.replace('_', ' ')}
                         </span>
                       </div>
@@ -200,7 +200,7 @@ function SurveyReportRow({ survey, isExpanded, onToggle }: { survey: SurveyRepor
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between text-xs mb-0.5">
                                     <span className="text-slate-600 dark:text-slate-300 truncate">{option}</span>
-                                    <span className="text-slate-400 dark:text-slate-500 ml-2 flex-shrink-0">{count} ({pct}%)</span>
+                                    <span className="text-slate-400 dark:text-slate-500 ml-2 shrink-0">{count} ({pct}%)</span>
                                   </div>
                                   <div className="h-1.5 bg-calm-100 dark:bg-slate-600 rounded-full overflow-hidden">
                                     <div className="h-full bg-primary-500 dark:bg-primary-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
@@ -238,7 +238,7 @@ function SurveyReportRow({ survey, isExpanded, onToggle }: { survey: SurveyRepor
                       {qs.sampleAnswers && qs.sampleAnswers.length > 0 && (
                         <div className="space-y-1">
                           {qs.sampleAnswers.map((answer, idx) => (
-                            <p key={idx} className="text-xs text-slate-600 dark:text-slate-300 bg-calm-50 dark:bg-slate-600/50 rounded px-2 py-1 italic line-clamp-2">
+                            <p key={idx} className="text-xs text-slate-600 dark:text-slate-300 bg-calm-50 dark:bg-slate-600/50 rounded-sm px-2 py-1 italic line-clamp-2">
                               &ldquo;{answer}&rdquo;
                             </p>
                           ))}

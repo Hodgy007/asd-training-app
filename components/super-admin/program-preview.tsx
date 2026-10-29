@@ -59,7 +59,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
         <button
           type="button"
           onClick={onDelete}
-          className="rounded p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+          className="rounded-sm p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
           aria-label="Delete question"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -71,7 +71,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
         value={question.question}
         onChange={(e) => onChange({ ...question, question: e.target.value })}
         rows={2}
-        className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
         placeholder="Question text..."
       />
 
@@ -81,7 +81,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
           const isCorrect = option === question.correctAnswer
           return (
             <div key={optIdx} className="flex items-center gap-2">
-              <span className="w-5 flex-shrink-0 text-center text-xs font-medium text-slate-400">
+              <span className="w-5 shrink-0 text-center text-xs font-medium text-slate-400">
                 {String.fromCharCode(65 + optIdx)}
               </span>
               <input
@@ -98,7 +98,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
                   })
                 }}
                 className={clsx(
-                  'flex-1 rounded-lg border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500',
+                  'flex-1 rounded-lg border px-3 py-1.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-500',
                   isCorrect
                     ? 'border-green-400 bg-green-50 text-green-800 dark:border-green-600 dark:bg-green-900/20 dark:text-green-300'
                     : 'border-slate-200 bg-white text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100'
@@ -106,7 +106,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
                 placeholder={`Option ${String.fromCharCode(65 + optIdx)}`}
               />
               {isCorrect && (
-                <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-500" />
+                <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />
               )}
             </div>
           )
@@ -119,7 +119,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
         <select
           value={question.correctAnswer}
           onChange={(e) => onChange({ ...question, correctAnswer: e.target.value })}
-          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
         >
           {question.options.map((opt, i) => (
             <option key={i} value={opt}>
@@ -134,7 +134,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
         value={question.explanation}
         onChange={(e) => onChange({ ...question, explanation: e.target.value })}
         rows={2}
-        className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
         placeholder="Explanation (shown after answer)..."
       />
     </div>
@@ -197,7 +197,7 @@ function LessonEditor({
             type="button"
             onClick={onMoveUp}
             disabled={lessonIndex === 0}
-            className="rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 transition-colors"
+            className="rounded-sm p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 transition-colors"
             aria-label="Move lesson up"
           >
             <ChevronUp className="h-3.5 w-3.5" />
@@ -206,7 +206,7 @@ function LessonEditor({
             type="button"
             onClick={onMoveDown}
             disabled={lessonIndex === totalLessons - 1}
-            className="rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 transition-colors"
+            className="rounded-sm p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 transition-colors"
             aria-label="Move lesson down"
           >
             <ChevronDown className="h-3.5 w-3.5" />
@@ -217,7 +217,7 @@ function LessonEditor({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="flex-shrink-0 rounded p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+          className="shrink-0 rounded-sm p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
           aria-label={expanded ? 'Collapse lesson' : 'Expand lesson'}
         >
           {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -228,13 +228,13 @@ function LessonEditor({
           type="text"
           value={lesson.title}
           onChange={(e) => onChange({ ...lesson, title: e.target.value })}
-          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-medium text-slate-800 dark:text-slate-100 hover:border-slate-200 dark:hover:border-slate-600 focus:border-primary-400 focus:outline-none focus:ring-0"
+          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-medium text-slate-800 dark:text-slate-100 hover:border-slate-200 dark:hover:border-slate-600 focus:border-primary-400 focus:outline-hidden focus:ring-0"
           placeholder="Lesson title..."
         />
 
         {/* Failed badge + retry */}
         {hasFailed && (
-          <span className="flex-shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600 dark:bg-red-900/30 dark:text-red-400">
+          <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600 dark:bg-red-900/30 dark:text-red-400">
             Failed
           </span>
         )}
@@ -242,7 +242,7 @@ function LessonEditor({
           <button
             type="button"
             onClick={onRetry}
-            className="flex-shrink-0 flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-colors"
+            className="shrink-0 flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-colors"
           >
             <RotateCcw className="h-3 w-3" />
             Retry
@@ -251,7 +251,7 @@ function LessonEditor({
 
         {/* Quiz count */}
         {!hasFailed && (
-          <span className="flex-shrink-0 text-xs text-slate-400 dark:text-slate-500">
+          <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500">
             {lesson.quizQuestions.length} Q
           </span>
         )}
@@ -260,7 +260,7 @@ function LessonEditor({
         <button
           type="button"
           onClick={onDelete}
-          className="flex-shrink-0 rounded p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+          className="shrink-0 rounded-sm p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
           aria-label="Delete lesson"
         >
           <Trash2 className="h-4 w-4" />
@@ -397,7 +397,7 @@ function ModuleCard({
             type="button"
             onClick={onMoveUp}
             disabled={moduleIndex === 0}
-            className="rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 transition-colors"
+            className="rounded-sm p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 transition-colors"
             aria-label="Move module up"
           >
             <ChevronUp className="h-3.5 w-3.5" />
@@ -406,7 +406,7 @@ function ModuleCard({
             type="button"
             onClick={onMoveDown}
             disabled={moduleIndex === totalModules - 1}
-            className="rounded p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 transition-colors"
+            className="rounded-sm p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 transition-colors"
             aria-label="Move module down"
           >
             <ChevronDown className="h-3.5 w-3.5" />
@@ -417,7 +417,7 @@ function ModuleCard({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="flex-shrink-0 rounded p-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+          className="shrink-0 rounded-sm p-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
           aria-label={expanded ? 'Collapse module' : 'Expand module'}
         >
           {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -428,12 +428,12 @@ function ModuleCard({
           type="text"
           value={mod.title}
           onChange={(e) => onChange({ ...mod, title: e.target.value })}
-          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:border-slate-200 dark:hover:border-slate-600 focus:border-primary-400 focus:outline-none"
+          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-800 dark:text-slate-100 hover:border-slate-200 dark:hover:border-slate-600 focus:border-primary-400 focus:outline-hidden"
           placeholder="Module title..."
         />
 
         {/* Lesson count */}
-        <span className="flex-shrink-0 text-xs text-slate-400 dark:text-slate-500">
+        <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500">
           {mod.lessons.length} lesson{mod.lessons.length !== 1 ? 's' : ''}
         </span>
 
@@ -441,7 +441,7 @@ function ModuleCard({
         <button
           type="button"
           onClick={onDelete}
-          className="flex-shrink-0 rounded p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+          className="shrink-0 rounded-sm p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
           aria-label="Delete module"
         >
           <Trash2 className="h-4 w-4" />
@@ -456,7 +456,7 @@ function ModuleCard({
             value={mod.description}
             onChange={(e) => onChange({ ...mod, description: e.target.value })}
             rows={2}
-            className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 focus:border-primary-400 focus:outline-none focus:ring-0 placeholder:text-slate-400"
+            className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 focus:border-primary-400 focus:outline-hidden focus:ring-0 placeholder:text-slate-400"
             placeholder="Module description..."
           />
 
@@ -531,7 +531,7 @@ export function ProgramPreview({
           type="text"
           value={program.programName}
           onChange={(e) => onProgramChange({ ...program, programName: e.target.value })}
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-base font-semibold text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-base font-semibold text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:border-primary-500 focus:outline-hidden focus:ring-2 focus:ring-primary-500/20"
           placeholder="Program name..."
         />
       </div>
@@ -539,7 +539,7 @@ export function ProgramPreview({
       {/* Failed lessons banner */}
       {failedCount > 0 && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-700/50 dark:bg-amber-900/20">
-          <AlertTriangle className="h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="flex-1 text-sm text-amber-700 dark:text-amber-300">
             {failedCount} lesson{failedCount !== 1 ? 's' : ''} failed to generate.
           </p>

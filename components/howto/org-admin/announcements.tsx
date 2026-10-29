@@ -20,11 +20,11 @@ export default function AnnouncementsHowTo() {
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Managing Announcements</h3>
       <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
         <li className="flex items-start gap-2">
-          <Pencil className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+          <Pencil className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
           <span>Edit announcements to update their content or extend the expiry date.</span>
         </li>
         <li className="flex items-start gap-2">
-          <Trash2 className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+          <Trash2 className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
           <span>Delete announcements that are no longer relevant.</span>
         </li>
       </ul>

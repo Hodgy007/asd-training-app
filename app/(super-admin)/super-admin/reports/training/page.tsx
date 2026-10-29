@@ -46,7 +46,7 @@ function PctCell({ stat }: { stat: ModuleStat }) {
       ? 'text-amber-700 bg-amber-50'
       : 'text-slate-500 bg-calm-50'
   return (
-    <span className={`inline-block text-xs font-medium px-1.5 py-0.5 rounded ${color}`}>
+    <span className={`inline-block text-xs font-medium px-1.5 py-0.5 rounded-sm ${color}`}>
       {stat.completions}/{stat.totalUsers}
       <span className="ml-1 opacity-70">({stat.pct}%)</span>
     </span>

@@ -183,7 +183,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
       <DialogContent
         size="2xl"
         showClose={false}
-        overlayClassName="bg-slate-900/50 backdrop-blur-sm"
+        overlayClassName="bg-slate-900/50 backdrop-blur-xs"
         containerClassName="px-4 py-6"
         className="border-0 shadow-2xl flex flex-col overflow-hidden"
       >
@@ -231,7 +231,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
               </p>
               <Link
                 href="/super-admin/settings/eventbrite"
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold shadow-sm transition-colors"
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold shadow-xs transition-colors"
               >
                 Open Eventbrite settings
                 <ExternalLink className="h-3.5 w-3.5" />
@@ -241,7 +241,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
 
           {phase.kind === 'error' && (
             <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-sm text-red-700 dark:text-red-300">
-              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{phase.message}</span>
             </div>
           )}
@@ -269,7 +269,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search events…"
-                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm bg-white dark:bg-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm bg-white dark:bg-slate-700 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-orange-300"
                 />
               </div>
 
@@ -314,11 +314,11 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
                       onChange={(e) => setUrlInput(e.target.value)}
                       disabled={importing}
                       placeholder="https://www.eventbrite.co.uk/e/...-tickets-1014447087547"
-                      className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm bg-white dark:bg-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                      className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm bg-white dark:bg-slate-700 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-orange-300"
                     />
                     {urlError && (
                       <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-xs text-red-700 dark:text-red-300">
-                        <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                         <span>{urlError}</span>
                       </div>
                     )}
@@ -351,7 +351,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
           <div className="border-t border-calm-200 dark:border-slate-700 p-6 space-y-3">
             {importError && (
               <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-sm text-red-700 dark:text-red-300">
-                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>{importError}</span>
               </div>
             )}
@@ -361,7 +361,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
                 checked={purchasable}
                 onChange={(e) => setPurchasable(e.target.checked)}
                 disabled={importing}
-                className="mt-0.5 h-4 w-4 rounded border-calm-300 dark:border-slate-600 text-orange-600 focus:ring-orange-500"
+                className="mt-0.5 h-4 w-4 rounded-sm border-calm-300 dark:border-slate-600 text-orange-600 focus:ring-orange-500"
               />
               <span>
                 <strong>Show on catalogue immediately</strong> — workshops appear on the
@@ -386,7 +386,7 @@ export function EventbriteEventPickerModal({ open, onClose, onImported }: Props)
                   type="button"
                   onClick={handleImportBulk}
                   disabled={importing || selected.size === 0}
-                  className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white text-sm font-bold shadow-sm transition-colors flex items-center gap-2"
+                  className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white text-sm font-bold shadow-xs transition-colors flex items-center gap-2"
                 >
                   {importing ? (
                     <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -446,16 +446,16 @@ function EventRow({
         checked={selected}
         disabled={isDisabled}
         onChange={onToggle}
-        className="mt-1 h-4 w-4 rounded border-calm-300 dark:border-slate-600 text-orange-600 focus:ring-orange-500 flex-shrink-0 disabled:cursor-not-allowed"
+        className="mt-1 h-4 w-4 rounded-sm border-calm-300 dark:border-slate-600 text-orange-600 focus:ring-orange-500 shrink-0 disabled:cursor-not-allowed"
       />
       {event.imageUrl ? (
         <img
           src={event.imageUrl}
           alt=""
-          className="w-14 h-14 rounded-lg object-cover flex-shrink-0 bg-slate-100 dark:bg-slate-700"
+          className="w-14 h-14 rounded-lg object-cover shrink-0 bg-slate-100 dark:bg-slate-700"
         />
       ) : (
-        <div className="w-14 h-14 rounded-lg bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0">
+        <div className="w-14 h-14 rounded-lg bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center shrink-0">
           <Ticket className="h-5 w-5 text-orange-600 dark:text-orange-400" />
         </div>
       )}
@@ -465,7 +465,7 @@ function EventRow({
             {event.name}
           </p>
           {event.alreadyLinked && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 flex-shrink-0">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 shrink-0">
               <CheckCircle className="h-3 w-3" />
               Already imported
             </span>

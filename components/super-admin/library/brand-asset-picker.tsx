@@ -85,7 +85,7 @@ export function BrandAssetPicker({ imageOnly = true, onPick, triggerLabel, trigg
             size="3xl"
             showClose={false}
             overlayClassName="bg-slate-900/55"
-            containerClassName="z-[100]"
+            containerClassName="z-100"
             className="border-0 shadow-2xl max-h-[85vh] flex flex-col overflow-hidden"
             aria-describedby={undefined}
           >

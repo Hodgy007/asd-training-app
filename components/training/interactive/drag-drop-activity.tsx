@@ -150,7 +150,7 @@ function CategorizeVariant({
                 <div
                   key={item.id}
                   onPointerDown={e => handlePointerDown(e, item.id)}
-                  className="select-none cursor-grab active:cursor-grabbing rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm font-medium text-slate-900 dark:text-white min-h-[48px] flex items-center gap-2 touch-manipulation shadow-sm hover:shadow-md transition-shadow"
+                  className="select-none cursor-grab active:cursor-grabbing rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm font-medium text-slate-900 dark:text-white min-h-[48px] flex items-center gap-2 touch-manipulation shadow-xs hover:shadow-md transition-shadow"
                   style={{
                     touchAction: 'none',
                     transform: isDragging ? `translate(${dragTransform.x}px, ${dragTransform.y}px)` : undefined,
@@ -158,9 +158,9 @@ function CategorizeVariant({
                     position: 'relative',
                   }}
                 >
-                  <GripVertical className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                  <GripVertical className="h-4 w-4 text-slate-400 shrink-0" />
                   {item.imageUrl && (
-                    <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded" />
+                    <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded-sm" />
                   )}
                   {item.label}
                 </div>
@@ -187,7 +187,7 @@ function CategorizeVariant({
               className={`rounded-lg border transition-colors min-h-[120px] overflow-hidden ${
                 isHighlighted
                   ? 'border-primary-400 dark:border-primary-500 bg-primary-50/30 dark:bg-primary-900/10 shadow-md'
-                  : 'border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm'
+                  : 'border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xs'
               }`}
             >
               <div
@@ -215,10 +215,10 @@ function CategorizeVariant({
                           : 'border-calm-200 dark:border-slate-600 bg-calm-50 dark:bg-slate-700 text-slate-900 dark:text-white'
                       }`}
                     >
-                      {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />}
-                      {res === 'wrong' && <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />}
+                      {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />}
+                      {res === 'wrong' && <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
                       {item.imageUrl && (
-                        <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded" />
+                        <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded-sm" />
                       )}
                       <span className="flex-1">{item.label}</span>
                       {!checked && (
@@ -350,10 +350,10 @@ function MatchVariant({
                     : 'border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white hover:border-primary-300 dark:hover:border-primary-600'
                 }`}
               >
-                {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />}
-                {res === 'wrong' && <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />}
+                {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />}
+                {res === 'wrong' && <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
                 {item.imageUrl && (
-                  <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded" />
+                  <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded-sm" />
                 )}
                 <span className="flex-1">{item.label}</span>
                 {matchedCat && !checked && (
@@ -541,11 +541,11 @@ function OrderVariant({
               }}
             >
               <span className="text-xs text-slate-400 dark:text-slate-500 font-bold w-5">{idx + 1}</span>
-              <GripVertical className="h-4 w-4 text-slate-400 flex-shrink-0" />
-              {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />}
-              {res === 'wrong' && <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />}
+              <GripVertical className="h-4 w-4 text-slate-400 shrink-0" />
+              {res === 'correct' && <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />}
+              {res === 'wrong' && <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
               {item.imageUrl && (
-                <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded" />
+                <img src={item.imageUrl} alt="" className="h-8 w-8 object-contain rounded-sm" />
               )}
               <span className="flex-1">{item.label}</span>
             </div>

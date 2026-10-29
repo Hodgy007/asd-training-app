@@ -98,7 +98,7 @@ export function ImagePickerModal({ open, onClose, onSelect, folder = 'all', titl
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by file name…"
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+              className="w-full pl-9 pr-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
             />
           </div>
         </div>

@@ -230,7 +230,7 @@ export default function OrgAdminLibraryPage() {
                 </h1>
                 <button
                   onClick={startEditing}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors flex-shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors shrink-0"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   Edit
@@ -290,20 +290,20 @@ export default function OrgAdminLibraryPage() {
               return (
                 <div key={doc.id} className="card p-0 overflow-hidden hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-4 px-4 py-3">
-                    <div className="h-12 w-12 rounded-lg bg-calm-50 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                    <div className="h-12 w-12 rounded-lg bg-calm-50 dark:bg-slate-700 flex items-center justify-center shrink-0">
                       <FileIcon className="h-6 w-6 text-slate-400 dark:text-slate-500" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-slate-800 dark:text-slate-200 truncate">{doc.title}</h3>
-                        <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-calm-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300">{typeBadge}</span>
+                        <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-calm-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300">{typeBadge}</span>
                       </div>
                       <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">{doc.description}</p>
                       <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                         {formatFileSize(doc.fileSize)} · {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {isViewable(doc.fileType) && (
                         <a
                           href={`/api/library/documents/${doc.id}/file?disposition=inline`}
@@ -404,7 +404,7 @@ export default function OrgAdminLibraryPage() {
                   <h3 className="font-semibold text-slate-800 dark:text-slate-200 leading-snug line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                     {col.title}
                   </h3>
-                  <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600 flex-shrink-0 mt-0.5 group-hover:text-emerald-400 transition-colors" />
+                  <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600 shrink-0 mt-0.5 group-hover:text-emerald-400 transition-colors" />
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">{col.description}</p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 flex items-center gap-1">

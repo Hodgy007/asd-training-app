@@ -77,7 +77,7 @@ export function ScenarioNodeEditor({ node, allNodeIds, onChange, onDelete, isSta
                 const isEnding = e.target.checked
                 onChange({ ...node, isEnding, choices: isEnding ? [] : node.choices })
               }}
-              className="rounded border-calm-300 dark:border-slate-500"
+              className="rounded-sm border-calm-300 dark:border-slate-500"
             />
             This is an ending node
           </label>
@@ -123,13 +123,13 @@ export function ScenarioNodeEditor({ node, allNodeIds, onChange, onDelete, isSta
                         type="text"
                         value={choice.label}
                         onChange={e => updateChoice(idx, { ...choice, label: e.target.value })}
-                        className="w-full rounded border border-calm-200 dark:border-slate-500 bg-white dark:bg-slate-600 px-2 py-1 text-sm text-slate-900 dark:text-white"
+                        className="w-full rounded-sm border border-calm-200 dark:border-slate-500 bg-white dark:bg-slate-600 px-2 py-1 text-sm text-slate-900 dark:text-white"
                         placeholder="Choice text..."
                       />
                       <select
                         value={choice.nextNodeId}
                         onChange={e => updateChoice(idx, { ...choice, nextNodeId: e.target.value })}
-                        className="w-full rounded border border-calm-200 dark:border-slate-500 bg-white dark:bg-slate-600 px-2 py-1 text-xs text-slate-700 dark:text-slate-300"
+                        className="w-full rounded-sm border border-calm-200 dark:border-slate-500 bg-white dark:bg-slate-600 px-2 py-1 text-xs text-slate-700 dark:text-slate-300"
                       >
                         <option value="">→ Goes to...</option>
                         {allNodeIds.filter(id => id !== node.id).map(id => (

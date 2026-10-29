@@ -35,7 +35,7 @@ export function BlockInstructions({ title, instructions, readAloudText }: BlockI
         <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl p-4">
           {hasTitle && (
             <h3 className="font-bold text-primary-800 dark:text-primary-200 text-lg mb-1 flex items-center gap-2">
-              <Info className="h-5 w-5 flex-shrink-0" />
+              <Info className="h-5 w-5 shrink-0" />
               {title}
             </h3>
           )}

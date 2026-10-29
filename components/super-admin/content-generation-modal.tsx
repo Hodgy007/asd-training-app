@@ -163,7 +163,7 @@ export function ContentGenerationModal({
       setParsedContent(parsedFiles)
 
       // Step 2: Generate outline
-      setProgressPhase('outline')
+      setProgressPhase('outline-solid')
 
       const outlineRes = await fetch('/api/super-admin/training/generate-outline', {
         method: 'POST',
@@ -178,7 +178,7 @@ export function ContentGenerationModal({
 
       if (!outlineRes.ok) {
         const err = await outlineRes.json().catch(() => ({ error: 'Outline generation failed' }))
-        throw new Error(err.error ?? 'Failed to generate outline')
+        throw new Error(err.error ?? 'Failed to generate outline-solid')
       }
 
       const outline = await outlineRes.json()
@@ -373,7 +373,7 @@ export function ContentGenerationModal({
       >
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
             <HeaderIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           </div>
           <DialogTitle className="flex-1 text-base text-slate-800">
@@ -409,7 +409,7 @@ export function ContentGenerationModal({
                   type="text"
                   value={programName}
                   onChange={(e) => setProgramName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 placeholder:text-slate-400"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 focus:border-primary-500 focus:outline-hidden focus:ring-2 focus:ring-primary-500/20 placeholder:text-slate-400"
                   placeholder="e.g. ASD Awareness Module 3"
                 />
               </div>
@@ -456,7 +456,7 @@ export function ContentGenerationModal({
                   type="checkbox"
                   checked={includeImages}
                   onChange={(e) => setIncludeImages(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-slate-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600"
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded-sm border-slate-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600"
                 />
                 <div>
                   <label
@@ -474,7 +474,7 @@ export function ContentGenerationModal({
               {/* Error */}
               {uploadError && (
                 <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-700/50 dark:bg-red-900/20">
-                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                   <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
                 </div>
               )}
@@ -503,7 +503,7 @@ export function ContentGenerationModal({
               />
               {saveError && (
                 <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-700/50 dark:bg-red-900/20">
-                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                   <p className="text-sm text-red-600 dark:text-red-400">{saveError}</p>
                 </div>
               )}

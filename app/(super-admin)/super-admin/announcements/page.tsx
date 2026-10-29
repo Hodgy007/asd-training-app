@@ -185,7 +185,7 @@ export default function AnnouncementsPage() {
                   type="checkbox"
                   checked={formActive}
                   onChange={(e) => setFormActive(e.target.checked)}
-                  className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+                  className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-sm font-medium text-slate-700">Active (visible to users immediately)</span>
               </label>

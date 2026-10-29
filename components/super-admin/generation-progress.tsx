@@ -3,7 +3,7 @@
 import { CheckCircle, Loader2, Circle, AlertTriangle } from 'lucide-react'
 import { clsx } from 'clsx'
 
-export type ProgressPhase = 'parsing' | 'outline' | 'content' | 'quiz' | 'complete' | 'error'
+export type ProgressPhase = 'parsing' | 'outline-solid' | 'content' | 'quiz' | 'complete' | 'error'
 
 interface GenerationProgressProps {
   phase: ProgressPhase
@@ -13,7 +13,7 @@ interface GenerationProgressProps {
   errors: string[]
 }
 
-const PHASE_ORDER: ProgressPhase[] = ['parsing', 'outline', 'content', 'quiz', 'complete']
+const PHASE_ORDER: ProgressPhase[] = ['parsing', 'outline-solid', 'content', 'quiz', 'complete']
 
 function getPhaseIndex(phase: ProgressPhase): number {
   if (phase === 'error') return -1
@@ -29,7 +29,7 @@ function computeProgressPercent(
   if (phase === 'complete') return 100
   if (phase === 'error') return 0
   if (phase === 'parsing') return 5
-  if (phase === 'outline') return 15
+  if (phase === 'outline-solid') return 15
 
   // content or quiz — 15% to 95% spread across lessons * 2 phases
   const totalSteps = totalLessons * 2
@@ -48,7 +48,7 @@ interface Step {
 
 const STEPS: Step[] = [
   { key: 'parsing', label: () => 'Parsing files...' },
-  { key: 'outline', label: () => 'Creating outline...' },
+  { key: 'outline-solid', label: () => 'Creating outline...' },
   {
     key: 'content',
     label: (currentLesson, totalLessons, currentPhase) =>
@@ -110,13 +110,13 @@ export function GenerationProgress({
           return (
             <li key={step.key} className="flex items-center gap-3">
               {status === 'done' && (
-                <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-500" />
+                <CheckCircle className="h-5 w-5 shrink-0 text-green-500" />
               )}
               {status === 'current' && (
-                <Loader2 className="h-5 w-5 flex-shrink-0 animate-spin text-primary-600" />
+                <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary-600" />
               )}
               {status === 'pending' && (
-                <Circle className="h-5 w-5 flex-shrink-0 text-slate-300 dark:text-slate-600" />
+                <Circle className="h-5 w-5 shrink-0 text-slate-300 dark:text-slate-600" />
               )}
               <span
                 className={clsx(
@@ -136,7 +136,7 @@ export function GenerationProgress({
       {/* Errors banner */}
       {errors.length > 0 && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-700/50 dark:bg-amber-900/20">
-          <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="min-w-0 flex-1 space-y-2">
             <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
               {errors.length} lesson{errors.length !== 1 ? 's' : ''} failed to generate. You can hit
@@ -144,7 +144,7 @@ export function GenerationProgress({
             </p>
             <ul className="space-y-1 text-xs text-amber-700 dark:text-amber-300">
               {errors.map((err, idx) => (
-                <li key={idx} className="break-words font-mono leading-snug">
+                <li key={idx} className="wrap-break-word font-mono leading-snug">
                   • {err}
                 </li>
               ))}

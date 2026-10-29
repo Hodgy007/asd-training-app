@@ -105,17 +105,17 @@ export function CohortEventbriteSection({ cohortId, event, onChange }: Props) {
   const timeStr = startsAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border-2 border-orange-200 dark:border-orange-900/40 p-6 shadow-sm space-y-5">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border-2 border-orange-200 dark:border-orange-900/40 p-6 shadow-xs space-y-5">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4 min-w-0">
           {event.imageUrl ? (
             <img
               src={event.imageUrl}
               alt=""
-              className="w-20 h-20 rounded-xl object-cover flex-shrink-0 bg-slate-100 dark:bg-slate-700"
+              className="w-20 h-20 rounded-xl object-cover shrink-0 bg-slate-100 dark:bg-slate-700"
             />
           ) : (
-            <div className="w-20 h-20 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0">
+            <div className="w-20 h-20 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center shrink-0">
               <Ticket className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             </div>
           )}
@@ -152,7 +152,7 @@ export function CohortEventbriteSection({ cohortId, event, onChange }: Props) {
         </div>
         <span
           className={clsx(
-            'inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0',
+            'inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full shrink-0',
             STATUS_STYLES[event.status],
           )}
         >
@@ -176,13 +176,13 @@ export function CohortEventbriteSection({ cohortId, event, onChange }: Props) {
           disabled={saving}
           onClick={() => patchEventbrite({ purchasable: !event.purchasable })}
           className={clsx(
-            'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full transition-colors disabled:opacity-60',
+            'relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-60',
             event.purchasable ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-600',
           )}
         >
           <span
             className={clsx(
-              'inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform mt-0.5',
+              'inline-block h-5 w-5 rounded-full bg-white shadow-sm transform transition-transform mt-0.5',
               event.purchasable ? 'translate-x-5' : 'translate-x-0.5',
             )}
           />
@@ -263,7 +263,7 @@ export function CohortEventbriteSection({ cohortId, event, onChange }: Props) {
 
         {error ? (
           <div className="mt-3 flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-900/20 px-3 py-2 text-xs text-red-700 dark:text-red-300">
-            <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         ) : null}

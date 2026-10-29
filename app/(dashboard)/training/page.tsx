@@ -146,7 +146,7 @@ export default async function TrainingPage(
                 className="card hover:shadow-md hover:border-primary-200 transition-all group"
               >
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary-100">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-primary-100">
                     <BookOpen className="h-5 w-5 text-primary-600" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -157,7 +157,7 @@ export default async function TrainingPage(
                       <p className="text-sm text-slate-500 mt-1 line-clamp-2">{stripHtml(program.description)}</p>
                     )}
                   </div>
-                  <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary-500 transition-colors flex-shrink-0 mt-1" />
+                  <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary-500 transition-colors shrink-0 mt-1" />
                 </div>
 
                 <div className="space-y-1.5">

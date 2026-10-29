@@ -45,7 +45,7 @@ export function ToolkitDocumentActions({ documentId, documentTitle, fileName }: 
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick('view')}
-        className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#f5821f] focus:ring-offset-2"
+        className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-hidden focus:ring-2 focus:ring-[#f5821f] focus:ring-offset-2"
       >
         <ExternalLink className="h-4 w-4" />
         View
@@ -54,7 +54,7 @@ export function ToolkitDocumentActions({ documentId, documentTitle, fileName }: 
         href={urlFor('download')}
         download={fileName}
         onClick={handleClick('download')}
-        className="inline-flex items-center gap-2 rounded-lg bg-[#f5821f] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#d96f18] focus:outline-none focus:ring-2 focus:ring-[#f5821f] focus:ring-offset-2"
+        className="inline-flex items-center gap-2 rounded-lg bg-[#f5821f] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#d96f18] focus:outline-hidden focus:ring-2 focus:ring-[#f5821f] focus:ring-offset-2"
       >
         <Download className="h-4 w-4" />
         Download

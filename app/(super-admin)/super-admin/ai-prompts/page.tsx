@@ -74,7 +74,7 @@ export default async function AiPromptsListPage() {
                   <h3 className="font-semibold text-slate-900 dark:text-slate-100 leading-snug">
                     {p.name}
                   </h3>
-                  <ChevronRight className="h-4 w-4 text-slate-400 flex-shrink-0 mt-1" />
+                  <ChevronRight className="h-4 w-4 text-slate-400 shrink-0 mt-1" />
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{p.purpose}</p>
                 <div className="flex flex-wrap items-center gap-2 text-xs">

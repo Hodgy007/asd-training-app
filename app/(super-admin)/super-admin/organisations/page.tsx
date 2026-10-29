@@ -168,7 +168,7 @@ function OrganisationsContent() {
             <RefreshCw className={clsx('h-4 w-4', loading && 'animate-spin')} />
           </button>
         </div>
-        <div className="overflow-auto max-h-[22rem]">
+        <div className="overflow-auto max-h-88">
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-10">
               <tr className="border-b border-calm-200 dark:border-slate-700 bg-calm-50 dark:bg-slate-800">

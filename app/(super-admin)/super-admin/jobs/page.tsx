@@ -70,7 +70,7 @@ export default async function JobsListPage() {
                   {j.organisation?.name ?? 'Ambitious about Autism'}
                 </td>
                 <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-xs ${STATUS_BADGE[j.status]}`}>
+                  <span className={`px-2 py-0.5 rounded-sm text-xs ${STATUS_BADGE[j.status]}`}>
                     {j.status}
                   </span>
                 </td>

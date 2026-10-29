@@ -87,7 +87,7 @@ export function ScenarioPlayer({ title, instructions, data, completed, onComplet
         {currentNode.isEnding && (
           <div className={`rounded-lg border p-4 mb-4 ${endingColor}`} role="status" aria-live="polite">
             <div className="flex items-start gap-2">
-              <EndingIcon className="h-5 w-5 flex-shrink-0 mt-0.5" />
+              <EndingIcon className="h-5 w-5 shrink-0 mt-0.5" />
               <div>
                 {currentNode.feedback && (
                   <p className="text-sm font-medium">{currentNode.feedback}</p>

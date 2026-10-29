@@ -74,7 +74,7 @@ export default async function ProgramPage(props: { params: Promise<{ programId: 
           <a
             href={`/api/training/certificate/program/${params.programId}`}
             download
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold shadow-sm transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold shadow-xs transition-colors"
           >
             <Award className="h-4 w-4" />
             Download Certificate

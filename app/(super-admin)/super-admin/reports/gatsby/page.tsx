@@ -112,7 +112,7 @@ export default function GatsbyReportPage() {
                       <td className="px-4 py-3 text-center">
                         <span
                           className={clsx(
-                            'inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-bold',
+                            'inline-flex items-center justify-center min-w-8 px-2 py-0.5 rounded-full text-xs font-bold',
                             matching.length === 0
                               ? 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500'
                               : 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'

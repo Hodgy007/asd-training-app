@@ -71,7 +71,7 @@ function ToggleButton({
           : 'border-calm-200 bg-calm-50 text-slate-600 hover:border-calm-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:border-slate-500'
       )}
     >
-      {selected && <Check className="h-3.5 w-3.5 flex-shrink-0" />}
+      {selected && <Check className="h-3.5 w-3.5 shrink-0" />}
       {children}
     </button>
   )
@@ -382,7 +382,7 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
             type="checkbox"
             checked={includeCharityStaff}
             onChange={handleToggleCharityStaff}
-            className="h-4 w-4 rounded border-calm-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-700"
+            className="h-4 w-4 rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500 dark:border-slate-600 dark:bg-slate-700"
           />
           <span className="text-sm text-slate-700 dark:text-slate-200">
             Include charity staff (admins &amp; employees)
@@ -434,7 +434,7 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
                 if (searchResults.length > 0) setShowDropdown(true)
               }}
               placeholder="Search by name or email…"
-              className="w-full rounded-lg border border-calm-200 bg-white py-2 pl-8 pr-3 text-sm text-slate-700 placeholder-slate-400 focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-primary-500"
+              className="w-full rounded-lg border border-calm-200 bg-white py-2 pl-8 pr-3 text-sm text-slate-700 placeholder-slate-400 focus:border-primary-400 focus:outline-hidden focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:placeholder-slate-500 dark:focus:border-primary-500"
             />
             {searchLoading && (
               <div className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-primary-500" />

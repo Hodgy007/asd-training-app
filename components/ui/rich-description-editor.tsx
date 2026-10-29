@@ -45,7 +45,7 @@ export function RichDescriptionEditor({
     <div
       aria-label={ariaLabel}
       style={{ ['--rde-min-height' as string]: `${minHeight}px` }}
-      className="rounded-xl border border-calm-200 dark:border-slate-600 overflow-hidden [&_.ql-toolbar]:border-calm-200 [&_.ql-toolbar]:dark:border-slate-600 [&_.ql-toolbar]:bg-calm-50 [&_.ql-toolbar]:dark:bg-slate-700 [&_.ql-container]:border-0 [&_.ql-editor]:min-h-[var(--rde-min-height)] [&_.ql-editor]:text-sm [&_.ql-editor]:text-slate-900 [&_.ql-editor]:dark:text-white [&_.ql-editor]:bg-white [&_.ql-editor]:dark:bg-slate-700"
+      className="rounded-xl border border-calm-200 dark:border-slate-600 overflow-hidden [&_.ql-toolbar]:border-calm-200 dark:[&_.ql-toolbar]:border-slate-600 [&_.ql-toolbar]:bg-calm-50 dark:[&_.ql-toolbar]:bg-slate-700 [&_.ql-container]:border-0 [&_.ql-editor]:min-h-(--rde-min-height) [&_.ql-editor]:text-sm [&_.ql-editor]:text-slate-900 dark:[&_.ql-editor]:text-white [&_.ql-editor]:bg-white dark:[&_.ql-editor]:bg-slate-700"
     >
       <ReactQuill
         theme="snow"

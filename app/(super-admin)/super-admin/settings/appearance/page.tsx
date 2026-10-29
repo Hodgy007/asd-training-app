@@ -33,7 +33,7 @@ export default function AppearanceSettingsPage() {
   const { colorTheme, setColorTheme } = useColorTheme()
 
   const cardCls =
-    'bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-5'
+    'bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-5'
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-page-enter">

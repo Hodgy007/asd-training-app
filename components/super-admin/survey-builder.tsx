@@ -243,7 +243,7 @@ export function SurveyBuilder({ initialData, onSave, onCancel, saving }: SurveyB
       )}
 
       {/* ── Survey details card ────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-calm-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div className="rounded-xl border border-calm-200 bg-white p-6 shadow-xs dark:border-slate-700 dark:bg-slate-800">
         <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
           Survey Details
         </h2>
@@ -260,7 +260,7 @@ export function SurveyBuilder({ initialData, onSave, onCancel, saving }: SurveyB
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter survey title"
-              className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+              className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-hidden focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-500"
             />
           </div>
 
@@ -275,7 +275,7 @@ export function SurveyBuilder({ initialData, onSave, onCancel, saving }: SurveyB
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional description"
               rows={3}
-              className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+              className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-hidden focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-500"
             />
           </div>
 
@@ -289,14 +289,14 @@ export function SurveyBuilder({ initialData, onSave, onCancel, saving }: SurveyB
               type="datetime-local"
               value={closesAt}
               onChange={(e) => setClosesAt(e.target.value)}
-              className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:border-primary-500 dark:focus:ring-primary-500"
+              className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-hidden focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:border-primary-500 dark:focus:ring-primary-500"
             />
           </div>
         </div>
       </div>
 
       {/* ── Target picker card ─────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-calm-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div className="rounded-xl border border-calm-200 bg-white p-6 shadow-xs dark:border-slate-700 dark:bg-slate-800">
         <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
           Target Audience
         </h2>
@@ -395,10 +395,10 @@ function QuestionCard({
   const showOptions = HAS_OPTIONS.has(question.type)
 
   return (
-    <div className="rounded-xl border border-calm-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <div className="rounded-xl border border-calm-200 bg-white shadow-xs dark:border-slate-700 dark:bg-slate-800">
       {/* ── Card header ──────────────────────────────────────────────────── */}
       <div className="flex items-center gap-2 border-b border-calm-100 px-4 py-3 dark:border-slate-700">
-        <GripVertical className="h-4 w-4 flex-shrink-0 text-slate-400 dark:text-slate-500" />
+        <GripVertical className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
         <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
           Q{index + 1}
         </span>
@@ -407,7 +407,7 @@ function QuestionCard({
           type="button"
           onClick={() => onMove('up')}
           disabled={index === 0}
-          className="rounded p-1 text-slate-400 transition-colors hover:bg-calm-50 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+          className="rounded-sm p-1 text-slate-400 transition-colors hover:bg-calm-50 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700 dark:hover:text-slate-300"
           title="Move up"
         >
           <ChevronUp className="h-4 w-4" />
@@ -416,7 +416,7 @@ function QuestionCard({
           type="button"
           onClick={() => onMove('down')}
           disabled={index === total - 1}
-          className="rounded p-1 text-slate-400 transition-colors hover:bg-calm-50 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+          className="rounded-sm p-1 text-slate-400 transition-colors hover:bg-calm-50 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700 dark:hover:text-slate-300"
           title="Move down"
         >
           <ChevronDown className="h-4 w-4" />
@@ -424,7 +424,7 @@ function QuestionCard({
         <button
           type="button"
           onClick={onRemove}
-          className="rounded p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+          className="rounded-sm p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
           title="Delete question"
         >
           <Trash2 className="h-4 w-4" />
@@ -441,7 +441,7 @@ function QuestionCard({
           <select
             value={question.type}
             onChange={(e) => onUpdate({ type: e.target.value as QuestionType })}
-            className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:border-primary-500 dark:focus:ring-primary-500"
+            className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-hidden focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:border-primary-500 dark:focus:ring-primary-500"
           >
             {QUESTION_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -461,7 +461,7 @@ function QuestionCard({
             value={question.question}
             onChange={(e) => onUpdate({ question: e.target.value })}
             placeholder="Enter your question"
-            className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+            className="w-full rounded-lg border border-calm-200 bg-calm-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-hidden focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-500"
           />
         </div>
 
@@ -474,7 +474,7 @@ function QuestionCard({
             <div className="space-y-2">
               {question.options.map((opt, optIdx) => (
                 <div key={optIdx} className="flex items-center gap-2">
-                  <span className="w-6 flex-shrink-0 text-center text-xs font-medium text-slate-400 dark:text-slate-500">
+                  <span className="w-6 shrink-0 text-center text-xs font-medium text-slate-400 dark:text-slate-500">
                     {optIdx + 1}.
                   </span>
                   <input
@@ -482,14 +482,14 @@ function QuestionCard({
                     value={opt}
                     onChange={(e) => onUpdateOption(optIdx, e.target.value)}
                     placeholder={`Option ${optIdx + 1}`}
-                    className="flex-1 rounded-lg border border-calm-200 bg-calm-50 px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                    className="flex-1 rounded-lg border border-calm-200 bg-calm-50 px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-400 focus:outline-hidden focus:ring-1 focus:ring-primary-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                   />
                   <button
                     type="button"
                     onClick={() => onRemoveOption(optIdx)}
                     disabled={question.options.length <= 1}
                     className={clsx(
-                      'rounded p-1 transition-colors',
+                      'rounded-sm p-1 transition-colors',
                       question.options.length <= 1
                         ? 'text-slate-300 dark:text-slate-600'
                         : 'text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400'
@@ -525,7 +525,7 @@ function QuestionCard({
             type="checkbox"
             checked={question.required}
             onChange={(e) => onUpdate({ required: e.target.checked })}
-            className="h-4 w-4 rounded border-calm-300 text-primary-600 focus:ring-primary-500 dark:border-slate-500 dark:bg-slate-700"
+            className="h-4 w-4 rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500 dark:border-slate-500 dark:bg-slate-700"
           />
           <span className="text-sm text-slate-600 dark:text-slate-400">Required</span>
         </label>

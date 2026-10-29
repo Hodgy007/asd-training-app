@@ -21,7 +21,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900 overflow-hidden">
       <div
         className={clsx(
-          'hidden md:flex flex-shrink-0 flex-col transition-[width] duration-200 ease-in-out',
+          'hidden md:flex shrink-0 flex-col transition-[width] duration-200 ease-in-out',
           collapsed ? 'w-16' : 'w-56',
         )}
       >

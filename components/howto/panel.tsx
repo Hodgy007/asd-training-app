@@ -39,7 +39,7 @@ export function HowToPanel({ title = 'How to use this page', children }: HowToPa
 export function Tip({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl p-3">
-      <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+      <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
       <p className="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">{children}</p>
     </div>
   )

@@ -151,14 +151,14 @@ export function TtsAudioPlayer({ text, ariaLabel }: TtsAudioPlayerProps) {
       aria-label={ariaLabel || 'Read aloud'}
       className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/70 dark:bg-slate-900/40 border border-calm-200 dark:border-slate-700"
     >
-      <AudioLines className="h-4 w-4 text-slate-500 dark:text-slate-400 flex-shrink-0" aria-hidden="true" />
+      <AudioLines className="h-4 w-4 text-slate-500 dark:text-slate-400 shrink-0" aria-hidden="true" />
 
       <button
         type="button"
         onClick={handlePlayPause}
         disabled={loading}
         aria-label={playing ? 'Pause' : 'Play'}
-        className="flex items-center justify-center h-8 w-8 rounded-full text-slate-800 dark:text-slate-100 hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors flex-shrink-0"
+        className="flex items-center justify-center h-8 w-8 rounded-full text-slate-800 dark:text-slate-100 hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors shrink-0"
       >
         {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -180,7 +180,7 @@ export function TtsAudioPlayer({ text, ariaLabel }: TtsAudioPlayerProps) {
         className="flex-1 h-1 accent-slate-800 dark:accent-slate-200 cursor-pointer"
       />
 
-      <span className="text-xs font-mono text-slate-500 dark:text-slate-400 tabular-nums flex-shrink-0 min-w-[2.75rem] text-right">
+      <span className="text-xs font-mono text-slate-500 dark:text-slate-400 tabular-nums shrink-0 min-w-11 text-right">
         {formatTime(duration - currentTime)}
       </span>
 
@@ -188,7 +188,7 @@ export function TtsAudioPlayer({ text, ariaLabel }: TtsAudioPlayerProps) {
         type="button"
         onClick={cycleSpeed}
         aria-label={`Playback speed ${speed}x`}
-        className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors flex-shrink-0 w-8 text-center"
+        className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0 w-8 text-center"
       >
         {speed}x
       </button>
@@ -197,7 +197,7 @@ export function TtsAudioPlayer({ text, ariaLabel }: TtsAudioPlayerProps) {
         type="button"
         onClick={toggleMute}
         aria-label={muted ? 'Unmute' : 'Mute'}
-        className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors flex-shrink-0"
+        className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors shrink-0"
       >
         {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
       </button>

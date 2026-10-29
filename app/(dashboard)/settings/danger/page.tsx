@@ -59,7 +59,7 @@ export default function SettingsDangerPage() {
           <>
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">
-                Type <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">DELETE</span> to confirm
+                Type <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded-sm">DELETE</span> to confirm
               </label>
               <input
                 type="text"

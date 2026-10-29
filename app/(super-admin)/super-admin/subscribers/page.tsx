@@ -161,7 +161,7 @@ export default function SubscribersPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by name or email"
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
                 aria-label="Search subscribers"
               />
             </div>
@@ -169,7 +169,7 @@ export default function SubscribersPage() {
               {filtered.length} of {subscribers.length}
             </span>
           </div>
-          <div className="overflow-auto max-h-[28rem]">
+          <div className="overflow-auto max-h-112">
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-800 text-xs uppercase tracking-wider text-slate-600 dark:text-slate-400">
                 <tr>

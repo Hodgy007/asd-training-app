@@ -111,7 +111,7 @@ export default function FeedbackInboxPage() {
         </select>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xs border border-slate-200 dark:border-slate-700 overflow-hidden">
         {loading ? (
           <p className="p-6 text-slate-500 dark:text-slate-400">Loading...</p>
         ) : error ? (
@@ -143,7 +143,7 @@ export default function FeedbackInboxPage() {
                   }}
                   role="button"
                   tabIndex={0}
-                  className="border-t border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
+                  className="border-t border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-primary-500 focus:ring-inset"
                 >
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[item.status]}`}>

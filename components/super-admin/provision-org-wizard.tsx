@@ -91,7 +91,7 @@ export function ProvisionOrgWizard({ programs }: { programs: Program[] }) {
     return (
       <div className="max-w-2xl space-y-5">
         <div className="flex items-start gap-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
-          <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+          <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold text-emerald-900 dark:text-emerald-200">
               {result.org.name} is set up
@@ -106,7 +106,7 @@ export function ProvisionOrgWizard({ programs }: { programs: Program[] }) {
 
         {!result.emailSent && (
           <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="text-sm text-amber-900 dark:text-amber-200">
               <p className="font-semibold">No invite email was sent</p>
               <p className="mt-1">
@@ -200,7 +200,7 @@ export function ProvisionOrgWizard({ programs }: { programs: Program[] }) {
                         : 'border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-800'
                     }`}
                   >
-                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <Icon className="h-4 w-4 shrink-0" />
                     {ORG_TYPE_LABELS[t]}
                   </button>
                 )
@@ -303,8 +303,8 @@ export function ProvisionOrgWizard({ programs }: { programs: Program[] }) {
               ['Administrator', `${adminName} (${adminEmail})`],
             ].map(([k, v]) => (
               <div key={k} className="flex gap-4 px-3 py-2.5">
-                <dt className="w-40 flex-shrink-0 text-slate-500 dark:text-slate-400">{k}</dt>
-                <dd className="font-medium break-words">{v}</dd>
+                <dt className="w-40 shrink-0 text-slate-500 dark:text-slate-400">{k}</dt>
+                <dd className="font-medium wrap-break-word">{v}</dd>
               </div>
             ))}
           </dl>
@@ -317,7 +317,7 @@ export function ProvisionOrgWizard({ programs }: { programs: Program[] }) {
 
       {error && (
         <div className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
-          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}

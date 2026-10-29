@@ -116,7 +116,7 @@ export function FeedbackModal({ open, onClose, defaultType, documentContext }: F
       <DialogContent
         size="lg"
         showClose={false}
-        containerClassName="z-[60]"
+        containerClassName="z-60"
         className="border-0 shadow-2xl p-6"
         aria-describedby={undefined}
       >
@@ -135,7 +135,7 @@ export function FeedbackModal({ open, onClose, defaultType, documentContext }: F
 
         {documentContext && !submittedToast && (
           <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary-200 dark:border-primary-700/40 bg-primary-50 dark:bg-primary-900/20 p-3">
-            <FileText className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary-600 dark:text-primary-300" />
+            <FileText className="mt-0.5 h-4 w-4 shrink-0 text-primary-600 dark:text-primary-300" />
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-primary-700 dark:text-primary-300">
                 About this document
@@ -183,7 +183,7 @@ export function FeedbackModal({ open, onClose, defaultType, documentContext }: F
               maxLength={5000}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 p-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-500"
               placeholder={
                 documentContext
                   ? 'What would you change about this document? Any errors, missing info, or suggestions?'

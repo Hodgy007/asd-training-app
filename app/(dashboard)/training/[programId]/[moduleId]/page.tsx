@@ -150,10 +150,10 @@ export default async function ProgramModulePage(
                     ? 'bg-sage-50 border-sage-200'
                     : isLessonLocked
                       ? 'bg-calm-50 border-calm-200 opacity-60'
-                      : 'bg-white border-calm-200 hover:border-primary-200 hover:shadow-sm'
+                      : 'bg-white border-calm-200 hover:border-primary-200 hover:shadow-xs'
                 )}
               >
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {isLessonComplete ? (
                     <CheckCircle className="h-6 w-6 text-sage-500" />
                   ) : (
@@ -163,9 +163,9 @@ export default async function ProgramModulePage(
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     {lesson.type === 'VIDEO' ? (
-                      <Video className="h-4 w-4 text-primary-400 flex-shrink-0" />
+                      <Video className="h-4 w-4 text-primary-400 shrink-0" />
                     ) : (
-                      <FileText className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                      <FileText className="h-4 w-4 text-slate-400 shrink-0" />
                     )}
                     <span className="text-xs text-slate-400 capitalize">
                       {lesson.type.toLowerCase()}
@@ -182,7 +182,7 @@ export default async function ProgramModulePage(
                   <Link
                     href={`/training/${params.programId}/${module.id}/${lesson.id}`}
                     className={clsx(
-                      'flex-shrink-0 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors',
+                      'shrink-0 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors',
                       isLessonComplete
                         ? 'text-sage-600 hover:bg-sage-100'
                         : 'text-primary-600 hover:bg-primary-50'

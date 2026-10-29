@@ -27,7 +27,7 @@ function ItemRow({ item, onClick }: { item: NotificationItem; onClick: () => voi
       onClick={onClick}
       className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
     >
-      <div className={clsx('w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0', tint)}>
+      <div className={clsx('w-9 h-9 rounded-full flex items-center justify-center shrink-0', tint)}>
         <Icon className="h-4 w-4" />
       </div>
       <div className="flex-1 min-w-0">
@@ -36,7 +36,7 @@ function ItemRow({ item, onClick }: { item: NotificationItem; onClick: () => voi
           <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{item.supporting}</p>
         )}
       </div>
-      <ChevronRight className="h-4 w-4 text-slate-400 mt-2 group-hover:text-slate-600 flex-shrink-0" />
+      <ChevronRight className="h-4 w-4 text-slate-400 mt-2 group-hover:text-slate-600 shrink-0" />
     </Link>
   )
 }

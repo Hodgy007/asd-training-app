@@ -19,12 +19,12 @@ export const AlertDialogContent = forwardRef<
 >(function AlertDialogContent({ className, ...props }, ref) {
   return (
     <AlertDialogPortal>
-      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 pointer-events-none">
+      <div className="fixed inset-0 z-70 flex items-center justify-center p-4 pointer-events-none">
         <AlertDialogPrimitive.Overlay className="dialog-overlay fixed inset-0 bg-black/50" />
         <AlertDialogPrimitive.Content
           ref={ref}
           className={cn(
-            'dialog-content pointer-events-auto relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4 focus:outline-none',
+            'dialog-content pointer-events-auto relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4 focus:outline-hidden',
             className,
           )}
           {...props}
@@ -83,7 +83,7 @@ const ACTION_TONE: Record<AlertDialogTone, string> = {
 }
 
 const BUTTON_BASE =
-  'inline-flex items-center justify-center gap-2 px-5 py-2 text-sm rounded-full font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+  'inline-flex items-center justify-center gap-2 px-5 py-2 text-sm rounded-full font-semibold focus:outline-hidden focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
 
 export const AlertDialogAction = forwardRef<
   ElementRef<typeof AlertDialogPrimitive.Action>,

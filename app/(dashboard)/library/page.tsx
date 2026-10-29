@@ -70,7 +70,7 @@ function SizeToggle({ value, onChange }: { value: TileSize; onChange: (s: TileSi
             className={clsx(
               'h-7 w-8 rounded-lg text-xs font-bold transition-colors',
               active
-                ? 'bg-primary-500 text-white shadow-sm'
+                ? 'bg-primary-500 text-white shadow-xs'
                 : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
             )}
           >
@@ -386,14 +386,14 @@ function LibraryPage() {
                                 <button
                                   type="button"
                                   onClick={() => setZoomedImage(doc.thumbnailUrl)}
-                                  className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
+                                  className="h-10 w-10 rounded-lg overflow-hidden shrink-0 border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
                                   title="Zoom thumbnail"
                                 >
                                   <img src={doc.thumbnailUrl} alt="" className="h-full w-full object-cover" />
                                 </button>
                               ) : (
                                 <div
-                                  className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                                  className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0"
                                   style={{ backgroundColor: theme.bg, color: theme.accent }}
                                   aria-hidden="true"
                                 >
@@ -406,12 +406,12 @@ function LibraryPage() {
                                     {doc.title}
                                   </p>
                                   <span
-                                    className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider flex-shrink-0"
+                                    className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0"
                                     style={{ backgroundColor: `${theme.accent}1A`, color: theme.accent }}
                                   >
                                     {typeBadge}
                                   </span>
-                                  <span className="text-[11px] text-slate-400 dark:text-slate-500 flex-shrink-0">
+                                  <span className="text-[11px] text-slate-400 dark:text-slate-500 shrink-0">
                                     {formatFileSize(doc.fileSize)}
                                   </span>
                                 </div>
@@ -419,7 +419,7 @@ function LibraryPage() {
                                   {doc.description}
                                 </p>
                               </div>
-                              <div className="flex items-center gap-1 flex-shrink-0">
+                              <div className="flex items-center gap-1 shrink-0">
                                 {isViewable(doc.fileType) && (
                                   <a
                                     href={`/api/library/documents/${doc.id}/file?disposition=inline`}
@@ -473,7 +473,7 @@ function LibraryPage() {
                   className="group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white dark:bg-slate-800 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                 >
                   {/* Header — coloured panel with thumbnail or file icon */}
-                  <div className="relative aspect-[4/3] w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
+                  <div className="relative aspect-4/3 w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
                     <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full opacity-60" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
                     <div className="pointer-events-none absolute -top-6 -left-6 h-20 w-20 rounded-full opacity-40" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
                     {doc.thumbnailUrl ? (
@@ -491,7 +491,7 @@ function LibraryPage() {
                       </button>
                     ) : (
                       <div className="relative flex h-full w-full items-center justify-center">
-                        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/80 shadow-sm">
+                        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/80 shadow-xs">
                           <FileIcon className="h-10 w-10" style={{ color: theme.accent }} />
                         </div>
                       </div>
@@ -520,7 +520,7 @@ function LibraryPage() {
                         onClick={() => openDocumentFeedback(doc)}
                         aria-label={`Suggest a change to ${doc.title}`}
                         title="Suggest a change to this document"
-                        className="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2"
                         style={{ color: theme.accent, outlineColor: theme.accent }}
                       >
                         <MessageSquarePlus className="h-4 w-4" />
@@ -571,7 +571,7 @@ function LibraryPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => trackEvent(doc.id, 'view')}
-                          className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-sm font-bold shadow-sm transition-all hover:shadow-md"
+                          className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-sm font-bold shadow-xs transition-all hover:shadow-md"
                           style={{ color: theme.accent, borderColor: theme.accent }}
                         >
                           <Eye className="h-4 w-4" />
@@ -584,7 +584,7 @@ function LibraryPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackEvent(doc.id, 'download')}
-                        className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md"
+                        className="inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold text-white shadow-xs transition-all hover:shadow-md"
                         style={{ backgroundColor: theme.accent }}
                       >
                         <Download className="h-4 w-4" />
@@ -667,16 +667,16 @@ function LibraryPage() {
               <button
                 key={col.id}
                 onClick={() => { setSelectedCollection(col); setSearch('') }}
-                className="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors hover:bg-calm-50 dark:hover:bg-slate-800/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors hover:bg-calm-50 dark:hover:bg-slate-800/50 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ outlineColor: theme.accent }}
               >
                 {col.thumbnailUrl ? (
-                  <div className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600">
+                  <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 border border-calm-200 dark:border-slate-600">
                     <img src={col.thumbnailUrl} alt="" className="h-full w-full object-cover" />
                   </div>
                 ) : (
                   <div
-                    className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0"
                     style={{ backgroundColor: theme.bg, color: theme.accent }}
                     aria-hidden="true"
                   >
@@ -687,10 +687,10 @@ function LibraryPage() {
                   <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">{col.title}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{col.description}</p>
                 </div>
-                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex-shrink-0">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 shrink-0">
                   {col._count.documents} {col._count.documents === 1 ? 'doc' : 'docs'}
                 </span>
-                <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: theme.accent }} />
+                <ChevronRight className="h-4 w-4 shrink-0" style={{ color: theme.accent }} />
               </button>
             )
           })}
@@ -703,10 +703,10 @@ function LibraryPage() {
               <button
                 key={col.id}
                 onClick={() => { setSelectedCollection(col); setSearch('') }}
-                className="group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white dark:bg-slate-800 shadow-md text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
+                className="group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white dark:bg-slate-800 shadow-md text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-4"
                 style={{ outlineColor: theme.accent }}
               >
-                <div className="relative aspect-[4/3] w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
+                <div className="relative aspect-4/3 w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
                   <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full opacity-60" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
                   <div className="pointer-events-none absolute -top-6 -left-6 h-20 w-20 rounded-full opacity-40" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
                   {col.thumbnailUrl ? (
@@ -717,7 +717,7 @@ function LibraryPage() {
                     />
                   ) : (
                     <div className="relative flex h-full w-full items-center justify-center">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/80 shadow-sm">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/80 shadow-xs">
                         <FolderOpen className="h-10 w-10" style={{ color: theme.accent }} />
                       </div>
                     </div>

@@ -184,7 +184,7 @@ export default function SuperAdminProductsIndexPage() {
               className="card group hover:shadow-md hover:-translate-y-0.5 transition-all"
             >
               <div className="flex items-start gap-3">
-                <div className={`p-2.5 rounded-xl ${tile.iconBg} flex-shrink-0`}>
+                <div className={`p-2.5 rounded-xl ${tile.iconBg} shrink-0`}>
                   <Icon className={`h-5 w-5 ${tile.iconColor}`} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -192,7 +192,7 @@ export default function SuperAdminProductsIndexPage() {
                     <h3 className="font-semibold text-slate-900 dark:text-slate-100">
                       {tile.title}
                     </h3>
-                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 flex-shrink-0 transition-colors" />
+                    <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 shrink-0 transition-colors" />
                   </div>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     {tile.description}

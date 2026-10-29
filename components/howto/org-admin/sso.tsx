@@ -20,19 +20,19 @@ export default function SsoHowTo() {
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Optional Settings</h3>
       <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
         <li className="flex items-start gap-2">
-          <Settings className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+          <Settings className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
           <span><strong>Metadata URL</strong> &mdash; auto-configure from your IdP&apos;s metadata endpoint.</span>
         </li>
         <li className="flex items-start gap-2">
-          <UserPlus className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+          <UserPlus className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
           <span><strong>Auto-provisioning</strong> &mdash; automatically create user accounts when they sign in via SSO for the first time.</span>
         </li>
         <li className="flex items-start gap-2">
-          <Users className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+          <Users className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
           <span><strong>Default role</strong> &mdash; the role assigned to auto-provisioned users.</span>
         </li>
         <li className="flex items-start gap-2">
-          <Mail className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+          <Mail className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
           <span><strong>Email domain</strong> &mdash; restrict SSO to users with a matching email domain.</span>
         </li>
       </ul>

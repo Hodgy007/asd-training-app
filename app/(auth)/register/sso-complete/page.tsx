@@ -124,7 +124,7 @@ function SsoCompleteForm() {
 
         <div className="card border-t-4 border-t-warm-500">
           <div className="flex items-start gap-3 mb-4">
-            <div className="flex-shrink-0 inline-flex items-center justify-center w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+            <div className="shrink-0 inline-flex items-center justify-center w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
               <ShieldCheck className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
@@ -141,7 +141,7 @@ function SsoCompleteForm() {
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
@@ -213,7 +213,7 @@ function SsoCompleteForm() {
                         className="sr-only"
                       />
                       <span
-                        className={`mt-0.5 h-4 w-4 rounded-full border flex-shrink-0 ${
+                        className={`mt-0.5 h-4 w-4 rounded-full border shrink-0 ${
                           formRole === opt.value
                             ? 'border-warm-500 bg-warm-500 ring-2 ring-warm-200'
                             : 'border-slate-300 dark:border-slate-600'

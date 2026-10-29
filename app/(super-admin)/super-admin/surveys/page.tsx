@@ -358,7 +358,7 @@ export default function SurveysPage() {
           {surveys.map((survey) => (
             <div
               key={survey.id}
-              className="bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 shadow-sm p-5"
+              className="bg-white dark:bg-slate-800 rounded-xl border border-calm-200 dark:border-slate-700 shadow-xs p-5"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 {/* Info */}
@@ -392,7 +392,7 @@ export default function SurveysPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 sm:flex-shrink-0">
+                <div className="flex items-center gap-1 sm:shrink-0">
                   <button
                     onClick={() => viewSurvey(survey.id)}
                     title="View survey"
@@ -477,7 +477,7 @@ export default function SurveysPage() {
                 </DialogTitle>
                 <span
                   className={clsx(
-                    'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0',
+                    'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium shrink-0',
                     STATUS_BADGE[viewingSurvey.status] ?? STATUS_BADGE.DRAFT
                   )}
                 >
@@ -486,7 +486,7 @@ export default function SurveysPage() {
               </div>
               <button
                 onClick={() => setViewingSurvey(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-calm-100 dark:hover:bg-slate-700 flex-shrink-0"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-calm-100 dark:hover:bg-slate-700 shrink-0"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -530,7 +530,7 @@ export default function SurveysPage() {
                           className="rounded-lg border border-calm-200 dark:border-slate-700 p-4 bg-calm-50 dark:bg-slate-700/50"
                         >
                           <div className="flex items-start gap-3">
-                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-xs font-bold flex items-center justify-center mt-0.5">
+                            <span className="shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-xs font-bold flex items-center justify-center mt-0.5">
                               {idx + 1}
                             </span>
                             <div className="flex-1 min-w-0">
@@ -550,7 +550,7 @@ export default function SurveysPage() {
                                 <ul className="mt-2 space-y-1">
                                   {parsedOptions.map((opt, oi) => (
                                     <li key={oi} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-500 flex-shrink-0" />
+                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-500 shrink-0" />
                                       {opt}
                                     </li>
                                   ))}

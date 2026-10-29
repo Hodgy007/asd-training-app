@@ -336,7 +336,7 @@ export default function SessionDetailPage() {
       </Link>
 
       {/* Section 1: Session Info */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-emerald-600" />
@@ -354,7 +354,7 @@ export default function SessionDetailPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={!canEdit}
-            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
+            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
           />
         </div>
 
@@ -365,7 +365,7 @@ export default function SessionDetailPage() {
             onChange={(e) => setDescription(e.target.value)}
             disabled={!canEdit}
             rows={2}
-            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60 resize-none"
+            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60 resize-none"
           />
         </div>
 
@@ -377,7 +377,7 @@ export default function SessionDetailPage() {
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
               disabled={!canEdit}
-              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
             />
           </div>
           <div>
@@ -389,7 +389,7 @@ export default function SessionDetailPage() {
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
               disabled={!canEdit}
-              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
             />
           </div>
         </div>
@@ -401,7 +401,7 @@ export default function SessionDetailPage() {
               value={platform}
               onChange={(e) => setPlatform(e.target.value as Platform)}
               disabled={!canEdit}
-              className="w-full appearance-none px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
+              className="w-full appearance-none px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
             >
               <option value="ZOOM">Zoom</option>
               <option value="TEAMS">Microsoft Teams</option>
@@ -415,7 +415,7 @@ export default function SessionDetailPage() {
               value={hostId}
               onChange={(e) => setHostId(e.target.value)}
               disabled={!canEdit}
-              className="w-full appearance-none px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
+              className="w-full appearance-none px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 disabled:opacity-60"
             >
               {users.map((u) => (
                 <option key={u.id} value={u.id}>{u.name ?? 'Unnamed'} ({u.email})</option>
@@ -439,7 +439,7 @@ export default function SessionDetailPage() {
       </div>
 
       {/* Section 2: Status Controls */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
         <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Status Controls</h2>
         <div className="flex flex-wrap items-center gap-3">
           {data.status === 'SCHEDULED' && (
@@ -487,7 +487,7 @@ export default function SessionDetailPage() {
       </div>
 
       {/* Section 3: Meeting Link */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
         <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
           <Video className="h-5 w-5 text-emerald-600" />
           Meeting Link
@@ -522,7 +522,7 @@ export default function SessionDetailPage() {
                 value={meetingUrl}
                 onChange={(e) => setMeetingUrl(e.target.value)}
                 placeholder="Paste meeting URL..."
-                className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               />
               <button
                 onClick={handleSave}
@@ -547,7 +547,7 @@ export default function SessionDetailPage() {
       </div>
 
       {/* Section 4: Attendee List & Attendance */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Users className="h-5 w-5 text-emerald-600" />
@@ -605,7 +605,7 @@ export default function SessionDetailPage() {
                         type="checkbox"
                         checked={attendance[a.userId] ?? false}
                         onChange={(e) => setAttendance((prev) => ({ ...prev, [a.userId]: e.target.checked }))}
-                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        className="h-4 w-4 rounded-sm border-slate-300 text-emerald-600 focus:ring-emerald-500"
                       />
                     </td>
                   </tr>
@@ -630,7 +630,7 @@ export default function SessionDetailPage() {
       </div>
 
       {/* Section 5: Recording */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
         <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
           <Monitor className="h-5 w-5 text-emerald-600" />
           Recording
@@ -641,7 +641,7 @@ export default function SessionDetailPage() {
             value={recordingUrl}
             onChange={(e) => setRecordingUrl(e.target.value)}
             placeholder="Paste recording URL..."
-            className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+            className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
           />
           <button
             onClick={handleSave}
@@ -664,7 +664,7 @@ export default function SessionDetailPage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-red-200 dark:border-red-900/50 p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-red-200 dark:border-red-900/50 p-6 shadow-xs space-y-4">
         <h2 className="text-base font-bold text-red-600 dark:text-red-400">Danger Zone</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Permanently delete this session and all attendance records. This cannot be undone.

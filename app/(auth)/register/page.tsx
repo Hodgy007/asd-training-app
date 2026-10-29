@@ -336,7 +336,7 @@ function RegisterForm() {
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
@@ -703,7 +703,7 @@ function RegisterForm() {
                           className="sr-only"
                         />
                         <span
-                          className={`mt-0.5 h-4 w-4 rounded-full border flex-shrink-0 ${
+                          className={`mt-0.5 h-4 w-4 rounded-full border shrink-0 ${
                             noOrgFormRole === opt.value
                               ? 'border-warm-500 bg-warm-500 ring-2 ring-warm-200'
                               : 'border-slate-300 dark:border-slate-600'
@@ -791,7 +791,7 @@ function ModeOption({
       }`}
     >
       <span
-        className={`mt-0.5 h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+        className={`mt-0.5 h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${
           active
             ? 'bg-warm-500 text-white'
             : 'bg-calm-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300'

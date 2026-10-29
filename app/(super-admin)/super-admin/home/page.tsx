@@ -301,7 +301,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 }
 
 const inputClass =
-  'w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
+  'w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-primary-500'
 
 function HeroEditor({ block, scopeLabel, onUpdate }: { block: Extract<HomeBlock, { kind: 'hero' }>; scopeLabel: string; onUpdate: (b: HomeBlock) => void }) {
   return (

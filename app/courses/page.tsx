@@ -50,7 +50,7 @@ function TrustItem({
   return (
     <div className="flex items-start gap-3">
       <span
-        className="mt-0.5 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-aaa-orange/10 text-aaa-orange"
+        className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-aaa-orange/10 text-aaa-orange"
         aria-hidden="true"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -167,7 +167,7 @@ export default async function CoursesPage(
         `,
         }}
       />
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-[#ffffff]/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-[#ffffff]/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <Link
             href="/courses"
@@ -206,7 +206,7 @@ export default async function CoursesPage(
 
       <section className="relative overflow-hidden bg-[#001522] text-white">
         <div
-          className="pointer-events-none absolute -top-32 -right-32 h-[30rem] w-[30rem] rounded-full bg-aaa-orange/30 blur-3xl"
+          className="pointer-events-none absolute -top-32 -right-32 h-120 w-120 rounded-full bg-aaa-orange/30 blur-3xl"
           aria-hidden="true"
         />
         <div
@@ -250,7 +250,7 @@ export default async function CoursesPage(
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-[#f8fafc]">
+      <section className="border-b border-slate-200 bg-calm-50">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-6 py-10 sm:grid-cols-2 lg:grid-cols-4">
           <TrustItem
             title="Charity-led"
@@ -319,7 +319,7 @@ export default async function CoursesPage(
 
       <section
         id="courses"
-        className={`bg-[#f8fafc] ${
+        className={`bg-calm-50 ${
           subscriptionConfigured || workshops.length > 0 ? '' : 'border-t border-slate-200'
         }`}
       >

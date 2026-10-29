@@ -12,7 +12,7 @@ import { Toaster } from '@/components/ui/toaster'
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-sans',
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {

@@ -204,9 +204,9 @@ function RatingScaleView({ question }: { question: QuestionResult }) {
         {distribution.map((d) => (
           <div key={d.star} className="flex items-center gap-2 text-sm">
             <span className="w-4 text-right text-slate-600 dark:text-slate-400 font-medium">{d.star}</span>
-            <div className="flex-1 h-5 bg-slate-100 dark:bg-slate-700 rounded overflow-hidden">
+            <div className="flex-1 h-5 bg-slate-100 dark:bg-slate-700 rounded-sm overflow-hidden">
               <div
-                className="h-full bg-amber-400 rounded transition-all"
+                className="h-full bg-amber-400 rounded-sm transition-all"
                 style={{ width: `${(d.count / maxCount) * 100}%` }}
               />
             </div>

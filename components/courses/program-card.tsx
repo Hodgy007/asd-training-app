@@ -99,7 +99,7 @@ export function ProgramCard({
   return (
     <>
       <article
-        className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-[#ffffff] shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+        className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-[#ffffff] shadow-xs transition hover:-translate-y-1 hover:shadow-xl"
       >
         <div
           className="h-2 w-full"
@@ -140,7 +140,7 @@ export function ProgramCard({
                 type="button"
                 onClick={isFree ? handleFreeClick : handleBuy}
                 disabled={loading || (priceAmount === null) || Boolean(successMessage)}
-                className="inline-flex items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:brightness-110 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 style={{ backgroundColor: accentHex }}
               >
                 {loading ? (
@@ -247,7 +247,7 @@ function FreeClaimModal({
       <DialogContent
         unstyled
         showClose={false}
-        overlayClassName="bg-[#001522]/70 backdrop-blur-sm"
+        overlayClassName="bg-[#001522]/70 backdrop-blur-xs"
         className="rounded-2xl bg-[#ffffff] p-7 shadow-2xl"
       >
         {/* Raw Radix Title/Description: the styled wrappers add dark-mode
@@ -274,7 +274,7 @@ function FreeClaimModal({
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               placeholder="you@example.com"
-              className="w-full rounded-xl border border-[#cbd5e1] bg-[#ffffff] px-3.5 py-2.5 text-sm text-[#001522] placeholder:text-[#94a3b8] focus:border-[#f5821f] focus:outline-none focus:ring-2 focus:ring-[#f5821f]/30"
+              className="w-full rounded-xl border border-calm-300 bg-[#ffffff] px-3.5 py-2.5 text-sm text-[#001522] placeholder:text-[#94a3b8] focus:border-[#f5821f] focus:outline-hidden focus:ring-2 focus:ring-[#f5821f]/30"
             />
           </div>
           <div>
@@ -290,7 +290,7 @@ function FreeClaimModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
-              className="w-full rounded-xl border border-[#cbd5e1] bg-[#ffffff] px-3.5 py-2.5 text-sm text-[#001522] placeholder:text-[#94a3b8] focus:border-[#f5821f] focus:outline-none focus:ring-2 focus:ring-[#f5821f]/30"
+              className="w-full rounded-xl border border-calm-300 bg-[#ffffff] px-3.5 py-2.5 text-sm text-[#001522] placeholder:text-[#94a3b8] focus:border-[#f5821f] focus:outline-hidden focus:ring-2 focus:ring-[#f5821f]/30"
             />
           </div>
           {error ? (
@@ -303,14 +303,14 @@ function FreeClaimModal({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="inline-flex items-center justify-center rounded-full border border-[#cbd5e1] bg-[#ffffff] px-5 py-2.5 text-sm font-semibold text-[#001522] transition hover:bg-[#f8fafc] disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-full border border-calm-300 bg-[#ffffff] px-5 py-2.5 text-sm font-semibold text-[#001522] transition hover:bg-calm-50 disabled:opacity-60"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center justify-center rounded-full bg-[#f5821f] px-5 py-2.5 text-sm font-semibold text-[#ffffff] shadow-sm transition hover:brightness-110 disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-full bg-[#f5821f] px-5 py-2.5 text-sm font-semibold text-[#ffffff] shadow-xs transition hover:brightness-110 disabled:opacity-60"
             >
               {submitting ? 'Sending…' : 'Send sign-in details'}
             </button>

@@ -88,7 +88,7 @@ function ToggleButton({
           : 'border-calm-200 bg-calm-50 text-slate-600 hover:border-calm-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:border-slate-500'
       )}
     >
-      {selected && <Check className="h-3.5 w-3.5 flex-shrink-0" />}
+      {selected && <Check className="h-3.5 w-3.5 shrink-0" />}
       {children}
     </button>
   )

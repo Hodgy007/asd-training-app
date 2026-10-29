@@ -16,8 +16,8 @@ const TILE_THEMES = [
 
 function FunFact({ emoji, title, description }: { emoji: string; title: string; description: string }) {
   return (
-    <div className="flex items-start gap-4 rounded-3xl bg-white px-5 py-4 shadow-sm">
-      <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-aaa-orange/15 text-2xl" aria-hidden="true">{emoji}</span>
+    <div className="flex items-start gap-4 rounded-3xl bg-white px-5 py-4 shadow-xs">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-aaa-orange/15 text-2xl" aria-hidden="true">{emoji}</span>
       <div>
         <p className="text-base font-bold text-[#001522]">{title}</p>
         <p className="mt-0.5 text-sm leading-relaxed text-[#475569]">{description}</p>
@@ -36,10 +36,10 @@ function ToolkitTile({
   return (
     <Link
       href={`/toolkit/${collection.id}`}
-      className="group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
+      className="group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-4"
       style={{ outlineColor: theme.accent }}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
+      <div className="relative aspect-4/3 w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
         {/* Decorative shapes */}
         <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full opacity-60" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
         <div className="pointer-events-none absolute -top-6 -left-6 h-20 w-20 rounded-full opacity-40" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
@@ -52,7 +52,7 @@ function ToolkitTile({
           />
         ) : (
           <div className="relative flex h-full w-full items-center justify-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white/80 shadow-sm">
+            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white/80 shadow-xs">
               <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke={theme.accent} strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
               </svg>
@@ -79,7 +79,7 @@ function ToolkitTile({
             {collection._count.documents} {collection._count.documents === 1 ? 'resource' : 'resources'}
           </span>
           <span
-            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-white shadow-sm transition group-hover:translate-x-1"
+            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-white shadow-xs transition group-hover:translate-x-1"
             style={{ backgroundColor: theme.accent }}
           >
             Open
@@ -102,7 +102,7 @@ export default async function ToolkitPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFBF4] text-[#001522]">
-      <header className="sticky top-0 z-30 border-b border-[#FFE5C2] bg-[#FFFBF4]/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-[#FFE5C2] bg-[#FFFBF4]/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <Link href="/toolkit" className="flex items-center gap-3" aria-label="Ambitious about Autism — Toolkit">
             <img src="/logo-aaa.svg" alt="" className="h-12 w-auto" />
@@ -119,17 +119,17 @@ export default async function ToolkitPage() {
       {/* Hero — bright, friendly, big */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-aaa-orange/30 blur-3xl" aria-hidden="true" />
-        <div className="pointer-events-none absolute -bottom-32 -left-24 h-[28rem] w-[28rem] rounded-full bg-[#FCAF17]/40 blur-3xl" aria-hidden="true" />
+        <div className="pointer-events-none absolute -bottom-32 -left-24 h-112 w-md rounded-full bg-aaa-orange-light/40 blur-3xl" aria-hidden="true" />
         <div className="pointer-events-none absolute top-20 right-1/4 h-12 w-12 rotate-12 rounded-2xl bg-[#34B44A]/30" aria-hidden="true" />
-        <div className="pointer-events-none absolute bottom-20 left-1/3 h-16 w-16 -rotate-6 rounded-full bg-[#E13CAF]/25" aria-hidden="true" />
+        <div className="pointer-events-none absolute bottom-20 left-1/3 h-16 w-16 -rotate-6 rounded-full bg-aaa-pink/25" aria-hidden="true" />
 
         <div className="relative mx-auto max-w-6xl px-6 py-20 lg:py-28">
           <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-aaa-orange shadow-sm">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-aaa-orange shadow-xs">
               <span className="h-2 w-2 rounded-full bg-aaa-orange" />Free for everyone
             </span>
             <h1 className="mt-6 text-5xl font-black leading-[1.05] tracking-tight text-[#001522] sm:text-6xl lg:text-7xl">
-              Cool stuff to help you <span className="relative inline-block"><span className="relative z-10 text-aaa-orange">explore</span><span className="absolute bottom-1 left-0 z-0 h-3 w-full rounded-full bg-[#FCAF17]/60" aria-hidden="true" /></span>, learn and grow.
+              Cool stuff to help you <span className="relative inline-block"><span className="relative z-10 text-aaa-orange">explore</span><span className="absolute bottom-1 left-0 z-0 h-3 w-full rounded-full bg-aaa-orange-light/60" aria-hidden="true" /></span>, learn and grow.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#334155]">
               The toolkit is a friendly place full of free guides, activity packs and resources. Pick a tile, peek inside and download anything you like — no sign-in needed.
@@ -141,7 +141,7 @@ export default async function ToolkitPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
               </a>
-              <Link href="/courses" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 text-base font-bold text-[#001522] shadow-sm transition hover:bg-[#FFEDD2]">
+              <Link href="/courses" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 text-base font-bold text-[#001522] shadow-xs transition hover:bg-[#FFEDD2]">
                 Or see the courses
               </Link>
             </div>
@@ -160,7 +160,7 @@ export default async function ToolkitPage() {
       </section>
 
       {/* Toolkit grid */}
-      <section id="toolkits" className="bg-gradient-to-b from-[#FFFBF4] to-[#FFF5E1]">
+      <section id="toolkits" className="bg-linear-to-b from-[#FFFBF4] to-[#FFF5E1]">
         <div className="mx-auto max-w-6xl px-6 py-20">
           <div className="max-w-2xl">
             <p className="text-xs font-black uppercase tracking-[0.22em] text-aaa-orange">Free toolkits</p>

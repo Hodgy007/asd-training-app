@@ -181,7 +181,7 @@ export default function CohortsPage() {
 
       {/* Empty state */}
       {cohorts.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-12 text-center shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-12 text-center shadow-xs">
           <UsersRound className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
           <p className="text-slate-600 dark:text-slate-400 font-medium">No cohorts yet</p>
           <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
@@ -199,10 +199,10 @@ export default function CohortsPage() {
           {cohorts.map((cohort) => (
             <div
               key={cohort.id}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-5 shadow-sm flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-5 shadow-xs flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <div className="shrink-0 h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                   <UsersRound className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div className="min-w-0">
@@ -233,7 +233,7 @@ export default function CohortsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 sm:flex-shrink-0">
+              <div className="flex items-center gap-2 sm:shrink-0">
                 <Link
                   href={`/super-admin/cohorts/${cohort.id}`}
                   className="px-4 py-2 rounded-xl text-sm font-medium border border-calm-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700 transition"

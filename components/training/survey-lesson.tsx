@@ -170,7 +170,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
   return (
     <div className="card space-y-6">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
           <ClipboardList className="h-6 w-6 text-primary-600 dark:text-primary-400" />
         </div>
         <div>
@@ -186,7 +186,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
 
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
-          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
@@ -218,7 +218,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
                     >
                       <span
                         className={clsx(
-                          'w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center',
+                          'w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center',
                           answers[question.id] === option
                             ? 'border-primary-500 bg-primary-500'
                             : 'border-slate-300 dark:border-slate-500'
@@ -309,7 +309,7 @@ export function SurveyLesson({ lessonId, survey, onComplete }: SurveyLessonProps
                       >
                         <span
                           className={clsx(
-                            'w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center',
+                            'w-4 h-4 rounded-sm border-2 shrink-0 flex items-center justify-center',
                             isSelected
                               ? 'border-primary-500 bg-primary-500'
                               : 'border-slate-300 dark:border-slate-500'

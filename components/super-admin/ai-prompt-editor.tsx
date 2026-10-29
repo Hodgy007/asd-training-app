@@ -177,13 +177,13 @@ export function AiPromptEditor({ prompt, models }: Props) {
               <div className="text-xs uppercase text-slate-400 font-semibold">Input variables</div>
               <div className="flex flex-wrap gap-2 mt-1">
                 {prompt.inputVariables.map((v) => (
-                  <code key={v} className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{v}</code>
+                  <code key={v} className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-sm">{v}</code>
                 ))}
               </div>
             </div>
             <div>
               <div className="text-xs uppercase text-slate-400 font-semibold">Response format</div>
-              <pre className="text-xs bg-slate-100 dark:bg-slate-800 rounded p-2 mt-1 whitespace-pre-wrap">{prompt.responseFormat}</pre>
+              <pre className="text-xs bg-slate-100 dark:bg-slate-800 rounded-sm p-2 mt-1 whitespace-pre-wrap">{prompt.responseFormat}</pre>
             </div>
           </div>
 
@@ -253,7 +253,7 @@ export function AiPromptEditor({ prompt, models }: Props) {
             </div>
             <ul className="space-y-2 mb-3">
               {contextFiles.map((f) => (
-                <li key={f.id} className="flex items-center gap-3 p-2 rounded border border-slate-200 dark:border-slate-800">
+                <li key={f.id} className="flex items-center gap-3 p-2 rounded-sm border border-slate-200 dark:border-slate-800">
                   <span className="flex-1 text-sm truncate">{f.fileName}</span>
                   <span className="text-xs text-slate-400">{(f.fileSize / 1024).toFixed(0)} KB</span>
                   <button onClick={() => handleFileDelete(f.id)} className="p-1 text-slate-400 hover:text-red-600">
