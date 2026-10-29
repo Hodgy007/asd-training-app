@@ -80,6 +80,28 @@ describe('generateCheckedQuiz', () => {
   })
 })
 
+describe('generateCheckedQuiz when things go wrong', () => {
+  it('keeps the first round when the rewrite call fails', async () => {
+    respond({
+      'training.quiz.v2': [{ questions: [q('Q1'), q('Bad')] }, new AiUnavailableError('failed')],
+      'training.quizReview': [{ verdicts: [pass(0), fail(1, 'Not in the lesson.')] }],
+    })
+    const result = await generateCheckedQuiz(args)
+    expect(result.map((r) => r.question)).toEqual(['Q1', 'Bad'])
+    expect(result[1].needsReview).toBe('Not in the lesson.')
+  })
+
+  it('drops questions that cannot be stored instead of saving a blank answer', async () => {
+    respond({
+      'training.quiz.v2': [{ questions: [q('Q1'), q('Broken', { correctIndex: 7 })] }, { questions: [q('Still broken', { options: ['a', 'b'] })] }],
+      'training.quizReview': [{ verdicts: [pass(0)] }],
+    })
+    const result = await generateCheckedQuiz(args)
+    expect(result.map((r) => r.question)).toEqual(['Q1'])
+    expect(result.every((r) => r.options.includes(r.correctAnswer))).toBe(true)
+  })
+})
+
 describe('ruleProblems', () => {
   it('ruleProblems catches NOT in the autism lens but not the practitioner lens', () => {
     const negative = q('Which of these is NOT helpful?')

@@ -37,6 +37,11 @@ export function ruleProblems(q: DraftQuestion, lens: GenerationLens): string | n
   return null
 }
 
+/** True when the question has 4 options and a correct one, so it can be saved at all. */
+function storable(q: DraftQuestion): boolean {
+  return q.options.length === LIMITS.quizOptions && q.options[q.correctIndex] !== undefined
+}
+
 export function toStoredQuestion(q: DraftQuestion, needsReview?: string): GeneratedQuizQuestion {
   return {
     question: q.question,
@@ -111,19 +116,26 @@ export async function generateCheckedQuiz(args: {
       )
     ).questions.slice(0, n)
 
+  // Questions with no usable answer are dropped rather than flagged: they
+  // can't be stored, and save-program rejects a blank correct answer.
+  const finish = (passed: DraftQuestion[], failed: Checked['failed']) =>
+    [
+      ...passed.map((q) => toStoredQuestion(q)),
+      ...failed.filter(({ q }) => storable(q)).map(({ q, issue }) => toStoredQuestion(q, issue)),
+    ].slice(0, count)
+
   const first = await check(await draft(count), lessonText, args.lens)
-  const result = first.passed.map((q) => toStoredQuestion(q))
 
   // No second round when the checker is down: a rewrite couldn't be checked
   // either, so the first draft goes to the admin flagged instead.
-  if (first.failed.length === 0 || !first.reviewed) {
-    return [...result, ...first.failed.map(({ q, issue }) => toStoredQuestion(q, issue))].slice(0, count)
-  }
+  if (first.failed.length === 0 || !first.reviewed) return finish(first.passed, first.failed)
 
-  const second = await check(await draft(first.failed.length), lessonText, args.lens)
-  return [
-    ...result,
-    ...second.passed.map((q) => toStoredQuestion(q)),
-    ...second.failed.map(({ q, issue }) => toStoredQuestion(q, issue)),
-  ].slice(0, count)
+  let second: Checked
+  try {
+    second = await check(await draft(first.failed.length), lessonText, args.lens)
+  } catch {
+    // The rewrite failed; keep what the first round produced, flags and all.
+    return finish(first.passed, first.failed)
+  }
+  return finish([...first.passed, ...second.passed], second.failed)
 }
