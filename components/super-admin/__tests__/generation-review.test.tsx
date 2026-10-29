@@ -1,6 +1,7 @@
 import { render, screen, cleanup, fireEvent } from '@testing-library/react'
 import { describe, it, expect, afterEach } from 'vitest'
-import { LessonSources, QuizReviewFlag } from '../generation-review'
+import { vi } from 'vitest'
+import { LessonSources, QuizReviewFlag, CheckInPreview } from '../generation-review'
 import type { ParsedFile } from '@/lib/content-generator-types'
 
 afterEach(cleanup)
@@ -34,5 +35,27 @@ describe('QuizReviewFlag', () => {
     render(<QuizReviewFlag issue="Two answers fit." />)
     expect(screen.getByText('Check this question')).toBeTruthy()
     expect(screen.getByText('Two answers fit.')).toBeTruthy()
+  })
+})
+
+describe('CheckInPreview', () => {
+  const block = {
+    id: 'b1', type: 'knowledge-check' as const, title: 'Check your understanding', instructions: 'Choose.', order: 0,
+    data: { questions: [{ id: 'b1-q1', question: 'Which helps most?', options: ['Quiet', 'Noise', 'Crowds'], correctAnswer: 'Quiet', feedback: 'Quiet spaces help.' }] },
+  }
+
+  it('shows the question, marks the right answer and the feedback', () => {
+    render(<CheckInPreview block={block} onRemove={() => {}} />)
+    expect(screen.getByText('Which helps most?')).toBeTruthy()
+    expect(screen.getByText('Quiet (correct)')).toBeTruthy()
+    expect(screen.getByText('Noise')).toBeTruthy()
+    expect(screen.getByText('Quiet spaces help.')).toBeTruthy()
+  })
+
+  it('removes the check-in', () => {
+    const onRemove = vi.fn()
+    render(<CheckInPreview block={block} onRemove={onRemove} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Remove check-in' }))
+    expect(onRemove).toHaveBeenCalled()
   })
 })

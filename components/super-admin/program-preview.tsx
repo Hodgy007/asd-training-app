@@ -20,7 +20,8 @@ import type {
   GeneratedQuizQuestion,
   ParsedFile,
 } from '@/lib/content-generator-types'
-import { LessonSources, QuizReviewFlag } from './generation-review'
+import { LessonSources, QuizReviewFlag, CheckInPreview } from './generation-review'
+import { removeBlockPlaceholder } from '@/lib/interactive-blocks'
 
 import 'react-quill-new/dist/quill.snow.css'
 
@@ -308,6 +309,20 @@ function LessonEditor({
                   />
                 </Suspense>
               </div>
+
+              {(lesson.interactiveBlocks ?? []).map((block) => (
+                <CheckInPreview
+                  key={block.id}
+                  block={block}
+                  onRemove={() =>
+                    onChange({
+                      ...lesson,
+                      content: removeBlockPlaceholder(lesson.content, block.id),
+                      interactiveBlocks: lesson.interactiveBlocks.filter((b) => b.id !== block.id),
+                    })
+                  }
+                />
+              ))}
 
               <LessonSources files={parsedContent} sourceRefs={lesson.sourceRefs ?? []} />
 

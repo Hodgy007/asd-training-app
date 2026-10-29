@@ -2,6 +2,7 @@
 
 import { TriangleAlert } from 'lucide-react'
 import type { ParsedFile, SourceRef } from '@/lib/content-generator-types'
+import type { InteractiveBlock, KnowledgeCheckData } from '@/types/interactive'
 
 // Review aids for the generator preview: where a lesson's material came from,
 // and which quiz questions the automatic check couldn't clear.
@@ -45,6 +46,37 @@ export function QuizReviewFlag({ issue }: { issue: string }) {
         Check this question
       </p>
       <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">{issue}</p>
+    </div>
+  )
+}
+
+/**
+ * The lesson's "Check your understanding" block, which the rich-text editor
+ * only shows as an [INTERACTIVE:…] marker, so the admin can read it before
+ * publishing and remove it if it isn't right.
+ */
+export function CheckInPreview({ block, onRemove }: { block: InteractiveBlock; onRemove: () => void }) {
+  if (block.type !== 'knowledge-check') return null
+  const { questions } = block.data as KnowledgeCheckData
+  return (
+    <div className="rounded-xl border border-green-200 bg-green-50/60 px-4 py-3 text-sm dark:border-green-800/50 dark:bg-green-900/10">
+      <div className="flex items-start justify-between gap-2">
+        <p className="font-medium text-green-900 dark:text-green-200">{block.title} (shown inside the lesson)</p>
+        <button type="button" onClick={onRemove} className="text-xs font-medium text-slate-500 hover:text-red-600 dark:text-slate-400">
+          Remove check-in
+        </button>
+      </div>
+      {questions.map((q) => (
+        <div key={q.id} className="mt-2 space-y-1">
+          <p className="text-slate-800 dark:text-slate-100">{q.question}</p>
+          <ul className="list-disc pl-5 text-slate-600 dark:text-slate-300">
+            {q.options.map((o) => (
+              <li key={o}>{o === q.correctAnswer ? `${o} (correct)` : o}</li>
+            ))}
+          </ul>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{q.feedback}</p>
+        </div>
+      ))}
     </div>
   )
 }
