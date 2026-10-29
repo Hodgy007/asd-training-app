@@ -32,6 +32,11 @@ describe('extractPdfText', () => {
     expect(text).toContain('Hello from a PDF')
   })
 
+  it('leaves out page markers', async () => {
+    const text = await extractPdfText(minimalPdf('Hello from a PDF'))
+    expect(text).not.toMatch(/--\s*\d+\s+of\s+\d+\s*--/)
+  })
+
   it('rejects something that is not a PDF', async () => {
     await expect(extractPdfText(Buffer.from('not a pdf'))).rejects.toThrow()
   })

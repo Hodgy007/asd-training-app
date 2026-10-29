@@ -1,4 +1,4 @@
-// middleware.ts
+// proxy.ts (Next 16 renamed middleware to proxy; it runs on the Node.js runtime)
 import { getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -39,7 +39,7 @@ function logEvent(level: 'info' | 'warn', msg: string, meta: Record<string, unkn
   else console.log(line)
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
   const incomingId = req.headers.get(REQUEST_ID_HEADER)
   const requestId = incomingId && incomingId.length > 0 ? incomingId : crypto.randomUUID()

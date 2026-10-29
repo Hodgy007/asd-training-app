@@ -6,7 +6,9 @@ export async function extractPdfText(buffer: Buffer): Promise<string> {
   const { PDFParse } = await import('pdf-parse')
   const parser = new PDFParse({ data: new Uint8Array(buffer) })
   try {
-    const result = await parser.getText()
+    // pdf-parse 2 marks page breaks with "-- 1 of 3 --" by default; v1 didn't,
+    // and the markers would end up in AI prompts and generated lessons.
+    const result = await parser.getText({ pageJoiner: '' })
     return result.text
   } finally {
     await parser.destroy()
