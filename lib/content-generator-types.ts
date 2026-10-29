@@ -1,5 +1,8 @@
 // lib/content-generator-types.ts
 
+import type { InteractiveBlock } from '@/types/interactive'
+import type { CourseBrief } from '@/lib/training-gen/schemas'
+
 // ─── File Parsing Types ─────────────────────────────────────────────────────
 
 export interface ParsedSection {
@@ -28,6 +31,8 @@ export interface SourceRef {
 
 export interface OutlineLesson {
   title: string
+  summary?: string
+  objectiveIds?: string[]
   sourceRefs: SourceRef[]
 }
 
@@ -49,6 +54,8 @@ export interface GeneratedQuizQuestion {
   options: string[]
   correctAnswer: string
   explanation: string
+  /** Set when the automatic quiz check could not clear this question. */
+  needsReview?: string
 }
 
 export interface GeneratedLesson {
@@ -56,6 +63,8 @@ export interface GeneratedLesson {
   content: string
   order: number
   quizQuestions: GeneratedQuizQuestion[]
+  interactiveBlocks?: InteractiveBlock[]
+  sourceRefs?: SourceRef[]
   error?: string
 }
 
@@ -68,6 +77,7 @@ export interface GeneratedModule {
 
 export interface GeneratedProgram {
   programName: string
+  brief?: CourseBrief
   modules: GeneratedModule[]
 }
 
