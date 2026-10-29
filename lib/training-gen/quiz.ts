@@ -96,6 +96,7 @@ async function check(questions: DraftQuestion[], lessonText: string, lens: Gener
 export async function generateCheckedQuiz(args: {
   lessonHtml: string
   objectives: CourseBrief['objectives']
+  audience: string
   lens: GenerationLens
   count?: number
 }): Promise<GeneratedQuizQuestion[]> {
@@ -108,6 +109,7 @@ export async function generateCheckedQuiz(args: {
         'training.quiz.v2',
         {
           count: String(n),
+          audience: args.audience,
           lessonText,
           objectivesJson: JSON.stringify(args.objectives),
           lensGuidance: lensGuidance(args.lens),

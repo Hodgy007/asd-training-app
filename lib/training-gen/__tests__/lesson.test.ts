@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from 'vitest'
 
 vi.mock('@/lib/ai-runner', () => ({ runPromptObject: vi.fn() }))
 
-import { assembleLesson, outlineContext } from '../lesson'
+import { assembleLesson, outlineContext, generateLesson } from '../lesson'
+import { runPromptObject } from '@/lib/ai-runner'
 import { splitContentAtBlocks, validateInteractiveBlocks } from '@/lib/interactive-blocks'
 import type { LessonDraft, Outline } from '../schemas'
 
@@ -102,5 +103,27 @@ describe('outlineContext', () => {
     expect(text).toContain('Module 1 › Lesson 1: First — one')
     expect(text).toContain('Module 1 › Lesson 2: Second — two (THIS LESSON)')
     expect(text).not.toContain('First — one (THIS LESSON)')
+  })
+})
+
+describe('generateLesson', () => {
+  it('tells the lesson prompt who it is for and roughly how long it should take', async () => {
+    vi.mocked(runPromptObject).mockResolvedValue(draft() as never)
+    const outline: Outline = {
+      programName: 'P',
+      modules: [{ title: 'M', description: '', lessons: [
+        { title: 'One', summary: 's', objectiveIds: ['o1'], sourceRefs: [{ fileIndex: 0, sectionIndices: [0] }] },
+        { title: 'Two', summary: 's', objectiveIds: ['o1'], sourceRefs: [{ fileIndex: 0, sectionIndices: [0] }] },
+      ] }],
+    }
+    await generateLesson({
+      files: [{ filename: 'f.pdf', format: 'pdf', sections: [{ content: 'x' }] }],
+      outline,
+      brief: { audience: 'Parents of autistic teenagers', estimatedMinutes: 40, objectives: [{ id: 'o1', text: 'Describe x' }] },
+      moduleIndex: 0, lessonIndex: 1, lens: 'autism', includeCheckIn: false, blockId: 'b1',
+    })
+    const values = vi.mocked(runPromptObject).mock.calls[0][1]
+    expect(values.audience).toBe('Parents of autistic teenagers')
+    expect(values.lessonMinutes).toBe('20')
   })
 })

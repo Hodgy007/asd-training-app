@@ -17,7 +17,7 @@ const pass = (index: number) => ({ index, answerableFromLesson: true, exactlyOne
 const fail = (index: number, issue: string) => ({ index, answerableFromLesson: false, exactlyOneCorrect: true, clearWording: true, issue })
 
 const objectives = [{ id: 'o1', text: 'Describe calm spaces' }]
-const args = { lessonHtml: '<p>Calm spaces help.</p>', objectives, lens: 'practitioner' as const, count: 2 }
+const args = { lessonHtml: '<p>Calm spaces help.</p>', objectives, audience: 'Teaching assistants', lens: 'practitioner' as const, count: 2 }
 
 /** Routes mocked runPromptObject calls by prompt key. */
 function respond(handlers: Record<string, Array<unknown | Error>>) {
@@ -77,6 +77,18 @@ describe('generateCheckedQuiz', () => {
     const result = await generateCheckedQuiz(args)
     expect(result).toHaveLength(2)
     expect(result.every((r) => r.needsReview === 'Not checked: the checking step failed')).toBe(true)
+  })
+})
+
+describe('generateCheckedQuiz prompt inputs', () => {
+  it('tells the quiz prompt who it is for', async () => {
+    respond({
+      'training.quiz.v2': [{ questions: [q('Q1')] }],
+      'training.quizReview': [{ verdicts: [pass(0)] }],
+    })
+    await generateCheckedQuiz({ ...args, count: 1 })
+    const call = vi.mocked(runPromptObject).mock.calls.find((c) => c[0] === 'training.quiz.v2')
+    expect(call?.[1].audience).toBe('Teaching assistants')
   })
 })
 

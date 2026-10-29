@@ -231,6 +231,7 @@ export async function POST(req: NextRequest) {
               generateCheckedQuiz({
                 lessonHtml: lessonContent,
                 objectives: program.brief.objectives.filter((o) => outlineLesson?.objectiveIds.includes(o.id)),
+                audience: program.brief.audience,
                 lens,
               })
             )

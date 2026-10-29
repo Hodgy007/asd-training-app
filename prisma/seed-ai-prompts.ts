@@ -166,8 +166,9 @@ const SEEDS: PromptSeed[] = [
       'whatYouWillLearn has 1 to 4 short items drawn from the lesson objectives.',
       'keyPoints has 3 to 5 short plain-text sentences summarising the lesson.',
       'checkIn is one question with exactly 3 options about the most important idea, with correctIndex and one sentence of feedback; use null when the source is too thin for a fair question.',
+      'Write for the audience given, at a length a learner can read in about lessonMinutes minutes.',
     ],
-    inputVariables: ['lessonTitle', 'lessonSummary', 'lessonObjectives', 'outlineContext', 'sourceText', 'lensGuidance', 'imageList'],
+    inputVariables: ['lessonTitle', 'audience', 'lessonMinutes', 'lessonSummary', 'lessonObjectives', 'outlineContext', 'sourceText', 'lensGuidance', 'imageList'],
     responseFormat: STRUCTURED_FORMAT,
   },
   {
@@ -184,8 +185,9 @@ const SEEDS: PromptSeed[] = [
       'Never use "all of the above" or "none of the above".',
       'objectiveId names the objective the question tests.',
       'explanation says in one or two sentences why the correct option is right.',
+      'Pitch the situations and wording at the audience given.',
     ],
-    inputVariables: ['count', 'lessonText', 'objectivesJson', 'lensGuidance'],
+    inputVariables: ['count', 'audience', 'lessonText', 'objectivesJson', 'lensGuidance'],
     responseFormat: STRUCTURED_FORMAT,
   },
   {

@@ -126,11 +126,15 @@ export async function generateLesson(args: {
 
   const { text: sourceText, images } = extractSourceSections(args.files, lesson.sourceRefs)
   const objectives = args.brief.objectives.filter((o) => lesson.objectiveIds.includes(o.id))
+  const lessonCount = args.outline.modules.reduce((n, m) => n + m.lessons.length, 0) || 1
+  const lessonMinutes = Math.max(3, Math.round(args.brief.estimatedMinutes / lessonCount))
 
   const draft = await runPromptObject(
     'training.lesson.v2',
     {
       lessonTitle: lesson.title,
+      audience: args.brief.audience,
+      lessonMinutes: String(lessonMinutes),
       lessonSummary: lesson.summary,
       lessonObjectives: objectives.map((o) => `- ${o.text}`).join('\n') || '(none)',
       outlineContext: outlineContext(args.outline, args.moduleIndex, args.lessonIndex),

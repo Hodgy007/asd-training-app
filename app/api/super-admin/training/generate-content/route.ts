@@ -173,6 +173,7 @@ export async function POST(req: NextRequest) {
                 quizQuestions = await generateCheckedQuiz({
                   lessonHtml: lessonContent,
                   objectives: validatedBrief.objectives.filter((o) => outlineLesson.objectiveIds.includes(o.id)),
+                  audience: validatedBrief.audience,
                   lens: validatedLens,
                 })
                 sendEvent({ type: 'quiz-complete', moduleIndex: modIndex, lessonIndex: lesIndex, questions: quizQuestions })
