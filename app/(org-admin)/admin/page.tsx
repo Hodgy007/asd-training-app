@@ -10,10 +10,10 @@ import {
   Briefcase,
   UserCircle,
   ChevronDown,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   RefreshCw,
-  Trash2,
+  Trash,
   UserPlus,
   X,
   GraduationCap,
@@ -523,7 +523,7 @@ export default function OrgAdminUsersPage() {
                       <td className="px-4 py-3">
                         {isSelf ? (
                           <span className={clsx('inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full', colors)}>
-                            <Icon className="h-3 w-3" />
+                            <Icon className="h-3.5 w-3.5" />
                             {ROLE_LABELS[user.role] ?? user.role}
                           </span>
                         ) : (
@@ -541,7 +541,7 @@ export default function OrgAdminUsersPage() {
                                 <option key={r} value={r}>{ROLE_LABELS[r] ?? r}</option>
                               ))}
                             </select>
-                            <ChevronDown className="absolute right-0.5 top-1/2 -translate-y-1/2 h-3 w-3 pointer-events-none opacity-60" />
+                            <ChevronDown className="absolute right-0.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none opacity-60" />
                           </div>
                         )}
                       </td>
@@ -550,7 +550,7 @@ export default function OrgAdminUsersPage() {
                       <td className="px-4 py-3">
                         {isSelf ? (
                           <span className="inline-flex items-center gap-1 text-xs text-emerald-600">
-                            <CheckCircle className="h-3.5 w-3.5" />
+                            <CircleCheckBig className="h-3.5 w-3.5" />
                             Active
                           </span>
                         ) : (
@@ -565,9 +565,9 @@ export default function OrgAdminUsersPage() {
                             )}
                           >
                             {user.active ? (
-                              <><CheckCircle className="h-3 w-3" />Active</>
+                              <><CircleCheckBig className="h-3.5 w-3.5" />Active</>
                             ) : (
-                              <><XCircle className="h-3 w-3" />Inactive</>
+                              <><CircleX className="h-3.5 w-3.5" />Inactive</>
                             )}
                           </button>
                         )}
@@ -604,7 +604,7 @@ export default function OrgAdminUsersPage() {
                               className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                               title="Delete user"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash className="h-4 w-4" />
                             </button>
                           </div>
                         )}

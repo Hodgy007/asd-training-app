@@ -1,9 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Loader2, Package, X } from 'lucide-react'
+import { LoaderCircle, Package, X } from 'lucide-react'
 import { upload } from '@vercel/blob/client'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import { IconTile } from '@/components/ui/icon-tile'
 
 interface ScormImportModalProps {
   open: boolean
@@ -151,9 +152,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-900/40 dark:text-primary-300">
-              <Package className="h-5 w-5" />
-            </div>
+            <IconTile icon={Package} />
             <div>
               <DialogTitle className="font-bold dark:text-white">
                 Import SCORM Package
@@ -269,7 +268,7 @@ export function ScormImportModal({ open, onClose, onCreated }: ScormImportModalP
             >
               {uploading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
                   {statusText ?? 'Uploading…'}
                 </>
               ) : (

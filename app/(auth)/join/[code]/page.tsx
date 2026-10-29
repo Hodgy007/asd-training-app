@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, AlertCircle, UsersRound, CheckCircle } from 'lucide-react'
+import { Eye, EyeOff, CircleAlert, UsersRound, CircleCheckBig } from 'lucide-react'
+import { IconTile } from '@/components/ui/icon-tile'
 
 type Status = 'loading' | 'ready' | 'invalid' | 'archived' | 'expired' | 'submitting' | 'success'
 
@@ -103,7 +104,7 @@ export default function JoinPage() {
 
           {(status === 'invalid' || status === 'archived' || status === 'expired') && (
             <div className="text-center space-y-3">
-              <AlertCircle className="h-10 w-10 text-amber-500 mx-auto" />
+              <CircleAlert className="h-10 w-10 text-amber-500 mx-auto" />
               <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {status === 'archived' ? 'This cohort has ended' : 'Invite link not valid'}
               </h1>
@@ -121,9 +122,7 @@ export default function JoinPage() {
           {(status === 'ready' || status === 'submitting') && cohortName && (
             <>
               <div className="text-center mb-6">
-                <div className="inline-flex h-12 w-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 items-center justify-center mb-3">
-                  <UsersRound className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                </div>
+                <IconTile icon={UsersRound} tone="success" size="lg" className="inline-flex mb-3" />
                 <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                   Join {cohortName}
                 </h1>
@@ -135,7 +134,7 @@ export default function JoinPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
                   <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
-                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <CircleAlert className="h-4 w-4 mt-0.5 shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
@@ -217,7 +216,7 @@ export default function JoinPage() {
 
           {status === 'success' && (
             <div className="text-center space-y-3">
-              <CheckCircle className="h-10 w-10 text-emerald-500 mx-auto" />
+              <CircleCheckBig className="h-10 w-10 text-emerald-500 mx-auto" />
               <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">You're in!</h1>
               <p className="text-sm text-slate-600 dark:text-slate-400">Taking you to your dashboard…</p>
             </div>

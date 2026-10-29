@@ -15,9 +15,9 @@ import {
   Copy,
   Play,
   Square,
-  XCircle,
+  CircleX,
   RefreshCw,
-  Trash2,
+  Trash,
   Save,
   Users,
   Zap,
@@ -456,7 +456,7 @@ export default function SessionDetailPage() {
                 disabled={statusChanging}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-bold transition-colors"
               >
-                <XCircle className="h-3.5 w-3.5" /> Cancel
+                <CircleX className="h-3.5 w-3.5" /> Cancel
               </button>
             </>
           )}
@@ -474,7 +474,7 @@ export default function SessionDetailPage() {
                 disabled={statusChanging}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-bold transition-colors"
               >
-                <XCircle className="h-3.5 w-3.5" /> Cancel
+                <CircleX className="h-3.5 w-3.5" /> Cancel
               </button>
             </>
           )}
@@ -674,7 +674,7 @@ export default function SessionDetailPage() {
           disabled={deleting}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-bold transition-colors"
         >
-          {deleting ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+          {deleting ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Trash className="h-3.5 w-3.5" />}
           Delete Session
         </button>
       </div>

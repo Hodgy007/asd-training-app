@@ -1,4 +1,4 @@
-import { Pencil, Lock, Trash2 } from 'lucide-react'
+import { Pencil, Lock, Trash } from 'lucide-react'
 import { Tip } from '@/components/howto/panel'
 
 export default function UsersHowTo() {
@@ -34,7 +34,7 @@ export default function UsersHowTo() {
           <span>Reset a user&apos;s password if they are locked out or need a fresh start.</span>
         </li>
         <li className="flex items-start gap-2">
-          <Trash2 className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
+          <Trash className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
           <span>Deactivate users who no longer need access. You can reactivate them later if needed.</span>
         </li>
       </ul>

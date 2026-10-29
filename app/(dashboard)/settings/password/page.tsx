@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { Lock, AlertTriangle, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import { Lock, TriangleAlert, CircleCheckBig, Eye, EyeOff } from 'lucide-react'
 import { SettingsSubpage } from '@/components/settings/subpage'
 
 export default function SettingsPasswordPage() {
@@ -81,14 +81,14 @@ export default function SettingsPasswordPage() {
       <div className="card space-y-4">
         {pwSuccess && (
           <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-3">
-            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
+            <CircleCheckBig className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
             <p className="text-sm text-green-700 dark:text-green-300 font-medium">Password changed successfully.</p>
           </div>
         )}
 
         {pwError && (
           <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
-            <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
+            <TriangleAlert className="h-4 w-4 text-red-500 shrink-0" />
             <p className="text-sm text-red-700 dark:text-red-300">{pwError}</p>
           </div>
         )}

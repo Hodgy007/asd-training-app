@@ -4,10 +4,10 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  AlertCircle,
+  CircleAlert,
   ArrowLeft,
-  Building2,
-  CheckCircle,
+  BuildingComplex,
+  CircleCheckBig,
   ChevronDown,
   Eye,
   EyeOff,
@@ -336,7 +336,7 @@ function RegisterForm() {
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+              <CircleAlert className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
@@ -345,7 +345,7 @@ function RegisterForm() {
           <fieldset className="grid grid-cols-1 gap-3 mb-6">
             <legend className="sr-only">How would you like to register?</legend>
             <ModeOption
-              icon={<Building2 className="h-5 w-5" />}
+              icon={<BuildingComplex className="h-5 w-5" />}
               title="I work for or study at an existing organisation"
               description="Find your school, college, university, or workplace in our directory."
               active={mode === 'existing'}
@@ -472,7 +472,7 @@ function RegisterForm() {
                     />
                     {confirmPassword && !passwordsMatch && (
                       <p className="flex items-center gap-1 text-xs text-red-600 mt-1">
-                        <AlertCircle className="h-3 w-3" /> Passwords do not match.
+                        <CircleAlert className="h-3.5 w-3.5" /> Passwords do not match.
                       </p>
                     )}
                   </div>
@@ -538,7 +538,7 @@ function RegisterForm() {
                     )}
                     {selectedOrg && (
                       <p className="text-xs text-sage-700 dark:text-sage-300 mt-1 flex items-center gap-1">
-                        <CheckCircle className="h-3 w-3" /> Selected: {selectedOrg.name}
+                        <CircleCheckBig className="h-3.5 w-3.5" /> Selected: {selectedOrg.name}
                       </p>
                     )}
                   </div>

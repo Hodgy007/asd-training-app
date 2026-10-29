@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Lock, CheckCircle, ChevronRight, BookOpen, Video, FileText } from 'lucide-react'
+import { Lock, CircleCheckBig, ChevronRight, BookOpen, Video, FileText } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useColorTheme } from '@/components/providers/color-theme-provider'
 import { Badge } from '@/components/ui/badge'
@@ -46,7 +46,7 @@ export function ModuleCard({ module, completedLessons, locked, programId }: Modu
     >
       {isComplete && (
         <div className="absolute top-4 right-4">
-          <CheckCircle className="h-6 w-6 text-sage-500" />
+          <CircleCheckBig className="h-6 w-6 text-sage-500" />
         </div>
       )}
       {locked && (
@@ -67,7 +67,7 @@ export function ModuleCard({ module, completedLessons, locked, programId }: Modu
           )}
           style={!isComplete && !locked ? { backgroundColor: 'var(--p-500)' } : undefined}
         >
-          {isComplete ? <CheckCircle className="h-5 w-5" /> : module.order}
+          {isComplete ? <CircleCheckBig className="h-5 w-5" /> : module.order}
         </div>
         <div className="flex-1 min-w-0 pr-8">
           <h3 className="font-semibold text-slate-900 leading-snug">{module.title}</h3>

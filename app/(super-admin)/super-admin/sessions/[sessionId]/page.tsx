@@ -15,13 +15,13 @@ import {
   Copy,
   Play,
   Square,
-  XCircle,
+  CircleX,
   RefreshCw,
-  Trash2,
+  Trash,
   Save,
   Users,
   Zap,
-  Building2,
+  BuildingComplex,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import {
@@ -387,7 +387,7 @@ export default function CharitySessionDetailPage() {
       >
           <AlertDialogContent>
             <AlertDialogTitle className="text-base font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
-              <Trash2 className="h-5 w-5" />
+              <Trash className="h-5 w-5" />
               Delete Session
             </AlertDialogTitle>
             <AlertDialogDescription>
@@ -410,7 +410,7 @@ export default function CharitySessionDetailPage() {
                 disabled={deleteConfirmText !== DELETE_CONFIRM_PHRASE || deleting}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-bold transition-colors"
               >
-                {deleting ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                {deleting ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Trash className="h-3.5 w-3.5" />}
                 Delete
               </button>
             </div>
@@ -539,7 +539,7 @@ export default function CharitySessionDetailPage() {
                 disabled={statusChanging}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-bold transition-colors"
               >
-                <XCircle className="h-3.5 w-3.5" /> Cancel
+                <CircleX className="h-3.5 w-3.5" /> Cancel
               </button>
             </>
           )}
@@ -557,7 +557,7 @@ export default function CharitySessionDetailPage() {
                 disabled={statusChanging}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-bold transition-colors"
               >
-                <XCircle className="h-3.5 w-3.5" /> Cancel
+                <CircleX className="h-3.5 w-3.5" /> Cancel
               </button>
             </>
           )}
@@ -667,7 +667,7 @@ export default function CharitySessionDetailPage() {
                   <th className="text-left px-3 py-2 font-semibold text-slate-600 dark:text-slate-400">Role</th>
                   <th className="text-left px-3 py-2 font-semibold text-slate-600 dark:text-slate-400">
                     <span className="flex items-center gap-1">
-                      <Building2 className="h-3.5 w-3.5" /> Organisation
+                      <BuildingComplex className="h-3.5 w-3.5" /> Organisation
                     </span>
                   </th>
                   <th className="text-center px-3 py-2 font-semibold text-slate-600 dark:text-slate-400">Attended</th>
@@ -765,7 +765,7 @@ export default function CharitySessionDetailPage() {
           disabled={deleting}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-bold transition-colors"
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash className="h-3.5 w-3.5" />
           Delete Session
         </button>
       </div>

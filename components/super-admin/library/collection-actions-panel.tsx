@@ -9,8 +9,8 @@ import {
   Globe2,
   ExternalLink,
   Archive,
-  Trash2,
-  AlertTriangle,
+  Trash,
+  TriangleAlert,
   ChevronDown,
   Eye,
   EyeOff,
@@ -335,7 +335,7 @@ export function CollectionActionsPanel({
           )}
           title="Delete all documents but keep the collection"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash className="h-4 w-4" />
           {clearingDocs ? 'Clearing…' : 'Clear all documents'}
         </button>
 
@@ -346,7 +346,7 @@ export function CollectionActionsPanel({
           className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-red-300 dark:border-red-800 bg-white dark:bg-slate-800 text-red-700 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
           title="Delete the entire collection (and all its documents)"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash className="h-4 w-4" />
           {deleting ? 'Deleting…' : 'Delete collection'}
         </button>
       </div>
@@ -372,7 +372,7 @@ export function CollectionActionsPanel({
         )}>
           <div className="flex items-start gap-2">
             {zipResults.errors.length > 0 ? (
-              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+              <TriangleAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
             ) : null}
             <div className="flex-1 text-sm">
               <p className="font-medium text-slate-900 dark:text-slate-100">
@@ -385,7 +385,7 @@ export function CollectionActionsPanel({
                   onClick={() => setZipErrorsExpanded((v) => !v)}
                   className="mt-1 inline-flex items-center gap-1 text-xs text-amber-700 dark:text-amber-300 hover:underline"
                 >
-                  <ChevronDown className={clsx('h-3 w-3 transition-transform', zipErrorsExpanded && 'rotate-180')} />
+                  <ChevronDown className={clsx('h-3.5 w-3.5 transition-transform', zipErrorsExpanded && 'rotate-180')} />
                   {zipErrorsExpanded ? 'Hide details' : 'Show skipped files'}
                 </button>
               )}

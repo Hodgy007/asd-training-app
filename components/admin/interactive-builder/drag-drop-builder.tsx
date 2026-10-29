@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Trash, ArrowUp, ArrowDown } from 'lucide-react'
 import {
   InteractiveBlock,
   DragDropData,
@@ -194,7 +194,7 @@ export function DragDropBuilder({ block, onChange }: DragDropBuilderProps) {
                 className="p-1.5 text-slate-400 hover:text-red-500 rounded-sm"
                 aria-label="Delete item"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash className="h-4 w-4" />
               </button>
             </div>
           ))}
@@ -243,7 +243,7 @@ export function DragDropBuilder({ block, onChange }: DragDropBuilderProps) {
                   className="p-1.5 text-slate-400 hover:text-red-500 rounded-sm"
                   aria-label="Delete category"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                 </button>
               </div>
             ))}

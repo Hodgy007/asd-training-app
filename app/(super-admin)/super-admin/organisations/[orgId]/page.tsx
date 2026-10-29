@@ -6,10 +6,10 @@ import Link from 'next/link'
 import {
   ArrowLeft,
   Plus,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  Building2,
+  Trash,
+  CircleCheckBig,
+  CircleX,
+  BuildingComplex,
   Users,
   RefreshCw,
   ShieldCheck,
@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { showToast } from '@/components/ui/toaster'
+import { IconTile } from '@/components/ui/icon-tile'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -507,7 +508,7 @@ export default function OrgDetailPage() {
   if (notFound || !org) {
     return (
       <div className="max-w-4xl mx-auto py-24 text-center text-slate-400">
-        <Building2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
+        <BuildingComplex className="h-10 w-10 mx-auto mb-3 opacity-30" />
         <p className="text-sm">Organisation not found.</p>
         <Link href="/super-admin/organisations" className="text-primary-600 hover:underline text-sm mt-2 inline-block">
           Back to organisations
@@ -537,7 +538,7 @@ export default function OrgDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Building2 className="h-6 w-6 text-primary-600" />
+              <BuildingComplex className="h-6 w-6 text-primary-600" />
               {org.name}
               {org.slug === SYSTEM_ORG_SLUG && (
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
@@ -561,7 +562,7 @@ export default function OrgDetailPage() {
                 org.active ? 'bg-sage-100 text-sage-700' : 'bg-red-100 text-red-700'
               )}
             >
-              {org.active ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+              {org.active ? <CircleCheckBig className="h-3.5 w-3.5" /> : <CircleX className="h-3.5 w-3.5" />}
               {org.active ? 'Active' : 'Inactive'}
             </span>
             <button
@@ -737,7 +738,7 @@ export default function OrgDetailPage() {
                       )}
                     >
                       {isEnabled
-                        ? <CheckCircle className="h-4 w-4 shrink-0" />
+                        ? <CircleCheckBig className="h-4 w-4 shrink-0" />
                         : <div className="h-4 w-4 rounded-full border-2 border-slate-300 shrink-0" />}
                       <div>
                         <p className="font-bold">{program.name}</p>
@@ -780,7 +781,7 @@ export default function OrgDetailPage() {
                       )}
                     >
                       {isEnabled
-                        ? <CheckCircle className="h-4 w-4 shrink-0" />
+                        ? <CircleCheckBig className="h-4 w-4 shrink-0" />
                         : <div className="h-4 w-4 rounded-full border-2 border-slate-300 shrink-0" />}
                       <div>
                         <p className="font-bold">{col.title}</p>
@@ -823,7 +824,7 @@ export default function OrgDetailPage() {
                       )}
                     >
                       {isEnabled
-                        ? <CheckCircle className="h-4 w-4 shrink-0" />
+                        ? <CircleCheckBig className="h-4 w-4 shrink-0" />
                         : <div className="h-4 w-4 rounded-full border-2 border-slate-300 shrink-0" />}
                       <div>
                         <p className="font-bold">{survey.title}</p>
@@ -885,7 +886,7 @@ export default function OrgDetailPage() {
       {(org.parentOrg || (org.isParentOrg && org.childOrgs.length > 0)) && (
         <div className="card space-y-3">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-primary-600" />
+            <BuildingComplex className="h-5 w-5 text-primary-600" />
             Hierarchy
           </h2>
 
@@ -896,7 +897,7 @@ export default function OrgDetailPage() {
                 href={`/super-admin/organisations/${org.parentOrg.id}`}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700"
               >
-                <Building2 className="h-4 w-4" />
+                <BuildingComplex className="h-4 w-4" />
                 {org.parentOrg.name}
               </Link>
             </div>
@@ -924,7 +925,7 @@ export default function OrgDetailPage() {
                           : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
                       )}
                     >
-                      {child.active ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                      {child.active ? <CircleCheckBig className="h-3.5 w-3.5" /> : <CircleX className="h-3.5 w-3.5" />}
                       {child.active ? 'Active' : 'Inactive'}
                     </span>
                   </div>
@@ -1146,11 +1147,11 @@ export default function OrgDetailPage() {
                       <td className="px-4 py-3">
                         {user.active ? (
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-sage-700">
-                            <CheckCircle className="h-3 w-3" /> Yes
+                            <CircleCheckBig className="h-3.5 w-3.5" /> Yes
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
-                            <XCircle className="h-3 w-3" /> No
+                            <CircleX className="h-3.5 w-3.5" /> No
                           </span>
                         )}
                       </td>
@@ -1170,7 +1171,7 @@ export default function OrgDetailPage() {
                             onClick={() => editingUserId === user.id ? cancelEditUser() : startEditUser(user)}
                             className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-lg border border-calm-200 text-slate-600 hover:bg-calm-100"
                           >
-                            <Pencil className="h-3 w-3" />
+                            <Pencil className="h-3.5 w-3.5" />
                             {editingUserId === user.id ? 'Cancel' : 'Edit'}
                           </button>
                         </td>
@@ -1310,7 +1311,7 @@ export default function OrgDetailPage() {
             )}
             title={org._count.users > 0 ? 'Remove all users before deleting this organisation' : undefined}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash className="h-4 w-4" />
             Delete Organisation
           </button>
           {org._count.users > 0 && (
@@ -1332,9 +1333,7 @@ export default function OrgDetailPage() {
       >
           <AlertDialogContent>
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0">
-                <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
-              </div>
+              <IconTile icon={Trash} tone="danger" />
               <div>
                 <AlertDialogTitle>Delete Organisation</AlertDialogTitle>
                 <AlertDialogDescription className="text-slate-500 dark:text-slate-400">This action cannot be undone.</AlertDialogDescription>
@@ -1466,9 +1465,9 @@ function OrgDetailsView({
           value={
             <span className="inline-flex items-center gap-1">
               {org.active ? (
-                <><CheckCircle className="h-3.5 w-3.5 text-sage-600" /> Active</>
+                <><CircleCheckBig className="h-3.5 w-3.5 text-sage-600" /> Active</>
               ) : (
-                <><XCircle className="h-3.5 w-3.5 text-red-600" /> Inactive</>
+                <><CircleX className="h-3.5 w-3.5 text-red-600" /> Inactive</>
               )}
               {org.isParentOrg && (
                 <span className="ml-2"><Chip tone="primary">Parent Organisation</Chip></span>
@@ -1552,7 +1551,7 @@ function OrgDetailsView({
           <div className="flex flex-wrap gap-2">
             {assignedPrograms.map((p) => (
               <Chip key={p.id} tone="emerald">
-                <CheckCircle className="h-3 w-3" />
+                <CircleCheckBig className="h-3.5 w-3.5" />
                 {p.name}
                 <span className="opacity-70">·  {p._count.modules} {p._count.modules === 1 ? 'module' : 'modules'}</span>
               </Chip>
@@ -1573,7 +1572,7 @@ function OrgDetailsView({
           <div className="flex flex-wrap gap-2">
             {assignedCollections.map((c) => (
               <Chip key={c.id} tone="emerald">
-                <CheckCircle className="h-3 w-3" />
+                <CircleCheckBig className="h-3.5 w-3.5" />
                 {c.title}
               </Chip>
             ))}
@@ -1593,7 +1592,7 @@ function OrgDetailsView({
           <div className="flex flex-wrap gap-2">
             {assignedSurveys.map((s) => (
               <Chip key={s.id} tone="blue">
-                <CheckCircle className="h-3 w-3" />
+                <CircleCheckBig className="h-3.5 w-3.5" />
                 {s.title}
               </Chip>
             ))}

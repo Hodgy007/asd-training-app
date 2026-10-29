@@ -17,6 +17,7 @@ import { getUserPrograms } from '@/lib/modules'
 import { HowToPanel } from '@/components/howto/panel'
 import DashboardHowTo from '@/components/howto/learner/dashboard'
 import { CohortHub } from '@/components/dashboard/cohort-hub'
+import { IconTile } from '@/components/ui/icon-tile'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -77,9 +78,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-1 max-w-sm gap-4 animate-stagger">
         <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center shrink-0">
-            <BookOpen className="h-6 w-6 text-primary-600" />
-          </div>
+          <IconTile icon={BookOpen} size="lg" />
           <div>
             <p className="text-2xl font-bold text-slate-900">
               {completedLessons}
@@ -98,7 +97,7 @@ export default async function DashboardPage() {
               href="/training"
               className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
             >
-              View all <ArrowRight className="h-3 w-3" />
+              View all <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           <div className="space-y-1 mb-2">

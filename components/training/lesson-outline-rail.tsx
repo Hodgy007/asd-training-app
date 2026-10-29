@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { clsx } from 'clsx'
-import { CheckCircle, Circle } from 'lucide-react'
+import { CircleCheckBig, Circle } from 'lucide-react'
 
 interface OutlineLesson {
   id: string
@@ -49,7 +49,7 @@ export function LessonOutlineRail({
                 )}
               >
                 {isDone ? (
-                  <CheckCircle className="h-4 w-4 shrink-0" />
+                  <CircleCheckBig className="h-4 w-4 shrink-0" />
                 ) : (
                   <Circle className="h-4 w-4 shrink-0 opacity-60" />
                 )}

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ClipboardList, Calendar, BookOpen, FileText, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react'
+import { ClipboardList, Calendar, BookOpen, FileText, ChevronRight, CircleCheck, LoaderCircle } from 'lucide-react'
 import { clsx } from 'clsx'
 import type { NotificationsPayload, NotificationItem, NotificationKind } from '@/lib/notifications'
 
@@ -61,13 +61,13 @@ export function NotificationsDropdown({ data, loading, onItemClick, onMarkAllSee
       <div className="overflow-y-auto flex-1">
         {loading && (
           <div className="flex items-center justify-center py-10 text-slate-400">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <LoaderCircle className="h-5 w-5 animate-spin" />
           </div>
         )}
 
         {isEmpty && (
           <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400">
-            <CheckCircle2 className="h-8 w-8 text-sage-500 mb-2" />
+            <CircleCheck className="h-8 w-8 text-sage-500 mb-2" />
             <p className="text-sm">You&apos;re all caught up.</p>
           </div>
         )}

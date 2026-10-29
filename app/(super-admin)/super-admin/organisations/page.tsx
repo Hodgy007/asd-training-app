@@ -5,14 +5,14 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { clsx } from 'clsx'
 import {
-  Building2,
+  BuildingComplex,
   Plus,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   RefreshCw,
   ChevronDown,
   Clock,
-  AlertCircle,
+  CircleAlert,
   Search,
 } from 'lucide-react'
 import { LEAF_ROLES } from '@/types'
@@ -121,7 +121,7 @@ function OrganisationsContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary-600" />
+            <BuildingComplex className="h-6 w-6 text-primary-600" />
             Organisations
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Manage all organisations on the platform.</p>
@@ -191,7 +191,7 @@ function OrganisationsContent() {
               ) : orgs.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
-                    <Building2 className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <BuildingComplex className="h-8 w-8 mx-auto mb-2 opacity-30" />
                     No organisations yet.
                   </td>
                 </tr>
@@ -239,7 +239,7 @@ function OrganisationsContent() {
                       <td className="px-4 py-3">
                         {isSystem(org) ? (
                           <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400" title="System orgs are always active.">
-                            <CheckCircle className="h-3 w-3" />Active
+                            <CircleCheckBig className="h-3.5 w-3.5" />Active
                           </span>
                         ) : (
                           <button
@@ -253,9 +253,9 @@ function OrganisationsContent() {
                             )}
                           >
                             {org.active ? (
-                              <><CheckCircle className="h-3 w-3" />Active</>
+                              <><CircleCheckBig className="h-3.5 w-3.5" />Active</>
                             ) : (
-                              <><XCircle className="h-3 w-3" />Inactive</>
+                              <><CircleX className="h-3.5 w-3.5" />Inactive</>
                             )}
                           </button>
                         )}

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { sanitizeHtml } from '@/lib/sanitize'
 import Link from 'next/link'
-import { ArrowLeft, ChevronRight, ChevronDown, BookOpen, Video, CheckCircle, Loader2, FileText, Download, StickyNote, ClipboardList } from 'lucide-react'
+import { ArrowLeft, ChevronRight, ChevronDown, BookOpen, Video, CircleCheckBig, LoaderCircle, FileText, Download, StickyNote, ClipboardList } from 'lucide-react'
 import { VideoPlayer } from '@/components/training/video-player'
 import { QuizComponent } from '@/components/training/quiz-component'
 import { InteractiveBlockRenderer } from '@/components/training/interactive/interactive-block-renderer'
@@ -17,6 +17,7 @@ import { LessonOutlineRail } from '@/components/training/lesson-outline-rail'
 import { ScormPlayer } from '@/components/lessons/scorm-player'
 import { SurveyLesson } from '@/components/training/survey-lesson'
 import { clsx } from 'clsx'
+import { IconTile } from '@/components/ui/icon-tile'
 
 interface LessonPageProps {
   params: Promise<{ programId: string; moduleId: string; lessonId: string }>
@@ -212,7 +213,7 @@ export default function ProgramLessonPage(props: LessonPageProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-primary-500" />
       </div>
     )
   }
@@ -533,9 +534,7 @@ export default function ProgramLessonPage(props: LessonPageProps) {
         <div className="card">
           {!quizStarted ? (
             <div className="text-center py-6">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="h-6 w-6 text-primary-600" />
-              </div>
+              <IconTile icon={BookOpen} size="lg" className="mx-auto mb-4" />
               <h2 className="text-lg font-semibold text-slate-900 mb-2">Knowledge Check</h2>
               <p className="text-slate-500 text-sm mb-6">
                 {quizQuestions.length} questions to test your understanding
@@ -552,7 +551,7 @@ export default function ProgramLessonPage(props: LessonPageProps) {
               {completed && (
                 <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
                   <div className="flex items-center gap-2 text-sage-600">
-                    <CheckCircle className="h-6 w-6" />
+                    <CircleCheckBig className="h-6 w-6" />
                     <span className="font-semibold">Lesson complete!</span>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -588,9 +587,7 @@ export default function ProgramLessonPage(props: LessonPageProps) {
         <div className="card">
           {!completed ? (
             <div className="text-center py-6">
-              <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="h-6 w-6 text-sage-600" />
-              </div>
+              <IconTile icon={CircleCheckBig} tone="success" size="lg" className="mx-auto mb-4" />
               <h2 className="text-lg font-semibold text-slate-900 mb-2">Finished this lesson?</h2>
               <p className="text-slate-500 text-sm mb-6">
                 Mark it complete to move on to the next one.
@@ -606,7 +603,7 @@ export default function ProgramLessonPage(props: LessonPageProps) {
           ) : (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-sage-600">
-                <CheckCircle className="h-6 w-6" />
+                <CircleCheckBig className="h-6 w-6" />
                 <span className="font-semibold">Lesson complete!</span>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">

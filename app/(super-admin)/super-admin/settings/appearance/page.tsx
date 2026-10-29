@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle, Palette } from 'lucide-react'
+import { ArrowLeft, CircleCheckBig, Palette } from 'lucide-react'
 import { useColorTheme, type ColorTheme } from '@/components/providers/color-theme-provider'
 import { FontSettings } from '@/components/ui/font-settings'
 
@@ -87,7 +87,7 @@ export default function AppearanceSettingsPage() {
                 </div>
                 {active && (
                   <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary-500">
-                    <CheckCircle className="h-3.5 w-3.5 text-white" />
+                    <CircleCheckBig className="h-3.5 w-3.5 text-white" />
                   </span>
                 )}
               </button>

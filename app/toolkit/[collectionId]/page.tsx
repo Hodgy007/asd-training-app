@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { ToolkitDocumentActions } from '@/components/toolkit/toolkit-document-actions'
 import { ToolkitLeadModalHost } from '@/components/toolkit/toolkit-lead-modal-host'
 import { groupDocumentsBySection, isSectionedCollection, UNSECTIONED_GROUP_TITLE } from '@/lib/library-sections'
+import { ChevronLeft, FileText } from 'lucide-react'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -103,9 +104,7 @@ export default async function ToolkitCollectionPage(
             href="/toolkit"
             className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#475569] shadow-xs transition hover:text-[#001522]"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
             All toolkits
           </Link>
 
@@ -119,9 +118,7 @@ export default async function ToolkitCollectionPage(
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#334155]">{collection.description}</p>
               <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#475569] shadow-xs">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <FileText className="h-4 w-4" />
                 {collection.documents.length} {collection.documents.length === 1 ? 'resource' : 'resources'} ready to explore
               </p>
             </div>
@@ -217,9 +214,7 @@ export default async function ToolkitCollectionPage(
                                 ) : (
                                   <div className="relative flex h-full w-full items-center justify-center">
                                     <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/85 shadow-xs">
-                                      <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke={theme.accent} strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                      </svg>
+                                      <FileText className="h-10 w-10" color={theme.accent} />
                                     </div>
                                   </div>
                                 )}

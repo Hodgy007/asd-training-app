@@ -8,9 +8,9 @@ import {
   ExternalLink,
   Calendar,
   MapPin,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
+  CircleAlert,
+  CircleCheckBig,
+  CircleX,
   Users,
 } from 'lucide-react'
 
@@ -146,7 +146,7 @@ export function CohortEventbriteSection({ cohortId, event, onChange }: Props) {
               className="mt-2 inline-flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 hover:underline"
             >
               Open on Eventbrite
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
         </div>
@@ -156,7 +156,7 @@ export function CohortEventbriteSection({ cohortId, event, onChange }: Props) {
             STATUS_STYLES[event.status],
           )}
         >
-          {event.status === 'LIVE' ? <CheckCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+          {event.status === 'LIVE' ? <CircleCheckBig className="h-3.5 w-3.5" /> : <CircleX className="h-3.5 w-3.5" />}
           {event.status}
         </span>
       </div>
@@ -243,7 +243,7 @@ export function CohortEventbriteSection({ cohortId, event, onChange }: Props) {
         {syncResult ? (
           <div className="mt-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 text-xs text-emerald-800 dark:text-emerald-200">
             <p className="font-medium">
-              <CheckCircle className="h-4 w-4 inline-block mr-1.5 -mt-0.5" />
+              <CircleCheckBig className="h-4 w-4 inline-block mr-1.5 -mt-0.5" />
               {syncResult.matched} matched · {syncResult.invited} invited · {syncResult.skipped} skipped
             </p>
             {syncResult.unmatchedEmails.length > 0 ? (
@@ -263,7 +263,7 @@ export function CohortEventbriteSection({ cohortId, event, onChange }: Props) {
 
         {error ? (
           <div className="mt-3 flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-900/20 px-3 py-2 text-xs text-red-700 dark:text-red-300">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <CircleAlert className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         ) : null}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ClipboardList, BarChart3, ChevronDown, ChevronRight, RefreshCw, FileDown } from 'lucide-react'
+import { ClipboardList, ChartColumn, ChevronDown, ChevronRight, RefreshCw, FileDown } from 'lucide-react'
 import { clsx } from 'clsx'
 import { getRoleLabel } from '@/lib/rbac'
 import { downloadCsv, escapeCsv } from '../_lib/csv'
@@ -321,7 +321,7 @@ export default function SurveysReportPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400">Closed</p>
               </div>
               <div className="card text-center">
-                <BarChart3 className="h-5 w-5 text-blue-500 mx-auto mb-1" />
+                <ChartColumn className="h-5 w-5 text-blue-500 mx-auto mb-1" />
                 <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{surveyTotals.totalResponses}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">Total Responses</p>
               </div>

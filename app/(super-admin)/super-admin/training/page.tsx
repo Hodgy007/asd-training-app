@@ -9,11 +9,11 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronRight,
-  Loader2,
+  LoaderCircle,
   Eye,
   Edit3,
   X,
-  Trash2,
+  Trash,
   Sparkles,
   Package,
 } from 'lucide-react'
@@ -358,7 +358,7 @@ export default function TrainingContentPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+          <LoaderCircle className="h-8 w-8 animate-spin text-primary-500" />
         </div>
       ) : programs.length === 0 && !showNewProgram ? (
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-8 text-center">
@@ -601,14 +601,14 @@ export default function TrainingContentPage() {
                             disabled={actionLoading === mod.id}
                             className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash className="h-3.5 w-3.5" />
                           </button>
                           <Link
                             href={`/training/${program.id}`}
                             className="inline-flex items-center gap-1 border border-calm-200 dark:border-slate-700 hover:bg-calm-50 dark:hover:bg-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-600 dark:text-slate-300 transition-colors"
                             target="_blank"
                           >
-                            <Eye className="h-3 w-3" />
+                            <Eye className="h-3.5 w-3.5" />
                             View
                           </Link>
                           <Link
@@ -802,7 +802,7 @@ function NewProgramForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
           disabled={submitting}
           className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
         >
-          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
           Create Program
         </button>
         <button
@@ -1120,7 +1120,7 @@ function EditProgramForm({
               disabled={publishing}
               className="inline-flex items-center gap-2 border border-primary-600 text-primary-700 dark:text-primary-300 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
             >
-              {publishing && <Loader2 className="h-4 w-4 animate-spin" />}
+              {publishing && <LoaderCircle className="h-4 w-4 animate-spin" />}
               {stripePriceId ? 'Re-publish to Stripe' : 'Publish to Stripe'}
             </button>
             {stripePriceId || stripeProductId ? (
@@ -1226,7 +1226,7 @@ function EditProgramForm({
               disabled={submitting}
               className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
             >
-              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
               Save Changes
             </button>
             <button
@@ -1243,7 +1243,7 @@ function EditProgramForm({
             disabled={submitting}
             className="inline-flex items-center gap-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl px-3 py-2 text-sm font-bold transition-colors disabled:opacity-50"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash className="h-4 w-4" />
             Delete Program
           </button>
         </div>
@@ -1349,7 +1349,7 @@ function AddModuleForm({
           disabled={submitting}
           className="inline-flex items-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-3 py-1.5 text-xs font-bold transition-colors disabled:opacity-50"
         >
-          {submitting && <Loader2 className="h-3 w-3 animate-spin" />}
+          {submitting && <LoaderCircle className="h-3.5 w-3.5 animate-spin" />}
           Create Module
         </button>
         <button

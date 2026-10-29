@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CircleCheckBig, CircleX } from 'lucide-react'
 import { KnowledgeCheckData } from '@/types/interactive'
 import { BlockInstructions } from './block-instructions'
 import { BlockCompletionBadge } from './block-completion-badge'
@@ -119,10 +119,10 @@ export function KnowledgeCheck({
                     >
                       <span className="flex items-center gap-2">
                         {answeredCorrectly && isCorrectOption && (
-                          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
+                          <CircleCheckBig className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
                         )}
                         {answeredIncorrectly && isSelected && (
-                          <XCircle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
+                          <CircleX className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
                         )}
                         {option}
                       </span>
@@ -134,13 +134,13 @@ export function KnowledgeCheck({
               {/* Feedback */}
               {answeredCorrectly && (
                 <div className="flex items-start gap-2 text-sm text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg px-3 py-2">
-                  <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <CircleCheckBig className="h-4 w-4 mt-0.5 shrink-0" />
                   <span>{q.feedback}</span>
                 </div>
               )}
               {answeredIncorrectly && (
                 <div className="flex items-start gap-2 text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
-                  <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <CircleX className="h-4 w-4 mt-0.5 shrink-0" />
                   <span>Not quite -- try again.</span>
                 </div>
               )}

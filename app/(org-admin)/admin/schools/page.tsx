@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { clsx } from 'clsx'
 import {
-  Building2,
+  BuildingComplex,
   Plus,
   ChevronUp,
   ChevronDown,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   RefreshCw,
   Link2,
   Users,
@@ -240,7 +240,7 @@ export default function SchoolsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-emerald-600" />
+            <BuildingComplex className="h-6 w-6 text-emerald-600" />
             Schools
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Manage child organisations within your organisation.</p>
@@ -464,7 +464,7 @@ export default function SchoolsPage() {
               ) : schools.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-slate-400 dark:text-slate-500">
-                    <Building2 className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <BuildingComplex className="h-8 w-8 mx-auto mb-2 opacity-30" />
                     No schools yet. Create one to get started.
                   </td>
                 </tr>
@@ -493,7 +493,7 @@ export default function SchoolsPage() {
                       <td className="px-4 py-3">
                         {school.inheritSettings ? (
                           <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                            <Link2 className="h-3 w-3" />
+                            <Link2 className="h-3.5 w-3.5" />
                             Inherited
                           </span>
                         ) : (
@@ -514,9 +514,9 @@ export default function SchoolsPage() {
                           )}
                         >
                           {school.active ? (
-                            <><CheckCircle className="h-3 w-3" />Active</>
+                            <><CircleCheckBig className="h-3.5 w-3.5" />Active</>
                           ) : (
-                            <><XCircle className="h-3 w-3" />Inactive</>
+                            <><CircleX className="h-3.5 w-3.5" />Inactive</>
                           )}
                         </button>
                       </td>

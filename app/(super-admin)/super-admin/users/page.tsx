@@ -6,13 +6,13 @@ import {
   Users,
   Plus,
   Pencil,
-  Trash2,
+  Trash,
   Crown,
   Shield,
   X,
   Check,
-  AlertCircle,
-  Loader2,
+  CircleAlert,
+  LoaderCircle,
   Search,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -204,7 +204,7 @@ export default function CharityUsersPage() {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="card p-8 text-center">
-          <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+          <CircleAlert className="h-12 w-12 text-red-400 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Access Denied</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Only Charity Admins can manage charity-level users.</p>
         </div>
@@ -407,7 +407,7 @@ export default function CharityUsersPage() {
               disabled={saving}
               className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {saving && <LoaderCircle className="h-4 w-4 animate-spin" />}
               {formMode === 'create' ? 'Create User' : 'Save Changes'}
             </button>
           </div>
@@ -417,7 +417,7 @@ export default function CharityUsersPage() {
       {/* Users List */}
       {loading ? (
         <div className="card p-8 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-500 mx-auto" />
+          <LoaderCircle className="h-8 w-8 animate-spin text-primary-500 mx-auto" />
           <p className="text-sm text-slate-400 mt-2">Loading users...</p>
         </div>
       ) : users.length === 0 ? (
@@ -500,9 +500,9 @@ export default function CharityUsersPage() {
                         )}
                       >
                         {user.role === 'SUPER_ADMIN' ? (
-                          <><Crown className="h-3 w-3" /> Admin</>
+                          <><Crown className="h-3.5 w-3.5" /> Admin</>
                         ) : (
-                          <><Shield className="h-3 w-3" /> Employee</>
+                          <><Shield className="h-3.5 w-3.5" /> Employee</>
                         )}
                       </span>
                     </td>
@@ -527,11 +527,11 @@ export default function CharityUsersPage() {
                     <td className="px-4 py-3">
                       {user.active ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
-                          <Check className="h-3 w-3" /> Yes
+                          <Check className="h-3.5 w-3.5" /> Yes
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400">
-                          <X className="h-3 w-3" /> No
+                          <X className="h-3.5 w-3.5" /> No
                         </span>
                       )}
                     </td>
@@ -552,9 +552,9 @@ export default function CharityUsersPage() {
                             title="Delete user"
                           >
                             {deletingUserId === user.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <LoaderCircle className="h-4 w-4 animate-spin" />
                             ) : (
-                              <Trash2 className="h-4 w-4" />
+                              <Trash className="h-4 w-4" />
                             )}
                           </button>
                         )}

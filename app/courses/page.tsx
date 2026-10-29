@@ -9,6 +9,7 @@ import {
 import { ProgramCard } from '@/components/courses/program-card'
 import { SubscriptionCard } from '@/components/courses/subscription-card'
 import { WorkshopCard } from '@/components/courses/workshop-card'
+import { ArrowRight, Check } from 'lucide-react'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -53,9 +54,7 @@ function TrustItem({
         className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-aaa-orange/10 text-aaa-orange"
         aria-hidden="true"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
+        <Check className="h-4 w-4" strokeWidth={2.5} />
       </span>
       <div>
         <p className="text-sm font-semibold text-[#001522]">{title}</p>
@@ -233,9 +232,7 @@ export default async function CoursesPage(
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-aaa-orange px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-aaa-orange/30 transition hover:brightness-110"
               >
                 Browse courses
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
+                <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
               </a>
               {subscriptionConfigured ? (
                 <a

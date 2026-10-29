@@ -9,7 +9,7 @@ import {
   Calendar,
   Plus,
   RefreshCw,
-  XCircle,
+  CircleX,
   Users as UsersIcon,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -209,7 +209,7 @@ export default function CreateCharitySessionPage() {
             className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
             aria-label="Dismiss cohort banner"
           >
-            <XCircle className="h-4 w-4" />
+            <CircleX className="h-4 w-4" />
           </button>
         </div>
       )}

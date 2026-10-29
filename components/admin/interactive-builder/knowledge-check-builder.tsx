@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash } from 'lucide-react'
 import { InteractiveBlock, KnowledgeCheckData, KnowledgeCheckQuestion } from '@/types/interactive'
 
 interface KnowledgeCheckBuilderProps {
@@ -140,7 +140,7 @@ export function KnowledgeCheckBuilder({ block, onChange }: KnowledgeCheckBuilder
                   className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1"
                   title="Delete question"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                 </button>
               </div>
 
@@ -191,7 +191,7 @@ export function KnowledgeCheckBuilder({ block, onChange }: KnowledgeCheckBuilder
                           className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1"
                           title="Remove option"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash className="h-3.5 w-3.5" />
                         </button>
                       )}
                     </div>
@@ -202,7 +202,7 @@ export function KnowledgeCheckBuilder({ block, onChange }: KnowledgeCheckBuilder
                     onClick={() => addOption(question)}
                     className="flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 font-medium mt-2 hover:underline"
                   >
-                    <Plus className="h-3 w-3" /> Add option
+                    <Plus className="h-3.5 w-3.5" /> Add option
                   </button>
                 )}
               </div>

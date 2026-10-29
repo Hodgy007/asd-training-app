@@ -5,11 +5,11 @@ import { clsx } from 'clsx'
 import {
   Megaphone,
   Plus,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   RefreshCw,
   ChevronUp,
-  Trash2,
+  Trash,
 } from 'lucide-react'
 import { HowToPanel } from '@/components/howto/panel'
 import AnnouncementsHowTo from '@/components/howto/super-admin/announcements'
@@ -268,9 +268,9 @@ export default function AnnouncementsPage() {
                         )}
                       >
                         {a.active ? (
-                          <><CheckCircle className="h-3 w-3" />Active</>
+                          <><CircleCheckBig className="h-3.5 w-3.5" />Active</>
                         ) : (
-                          <><XCircle className="h-3 w-3" />Inactive</>
+                          <><CircleX className="h-3.5 w-3.5" />Inactive</>
                         )}
                       </button>
                     </td>
@@ -300,7 +300,7 @@ export default function AnnouncementsPage() {
                         className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
                         title="Delete announcement"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>

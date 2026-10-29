@@ -8,10 +8,10 @@ import {
   RefreshCw,
   Key,
   Plus,
-  Trash2,
+  Trash,
   Copy,
   Check,
-  AlertTriangle,
+  TriangleAlert,
   ExternalLink,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -132,7 +132,7 @@ export default function IntegrationsSettingsPage() {
       {newKey && (
         <div className="rounded-2xl border-2 border-amber-400 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/20 p-5 space-y-3">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <TriangleAlert className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-amber-800 dark:text-amber-200">API Key Created — Copy Now</h3>
               <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
@@ -289,7 +289,7 @@ export default function IntegrationsSettingsPage() {
                           className="p-1 rounded-sm text-slate-400 hover:text-red-500 transition-colors"
                           title="Delete key"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash className="h-4 w-4" />
                         </button>
                       )}
                     </td>

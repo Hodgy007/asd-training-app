@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Users, Building2, X, Search, UserPlus, Check } from 'lucide-react'
+import { Users, BuildingComplex, X, Search, UserPlus, Check } from 'lucide-react'
 import { clsx } from 'clsx'
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -315,7 +315,7 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
       {/* ── Target Organisations ──────────────────────────────────────────── */}
       <div>
         <div className="mb-2 flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+          <BuildingComplex className="h-4 w-4 text-slate-500 dark:text-slate-400" />
           <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
             Target Organisations
           </span>
@@ -414,7 +414,7 @@ export function SessionAttendeePicker({ value, onChange }: SessionAttendeePicker
                   className="ml-0.5 rounded-full p-0.5 hover:bg-primary-100 dark:hover:bg-primary-800 transition-colors"
                   aria-label={`Remove ${user.name ?? user.email}`}
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </span>
             ))}

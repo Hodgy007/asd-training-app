@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle, XCircle, ChevronRight } from 'lucide-react'
+import { CircleCheckBig, CircleX, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
 
 export interface QuizQuestion {
@@ -59,9 +59,9 @@ export function QuizComponent({ questions, onComplete }: QuizComponentProps) {
           )}
         >
           {pct >= 70 ? (
-            <CheckCircle className="h-10 w-10 text-sage-500" />
+            <CircleCheckBig className="h-10 w-10 text-sage-500" />
           ) : (
-            <XCircle className="h-10 w-10 text-amber-500" />
+            <CircleX className="h-10 w-10 text-amber-500" />
           )}
         </div>
         <div>
@@ -123,9 +123,9 @@ export function QuizComponent({ questions, onComplete }: QuizComponentProps) {
               <div className="flex items-start gap-3">
                 <div className="shrink-0 mt-0.5">
                   {showResult && isThisCorrect ? (
-                    <CheckCircle className="h-5 w-5 text-sage-500" />
+                    <CircleCheckBig className="h-5 w-5 text-sage-500" />
                   ) : showResult && isSelected && !isThisCorrect ? (
-                    <XCircle className="h-5 w-5 text-red-500" />
+                    <CircleX className="h-5 w-5 text-red-500" />
                   ) : (
                     <div
                       className={clsx(

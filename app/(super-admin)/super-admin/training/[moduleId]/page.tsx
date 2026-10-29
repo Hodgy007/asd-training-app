@@ -8,9 +8,9 @@ import {
   Plus,
   ChevronUp,
   ChevronDown,
-  Loader2,
-  CheckCircle,
-  XCircle,
+  LoaderCircle,
+  CircleCheckBig,
+  CircleX,
   Save,
   Download,
   ClipboardList,
@@ -200,7 +200,7 @@ export default function ModuleEditorPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-primary-500" />
       </div>
     )
   }
@@ -302,7 +302,7 @@ export default function ModuleEditorPage() {
             disabled={saving}
             className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save
           </button>
         </div>
@@ -321,7 +321,7 @@ export default function ModuleEditorPage() {
               className="inline-flex items-center gap-2 border border-primary-200 dark:border-primary-700 text-primary-700 dark:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Download this module as a SCORM 1.2 .zip package"
             >
-              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {exporting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               Export SCORM
             </button>
             <button
@@ -426,9 +426,9 @@ export default function ModuleEditorPage() {
                   title={lesson.active ? 'Deactivate' : 'Activate'}
                 >
                   {lesson.active ? (
-                    <XCircle className="h-4 w-4 text-red-500" />
+                    <CircleX className="h-4 w-4 text-red-500" />
                   ) : (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <CircleCheckBig className="h-4 w-4 text-green-500" />
                   )}
                 </button>
                 <Link
@@ -601,7 +601,7 @@ function AddLessonForm({ moduleId, nextOrder, onCreated, onCancel }: AddLessonFo
           disabled={submitting}
           className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl px-4 py-2 text-sm font-bold transition-colors disabled:opacity-50"
         >
-          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
           Create Lesson
         </button>
         <button

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { Plus, Trash2, ChevronUp, ChevronDown, GripVertical, Save, X } from 'lucide-react'
+import { Plus, Trash, ChevronUp, ChevronDown, GripVertical, Save, X } from 'lucide-react'
 import { clsx } from 'clsx'
 import { SurveyTargetPicker } from '@/components/super-admin/survey-target-picker'
 import type { SurveyTargetConfig } from '@/components/super-admin/survey-target-picker'
@@ -427,7 +427,7 @@ function QuestionCard({
           className="rounded-sm p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
           title="Delete question"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash className="h-4 w-4" />
         </button>
       </div>
 

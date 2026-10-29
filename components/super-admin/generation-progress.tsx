@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle, Loader2, Circle, AlertTriangle } from 'lucide-react'
+import { CircleCheckBig, LoaderCircle, Circle, TriangleAlert } from 'lucide-react'
 import { clsx } from 'clsx'
 
 export type ProgressPhase = 'parsing' | 'outline-solid' | 'content' | 'quiz' | 'complete' | 'error'
@@ -110,10 +110,10 @@ export function GenerationProgress({
           return (
             <li key={step.key} className="flex items-center gap-3">
               {status === 'done' && (
-                <CheckCircle className="h-5 w-5 shrink-0 text-green-500" />
+                <CircleCheckBig className="h-5 w-5 shrink-0 text-green-500" />
               )}
               {status === 'current' && (
-                <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary-600" />
+                <LoaderCircle className="h-5 w-5 shrink-0 animate-spin text-primary-600" />
               )}
               {status === 'pending' && (
                 <Circle className="h-5 w-5 shrink-0 text-slate-300 dark:text-slate-600" />
@@ -136,7 +136,7 @@ export function GenerationProgress({
       {/* Errors banner */}
       {errors.length > 0 && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-700/50 dark:bg-amber-900/20">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <div className="min-w-0 flex-1 space-y-2">
             <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
               {errors.length} lesson{errors.length !== 1 ? 's' : ''} failed to generate. You can hit

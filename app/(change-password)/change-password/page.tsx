@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
+import { Lock, Eye, EyeOff, CircleAlert, CircleCheckBig } from 'lucide-react'
+import { IconTile } from '@/components/ui/icon-tile'
 
 export default function ChangePasswordPage() {
   const router = useRouter()
@@ -85,9 +86,7 @@ export default function ChangePasswordPage() {
 
         <div className="card border-t-4 border-t-primary-500">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-50">
-              <Lock className="h-5 w-5 text-primary-500" />
-            </div>
+            <IconTile icon={Lock} />
             <div>
               <h2 className="text-xl font-bold text-slate-900">Create a new password</h2>
               <p className="text-sm text-slate-500">You must set a password before continuing.</p>
@@ -96,7 +95,7 @@ export default function ChangePasswordPage() {
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+              <CircleAlert className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
@@ -146,7 +145,7 @@ export default function ChangePasswordPage() {
                   autoComplete="new-password"
                 />
                 {form.confirmPassword && form.newPassword === form.confirmPassword && (
-                  <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sage-500" />
+                  <CircleCheckBig className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sage-500" />
                 )}
               </div>
             </div>

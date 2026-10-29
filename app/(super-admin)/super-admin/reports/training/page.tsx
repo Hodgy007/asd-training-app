@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { BarChart3, RefreshCw, FileDown } from 'lucide-react'
+import { ChartColumn, RefreshCw, FileDown } from 'lucide-react'
 import { downloadCsv, escapeCsv } from '../_lib/csv'
 import { BackToReports } from '../_components/back-link'
 
@@ -104,7 +104,7 @@ export default function TrainingReportPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+            <ChartColumn className="h-6 w-6 text-primary-600 dark:text-primary-400" />
             Training Reports
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -195,7 +195,7 @@ export default function TrainingReportPage() {
               ) : data.length === 0 ? (
                 <tr>
                   <td colSpan={2 + allModuleIds.length} className="px-4 py-12 text-center text-slate-400">
-                    <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <ChartColumn className="h-8 w-8 mx-auto mb-2 opacity-30" />
                     No data &mdash; no organisations exist yet.
                   </td>
                 </tr>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import {
-  BarChart3,
+  ChartColumn,
   Target,
   FolderOpen,
   ClipboardList,
@@ -30,7 +30,7 @@ const TILES: Tile[] = [
     href: '/super-admin/reports/training',
     title: 'Training Completion',
     description: 'Module completion rates by organisation.',
-    icon: BarChart3,
+    icon: ChartColumn,
     iconColor: 'text-primary-600 dark:text-primary-400',
     iconBg: 'bg-primary-100 dark:bg-primary-900/40',
   },
@@ -97,7 +97,7 @@ export default function SuperAdminReportsIndexPage() {
     <div className="max-w-full space-y-6 animate-page-enter">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+          <ChartColumn className="h-6 w-6 text-primary-600 dark:text-primary-400" />
           Reports
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">

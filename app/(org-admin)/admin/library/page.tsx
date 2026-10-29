@@ -408,7 +408,7 @@ export default function OrgAdminLibraryPage() {
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">{col.description}</p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 flex items-center gap-1">
-                  <FileText className="h-3 w-3" />
+                  <FileText className="h-3.5 w-3.5" />
                   {col._count.documents} document{col._count.documents !== 1 ? 's' : ''}
                 </p>
               </div>

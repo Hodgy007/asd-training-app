@@ -6,8 +6,8 @@ import {
   ArrowLeft,
   Ticket,
   RefreshCw,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   Save,
   Wifi,
   WifiOff,
@@ -196,7 +196,7 @@ export default function EventbriteSettingsPage() {
               className="inline-flex items-center gap-1 font-medium text-orange-600 hover:underline dark:text-orange-400"
             >
               Eventbrite → Account Settings → Developer Links → API Keys
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-3.5 w-3.5" />
             </a>
             . The token gives the platform read access to your account&apos;s events,
             orders, and attendees. Stored securely; never shared with learners.
@@ -213,9 +213,9 @@ export default function EventbriteSettingsPage() {
             )}
           >
             {testResult.success ? (
-              <CheckCircle className="h-4 w-4 shrink-0" />
+              <CircleCheckBig className="h-4 w-4 shrink-0" />
             ) : (
-              <XCircle className="h-4 w-4 shrink-0" />
+              <CircleX className="h-4 w-4 shrink-0" />
             )}
             {testResult.message}
           </div>
@@ -308,7 +308,7 @@ export default function EventbriteSettingsPage() {
               <dd className="mt-1 text-slate-700 dark:text-slate-200">
                 {webhookId ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+                    <CircleCheckBig className="h-3.5 w-3.5 text-emerald-500" />
                     Registered (id {webhookId})
                   </span>
                 ) : (

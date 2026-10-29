@@ -19,10 +19,10 @@ import {
   ChevronUp,
   Upload,
   FileText,
-  Trash2,
+  Trash,
   RefreshCw,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   Pencil,
   X,
   Sparkles,
@@ -30,13 +30,14 @@ import {
   Eye,
   EyeOff,
   Archive,
-  AlertTriangle,
+  TriangleAlert,
   ChevronDown,
   ExternalLink,
   Globe2,
 } from 'lucide-react'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { showToast } from '@/components/ui/toaster'
+import { IconTile } from '@/components/ui/icon-tile'
 
 interface LibraryDoc {
   id: string
@@ -722,7 +723,7 @@ export default function CollectionDetailPage() {
                     className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"
                     title="Generate title + description AND a matching thumbnail"
                   >
-                    <ImageIcon className="h-3 w-3 inline mr-1" />
+                    <ImageIcon className="h-3.5 w-3.5 inline mr-1" />
                     {aiCollectionGenerating === 'image' ? 'Generating…' : 'Generate with thumbnail'}
                   </button>
                   <input
@@ -777,7 +778,7 @@ export default function CollectionDetailPage() {
                         onClick={() => setColEditThumbnailUrl(null)}
                         className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash className="h-3.5 w-3.5" />
                         Remove thumbnail
                       </button>
                     </div>
@@ -871,7 +872,7 @@ export default function CollectionDetailPage() {
                     disabled={colEditSaving || !colEditTitle.trim() || !colEditDescription.trim()}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
                   >
-                    <CheckCircle className="h-3.5 w-3.5" />
+                    <CircleCheckBig className="h-3.5 w-3.5" />
                     {colEditSaving ? 'Saving...' : 'Save collection'}
                   </button>
                   <button
@@ -946,8 +947,8 @@ export default function CollectionDetailPage() {
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
               {zipResults.created > 0
-                ? <CheckCircle className="h-4 w-4 text-sage-600 dark:text-sage-400 shrink-0" />
-                : <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                ? <CircleCheckBig className="h-4 w-4 text-sage-600 dark:text-sage-400 shrink-0" />
+                : <TriangleAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
               }
               <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
                 {zipResults.created > 0
@@ -976,14 +977,14 @@ export default function CollectionDetailPage() {
                 onClick={() => setZipErrorsExpanded((v) => !v)}
                 className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
               >
-                <ChevronDown className={clsx('h-3 w-3 transition-transform', zipErrorsExpanded && 'rotate-180')} />
+                <ChevronDown className={clsx('h-3.5 w-3.5 transition-transform', zipErrorsExpanded && 'rotate-180')} />
                 {zipErrorsExpanded ? 'Hide' : 'Show'} skipped files
               </button>
               {zipErrorsExpanded && (
                 <ul className="mt-2 space-y-1">
                   {zipResults.errors.map((e, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
-                      <XCircle className="h-3.5 w-3.5 text-red-400 shrink-0 mt-0.5" />
+                      <CircleX className="h-3.5 w-3.5 text-red-400 shrink-0 mt-0.5" />
                       <span><span className="font-medium">{e.fileName}</span> — {e.error}</span>
                     </li>
                   ))}
@@ -1041,7 +1042,7 @@ export default function CollectionDetailPage() {
                   onClick={() => handleAiGenerate(true)}
                   className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-800/60 transition-colors disabled:opacity-40"
                 >
-                  <ImageIcon className="h-3 w-3 inline mr-1" />
+                  <ImageIcon className="h-3.5 w-3.5 inline mr-1" />
                   {aiGenerating ? 'Generating…' : 'Generate AI Image'}
                 </button>
               </div>
@@ -1086,7 +1087,7 @@ export default function CollectionDetailPage() {
                     onClick={() => setFormThumbnailUrl(null)}
                     className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash className="h-3.5 w-3.5" />
                     Remove image
                   </button>
                 </div>
@@ -1206,7 +1207,7 @@ export default function CollectionDetailPage() {
                         onClick={() => handleEditAiGenerate(doc, true)}
                         className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"
                       >
-                        <ImageIcon className="h-3 w-3 inline mr-1" />
+                        <ImageIcon className="h-3.5 w-3.5 inline mr-1" />
                         {editAiGenerating ? 'Generating…' : 'Generate AI image'}
                       </button>
                     </div>
@@ -1244,7 +1245,7 @@ export default function CollectionDetailPage() {
                             onClick={() => setEditThumbnailUrl(null)}
                             className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40"
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash className="h-3.5 w-3.5" />
                             Remove image
                           </button>
                         </div>
@@ -1324,9 +1325,7 @@ export default function CollectionDetailPage() {
                       <img src={doc.thumbnailUrl} alt="" className="h-full w-full object-cover" />
                     </div>
                   ) : (
-                    <div className="h-10 w-10 rounded-lg bg-calm-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                      <FileText className="h-5 w-5 text-slate-400" />
-                    </div>
+                    <IconTile icon={FileText} tone="neutral" />
                   )}
 
                   <div className="flex-1 min-w-0">
@@ -1389,7 +1388,7 @@ export default function CollectionDetailPage() {
                       )}
                       title={doc.active ? 'Deactivate' : 'Activate'}
                     >
-                      {doc.active ? <><Eye className="h-3 w-3" />Active</> : <><EyeOff className="h-3 w-3" />Inactive</>}
+                      {doc.active ? <><Eye className="h-3.5 w-3.5" />Active</> : <><EyeOff className="h-3.5 w-3.5" />Inactive</>}
                     </button>
 
                     {/* Edit */}
@@ -1419,7 +1418,7 @@ export default function CollectionDetailPage() {
                       className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-40"
                       title="Delete document"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

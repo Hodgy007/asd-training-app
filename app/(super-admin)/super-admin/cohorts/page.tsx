@@ -20,6 +20,7 @@ import CohortsHowTo from '@/components/howto/super-admin/cohorts'
 import { EventbriteEventPickerModal } from '@/components/super-admin/eventbrite-event-picker-modal'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { showToast } from '@/components/ui/toaster'
+import { IconTile } from '@/components/ui/icon-tile'
 
 interface CohortRow {
   id: string
@@ -202,9 +203,7 @@ export default function CohortsPage() {
               className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-5 shadow-xs flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="shrink-0 h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                  <UsersRound className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
+                <IconTile icon={UsersRound} tone="success" />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-slate-900 dark:text-slate-100 truncate">
@@ -218,15 +217,15 @@ export default function CohortsPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-slate-500 dark:text-slate-400">
                     <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
+                      <Users className="h-3.5 w-3.5" />
                       {cohort._count.users} {cohort._count.users === 1 ? 'member' : 'members'}
                     </span>
                     <span className="flex items-center gap-1">
-                      <BookOpen className="h-3 w-3" />
+                      <BookOpen className="h-3.5 w-3.5" />
                       {cohort.allowedProgramIds.length} {cohort.allowedProgramIds.length === 1 ? 'program' : 'programs'}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
+                      <Calendar className="h-3.5 w-3.5" />
                       Created {new Date(cohort.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   </div>

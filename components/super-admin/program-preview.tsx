@@ -5,12 +5,12 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronUp,
-  Loader2,
-  Trash2,
-  AlertTriangle,
+  LoaderCircle,
+  Trash,
+  TriangleAlert,
   RotateCcw,
   Upload,
-  CheckCircle,
+  CircleCheckBig,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import type {
@@ -62,7 +62,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
           className="rounded-sm p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
           aria-label="Delete question"
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash className="h-3.5 w-3.5" />
         </button>
       </div>
 
@@ -106,7 +106,7 @@ function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: Qui
                 placeholder={`Option ${String.fromCharCode(65 + optIdx)}`}
               />
               {isCorrect && (
-                <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />
+                <CircleCheckBig className="h-4 w-4 shrink-0 text-green-500" />
               )}
             </div>
           )
@@ -244,7 +244,7 @@ function LessonEditor({
             onClick={onRetry}
             className="shrink-0 flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30 transition-colors"
           >
-            <RotateCcw className="h-3 w-3" />
+            <RotateCcw className="h-3.5 w-3.5" />
             Retry
           </button>
         )}
@@ -263,7 +263,7 @@ function LessonEditor({
           className="shrink-0 rounded-sm p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
           aria-label="Delete lesson"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash className="h-4 w-4" />
         </button>
       </div>
 
@@ -283,7 +283,7 @@ function LessonEditor({
                 <Suspense
                   fallback={
                     <div className="flex h-32 items-center justify-center">
-                      <Loader2 className="h-5 w-5 animate-spin text-primary-500" />
+                      <LoaderCircle className="h-5 w-5 animate-spin text-primary-500" />
                     </div>
                   }
                 >
@@ -444,7 +444,7 @@ function ModuleCard({
           className="shrink-0 rounded-sm p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
           aria-label="Delete module"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash className="h-4 w-4" />
         </button>
       </div>
 
@@ -539,7 +539,7 @@ export function ProgramPreview({
       {/* Failed lessons banner */}
       {failedCount > 0 && (
         <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-700/50 dark:bg-amber-900/20">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <TriangleAlert className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="flex-1 text-sm text-amber-700 dark:text-amber-300">
             {failedCount} lesson{failedCount !== 1 ? 's' : ''} failed to generate.
           </p>

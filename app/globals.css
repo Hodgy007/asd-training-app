@@ -164,6 +164,14 @@
     cursor: pointer;
   }
 
+  /* Icons: Lucide's 2px stroke is right at small sizes (keep it — legibility
+     matters more than delicacy here), but looks heavy on large display icons
+     such as empty states and hero tiles. Only icons still on the default
+     stroke are touched, so an explicit strokeWidth prop or stroke-* class wins. */
+  svg.lucide[stroke-width='2']:is(.h-8, .h-9, .h-10, .h-11, .h-12, .h-14, .h-16, .h-20, .h-24) {
+    stroke-width: 1.5;
+  }
+
   /* Smooth transitions — specify exact properties, never 'all'. In the base
      layer so any transition-* / duration-* utility still overrides it. */
   * {

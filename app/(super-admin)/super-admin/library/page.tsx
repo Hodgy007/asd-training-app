@@ -6,17 +6,17 @@ import { upload } from '@vercel/blob/client'
 import {
   FolderOpen,
   Plus,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   RefreshCw,
   ChevronUp,
-  Trash2,
+  Trash,
   Image as ImageIcon,
   FileText,
   Pencil,
   ExternalLink,
   Globe2,
-  AlertCircle,
+  CircleAlert,
   Sparkles,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -336,7 +336,7 @@ export default function LibraryPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-page-enter">
       <div className="flex items-center justify-between"><div><h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2"><FolderOpen className="h-6 w-6 text-primary-600 dark:text-primary-400" />Document Library</h1><p className="text-slate-500 dark:text-slate-400 mt-1">Create collections of documents and target them to specific organisations or roles.</p></div><div className="flex items-center gap-2"><button onClick={() => setShowForm((v) => !v)} className="btn-primary flex items-center gap-2">{showForm ? <ChevronUp className="h-4 w-4" /> : <Plus className="h-4 w-4" />}{showForm ? 'Cancel' : 'New Collection'}</button></div></div>
-      {showForm && <div className="card space-y-4"><h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">New Collection</h2><form onSubmit={handleCreate} className="space-y-4"><div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800"><Sparkles className="h-4 w-4 text-primary-500 shrink-0" /><span className="text-xs text-primary-700 dark:text-primary-300 font-medium mr-1">AI Assist:</span><input type="text" placeholder="Topic seed (e.g. autistic young people in the workplace)" value={aiNewTopic} onChange={(e) => setAiNewTopic(e.target.value)} className="flex-1 min-w-48 text-xs rounded-md border border-primary-200 dark:border-primary-800 bg-white dark:bg-slate-700 px-2 py-1" /><button type="button" disabled={aiNewGenerating !== null || !aiNewTopic.trim()} onClick={() => handleAiGenerateNewCollection(false)} className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40">{aiNewGenerating === 'text' ? 'Generating…' : 'Generate title + description'}</button><button type="button" disabled={aiNewGenerating !== null || !aiNewTopic.trim()} onClick={() => handleAiGenerateNewCollection(true)} className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"><ImageIcon className="h-3 w-3 inline mr-1" />{aiNewGenerating === 'image' ? 'Generating…' : 'Generate with thumbnail'}</button><label className="inline-flex items-center gap-1.5 text-xs text-primary-700 dark:text-primary-300 cursor-pointer select-none ml-2"><input type="checkbox" checked={aiUseBrandStore} onChange={(e) => setAiUseBrandStore(e.target.checked)} className="rounded-sm border-primary-300 text-primary-600 focus:ring-primary-500 h-3.5 w-3.5" />Use brand store</label></div><div><label className="label">Title</label><input className="input w-full" type="text" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required placeholder="e.g. Safeguarding Policies" /></div><div><label className="label">Description</label><textarea className="input w-full min-h-[80px] resize-y" value={formDescription} onChange={(e) => setFormDescription(e.target.value)} required placeholder="Describe what this collection contains…" /></div><div><label className="label">Cover Image <span className="text-slate-400 font-normal">(optional)</span></label><div className="flex items-center gap-3"><label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors"><ImageIcon className="h-4 w-4" />Choose image<input type="file" className="hidden" onChange={(e) => handleThumbnailChange(e.target.files?.[0] || null)} accept="image/*" /></label><BrandAssetPicker imageOnly onPick={(asset) => { setAiNewThumbnailUrl(asset.fileUrl); setThumbnailPreview(asset.fileUrl); setFormThumbnail(null) }} triggerClassName="flex items-center gap-2 px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors" />{thumbnailPreview && <img src={thumbnailPreview} alt="Preview" className="h-12 w-12 rounded-lg object-cover border border-calm-200 dark:border-slate-600" />}</div></div><div><label className="label">Target Organisations <span className="text-slate-400 font-normal">(leave empty for all)</span></label><div className="flex flex-wrap gap-2 mt-1">{orgs.map((org) => <button key={org.id} type="button" onClick={() => toggleOrgId(org.id)} className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors', formTargetOrgIds.includes(org.id) ? 'bg-primary-50 border-primary-300 text-primary-700 dark:bg-primary-900/30 dark:border-primary-600 dark:text-primary-300' : 'bg-white border-calm-200 text-slate-600 hover:bg-calm-50 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-600')}>{org.name}</button>)}</div></div><div><label className="label">Target Roles <span className="text-slate-400 font-normal">(leave empty for all)</span></label><div className="flex flex-wrap gap-2 mt-1">{ROLE_OPTIONS.map((opt) => <button key={opt.value} type="button" onClick={() => toggleRole(opt.value)} className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors', formTargetRoles.includes(opt.value) ? 'bg-primary-50 border-primary-300 text-primary-700 dark:bg-primary-900/30 dark:border-primary-600 dark:text-primary-300' : 'bg-white border-calm-200 text-slate-600 hover:bg-calm-50 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-600')}>{opt.label}</button>)}</div></div><label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500" /><span className="text-sm font-medium text-slate-700 dark:text-slate-300">Active (available internally)</span></label><label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={formPublishedToToolkit} onChange={(e) => setFormPublishedToToolkit(e.target.checked)} className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500" /><span className="text-sm font-medium text-slate-700 dark:text-slate-300">Publish to Toolkit</span></label><div className="flex justify-end gap-3 pt-2"><button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700">Cancel</button><button type="submit" disabled={formSubmitting} className="btn-primary">{formSubmitting ? 'Creating…' : 'Create Collection'}</button></div></form></div>}
+      {showForm && <div className="card space-y-4"><h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">New Collection</h2><form onSubmit={handleCreate} className="space-y-4"><div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800"><Sparkles className="h-4 w-4 text-primary-500 shrink-0" /><span className="text-xs text-primary-700 dark:text-primary-300 font-medium mr-1">AI Assist:</span><input type="text" placeholder="Topic seed (e.g. autistic young people in the workplace)" value={aiNewTopic} onChange={(e) => setAiNewTopic(e.target.value)} className="flex-1 min-w-48 text-xs rounded-md border border-primary-200 dark:border-primary-800 bg-white dark:bg-slate-700 px-2 py-1" /><button type="button" disabled={aiNewGenerating !== null || !aiNewTopic.trim()} onClick={() => handleAiGenerateNewCollection(false)} className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40">{aiNewGenerating === 'text' ? 'Generating…' : 'Generate title + description'}</button><button type="button" disabled={aiNewGenerating !== null || !aiNewTopic.trim()} onClick={() => handleAiGenerateNewCollection(true)} className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"><ImageIcon className="h-3.5 w-3.5 inline mr-1" />{aiNewGenerating === 'image' ? 'Generating…' : 'Generate with thumbnail'}</button><label className="inline-flex items-center gap-1.5 text-xs text-primary-700 dark:text-primary-300 cursor-pointer select-none ml-2"><input type="checkbox" checked={aiUseBrandStore} onChange={(e) => setAiUseBrandStore(e.target.checked)} className="rounded-sm border-primary-300 text-primary-600 focus:ring-primary-500 h-3.5 w-3.5" />Use brand store</label></div><div><label className="label">Title</label><input className="input w-full" type="text" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required placeholder="e.g. Safeguarding Policies" /></div><div><label className="label">Description</label><textarea className="input w-full min-h-[80px] resize-y" value={formDescription} onChange={(e) => setFormDescription(e.target.value)} required placeholder="Describe what this collection contains…" /></div><div><label className="label">Cover Image <span className="text-slate-400 font-normal">(optional)</span></label><div className="flex items-center gap-3"><label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors"><ImageIcon className="h-4 w-4" />Choose image<input type="file" className="hidden" onChange={(e) => handleThumbnailChange(e.target.files?.[0] || null)} accept="image/*" /></label><BrandAssetPicker imageOnly onPick={(asset) => { setAiNewThumbnailUrl(asset.fileUrl); setThumbnailPreview(asset.fileUrl); setFormThumbnail(null) }} triggerClassName="flex items-center gap-2 px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-600 cursor-pointer transition-colors" />{thumbnailPreview && <img src={thumbnailPreview} alt="Preview" className="h-12 w-12 rounded-lg object-cover border border-calm-200 dark:border-slate-600" />}</div></div><div><label className="label">Target Organisations <span className="text-slate-400 font-normal">(leave empty for all)</span></label><div className="flex flex-wrap gap-2 mt-1">{orgs.map((org) => <button key={org.id} type="button" onClick={() => toggleOrgId(org.id)} className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors', formTargetOrgIds.includes(org.id) ? 'bg-primary-50 border-primary-300 text-primary-700 dark:bg-primary-900/30 dark:border-primary-600 dark:text-primary-300' : 'bg-white border-calm-200 text-slate-600 hover:bg-calm-50 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-600')}>{org.name}</button>)}</div></div><div><label className="label">Target Roles <span className="text-slate-400 font-normal">(leave empty for all)</span></label><div className="flex flex-wrap gap-2 mt-1">{ROLE_OPTIONS.map((opt) => <button key={opt.value} type="button" onClick={() => toggleRole(opt.value)} className={clsx('px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors', formTargetRoles.includes(opt.value) ? 'bg-primary-50 border-primary-300 text-primary-700 dark:bg-primary-900/30 dark:border-primary-600 dark:text-primary-300' : 'bg-white border-calm-200 text-slate-600 hover:bg-calm-50 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-600')}>{opt.label}</button>)}</div></div><label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500" /><span className="text-sm font-medium text-slate-700 dark:text-slate-300">Active (available internally)</span></label><label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={formPublishedToToolkit} onChange={(e) => setFormPublishedToToolkit(e.target.checked)} className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500" /><span className="text-sm font-medium text-slate-700 dark:text-slate-300">Publish to Toolkit</span></label><div className="flex justify-end gap-3 pt-2"><button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-calm-50 dark:hover:bg-slate-700">Cancel</button><button type="submit" disabled={formSubmitting} className="btn-primary">{formSubmitting ? 'Creating…' : 'Create Collection'}</button></div></form></div>}
 
       {loading ? (
         <div className="text-center py-16 text-slate-400">
@@ -375,7 +375,7 @@ export default function LibraryPage() {
                   className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary-100 dark:bg-primary-800/40 text-primary-700 dark:text-primary-300 hover:bg-primary-200 transition-colors disabled:opacity-40"
                   title="Generate title + description AND a matching thumbnail"
                 >
-                  <ImageIcon className="h-3 w-3 inline mr-1" />
+                  <ImageIcon className="h-3.5 w-3.5 inline mr-1" />
                   {aiEditGenerating === 'image' ? 'Generating…' : 'Generate with thumbnail'}
                 </button>
                 <input
@@ -429,7 +429,7 @@ export default function LibraryPage() {
                       onClick={() => setEditThumbnailUrl(null)}
                       className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash className="h-3.5 w-3.5" />
                       Remove thumbnail
                     </button>
                   </div>
@@ -487,7 +487,7 @@ export default function LibraryPage() {
                   disabled={editSaving || !editTitle.trim() || !editDescription.trim()}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
                 >
-                  <CheckCircle className="h-3.5 w-3.5" />
+                  <CircleCheckBig className="h-3.5 w-3.5" />
                   {editSaving ? 'Saving...' : 'Save collection'}
                 </button>
                 <button
@@ -533,21 +533,21 @@ export default function LibraryPage() {
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                   {col.active ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-xs font-semibold text-sage-700 shadow-xs backdrop-blur-sm dark:bg-slate-900/90 dark:text-sage-400">
-                      <CheckCircle className="h-3 w-3" />Active
+                      <CircleCheckBig className="h-3.5 w-3.5" />Active
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-xs font-semibold text-red-700 shadow-xs backdrop-blur-sm dark:bg-slate-900/90 dark:text-red-400">
-                      <XCircle className="h-3 w-3" />Inactive
+                      <CircleX className="h-3.5 w-3.5" />Inactive
                     </span>
                   )}
                   {status === 'live' && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-sage-600 px-2 py-0.5 text-xs font-semibold text-white shadow-xs">
-                      <Globe2 className="h-3 w-3" />Live on Toolkit
+                      <Globe2 className="h-3.5 w-3.5" />Live on Toolkit
                     </span>
                   )}
                   {status === 'awaiting' && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-xs">
-                      <AlertCircle className="h-3 w-3" />Awaiting documents
+                      <CircleAlert className="h-3.5 w-3.5" />Awaiting documents
                     </span>
                   )}
                 </div>
@@ -567,7 +567,7 @@ export default function LibraryPage() {
                   <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">{col.description}</p>
 
                   <div className="mt-3 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="inline-flex items-center gap-1"><FileText className="h-3 w-3" />{col._count.documents} document{col._count.documents !== 1 ? 's' : ''}</span>
+                    <span className="inline-flex items-center gap-1"><FileText className="h-3.5 w-3.5" />{col._count.documents} document{col._count.documents !== 1 ? 's' : ''}</span>
                     <span aria-hidden="true">·</span>
                     <span className="line-clamp-1">{targetLabel(col)}</span>
                   </div>
@@ -591,7 +591,7 @@ export default function LibraryPage() {
                       title="Preview as a learner sees it"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      Preview as learner<ExternalLink className="h-3 w-3" />
+                      Preview as learner<ExternalLink className="h-3.5 w-3.5" />
                     </Link>
                   </div>
                 </div>

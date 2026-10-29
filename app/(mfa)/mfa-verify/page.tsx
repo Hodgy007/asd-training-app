@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { ShieldCheck, AlertCircle, LogOut } from 'lucide-react'
+import { ShieldCheck, CircleAlert, LogOut } from 'lucide-react'
+import { IconTile } from '@/components/ui/icon-tile'
 
 export default function MfaVerifyPage() {
   const router = useRouter()
@@ -67,9 +68,7 @@ export default function MfaVerifyPage() {
         {/* MFA Card */}
         <div className="card border-t-4 border-t-primary-500">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/20">
-              <ShieldCheck className="h-5 w-5 text-primary-500" />
-            </div>
+            <IconTile icon={ShieldCheck} />
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Two-Factor Authentication</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -80,7 +79,7 @@ export default function MfaVerifyPage() {
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+              <CircleAlert className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
             </div>
           )}

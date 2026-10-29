@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ORG_TYPES, ORG_TYPE_LABELS } from '@/lib/rbac'
-import { Building2, GraduationCap, Check, AlertCircle, Loader2 } from 'lucide-react'
+import { BuildingComplex, GraduationCap, Check, CircleAlert, LoaderCircle } from 'lucide-react'
 
 type Program = { id: string; name: string }
 
@@ -106,7 +106,7 @@ export function ProvisionOrgWizard({ programs }: { programs: Program[] }) {
 
         {!result.emailSent && (
           <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <CircleAlert className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="text-sm text-amber-900 dark:text-amber-200">
               <p className="font-semibold">No invite email was sent</p>
               <p className="mt-1">
@@ -188,7 +188,7 @@ export function ProvisionOrgWizard({ programs }: { programs: Program[] }) {
             <legend className="text-sm font-semibold mb-2">Type</legend>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {ORG_TYPES.map((t) => {
-                const Icon = t === 'EMPLOYER' ? Building2 : GraduationCap
+                const Icon = t === 'EMPLOYER' ? BuildingComplex : GraduationCap
                 return (
                   <button
                     key={t}
@@ -317,7 +317,7 @@ export function ProvisionOrgWizard({ programs }: { programs: Program[] }) {
 
       {error && (
         <div className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
-          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+          <CircleAlert className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
@@ -349,7 +349,7 @@ export function ProvisionOrgWizard({ programs }: { programs: Program[] }) {
             disabled={saving}
             className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
           >
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {saving && <LoaderCircle className="h-4 w-4 animate-spin" />}
             {saving ? 'Setting up…' : 'Create and send invite'}
           </button>
         )}

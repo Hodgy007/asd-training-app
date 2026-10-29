@@ -15,7 +15,7 @@ import {
   FolderOpen,
   FileText,
   Compass,
-  BarChart3,
+  ChartColumn,
   Briefcase,
   Home,
   ChevronsLeft,

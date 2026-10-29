@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { ArrowRight, BookOpen } from 'lucide-react'
 
 interface ProgramCardProps {
   programId: string
@@ -112,9 +113,7 @@ export function ProgramCard({
             style={{ backgroundColor: accentHex }}
             aria-hidden="true"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
+            <BookOpen className="h-5 w-5" />
           </div>
           <h3 className="text-lg font-bold text-[#001522]">{name}</h3>
           {description ? (
@@ -152,9 +151,7 @@ export function ProgramCard({
                 ) : isPaid ? (
                   <>
                     Buy now
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
+                    <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
                   </>
                 ) : (
                   'Contact us'

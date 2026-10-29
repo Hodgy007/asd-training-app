@@ -11,7 +11,7 @@ import {
   RefreshCw,
   Search,
   X,
-  CheckCircle,
+  CircleCheckBig,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { showToast } from '@/components/ui/toaster'
@@ -357,7 +357,7 @@ export default function NewSessionPage() {
                       )}
                     >
                       {selectedRoles.includes(role) && (
-                        <CheckCircle className="inline h-3 w-3 mr-1" />
+                        <CircleCheckBig className="inline h-3.5 w-3.5 mr-1" />
                       )}
                       {ROLE_LABELS[role] ?? role}
                     </button>
@@ -424,7 +424,7 @@ export default function NewSessionPage() {
                           onClick={() => removeUser(u.id)}
                           className="p-0.5 rounded-full hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-3.5 w-3.5" />
                         </button>
                       </span>
                     ))}

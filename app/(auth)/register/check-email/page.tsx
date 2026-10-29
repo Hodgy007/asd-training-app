@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Mail } from 'lucide-react'
+import { IconTile } from '@/components/ui/icon-tile'
 
 export default function CheckEmailPage() {
   return (
@@ -26,9 +27,7 @@ function CheckEmail() {
         </div>
 
         <div className="card border-t-4 border-t-warm-500 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/30 mx-auto mb-4">
-            <Mail className="h-7 w-7 text-primary-600 dark:text-primary-400" />
-          </div>
+          <IconTile icon={Mail} size="xl" className="inline-flex mx-auto mb-4" />
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Check your email</h2>
           <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
             {email ? (

@@ -247,7 +247,7 @@ export default function SessionListPage() {
                   </div>
                   <div className="flex items-center gap-2 sm:shrink-0">
                     <span className={clsx('inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full', PLATFORM_STYLES[s.platform])}>
-                      <PlatformIcon className="h-3 w-3" />
+                      <PlatformIcon className="h-3.5 w-3.5" />
                       {PLATFORM_LABELS[s.platform]}
                     </span>
                     <span className={clsx('inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full', STATUS_STYLES[s.status])}>

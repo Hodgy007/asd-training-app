@@ -7,18 +7,18 @@ import Link from 'next/link'
 import { clsx } from 'clsx'
 import {
   ArrowLeft,
-  Building2,
+  BuildingComplex,
   Save,
-  Trash2,
+  Trash,
   Users,
   UserPlus,
   Search,
   ChevronDown,
-  CheckCircle,
-  XCircle,
+  CircleCheckBig,
+  CircleX,
   RefreshCw,
   Link2,
-  AlertTriangle,
+  TriangleAlert,
   X,
 } from 'lucide-react'
 import { LEAF_ROLES } from '@/types'
@@ -364,7 +364,7 @@ export default function SchoolDetailPage() {
         </div>
       ) : !school ? (
         <div className="text-center py-24 text-slate-400 dark:text-slate-500">
-          <Building2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
+          <BuildingComplex className="h-10 w-10 mx-auto mb-3 opacity-30" />
           <p>School not found.</p>
         </div>
       ) : (
@@ -373,7 +373,7 @@ export default function SchoolDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Building2 className="h-6 w-6 text-emerald-600" />
+                <BuildingComplex className="h-6 w-6 text-emerald-600" />
                 {school.name}
               </h1>
               <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -385,7 +385,7 @@ export default function SchoolDetailPage() {
           {/* Section 1: School Details */}
           <div className="card space-y-4">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-emerald-600" />
+              <BuildingComplex className="h-5 w-5 text-emerald-600" />
               School Details
             </h2>
 
@@ -562,7 +562,7 @@ export default function SchoolDetailPage() {
                       onClick={() => setShowDeleteConfirm(true)}
                       className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash className="h-4 w-4" />
                       Delete School
                     </button>
                   )}
@@ -587,7 +587,7 @@ export default function SchoolDetailPage() {
               <AlertDialogContent className="max-w-sm">
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/40">
-                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    <TriangleAlert className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
                     <AlertDialogTitle className="text-base">Delete School</AlertDialogTitle>
@@ -806,9 +806,9 @@ export default function SchoolDetailPage() {
                               )}
                             >
                               {user.active ? (
-                                <><CheckCircle className="h-3 w-3" />Active</>
+                                <><CircleCheckBig className="h-3.5 w-3.5" />Active</>
                               ) : (
-                                <><XCircle className="h-3 w-3" />Inactive</>
+                                <><CircleX className="h-3.5 w-3.5" />Inactive</>
                               )}
                             </span>
                           </td>

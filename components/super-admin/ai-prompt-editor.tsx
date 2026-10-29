@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Trash2, Plus, Upload, Undo2, RotateCcw, Save, Loader2 } from 'lucide-react'
+import { ArrowLeft, Trash, Plus, Upload, Undo2, RotateCcw, Save, LoaderCircle } from 'lucide-react'
 import { clsx } from 'clsx'
 import type { AiModel } from '@/lib/ai-models'
 import { AiPromptTestPanel } from './ai-prompt-test-panel'
@@ -220,7 +220,7 @@ export function AiPromptEditor({ prompt, models }: Props) {
                 <div key={i} className="flex gap-2">
                   <input value={r} onChange={(e) => updateReq(i, e.target.value)} className="input flex-1" />
                   <button onClick={() => removeReq(i)} className="p-2 text-slate-400 hover:text-red-600" aria-label="Remove">
-                    <Trash2 className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </button>
                 </div>
               ))}
@@ -257,7 +257,7 @@ export function AiPromptEditor({ prompt, models }: Props) {
                   <span className="flex-1 text-sm truncate">{f.fileName}</span>
                   <span className="text-xs text-slate-400">{(f.fileSize / 1024).toFixed(0)} KB</span>
                   <button onClick={() => handleFileDelete(f.id)} className="p-1 text-slate-400 hover:text-red-600">
-                    <Trash2 className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </button>
                 </li>
               ))}
@@ -286,15 +286,15 @@ export function AiPromptEditor({ prompt, models }: Props) {
 
           <div className="flex flex-wrap gap-3">
             <button onClick={handleSave} disabled={saving} className="btn-primary inline-flex items-center gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save
             </button>
             <button onClick={handleUndo} disabled={busy !== null} className="btn-secondary inline-flex items-center gap-2">
-              {busy === 'undo' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Undo2 className="h-4 w-4" />}
+              {busy === 'undo' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Undo2 className="h-4 w-4" />}
               Undo last save
             </button>
             <button onClick={handleReset} disabled={busy !== null} className="btn-secondary inline-flex items-center gap-2">
-              {busy === 'reset' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+              {busy === 'reset' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
               Reset to default
             </button>
           </div>

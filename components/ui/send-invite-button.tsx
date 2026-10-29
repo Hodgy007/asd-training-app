@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Send, Check, Loader2 } from 'lucide-react'
+import { Send, Check, LoaderCircle } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useConfirm } from './confirm-dialog'
 
@@ -54,7 +54,7 @@ export function SendInviteButton({ userId, userEmail, compact, onSent }: SendInv
     state === 'error' ? 'Retry' :
     'Send invite'
 
-  const Icon = state === 'sending' ? Loader2 : state === 'sent' ? Check : Send
+  const Icon = state === 'sending' ? LoaderCircle : state === 'sent' ? Check : Send
 
   if (compact) {
     return (
