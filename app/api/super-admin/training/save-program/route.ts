@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       const program = await tx.trainingProgram.create({
         data: {
           name: programName.trim(),
-          description: describeObjectives(brief?.objectives ?? []),
+          description: describeObjectives(taughtObjectives(brief?.objectives ?? [], modules)),
           order: programOrder,
           status: 'DRAFT',
         },
@@ -148,6 +148,19 @@ export async function POST(req: NextRequest) {
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+/**
+ * Only objectives that are filled in and taught by at least one lesson are
+ * promised to learners. Lessons from before objectives existed carry no ids,
+ * in which case every non-blank objective is kept.
+ */
+function taughtObjectives(
+  objectives: { id: string; text: string }[],
+  modules: GeneratedProgram['modules'],
+): { id: string; text: string }[] {
+  const cited = new Set(modules.flatMap((m) => (m.lessons ?? []).flatMap((l) => l.objectiveIds ?? [])))
+  return objectives.filter((o) => o.text.trim() && (cited.size === 0 || cited.has(o.id)))
 }
 
 /** Learners see the objectives as the programme description. */

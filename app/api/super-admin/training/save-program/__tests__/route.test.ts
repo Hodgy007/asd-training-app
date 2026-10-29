@@ -80,4 +80,20 @@ describe('POST /api/super-admin/training/save-program', () => {
     expect(res.status).toBe(400)
     expect(prisma.$transaction).not.toHaveBeenCalled()
   })
+
+  it('leaves blank and uncovered objectives out of the description', async () => {
+    const body = {
+      programName: 'P',
+      brief: { audience: 'a', estimatedMinutes: 10, objectives: [
+        { id: 'o1', text: 'Taught objective' }, { id: 'o2', text: '   ' }, { id: 'o3', text: 'Nobody teaches this' },
+      ] },
+      modules: [{ title: 'M', description: '', lessons: [{ title: 'L', content: '<p>x</p>', quizQuestions: [], objectiveIds: ['o1', 'o2'] }] }],
+    }
+    expect((await POST(req(body))).status).toBe(201)
+    const description = tx.trainingProgram.create.mock.calls[0][0].data.description
+    expect(description).toContain('<li>Taught objective</li>')
+    expect(description).not.toContain('<li> ')
+    expect(description).not.toContain('Nobody teaches this')
+    expect((description.match(/<li>/g) ?? []).length).toBe(1)
+  })
 })

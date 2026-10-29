@@ -17,6 +17,8 @@ import { ProgramPreview } from './program-preview'
 import { GenerationPlanStep } from './generation-plan-step'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import type { CourseBrief } from '@/lib/training-gen/schemas'
+import { showToast } from '@/components/ui/toaster'
+import { startProgram, applyEvent, finishCutOff, hasFinishedLessons } from '@/lib/training-gen/progress'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -103,6 +105,7 @@ export function ContentGenerationModal({
   const [planWarnings, setPlanWarnings] = useState<string[]>([])
   const [planTruncated, setPlanTruncated] = useState(false)
   const [includeCheckIns, setIncludeCheckIns] = useState(true)
+  const [planError, setPlanError] = useState<string | null>(null)
 
   // Save error
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -131,6 +134,7 @@ export function ContentGenerationModal({
     setPlanWarnings([])
     setPlanTruncated(false)
     setIncludeCheckIns(true)
+    setPlanError(null)
     setSaveError(null)
     setPublished(false)
   }, [])
@@ -205,14 +209,18 @@ export function ContentGenerationModal({
     if (!brief || !outline) return
     setIncludeCheckIns(checkIns)
     setUploadError(null)
+    setPlanError(null)
     setStep('processing')
     setProgressErrors([])
     setProgressCurrentLesson(1)
     setProgressCurrentPhase('content')
     setProgressPhase('content')
 
-    try {
+    // Built up as lessons finish, so a run that is cut off keeps its work.
+    let partial = startProgram(brief, outline)
+    const errors: string[] = []
 
+    try {
       const contentRes = await fetch('/api/super-admin/training/generate-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -225,23 +233,15 @@ export function ContentGenerationModal({
       }
 
       let finalProgram: GeneratedProgram | null = null
-      const errors: string[] = []
 
       await readSSEStream(contentRes, (event) => {
+        partial = applyEvent(partial, event)
         switch (event.type) {
           case 'progress':
             setProgressCurrentLesson(event.lesson)
             setProgressTotalLessons(event.total)
             setProgressCurrentPhase(event.phase)
             setProgressPhase(event.phase === 'quiz' ? 'quiz' : 'content')
-            break
-
-          case 'lesson-complete':
-            // No-op — will be captured in the final program
-            break
-
-          case 'quiz-complete':
-            // No-op — will be captured in the final program
             break
 
           case 'lesson-error':
@@ -262,7 +262,7 @@ export function ContentGenerationModal({
       })
 
       if (!finalProgram) {
-        throw new Error('Generation did not complete successfully')
+        throw new Error('Generation stopped before it finished.')
       }
 
       setProgram(finalProgram)
@@ -270,8 +270,16 @@ export function ContentGenerationModal({
       setStep('preview')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unexpected error occurred'
-      setProgressPhase('error')
-      setUploadError(message)
+      if (hasFinishedLessons(partial)) {
+        // Keep what was written; the rest are marked for Retry in the preview.
+        setProgram(finishCutOff(partial))
+        showToast(`${message} The lessons that were written are kept. Use Retry on the others.`, 'error')
+        setStep('preview')
+      } else {
+        // Nothing to keep: back to the Plan step with the admin's edits intact.
+        setPlanError(message)
+        setStep('plan')
+      }
     }
   }, [brief, outline, parsedContent, lens])
 
@@ -544,6 +552,7 @@ export function ContentGenerationModal({
               }}
               onBack={() => setStep('upload')}
               onGenerate={generateLessons}
+              error={planError}
             />
           )}
 

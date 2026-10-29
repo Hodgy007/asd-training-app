@@ -27,7 +27,7 @@ const outline: Outline = {
 }
 
 /** Keeps the step controlled, as the modal does. */
-function Harness(props: { truncated?: boolean; warnings?: string[]; onGenerate?: (b: boolean) => void }) {
+function Harness(props: { truncated?: boolean; warnings?: string[]; onGenerate?: (b: boolean) => void; error?: string }) {
   const [b, setB] = useState(brief)
   const [o, setO] = useState(outline)
   return (
@@ -39,6 +39,7 @@ function Harness(props: { truncated?: boolean; warnings?: string[]; onGenerate?:
       onChange={(nb, no) => { setB(nb); setO(no) }}
       onBack={() => {}}
       onGenerate={props.onGenerate ?? (() => {})}
+      error={props.error}
     />
   )
 }
@@ -84,5 +85,43 @@ describe('GenerationPlanStep', () => {
     render(<Harness />)
     fireEvent.click(screen.getByRole('button', { name: 'Remove lesson "Lesson B"' }))
     expect(screen.getByText(/No lesson covers/).textContent).toContain('Explain routines')
+  })
+
+  it('lets the admin attach a new objective to a lesson', () => {
+    render(<Harness />)
+    fireEvent.click(screen.getByRole('button', { name: 'Add objective' }))
+    fireEvent.change(screen.getByRole('textbox', { name: 'Objective 4' }), { target: { value: 'Use a visual timetable' } })
+    expect(screen.getByText(/No lesson covers/).textContent).toContain('Use a visual timetable')
+    const toggle = screen.getByRole('button', { name: '"Lesson B" covers objective 4' })
+    expect(toggle.getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(toggle)
+    expect(toggle.getAttribute('aria-pressed')).toBe('true')
+    expect(screen.queryByText(/No lesson covers/)).toBeNull()
+  })
+
+  it('disables Generate lessons while an objective or lesson title is blank', () => {
+    render(<Harness />)
+    const generate = screen.getByRole('button', { name: 'Generate lessons' }) as HTMLButtonElement
+    fireEvent.click(screen.getByRole('button', { name: 'Add objective' }))
+    expect(generate.disabled).toBe(true)
+    expect(screen.getByText(/Fill in or remove empty objectives and lesson titles/)).toBeTruthy()
+    fireEvent.change(screen.getByRole('textbox', { name: 'Objective 4' }), { target: { value: 'Use a visual timetable' } })
+    expect(generate.disabled).toBe(false)
+    fireEvent.change(screen.getAllByRole('textbox', { name: 'Lesson title' })[0], { target: { value: '  ' } })
+    expect(generate.disabled).toBe(true)
+  })
+
+  it('shows an error from a failed lesson run', () => {
+    render(<Harness error="Too many generation requests." />)
+    expect(screen.getByText('Too many generation requests.')).toBeTruthy()
+  })
+
+  it('warns that long programmes may not finish in one run', () => {
+    const many = { ...outline, modules: [{ ...outline.modules[0], lessons: Array.from({ length: 16 }, (_, i) => ({ ...outline.modules[0].lessons[0], title: 'L' + i })) }] }
+    render(
+      <GenerationPlanStep brief={brief} outline={many} warnings={[]} truncated={false}
+        onChange={() => {}} onBack={() => {}} onGenerate={() => {}} />,
+    )
+    expect(screen.getByText(/16 lessons is a lot for one run/)).toBeTruthy()
   })
 })
