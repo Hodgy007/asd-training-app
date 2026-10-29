@@ -6,7 +6,7 @@ const secretKey = process.env.STRIPE_SECRET_KEY
 
 export const stripe = secretKey
   ? new Stripe(secretKey, {
-      apiVersion: '2026-08-26.dahlia',
+      apiVersion: '2026-09-30.endive',
       typescript: true,
       appInfo: {
         name: 'asd-training-app',
