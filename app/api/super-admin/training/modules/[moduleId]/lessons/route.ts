@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import prisma from '@/lib/prisma'
-import { LessonType } from '@prisma/client'
+import { LessonType } from '@/lib/generated/prisma/client'
 
 interface Params {
   params: Promise<{ moduleId: string }>

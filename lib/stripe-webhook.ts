@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import type Stripe from 'stripe'
-import { Prisma, type SubscriptionStatus } from '@prisma/client'
+import { Prisma, type SubscriptionStatus } from '@/lib/generated/prisma/client'
 import bcrypt from 'bcryptjs'
 import { Resend } from 'resend'
 import { prisma } from './prisma'

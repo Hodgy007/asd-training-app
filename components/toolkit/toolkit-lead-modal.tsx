@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, X } from 'lucide-react'
-import { TOOLKIT_FORM_ROLES, TOOLKIT_FORM_ROLE_LABELS, type ToolkitFormRole } from '@/lib/toolkit-registration'
+import { TOOLKIT_FORM_ROLES, TOOLKIT_FORM_ROLE_LABELS, type ToolkitFormRole } from '@/lib/toolkit-form-roles'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 
 type Props = {

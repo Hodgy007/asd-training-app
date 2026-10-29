@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { isLeafRole } from '@/lib/rbac'
 import { getPendingSurveys } from '@/lib/survey-db'
-import type { Role } from '@prisma/client'
+import type { Role } from '@/lib/generated/prisma/client'
 
 export async function GET() {
   const session = await getServerSession(authOptions)

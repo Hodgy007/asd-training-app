@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getSurveyForUser, submitSurveyResponse } from '@/lib/survey-db'
-import type { Role } from '@prisma/client'
+import type { Role } from '@/lib/generated/prisma/client'
 
 export async function POST(req: NextRequest, props: { params: Promise<{ surveyId: string }> }) {
   const params = await props.params

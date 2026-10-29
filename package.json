@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && cross-env NODE_ENV=test vitest run && next build",
     "start": "next start",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
@@ -19,7 +20,8 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.134",
-    "@prisma/client": "^5.22.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
     "@radix-ui/react-alert-dialog": "1.1.23",
     "@radix-ui/react-dialog": "1.1.23",
     "@react-pdf/renderer": "^4.9.0",
@@ -56,9 +58,6 @@
     "xml-crypto": "^6.4.0",
     "xml2js": "^0.6.2",
     "zod": "^4.6.7"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   },
   "overrides": {
     "lodash": "^4.18.1",
@@ -97,10 +96,11 @@
     "@types/xml2js": "^0.4.14",
     "@vitejs/plugin-react": "^6.1.2",
     "cross-env": "^10.1.0",
+    "dotenv": "^17.4.2",
     "jsdom": "^29.1.1",
     "md-to-pdf": "^5.2.5",
     "postcss": "^8.5.32",
-    "prisma": "^5.22.0",
+    "prisma": "^7.10.1",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",

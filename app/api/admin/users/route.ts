@@ -5,7 +5,7 @@ import { isOrgAdmin } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
 import { validatePassword } from '@/lib/password-validation'
 import { canManageChildOrg } from '@/lib/org-hierarchy'
-import { Role } from '@prisma/client'
+import { Role } from '@/lib/generated/prisma/client'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 

@@ -1,8 +1,10 @@
-import { PrismaClient } from '@prisma/client'
+// Prisma 7's client no longer loads .env itself.
+import 'dotenv/config'
+import { createPrismaClient } from '../lib/prisma'
 import bcrypt from 'bcryptjs'
 import { generateInviteCode } from '../lib/cohort'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 async function main() {
   // Find or create a SUPER_ADMIN user we can sign in as for the smoke test

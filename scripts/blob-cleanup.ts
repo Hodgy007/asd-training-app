@@ -18,9 +18,9 @@
  *   npx dotenv-cli -e .env.production -- npx tsx scripts/blob-cleanup.ts
  */
 import { list, del } from '@vercel/blob'
-import { PrismaClient } from '@prisma/client'
+import { createPrismaClient } from '../lib/prisma'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 const dryRun = process.argv.includes('--dry-run')
 
 // library/thumbnails/ is kept unconditionally rather than relying on the exact-URL

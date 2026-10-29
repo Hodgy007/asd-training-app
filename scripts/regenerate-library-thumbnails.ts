@@ -28,9 +28,9 @@
  */
 import { generateText, experimental_generateImage as generateImage } from 'ai'
 import { put } from '@vercel/blob'
-import { PrismaClient } from '@prisma/client'
+import { createPrismaClient } from '../lib/prisma'
 
-const prisma = new PrismaClient()
+const prisma = createPrismaClient()
 
 const IMAGE_MODEL = 'google/gemini-3.1-flash-image-preview'
 const IMAGEN_FALLBACK = 'google/imagen-4.0-generate-001'

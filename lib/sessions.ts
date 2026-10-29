@@ -1,5 +1,5 @@
 import prisma from './prisma'
-import type { ClassSession, SessionAttendee, Role, SessionStatus } from '@prisma/client'
+import type { ClassSession, SessionAttendee, Role, SessionStatus } from '@/lib/generated/prisma/client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

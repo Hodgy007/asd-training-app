@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { validatePassword } from '@/lib/password-validation'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-import { Role } from '@prisma/client'
+import { Role } from '@/lib/generated/prisma/client'
 
 const addMemberSchema = z.object({
   name: z.string().min(1).max(200),

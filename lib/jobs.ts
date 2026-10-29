@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import type { JobStatus, Prisma } from '@prisma/client'
+import type { JobStatus, Prisma } from '@/lib/generated/prisma/client'
 
 export type JobVisibilityUser = {
   id: string
