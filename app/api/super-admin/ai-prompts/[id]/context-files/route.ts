@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { put } from '@vercel/blob'
+import { extractPdfText } from '@/lib/pdf-text'
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024
 const MAX_FILES_PER_PROMPT = 3
@@ -12,11 +13,7 @@ async function parseToText(buffer: Buffer, mimeType: string, fileName: string): 
   const ext = fileName.toLowerCase().split('.').pop() ?? ''
 
   if (mimeType === 'application/pdf' || ext === 'pdf') {
-    const pdfParseModule = await import('pdf-parse')
-    const pdfParse = (pdfParseModule as unknown as { default: (b: Buffer) => Promise<{ text: string }> }).default
-      ?? (pdfParseModule as unknown as (b: Buffer) => Promise<{ text: string }>)
-    const parsed = await pdfParse(buffer)
-    return parsed.text
+    return extractPdfText(buffer)
   }
 
   if (

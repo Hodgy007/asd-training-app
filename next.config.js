@@ -5,6 +5,9 @@ const devScriptSrc = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" :
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // pdf-parse runs pdf.js, which loads its worker file from next to its own
+  // module at runtime; bundling it would separate the two.
+  serverExternalPackages: ['pdf-parse'],
   images: {
     remotePatterns: [
       { hostname: 'via.placeholder.com' },

@@ -26,7 +26,7 @@
  *   --force             Regenerate even where the existing thumbnail still loads.
  *                       Careful: this bills for every row, not just broken ones.
  */
-import { generateText, experimental_generateImage as generateImage } from 'ai'
+import { generateText, generateImage } from 'ai'
 import { put } from '@vercel/blob'
 import { createPrismaClient } from '../lib/prisma'
 
