@@ -26,7 +26,9 @@ const outlineOf = (lessons: ReturnType<typeof lesson>[]): Outline => ({
   programName: 'P', modules: [{ title: 'M1', description: 'd', lessons }],
 })
 
-beforeEach(() => vi.mocked(runPromptObject).mockReset())
+beforeEach(() => {
+  vi.mocked(runPromptObject).mockReset()
+})
 
 describe('validateOutline', () => {
   it('validateOutline drops refs to missing sections and removes empty lessons', () => {
