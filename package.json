@@ -19,7 +19,7 @@
     "handover:build": "node scripts/build-handover-pdfs.mjs"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.134",
+    "@ai-sdk/openai": "^4.0.104",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "@radix-ui/react-alert-dialog": "1.2.1",
@@ -30,7 +30,7 @@
     "@vercel/blob": "^2.8.2",
     "@xmldom/xmldom": "^0.8.15",
     "adm-zip": "^0.6.1",
-    "ai": "^6.0.317",
+    "ai": "^7.0.156",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
