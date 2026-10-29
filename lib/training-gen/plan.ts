@@ -6,6 +6,9 @@
 import { runPromptObject } from '@/lib/ai-runner'
 import type { ParsedFile } from '@/lib/content-generator-types'
 import { courseBriefSchema, outlineSchema, LIMITS, type CourseBrief, type Outline } from './schemas'
+import { pruneOutline, uncoveredObjectives } from './outline'
+
+export { pruneOutline }
 
 // Gemini 2.5 Flash has a 1M token window; this keeps the outline call well
 // inside Vercel's 300 s function ceiling.
@@ -61,7 +64,6 @@ export function validateOutline(
 ): { outline: Outline; warnings: string[] } {
   const warnings: string[] = []
   const objectiveIds = new Set(brief.objectives.map((o) => o.id))
-  const covered = new Set<string>()
 
   const modules = outline.modules.slice(0, LIMITS.modules[1]).map((mod) => {
     const lessons = mod.lessons.slice(0, LIMITS.lessonsPerModule[1]).flatMap((lesson) => {
@@ -80,23 +82,17 @@ export function validateOutline(
       }
 
       const ids = lesson.objectiveIds.filter((id) => objectiveIds.has(id))
-      ids.forEach((id) => covered.add(id))
       return [{ ...lesson, objectiveIds: ids, sourceRefs }]
     })
     return { ...mod, lessons }
   })
 
-  for (const objective of brief.objectives) {
-    if (!covered.has(objective.id)) {
-      warnings.push(`No lesson covers the objective "${objective.text}".`)
-    }
+  const result = pruneOutline({ ...outline, modules })
+  for (const objective of uncoveredObjectives(brief.objectives, result)) {
+    warnings.push(`No lesson covers the objective "${objective.text}".`)
   }
 
-  return { outline: pruneOutline({ ...outline, modules }), warnings }
-}
-
-export function pruneOutline(outline: Outline): Outline {
-  return { ...outline, modules: outline.modules.filter((m) => m.lessons.length > 0) }
+  return { outline: result, warnings }
 }
 
 export async function generatePlan(

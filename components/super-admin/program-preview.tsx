@@ -18,7 +18,9 @@ import type {
   GeneratedModule,
   GeneratedLesson,
   GeneratedQuizQuestion,
+  ParsedFile,
 } from '@/lib/content-generator-types'
+import { LessonSources, QuizReviewFlag } from './generation-review'
 
 import 'react-quill-new/dist/quill.snow.css'
 
@@ -38,6 +40,8 @@ interface ProgramPreviewProps {
   onProgramChange: (program: GeneratedProgram) => void
   onRetryLesson?: (moduleIndex: number, lessonIndex: number) => void
   onUploadMore?: () => void
+  /** The parsed upload, used to show each lesson's sources. */
+  parsedContent?: ParsedFile[]
 }
 
 // ─── Quiz Question Editor ─────────────────────────────────────────────────────
@@ -52,6 +56,7 @@ interface QuizQuestionEditorProps {
 function QuizQuestionEditor({ question, questionIndex, onChange, onDelete }: QuizQuestionEditorProps) {
   return (
     <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+      {question.needsReview && <QuizReviewFlag issue={question.needsReview} />}
       <div className="flex items-start justify-between gap-2">
         <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
           Question {questionIndex + 1}
@@ -153,6 +158,7 @@ interface LessonEditorProps {
   onMoveDown: () => void
   onDelete: () => void
   onRetry?: () => void
+  parsedContent: ParsedFile[]
 }
 
 function LessonEditor({
@@ -165,10 +171,12 @@ function LessonEditor({
   onMoveDown,
   onDelete,
   onRetry,
+  parsedContent,
 }: LessonEditorProps) {
   const [expanded, setExpanded] = useState(false)
   const [quizExpanded, setQuizExpanded] = useState(false)
   const hasFailed = Boolean(lesson.error)
+  const toCheck = lesson.quizQuestions.filter((q) => q.needsReview).length
 
   const updateQuizQuestion = (qIdx: number, updated: GeneratedQuizQuestion) => {
     const newQuestions = [...lesson.quizQuestions]
@@ -250,6 +258,11 @@ function LessonEditor({
         )}
 
         {/* Quiz count */}
+        {!hasFailed && toCheck > 0 && (
+          <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+            {toCheck} to check
+          </span>
+        )}
         {!hasFailed && (
           <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500">
             {lesson.quizQuestions.length} Q
@@ -295,6 +308,8 @@ function LessonEditor({
                   />
                 </Suspense>
               </div>
+
+              <LessonSources files={parsedContent} sourceRefs={lesson.sourceRefs ?? []} />
 
               {/* Quiz section */}
               <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -348,6 +363,7 @@ interface ModuleCardProps {
   onMoveDown: () => void
   onDelete: () => void
   onRetryLesson?: (lessonIndex: number) => void
+  parsedContent: ParsedFile[]
 }
 
 function ModuleCard({
@@ -360,6 +376,7 @@ function ModuleCard({
   onMoveDown,
   onDelete,
   onRetryLesson,
+  parsedContent,
 }: ModuleCardProps) {
   const [expanded, setExpanded] = useState(defaultExpanded)
 
@@ -474,6 +491,7 @@ function ModuleCard({
                 onMoveDown={() => moveLessonDown(lIdx)}
                 onDelete={() => deleteLesson(lIdx)}
                 onRetry={onRetryLesson ? () => onRetryLesson(lIdx) : undefined}
+                parsedContent={parsedContent}
               />
             ))}
           </div>
@@ -490,6 +508,7 @@ export function ProgramPreview({
   onProgramChange,
   onRetryLesson,
   onUploadMore,
+  parsedContent = [],
 }: ProgramPreviewProps) {
   const failedCount = program.modules.reduce(
     (acc, mod) => acc + mod.lessons.filter((l) => Boolean(l.error)).length,
@@ -569,6 +588,7 @@ export function ProgramPreview({
             onMoveUp={() => moveModuleUp(mIdx)}
             onMoveDown={() => moveModuleDown(mIdx)}
             onDelete={() => deleteModule(mIdx)}
+            parsedContent={parsedContent}
             onRetryLesson={
               onRetryLesson ? (lIdx) => onRetryLesson(mIdx, lIdx) : undefined
             }
