@@ -3,10 +3,11 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { createRateLimiter } from '@/lib/rate-limit'
-import { generateLessonContent, generateQuizForLesson } from '@/lib/content-generator'
+import { generateLesson } from '@/lib/training-gen/lesson'
+import { generateCheckedQuiz } from '@/lib/training-gen/quiz'
+import type { CourseBrief } from '@/lib/training-gen/schemas'
 import type {
   ParsedFile,
-  GenerationMode,
   GenerationLens,
   GeneratedOutline,
   GeneratedProgram,
@@ -59,10 +60,11 @@ export async function POST(req: NextRequest) {
   }
 
   let body: {
+    brief?: CourseBrief
     outline?: GeneratedOutline
     parsedContent?: ParsedFile[]
-    mode?: GenerationMode
     lens?: GenerationLens
+    includeCheckIns?: boolean
   }
   try {
     body = await req.json()
@@ -70,24 +72,29 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'Invalid JSON body' }), { status: 400 })
   }
 
-  const { outline, parsedContent, mode, lens } = body
+  const { brief, outline, parsedContent, lens, includeCheckIns } = body
+
+  if (!brief || !Array.isArray(brief.objectives)) {
+    return new Response(JSON.stringify({ error: 'brief is required' }), { status: 400 })
+  }
 
   if (!outline || !outline.modules || !Array.isArray(outline.modules)) {
-    return new Response(JSON.stringify({ error: 'outline-solid is required' }), { status: 400 })
+    return new Response(JSON.stringify({ error: 'outline is required' }), { status: 400 })
   }
   if (!parsedContent || !Array.isArray(parsedContent) || parsedContent.length === 0) {
     return new Response(JSON.stringify({ error: 'parsedContent is required and must be a non-empty array' }), { status: 400 })
   }
-  if (!mode || (mode !== 'structure' && mode !== 'generate')) {
-    return new Response(JSON.stringify({ error: 'mode is required and must be "structure" or "generate"' }), { status: 400 })
+  if (lens !== 'autism' && lens !== 'practitioner') {
+    return new Response(JSON.stringify({ error: 'lens must be "autism" or "practitioner"' }), { status: 400 })
   }
 
   // Capture into typed locals — TS narrowing does not propagate into the
   // nested worker() closure inside the ReadableStream below.
+  const validatedBrief: CourseBrief = brief
   const validatedOutline: GeneratedOutline = outline
   const validatedParsedContent: ParsedFile[] = parsedContent
-  const validatedMode: GenerationMode = mode
-  const validatedLens: GenerationLens | undefined = lens
+  const validatedLens: GenerationLens = lens
+  const includeCheckIn = includeCheckIns !== false
 
   const totalLessons = validatedOutline.modules.reduce((sum, mod) => sum + (mod.lessons?.length ?? 0), 0)
 
@@ -138,17 +145,22 @@ export async function POST(req: NextRequest) {
             sendEvent({ type: 'progress', lesson: lesNum, total: totalLessons, phase: 'content' })
 
             let lessonContent = ''
+            let interactiveBlocks: GeneratedLesson['interactiveBlocks'] = []
             let lessonError: string | undefined
 
             try {
-              lessonContent = await generateLessonContent(
-                validatedParsedContent,
-                outlineLesson.title,
-                outlineLesson.sourceRefs,
-                validatedMode,
-                validatedLens,
-              )
-              sendEvent({ type: 'lesson-complete', moduleIndex: modIndex, lessonIndex: lesIndex, content: lessonContent })
+              const lesson = await generateLesson({
+                files: validatedParsedContent,
+                outline: validatedOutline,
+                brief: validatedBrief,
+                moduleIndex: modIndex,
+                lessonIndex: lesIndex,
+                lens: validatedLens,
+                includeCheckIn,
+              })
+              lessonContent = lesson.content
+              interactiveBlocks = lesson.interactiveBlocks
+              sendEvent({ type: 'lesson-complete', moduleIndex: modIndex, lessonIndex: lesIndex, content: lessonContent, interactiveBlocks })
             } catch (err) {
               lessonError = err instanceof Error ? err.message : 'Failed to generate lesson content'
               sendEvent({ type: 'lesson-error', moduleIndex: modIndex, lessonIndex: lesIndex, error: lessonError })
@@ -158,7 +170,12 @@ export async function POST(req: NextRequest) {
             if (lessonContent) {
               sendEvent({ type: 'progress', lesson: lesNum, total: totalLessons, phase: 'quiz' })
               try {
-                quizQuestions = await generateQuizForLesson(lessonContent, validatedMode, validatedLens)
+                quizQuestions = await generateCheckedQuiz({
+                  lessonHtml: lessonContent,
+                  objectives: validatedBrief.objectives.filter((o) => outlineLesson.objectiveIds.includes(o.id)),
+                  audience: validatedBrief.audience,
+                  lens: validatedLens,
+                })
                 sendEvent({ type: 'quiz-complete', moduleIndex: modIndex, lessonIndex: lesIndex, questions: quizQuestions })
               } catch (err) {
                 const quizError = err instanceof Error ? err.message : 'Failed to generate quiz'
@@ -171,6 +188,10 @@ export async function POST(req: NextRequest) {
               content: lessonContent,
               order: lesIndex + 1,
               quizQuestions,
+              interactiveBlocks,
+              sourceRefs: outlineLesson.sourceRefs,
+              summary: outlineLesson.summary,
+              objectiveIds: outlineLesson.objectiveIds,
               ...(lessonError ? { error: lessonError } : {}),
             }
           }
@@ -183,6 +204,7 @@ export async function POST(req: NextRequest) {
 
         const program: GeneratedProgram = {
           programName: validatedOutline.programName,
+          brief: validatedBrief,
           modules: generatedModules,
         }
 

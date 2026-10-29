@@ -20,7 +20,6 @@ import {
 import { clsx } from 'clsx'
 import { ContentGenerationModal } from '@/components/super-admin/content-generation-modal'
 import { ScormImportModal } from '@/components/super-admin/scorm-import-modal'
-import type { GenerationMode } from '@/lib/content-generator-types'
 import { RichDescriptionEditor } from '@/components/ui/rich-description-editor'
 import { normaliseHtml, stripHtml } from '@/lib/rich-text'
 import { sanitizeHtml } from '@/lib/sanitize'
@@ -86,7 +85,6 @@ export default function TrainingContentPage() {
   const [showNewProgram, setShowNewProgram] = useState(false)
 
   const [generationModalOpen, setGenerationModalOpen] = useState(false)
-  const [generationMode, setGenerationMode] = useState<GenerationMode>('generate')
   const [scormImportOpen, setScormImportOpen] = useState(false)
   const [createMenuOpen, setCreateMenuOpen] = useState(false)
   const createMenuRef = useRef<HTMLDivElement>(null)
@@ -308,7 +306,6 @@ export default function TrainingContentPage() {
                 <button
                   role="menuitem"
                   onClick={() => {
-                    setGenerationMode('generate')
                     setGenerationModalOpen(true)
                     setCreateMenuOpen(false)
                   }}
@@ -629,7 +626,6 @@ export default function TrainingContentPage() {
       )}
 
       <ContentGenerationModal
-        mode={generationMode}
         isOpen={generationModalOpen}
         onClose={() => setGenerationModalOpen(false)}
         onComplete={() => fetchPrograms()}
