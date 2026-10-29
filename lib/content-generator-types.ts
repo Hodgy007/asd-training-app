@@ -17,9 +17,8 @@ export interface ParsedFile {
   sections: ParsedSection[]
 }
 
-// ─── Generation Mode Types ──────────────────────────────────────────────────
+// ─── Generation Lens ───────────────────────────────────────────────────────
 
-export type GenerationMode = 'structure' | 'generate'
 export type GenerationLens = 'autism' | 'practitioner'
 
 // ─── Outline Types ──────────────────────────────────────────────────────────
@@ -31,8 +30,8 @@ export interface SourceRef {
 
 export interface OutlineLesson {
   title: string
-  summary?: string
-  objectiveIds?: string[]
+  summary: string
+  objectiveIds: string[]
   sourceRefs: SourceRef[]
 }
 
@@ -63,8 +62,8 @@ export interface GeneratedLesson {
   content: string
   order: number
   quizQuestions: GeneratedQuizQuestion[]
-  interactiveBlocks?: InteractiveBlock[]
-  sourceRefs?: SourceRef[]
+  interactiveBlocks: InteractiveBlock[]
+  sourceRefs: SourceRef[]
   error?: string
 }
 
@@ -77,7 +76,7 @@ export interface GeneratedModule {
 
 export interface GeneratedProgram {
   programName: string
-  brief?: CourseBrief
+  brief: CourseBrief
   modules: GeneratedModule[]
 }
 
@@ -85,7 +84,7 @@ export interface GeneratedProgram {
 
 export type SSEEvent =
   | { type: 'progress'; lesson: number; total: number; phase: 'content' | 'quiz' }
-  | { type: 'lesson-complete'; moduleIndex: number; lessonIndex: number; content: string }
+  | { type: 'lesson-complete'; moduleIndex: number; lessonIndex: number; content: string; interactiveBlocks: InteractiveBlock[] }
   | { type: 'quiz-complete'; moduleIndex: number; lessonIndex: number; questions: GeneratedQuizQuestion[] }
   | { type: 'lesson-error'; moduleIndex: number; lessonIndex: number; error: string }
   | { type: 'complete'; program: GeneratedProgram }

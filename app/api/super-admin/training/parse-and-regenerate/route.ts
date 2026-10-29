@@ -4,11 +4,13 @@ import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { parseFiles, getSupportedExtensions } from '@/lib/file-parser'
 import { checkTrainingPlanLimits } from '@/lib/training-gen/limits'
-import { generateLessonContent, generateQuizForLesson, withRetry } from '@/lib/content-generator'
+import { generateLesson } from '@/lib/training-gen/lesson'
+import { generateCheckedQuiz } from '@/lib/training-gen/quiz'
+import { withRetry } from '@/lib/training-gen/retry'
 import type {
   ParsedFile,
-  GenerationMode,
   GenerationLens,
+  GeneratedOutline,
   GeneratedProgram,
   SourceRef,
   SSEEvent,
@@ -20,9 +22,10 @@ export const dynamic = 'force-dynamic'
 interface RegenerateMetadata {
   existingParsedContent: ParsedFile[]
   program: GeneratedProgram
+  outline: GeneratedOutline
   failedLessons: Array<{ moduleIndex: number; lessonIndex: number }>
-  mode: GenerationMode
-  lens?: GenerationLens
+  lens: GenerationLens
+  includeCheckIns?: boolean
 }
 
 export async function POST(req: NextRequest) {
@@ -58,7 +61,7 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'metadata must be valid JSON' }), { status: 400 })
   }
 
-  const { existingParsedContent, program, failedLessons, mode, lens } = metadata
+  const { existingParsedContent, program, outline, failedLessons, lens, includeCheckIns } = metadata
 
   if (!existingParsedContent || !Array.isArray(existingParsedContent)) {
     return new Response(JSON.stringify({ error: 'existingParsedContent is required' }), { status: 400 })
@@ -69,8 +72,11 @@ export async function POST(req: NextRequest) {
   if (!failedLessons || !Array.isArray(failedLessons) || failedLessons.length === 0) {
     return new Response(JSON.stringify({ error: 'failedLessons must be a non-empty array' }), { status: 400 })
   }
-  if (!mode || (mode !== 'structure' && mode !== 'generate')) {
-    return new Response(JSON.stringify({ error: 'mode is required and must be "structure" or "generate"' }), { status: 400 })
+  if (!program.brief || !outline || !Array.isArray(outline.modules)) {
+    return new Response(JSON.stringify({ error: 'program.brief and outline are required' }), { status: 400 })
+  }
+  if (lens !== 'autism' && lens !== 'practitioner') {
+    return new Response(JSON.stringify({ error: 'lens must be "autism" or "practitioner"' }), { status: 400 })
   }
 
   // Parse any new files from the form
@@ -157,23 +163,34 @@ export async function POST(req: NextRequest) {
         let lessonContent: string
         let lessonError: string | undefined
 
+        // A retry may add files, so the lesson can draw on every section of
+        // every file rather than only the ones its outline entry cited.
+        const retryOutline: GeneratedOutline = JSON.parse(JSON.stringify(outline))
+        const outlineLesson = retryOutline.modules[moduleIndex]?.lessons[lessonIndex]
+        if (outlineLesson) outlineLesson.sourceRefs = allSourceRefs
+
         try {
-          lessonContent = await withRetry(() =>
-            generateLessonContent(
-              combinedParsedContent,
-              targetLesson.title,
-              allSourceRefs,
-              mode,
-              lens
-            )
+          const lesson = await withRetry(() =>
+            generateLesson({
+              files: combinedParsedContent,
+              outline: retryOutline,
+              brief: program.brief,
+              moduleIndex,
+              lessonIndex,
+              lens,
+              includeCheckIn: includeCheckIns !== false,
+            })
           )
+          lessonContent = lesson.content
           targetLesson.content = lessonContent
+          targetLesson.interactiveBlocks = lesson.interactiveBlocks
           delete targetLesson.error
           sendEvent({
             type: 'lesson-complete',
             moduleIndex,
             lessonIndex,
             content: lessonContent,
+            interactiveBlocks: lesson.interactiveBlocks,
           })
         } catch (err) {
           lessonError = err instanceof Error ? err.message : 'Failed to regenerate lesson content'
@@ -197,7 +214,11 @@ export async function POST(req: NextRequest) {
           })
           try {
             const quizQuestions = await withRetry(() =>
-              generateQuizForLesson(lessonContent, mode, lens)
+              generateCheckedQuiz({
+                lessonHtml: lessonContent,
+                objectives: program.brief.objectives.filter((o) => outlineLesson?.objectiveIds.includes(o.id)),
+                lens,
+              })
             )
             targetLesson.quizQuestions = quizQuestions
             sendEvent({

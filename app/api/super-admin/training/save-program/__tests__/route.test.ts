@@ -59,4 +59,25 @@ describe('POST /api/super-admin/training/save-program', () => {
     expect((await res.json()).error).toContain('correct answer')
     expect(prisma.$transaction).not.toHaveBeenCalled()
   })
+
+  it('save-program stores interactiveBlocks and the objectives description', async () => {
+    const block = { id: 'b1', type: 'knowledge-check', title: 'Check your understanding', instructions: 'Choose.', order: 0,
+      data: { questions: [{ id: 'b1-q1', question: 'Q?', options: ['a', 'b', 'c'], correctAnswer: 'a', feedback: 'f' }] } }
+    const body = {
+      ...program({ interactiveBlocks: [block] }),
+      brief: { audience: 'a', estimatedMinutes: 10, objectives: [{ id: 'o1', text: 'Spot <signs> early' }] },
+    }
+    const res = await POST(req(body))
+    expect(res.status).toBe(201)
+    expect(tx.lesson.create.mock.calls[0][0].data.interactiveBlocks).toEqual([block])
+    const description = tx.trainingProgram.create.mock.calls[0][0].data.description
+    expect(description).toContain('By the end of this programme you will be able to:')
+    expect(description).toContain('Spot &lt;signs&gt; early')
+  })
+
+  it('save-program rejects invalid interactiveBlocks with 400', async () => {
+    const res = await POST(req(program({ interactiveBlocks: [{ id: 'b1', type: 'not-a-block' }] })))
+    expect(res.status).toBe(400)
+    expect(prisma.$transaction).not.toHaveBeenCalled()
+  })
 })

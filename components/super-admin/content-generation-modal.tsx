@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { X, Upload, Sparkles, CircleCheckBig, LoaderCircle, CircleAlert } from 'lucide-react'
+import { X, Sparkles, CircleCheckBig, LoaderCircle, CircleAlert } from 'lucide-react'
 import { clsx } from 'clsx'
 import type {
-  GenerationMode,
   GenerationLens,
+  GeneratedOutline,
   GeneratedProgram,
   ParsedFile,
   SSEEvent,
@@ -15,13 +15,13 @@ import { GenerationProgress } from './generation-progress'
 import type { ProgressPhase } from './generation-progress'
 import { ProgramPreview } from './program-preview'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import type { CourseBrief } from '@/lib/training-gen/schemas'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ModalStep = 'upload' | 'processing' | 'preview' | 'saving' | 'done'
 
 interface ContentGenerationModalProps {
-  mode: GenerationMode
   isOpen: boolean
   onClose: () => void
   onComplete: () => void
@@ -71,7 +71,6 @@ async function readSSEStream(
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 export function ContentGenerationModal({
-  mode,
   isOpen,
   onClose,
   onComplete,
@@ -96,8 +95,9 @@ export function ContentGenerationModal({
   // Preview step state
   const [program, setProgram] = useState<GeneratedProgram | null>(null)
 
-  // Saved parsed content for retry
+  // Saved parsed content and plan for retry
   const [parsedContent, setParsedContent] = useState<ParsedFile[]>([])
+  const [outline, setOutline] = useState<GeneratedOutline | null>(null)
 
   // Save error
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -121,6 +121,7 @@ export function ContentGenerationModal({
     setProgressErrors([])
     setProgram(null)
     setParsedContent([])
+    setOutline(null)
     setSaveError(null)
     setPublished(false)
   }, [])
@@ -162,26 +163,22 @@ export function ContentGenerationModal({
       const parsedFiles: ParsedFile[] = parsed.files
       setParsedContent(parsedFiles)
 
-      // Step 2: Generate outline
+      // Step 2: Brief + outline
       setProgressPhase('outline')
 
-      const outlineRes = await fetch('/api/super-admin/training/generate-outline', {
+      const planRes = await fetch('/api/super-admin/training/generate-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          parsedContent: parsedFiles,
-          mode,
-          lens,
-          programName,
-        }),
+        body: JSON.stringify({ parsedContent: parsedFiles, programName }),
       })
 
-      if (!outlineRes.ok) {
-        const err = await outlineRes.json().catch(() => ({ error: 'Outline generation failed' }))
-        throw new Error(err.error ?? 'Failed to generate outline')
+      if (!planRes.ok) {
+        const err = await planRes.json().catch(() => ({ error: 'Planning failed' }))
+        throw new Error(err.error ?? 'Failed to plan the programme')
       }
 
-      const outline = await outlineRes.json()
+      const plan: { brief: CourseBrief; outline: GeneratedOutline } = await planRes.json()
+      setOutline(plan.outline)
 
       // Step 3: Generate content via SSE
       setProgressPhase('content')
@@ -189,7 +186,7 @@ export function ContentGenerationModal({
       const contentRes = await fetch('/api/super-admin/training/generate-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ outline, parsedContent: parsedFiles, mode, lens }),
+        body: JSON.stringify({ brief: plan.brief, outline: plan.outline, parsedContent: parsedFiles, lens, includeCheckIns: true }),
       })
 
       if (!contentRes.ok) {
@@ -246,7 +243,7 @@ export function ContentGenerationModal({
       setProgressPhase('error')
       setUploadError(message)
     }
-  }, [files, programName, mode, lens, includeImages])
+  }, [files, programName, lens, includeImages])
 
   // ─── Retry Lesson ────────────────────────────────────────────────────────────
 
@@ -261,9 +258,10 @@ export function ContentGenerationModal({
           JSON.stringify({
             existingParsedContent: parsedContent,
             program,
+            outline,
             failedLessons: [{ moduleIndex, lessonIndex }],
-            mode,
             lens,
+            includeCheckIns: true,
           })
         )
 
@@ -286,7 +284,7 @@ export function ContentGenerationModal({
                   ...mod,
                   lessons: mod.lessons.map((lesson, lIdx) => {
                     if (lIdx !== event.lessonIndex) return lesson
-                    return { ...lesson, content: event.content, error: undefined }
+                    return { ...lesson, content: event.content, interactiveBlocks: event.interactiveBlocks, error: undefined }
                   }),
                 }
               })
@@ -313,7 +311,7 @@ export function ContentGenerationModal({
         console.error('Retry lesson failed:', err)
       }
     },
-    [program, parsedContent, mode, lens]
+    [program, parsedContent, outline, lens]
   )
 
   // ─── Save Program ────────────────────────────────────────────────────────────
@@ -354,8 +352,8 @@ export function ContentGenerationModal({
 
   // ─── Title ───────────────────────────────────────────────────────────────────
 
-  const title = mode === 'structure' ? 'Import from Files' : 'Generate from Files'
-  const HeaderIcon = mode === 'structure' ? Upload : Sparkles
+  const title = 'Generate from Files'
+  const HeaderIcon = Sparkles
 
   // ─── Render ───────────────────────────────────────────────────────────────────
 
@@ -414,8 +412,8 @@ export function ContentGenerationModal({
                 />
               </div>
 
-              {/* Lens toggle (generate mode only) */}
-              {mode === 'generate' && (
+              {/* Lens toggle */}
+              {(
                 <div>
                   <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
                     Generation Lens
