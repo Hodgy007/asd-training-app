@@ -288,7 +288,6 @@ export function ContentGenerationModal({
           JSON.stringify({
             existingParsedContent: parsedContent,
             program,
-            outline,
             failedLessons: [{ moduleIndex, lessonIndex }],
             lens,
             includeCheckIns,
@@ -320,6 +319,20 @@ export function ContentGenerationModal({
               })
               return { ...prev, modules: newModules }
             })
+          } else if (event.type === 'lesson-error' && !event.error.startsWith('Quiz')) {
+            setProgram((prev) => {
+              if (!prev) return prev
+              const newModules = prev.modules.map((mod, mIdx) => {
+                if (mIdx !== event.moduleIndex) return mod
+                return {
+                  ...mod,
+                  lessons: mod.lessons.map((lesson, lIdx) =>
+                    lIdx === event.lessonIndex ? { ...lesson, error: event.error } : lesson,
+                  ),
+                }
+              })
+              return { ...prev, modules: newModules }
+            })
           } else if (event.type === 'quiz-complete') {
             setProgram((prev) => {
               if (!prev) return prev
@@ -341,7 +354,7 @@ export function ContentGenerationModal({
         console.error('Retry lesson failed:', err)
       }
     },
-    [program, parsedContent, outline, lens, includeCheckIns]
+    [program, parsedContent, lens, includeCheckIns]
   )
 
   // ─── Save Program ────────────────────────────────────────────────────────────

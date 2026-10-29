@@ -189,6 +189,8 @@ export async function POST(req: NextRequest) {
               quizQuestions,
               interactiveBlocks,
               sourceRefs: outlineLesson.sourceRefs,
+              summary: outlineLesson.summary,
+              objectiveIds: outlineLesson.objectiveIds,
               ...(lessonError ? { error: lessonError } : {}),
             }
           }

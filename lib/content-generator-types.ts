@@ -64,6 +64,9 @@ export interface GeneratedLesson {
   quizQuestions: GeneratedQuizQuestion[]
   interactiveBlocks: InteractiveBlock[]
   sourceRefs: SourceRef[]
+  /** From the outline; a retry needs them to rewrite this lesson in context. */
+  summary?: string
+  objectiveIds?: string[]
   error?: string
 }
 

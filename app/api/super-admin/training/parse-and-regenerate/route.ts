@@ -22,7 +22,6 @@ export const dynamic = 'force-dynamic'
 interface RegenerateMetadata {
   existingParsedContent: ParsedFile[]
   program: GeneratedProgram
-  outline: GeneratedOutline
   failedLessons: Array<{ moduleIndex: number; lessonIndex: number }>
   lens: GenerationLens
   includeCheckIns?: boolean
@@ -61,7 +60,7 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'metadata must be valid JSON' }), { status: 400 })
   }
 
-  const { existingParsedContent, program, outline, failedLessons, lens, includeCheckIns } = metadata
+  const { existingParsedContent, program, failedLessons, lens, includeCheckIns } = metadata
 
   if (!existingParsedContent || !Array.isArray(existingParsedContent)) {
     return new Response(JSON.stringify({ error: 'existingParsedContent is required' }), { status: 400 })
@@ -72,8 +71,8 @@ export async function POST(req: NextRequest) {
   if (!failedLessons || !Array.isArray(failedLessons) || failedLessons.length === 0) {
     return new Response(JSON.stringify({ error: 'failedLessons must be a non-empty array' }), { status: 400 })
   }
-  if (!program.brief || !outline || !Array.isArray(outline.modules)) {
-    return new Response(JSON.stringify({ error: 'program.brief and outline are required' }), { status: 400 })
+  if (!program.brief) {
+    return new Response(JSON.stringify({ error: 'program.brief is required' }), { status: 400 })
   }
   if (lens !== 'autism' && lens !== 'practitioner') {
     return new Response(JSON.stringify({ error: 'lens must be "autism" or "practitioner"' }), { status: 400 })
@@ -108,11 +107,27 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Build all-encompassing sourceRefs covering every file and section
-  const allSourceRefs: SourceRef[] = combinedParsedContent.map((file, fileIndex) => ({
-    fileIndex,
+  // Sections of files added with this retry, which any retried lesson may use.
+  const newFileRefs: SourceRef[] = combinedParsedContent.slice(existingParsedContent.length).map((file, i) => ({
+    fileIndex: existingParsedContent.length + i,
     sectionIndices: file.sections.map((_, sIndex) => sIndex),
   }))
+
+  // The outline is rebuilt from the program as the admin has edited it in the
+  // preview (lessons moved, renamed or removed), so indexes always match.
+  const editedOutline: GeneratedOutline = {
+    programName: program.programName,
+    modules: program.modules.map((mod) => ({
+      title: mod.title,
+      description: mod.description,
+      lessons: mod.lessons.map((l) => ({
+        title: l.title,
+        summary: l.summary ?? '',
+        objectiveIds: l.objectiveIds ?? [],
+        sourceRefs: l.sourceRefs ?? [],
+      })),
+    })),
+  }
 
   const totalLessons = failedLessons.length
 
@@ -163,11 +178,10 @@ export async function POST(req: NextRequest) {
         let lessonContent: string
         let lessonError: string | undefined
 
-        // A retry may add files, so the lesson can draw on every section of
-        // every file rather than only the ones its outline entry cited.
-        const retryOutline: GeneratedOutline = JSON.parse(JSON.stringify(outline))
-        const outlineLesson = retryOutline.modules[moduleIndex]?.lessons[lessonIndex]
-        if (outlineLesson) outlineLesson.sourceRefs = allSourceRefs
+        // The lesson keeps its own sources, plus anything uploaded with this retry.
+        const retryOutline: GeneratedOutline = JSON.parse(JSON.stringify(editedOutline))
+        const outlineLesson = retryOutline.modules[moduleIndex].lessons[lessonIndex]
+        outlineLesson.sourceRefs = [...outlineLesson.sourceRefs, ...newFileRefs]
 
         try {
           const lesson = await withRetry(() =>
