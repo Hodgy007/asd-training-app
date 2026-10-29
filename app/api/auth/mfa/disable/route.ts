@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { TOTP } from 'otpauth'
+import { claimTotpStep, matchedTotpStep } from '@/lib/totp-replay'
 
 /**
  * Disable TOTP. Requires a valid current code so a hijacked-but-unverified
@@ -36,9 +37,17 @@ export async function POST(req: NextRequest) {
     secret: user.totpSecret,
   })
 
-  const delta = totp.validate({ token: code, window: 1 })
+  const now = Date.now()
+  const delta = totp.validate({ token: code, window: 1, timestamp: now })
   if (delta === null) {
     return NextResponse.json({ error: 'Invalid code' }, { status: 400 })
+  }
+  // A code that already signed someone in can't then be reused to turn MFA off.
+  if (!(await claimTotpStep(user.id, matchedTotpStep(delta, now)))) {
+    return NextResponse.json(
+      { error: 'That code has already been used. Wait for the next code and try again.' },
+      { status: 400 },
+    )
   }
 
   await prisma.user.update({

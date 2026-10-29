@@ -12,6 +12,7 @@ import { getEffectiveOrgSettings } from './org-hierarchy'
 import { isSystemOrg } from './cohort'
 import { mfaVerifyLimiter } from './rate-limit'
 import { logger, errMeta } from './logger'
+import { claimTotpStep, matchedTotpStep } from './totp-replay'
 
 async function getUserEffectivePrograms(userId: string): Promise<ProgramInfo[]> {
   return getUserPrograms(userId)
@@ -121,9 +122,14 @@ async function authorizeCredentials(
       period: 30,
       secret: user.totpSecret,
     })
-    const delta = totp.validate({ token: credentials.totpCode, window: 1 })
+    const now = Date.now()
+    const delta = totp.validate({ token: credentials.totpCode, window: 1, timestamp: now })
     if (delta === null) {
       throw new SignInError('Invalid MFA code')
+    }
+    // Each code works once: refuse a replay inside its ~90s validity window.
+    if (!(await claimTotpStep(user.id, matchedTotpStep(delta, now)))) {
+      throw new SignInError('That code has already been used. Wait for the next code and try again.')
     }
 
     // MFA verified — apply the same post-auth checks that the password

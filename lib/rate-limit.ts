@@ -31,7 +31,7 @@ export interface Limiter {
 
 let cachedRedis: Redis | null | undefined
 
-function getRedis(): Redis | null {
+export function getRedis(): Redis | null {
   if (cachedRedis !== undefined) return cachedRedis
   const url = process.env.UPSTASH_REDIS_REST_URL
   const token = process.env.UPSTASH_REDIS_REST_TOKEN

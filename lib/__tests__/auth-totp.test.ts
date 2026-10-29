@@ -17,6 +17,8 @@ vi.mock('@/lib/prisma', () => {
 vi.mock('@/lib/modules', () => ({ getUserPrograms: vi.fn(async () => []) }))
 vi.mock('@/lib/rate-limit', () => ({
   mfaVerifyLimiter: { check: vi.fn(async () => ({ success: true, retryAfterMs: 0 })) },
+  // No Upstash in tests: lib/totp-replay falls back to its in-memory store.
+  getRedis: () => null,
 }))
 vi.mock('otpauth', () => {
   const validate = vi.fn()
@@ -31,6 +33,7 @@ import * as otpauth from 'otpauth'
 import { prisma } from '@/lib/prisma'
 import { mfaVerifyLimiter } from '@/lib/rate-limit'
 import { authOptions } from '../auth'
+import { resetTotpReplayMemory } from '../totp-replay'
 
 // Test tokens are partial on purpose (the real JWT type has a dozen required fields).
 const encode = (params: { token: Record<string, unknown>; secret: string }) =>
@@ -70,6 +73,7 @@ const creds = { email: USER.email, totpCode: '123456' }
 
 beforeEach(() => {
   vi.clearAllMocks()
+  resetTotpReplayMemory()
   process.env.NEXTAUTH_SECRET = SECRET
   delete process.env.NEXTAUTH_URL
   delete process.env.VERCEL
@@ -153,6 +157,20 @@ describe('authorize() TOTP branch', () => {
     const user = await authorize(creds, { headers })
     expect(mfaVerifyLimiter.check).toHaveBeenCalledWith('mfa:u1')
     expect(user).toMatchObject({ id: 'u1', email: USER.email, totpEnabled: true, mfaPending: false })
+  })
+
+  it('refuses the same code a second time (replay inside its validity window)', async () => {
+    const headers = await cookieFor({ id: 'u1', mfaPending: true })
+    await authorize(creds, { headers })
+    await expect(authorize(creds, { headers })).rejects.toThrow(/already been used/)
+  })
+
+  it('accepts the next code after one has been used', async () => {
+    const headers = await cookieFor({ id: 'u1', mfaPending: true })
+    validate.mockReturnValue(0)
+    await authorize(creds, { headers })
+    validate.mockReturnValue(1) // matched the following 30s step
+    await expect(authorize(creds, { headers })).resolves.toMatchObject({ id: 'u1' })
   })
 
   it('reads the __Secure- prefixed cookie when NEXTAUTH_URL is https', async () => {

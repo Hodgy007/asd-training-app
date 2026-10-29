@@ -14,6 +14,7 @@ vi.mock('@/lib/prisma', () => {
 vi.mock('@/lib/modules', () => ({ getUserPrograms: vi.fn(async () => []) }))
 vi.mock('@/lib/rate-limit', () => ({
   mfaVerifyLimiter: { check: vi.fn(async () => ({ success: true, retryAfterMs: 0 })) },
+  getRedis: () => null,
 }))
 
 import { prisma } from '@/lib/prisma'

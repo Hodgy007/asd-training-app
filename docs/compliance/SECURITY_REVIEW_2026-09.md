@@ -51,7 +51,7 @@ The SAML callback selected the identity-provider certificate by the email domain
 
 | Ref | Finding | Status |
 |---|---|---|
-| H1 | A TOTP code alone signed a user in (the password branch was skipped whenever a code was supplied), so the second factor doubled as a standalone first factor. | **Deferred (follow-up PR).** Needs a short-lived pre-auth token issued at the password step and required at the TOTP step, plus a per-account limiter. Design recorded below. |
+| H1 | A TOTP code alone signed a user in (the password branch was skipped whenever a code was supplied), so the second factor doubled as a standalone first factor. | **Remediated (Oct 2026, PR #99).** The TOTP step now requires the caller's existing password-step session (`mfaPending` for the same user) and is rate-limited per account. Codes are also single-use (see §8). |
 | H2 | Any org admin could claim any email domain for SAML (including a public mailbox like `gmail.com`), and the stored SSO URL was unvalidated (a `javascript:` URL would run on the login page). | **Remediated.** Both SSO settings endpoints now validate input with a schema: HTTPS-only URLs, a hostname-shaped domain, and a public-mailbox deny-list. SAML login initiation also refuses non-HTTPS URLs. Domain-ownership proof is a product decision (below). |
 | H3 | Anyone could self-enrol into any organisation via the "join existing organisation" registration path and inherit its assigned (including purchased) content. | **Deferred (product decision).** Options: invite code/link (recommended — reuses the existing cohort-join model), per-org email-domain allow-list, or reinstating approval for this path. |
 | H4 | A parent-org admin could grant a child org any programme on the platform, including paid ones, then create a learner there to consume it. | **Remediated.** Child-org programme assignment is now constrained to a subset of the parent's own programmes. |
@@ -97,6 +97,8 @@ Password-reset, welcome and invite tokens are stored as SHA-256 digests; all tok
 
 ## 6. Follow-up design note — H1 (step-up second factor)
 
+> **Implemented in PR #99 (Oct 2026)**, using the existing password-step session cookie as the proof of the first factor rather than a separate pre-authentication token. The note is kept for the record.
+
 At the password step, in addition to setting the pending flag, issue a short-lived (about five minutes) signed pre-authentication token (the same mechanism already used for the SSO-registration intent token) and surface it to the verification page. The TOTP step then requires that token (or the password) so a bare code cannot complete sign-in. Add a per-account sliding-window limiter alongside the existing per-IP limiter.
 
 ---
@@ -106,3 +108,17 @@ At the password step, in addition to setting the pending flag, issue a short-liv
 - All automated tests pass (`npm run test`), including new tests for: the JWT callback keeping the MFA gate on `update`; the MFA setup-start endpoint refusing pending / already-enrolled sessions; the toolkit lead endpoint returning 409 for an existing email without touching the account; the schools endpoint rejecting programmes the parent lacks; conjunctive survey-notification targeting; survey-answer binding and value caps; the SSO URL/domain validation; and the Vercel-Blob URL guard.
 - The full production build passes (`npm run build` — Prisma client generation, the test run, and the Next.js build).
 - Production dependency audit after the change: no critical or high advisories remain other than the Next.js 14 line, which is tracked as the deferred framework upgrade (H5).
+
+---
+
+## 8. Updates since this review (October 2026)
+
+| Ref | Change | PR |
+|---|---|---|
+| H1 | TOTP code alone no longer signs a user in; the code is only accepted alongside a password-step session for the same account, with a per-account limiter. Password-reset links can no longer be redeemed at `/welcome` to skip TOTP. | #99 |
+| H5 | Upgraded to Next.js 15.5.28 and React 19. Every Next.js advisory is cleared. | #102 |
+| New (High) | The login page displayed raw server errors, so a database outage showed users Prisma's message including the database hostname. Unexpected sign-in errors are now logged and replaced with a neutral message. `/login?error=` no longer displays arbitrary text from the URL (content spoofing); only known codes and the app's own messages are shown. | #103 |
+| New (Medium) | TOTP codes were reusable for their ~90-second validity window. Each code is now single-use per account, for sign-in and for disabling MFA (used steps are recorded in Upstash Redis, falling back to per-instance memory). | #105 |
+| Dependencies | `sanitize-html` 2.18.1 (three XSS bypasses), `undici` 6.29.1 (TLS validation bypass), Next's bundled `postcss` lifted to 8.5.32, `zod` 4.6.7 (memory-exhaustion advisory). `npm audit` now reports only the two low Quill findings accepted in §4. | #101, #102, #104 |
+
+Still open from §3 and §4: **H3** (org-join policy, a product decision), the deferred Medium/Low items in §4, and SAML admin TOTP enforcement (needs every SAML-using admin enrolled first).
