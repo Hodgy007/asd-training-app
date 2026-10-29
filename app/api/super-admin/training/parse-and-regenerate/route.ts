@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { parseFiles, getSupportedExtensions } from '@/lib/file-parser'
+import { checkTrainingPlanLimits } from '@/lib/training-gen/limits'
 import { generateLessonContent, generateQuizForLesson, withRetry } from '@/lib/content-generator'
 import type {
   ParsedFile,
@@ -33,6 +34,9 @@ export async function POST(req: NextRequest) {
   if (!process.env.AI_GATEWAY_API_KEY) {
     return new Response(JSON.stringify({ error: 'AI_GATEWAY_API_KEY is not configured' }), { status: 500 })
   }
+
+  const limited = await checkTrainingPlanLimits(session.user.id)
+  if (limited) return limited
 
   let formData: FormData
   try {

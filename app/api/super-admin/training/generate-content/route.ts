@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   const { outline, parsedContent, mode, lens } = body
 
   if (!outline || !outline.modules || !Array.isArray(outline.modules)) {
-    return new Response(JSON.stringify({ error: 'outline-solid is required' }), { status: 400 })
+    return new Response(JSON.stringify({ error: 'outline is required' }), { status: 400 })
   }
   if (!parsedContent || !Array.isArray(parsedContent) || parsedContent.length === 0) {
     return new Response(JSON.stringify({ error: 'parsedContent is required and must be a non-empty array' }), { status: 400 })

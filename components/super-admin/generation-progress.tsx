@@ -3,7 +3,7 @@
 import { CircleCheckBig, LoaderCircle, Circle, TriangleAlert } from 'lucide-react'
 import { clsx } from 'clsx'
 
-export type ProgressPhase = 'parsing' | 'outline-solid' | 'content' | 'quiz' | 'complete' | 'error'
+export type ProgressPhase = 'parsing' | 'outline' | 'content' | 'quiz' | 'complete' | 'error'
 
 interface GenerationProgressProps {
   phase: ProgressPhase
@@ -13,7 +13,7 @@ interface GenerationProgressProps {
   errors: string[]
 }
 
-const PHASE_ORDER: ProgressPhase[] = ['parsing', 'outline-solid', 'content', 'quiz', 'complete']
+const PHASE_ORDER: ProgressPhase[] = ['parsing', 'outline', 'content', 'quiz', 'complete']
 
 function getPhaseIndex(phase: ProgressPhase): number {
   if (phase === 'error') return -1
@@ -29,7 +29,7 @@ function computeProgressPercent(
   if (phase === 'complete') return 100
   if (phase === 'error') return 0
   if (phase === 'parsing') return 5
-  if (phase === 'outline-solid') return 15
+  if (phase === 'outline') return 15
 
   // content or quiz — 15% to 95% spread across lessons * 2 phases
   const totalSteps = totalLessons * 2
@@ -48,7 +48,7 @@ interface Step {
 
 const STEPS: Step[] = [
   { key: 'parsing', label: () => 'Parsing files...' },
-  { key: 'outline-solid', label: () => 'Creating outline...' },
+  { key: 'outline', label: () => 'Creating outline...' },
   {
     key: 'content',
     label: (currentLesson, totalLessons, currentPhase) =>

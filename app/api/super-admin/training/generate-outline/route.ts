@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const outline = await withRetry(() => generateOutline(parsedContent, mode, programName.trim()))
     return NextResponse.json(outline)
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to generate outline-solid'
+    const message = err instanceof Error ? err.message : 'Failed to generate outline'
     return NextResponse.json({ error: message }, { status: 502 })
   }
 }

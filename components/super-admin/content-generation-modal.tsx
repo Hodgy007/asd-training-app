@@ -163,7 +163,7 @@ export function ContentGenerationModal({
       setParsedContent(parsedFiles)
 
       // Step 2: Generate outline
-      setProgressPhase('outline-solid')
+      setProgressPhase('outline')
 
       const outlineRes = await fetch('/api/super-admin/training/generate-outline', {
         method: 'POST',
@@ -178,7 +178,7 @@ export function ContentGenerationModal({
 
       if (!outlineRes.ok) {
         const err = await outlineRes.json().catch(() => ({ error: 'Outline generation failed' }))
-        throw new Error(err.error ?? 'Failed to generate outline-solid')
+        throw new Error(err.error ?? 'Failed to generate outline')
       }
 
       const outline = await outlineRes.json()

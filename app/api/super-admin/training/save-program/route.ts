@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import prisma from '@/lib/prisma'
+import { sanitizeHtml } from '@/lib/sanitize'
 import type { GeneratedProgram } from '@/lib/content-generator-types'
 
 export async function POST(req: NextRequest) {
@@ -25,6 +26,22 @@ export async function POST(req: NextRequest) {
   }
   if (!modules || !Array.isArray(modules)) {
     return NextResponse.json({ error: 'modules is required and must be an array' }, { status: 400 })
+  }
+
+  // A correctAnswer that matches no option makes the question unanswerable for
+  // learners, so refuse the save rather than store it.
+  for (const mod of modules) {
+    for (const lesson of mod.lessons ?? []) {
+      const broken = (lesson.quizQuestions ?? []).some(
+        (q) => !Array.isArray(q.options) || !q.options.includes(q.correctAnswer),
+      )
+      if (broken) {
+        return NextResponse.json(
+          { error: `Lesson "${lesson.title}": a quiz question's correct answer is not one of its options` },
+          { status: 400 },
+        )
+      }
+    }
   }
 
   try {
@@ -73,7 +90,7 @@ export async function POST(req: NextRequest) {
               moduleId,
               title: lesson.title,
               type: 'TEXT',
-              content: lesson.content ?? '',
+              content: sanitizeHtml(lesson.content ?? ''),
               order: lesOrder,
               active: publish === true,
             },
