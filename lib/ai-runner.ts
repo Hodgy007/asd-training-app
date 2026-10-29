@@ -1,4 +1,5 @@
-import { generateText } from 'ai'
+import { generateText, Output } from 'ai'
+import type { z } from 'zod'
 import { createOpenAI } from '@ai-sdk/openai'
 import { prisma } from '@/lib/prisma'
 import { assemblePrompt } from '@/lib/ai-runner-assemble'
@@ -50,44 +51,9 @@ export async function runPrompt(
 ): Promise<string> {
   const startedAt = Date.now()
 
-  const row = await prisma.aiPrompt.findUnique({
-    where: { key },
-    include: {
-      contextFiles: {
-        select: { fileName: true, parsedText: true },
-      },
-    },
-  })
-
-  if (!row) {
-    logger.error('ai.runner.prompt_missing', { promptKey: key })
-    return AI_FEATURE_UNAVAILABLE
-  }
-
-  if (!row.enabled) {
-    logger.warn('ai.runner.prompt_disabled', { promptKey: key })
-    return AI_FEATURE_UNAVAILABLE
-  }
-
-  const prompt = assemblePrompt(
-    {
-      purpose: row.purpose,
-      tone: row.tone,
-      requirements: row.requirements,
-      exampleOutput: row.exampleOutput,
-      inputVariables: row.inputVariables,
-      responseFormat: row.responseFormat,
-      contextFiles: row.contextFiles,
-    },
-    values,
-  )
-
-  logger.info('ai.runner.invoke', {
-    promptKey: key,
-    model: row.model,
-    contextFiles: row.contextFiles.length,
-    inputVarCount: Object.keys(values).length,
-  })
+  const loaded = await loadAssembledPrompt(key, values)
+  if ('unavailable' in loaded) return AI_FEATURE_UNAVAILABLE
+  const { row, prompt } = loaded
 
   try {
     const { text, usage } = await generateText({
@@ -114,6 +80,100 @@ export async function runPrompt(
     })
     return AI_FEATURE_UNAVAILABLE
   }
+}
+
+/**
+ * Like `runPrompt`, but the model must return data matching `schema` (AI SDK
+ * structured output), which is validated before it is returned. Throws
+ * `AiUnavailableError` rather than returning a sentinel, since a typed result
+ * has no room for one.
+ */
+export async function runPromptObject<T>(
+  key: string,
+  values: Record<string, string>,
+  schema: z.ZodType<T>,
+): Promise<T> {
+  const startedAt = Date.now()
+
+  const loaded = await loadAssembledPrompt(key, values)
+  if ('unavailable' in loaded) throw new AiUnavailableError(loaded.unavailable)
+  const { row, prompt } = loaded
+
+  try {
+    const { output, usage } = await generateText({
+      model: gateway(row.model),
+      prompt,
+      output: Output.object({ schema }),
+      maxRetries: 3,
+    })
+    logger.info('ai.runner.success', {
+      promptKey: key,
+      model: row.model,
+      durationMs: Date.now() - startedAt,
+      inputTokens: usage?.inputTokens,
+      outputTokens: usage?.outputTokens,
+      totalTokens: usage?.totalTokens,
+    })
+    return output as T
+  } catch (error) {
+    logger.error('ai.runner.failed', {
+      promptKey: key,
+      model: row.model,
+      durationMs: Date.now() - startedAt,
+      ...errMeta(error),
+    })
+    throw new AiUnavailableError('failed', error)
+  }
+}
+
+type LoadedPrompt =
+  | { unavailable: 'missing_prompt' | 'disabled' }
+  | { row: { model: string }; prompt: string }
+
+async function loadAssembledPrompt(
+  key: string,
+  values: Record<string, string>,
+): Promise<LoadedPrompt> {
+  const row = await prisma.aiPrompt.findUnique({
+    where: { key },
+    include: {
+      contextFiles: {
+        select: { fileName: true, parsedText: true },
+      },
+    },
+  })
+
+  if (!row) {
+    logger.error('ai.runner.prompt_missing', { promptKey: key })
+    return { unavailable: 'missing_prompt' }
+  }
+
+  if (!row.enabled) {
+    logger.warn('ai.runner.prompt_disabled', { promptKey: key })
+    return { unavailable: 'disabled' }
+  }
+
+  const prompt = assemblePrompt(
+    {
+      purpose: row.purpose,
+      tone: row.tone,
+      requirements: row.requirements,
+      exampleOutput: row.exampleOutput,
+      inputVariables: row.inputVariables,
+      responseFormat: row.responseFormat,
+      contextFiles: row.contextFiles,
+    },
+    values,
+  )
+
+  logger.info('ai.runner.invoke', {
+    promptKey: key,
+    model: row.model,
+    contextFiles: row.contextFiles.length,
+    inputVarCount: Object.keys(values).length,
+  })
+
+  return { row, prompt }
 }
 
 /**
