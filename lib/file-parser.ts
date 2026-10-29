@@ -4,6 +4,7 @@
 import AdmZip from 'adm-zip'
 import { parseStringPromise } from 'xml2js'
 import type { ParsedFile, ParsedSection } from './content-generator-types'
+import { extractPdfText } from './pdf-text'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -50,12 +51,7 @@ function isHeadingLine(line: string): boolean {
 }
 
 async function parsePdf(buffer: Buffer): Promise<ParsedSection[]> {
-  const pdfParseModule = await import('pdf-parse')
-  const pdfParse = (pdfParseModule as unknown as { default: (b: Buffer) => Promise<{ text: string }> }).default
-    ?? (pdfParseModule as unknown as (b: Buffer) => Promise<{ text: string }>)
-  const result = await pdfParse(buffer)
-
-  const fullText = result.text
+  const fullText = await extractPdfText(buffer)
   const rawSections = fullText.split(/\n\n+/)
 
   const sections: ParsedSection[] = []

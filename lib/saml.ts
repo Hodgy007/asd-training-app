@@ -1,3 +1,7 @@
+// Keep @xmldom/xmldom on the same major as xml-crypto's own copy (0.8 today).
+// The signature is verified on xml-crypto's parse and the signed element is
+// then looked up on ours, so two parsers that disagree about a document would
+// reopen the signature-wrapping hole findSignedElement exists to close.
 import { DOMParser } from '@xmldom/xmldom'
 import { SignedXml } from 'xml-crypto'
 import { parseStringPromise } from 'xml2js'
