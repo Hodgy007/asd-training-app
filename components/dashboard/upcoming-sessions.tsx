@@ -34,7 +34,7 @@ function PlatformBadge({ platform }: { platform: ClassSession['platform'] }) {
   const Icon = platform === 'IN_PERSON' ? MapPin : Video
   return (
     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium ${styles[platform]}`}>
-      <Icon className="h-2.5 w-2.5" />
+      <Icon className="h-3.5 w-3.5" />
       {labels[platform]}
     </span>
   )
