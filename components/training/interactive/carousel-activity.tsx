@@ -110,7 +110,7 @@ export function CarouselActivity({
   const atStart = safeIdx === 0
   const atEnd = safeIdx === slides.length - 1
 
-  const chevronBase = 'w-10 h-10 rounded-full flex items-center justify-center transition-colors flex-shrink-0'
+  const chevronBase = 'w-10 h-10 rounded-full flex items-center justify-center transition-colors shrink-0'
   const chevronEnabled = 'bg-slate-900 text-white hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white'
   const chevronDisabled = 'bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-500 cursor-not-allowed'
 
@@ -127,7 +127,7 @@ export function CarouselActivity({
         role="group"
         aria-roledescription="carousel"
         aria-label={title || 'Carousel'}
-        className="rounded-2xl border border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 overflow-hidden"
+        className="rounded-2xl border border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary-500 overflow-hidden"
       >
         {/* Slide content */}
         <div className="p-6 sm:p-8">

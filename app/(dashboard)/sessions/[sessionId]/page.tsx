@@ -356,7 +356,7 @@ export default function SessionDetailPage() {
                   value={meetingUrl}
                   onChange={(e) => setMeetingUrl(e.target.value)}
                   placeholder="https://zoom.us/j/..."
-                  className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               <div>
@@ -369,7 +369,7 @@ export default function SessionDetailPage() {
                   value={recordingUrl}
                   onChange={(e) => setRecordingUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
@@ -408,7 +408,7 @@ export default function SessionDetailPage() {
                 key={a.id}
                 className="flex items-center gap-3 p-3 bg-calm-50 dark:bg-slate-700/50 rounded-xl"
               >
-                <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900/40 rounded-full flex items-center justify-center shrink-0">
                   <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">
                     {(a.user.name || a.user.email).charAt(0).toUpperCase()}
                   </span>
@@ -424,14 +424,14 @@ export default function SessionDetailPage() {
                   )}
                 </div>
                 {isHost ? (
-                  <label className="flex items-center gap-2 cursor-pointer flex-shrink-0">
+                  <label className="flex items-center gap-2 cursor-pointer shrink-0">
                     <input
                       type="checkbox"
                       checked={attendance[a.id] ?? false}
                       onChange={(e) =>
                         setAttendance((prev) => ({ ...prev, [a.id]: e.target.checked }))
                       }
-                      className="w-4 h-4 rounded border-calm-300 text-primary-500 focus:ring-primary-500"
+                      className="w-4 h-4 rounded-sm border-calm-300 text-primary-500 focus:ring-primary-500"
                     />
                     <span className="text-xs text-slate-500 dark:text-slate-400">Attended</span>
                   </label>

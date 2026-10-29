@@ -298,7 +298,7 @@ export default function OrgAdminUsersPage() {
                   required
                   value={createForm.name}
                   onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
+                  className="w-full px-3 py-2 rounded-lg border border-calm-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white"
                   placeholder="Jane Smith"
                 />
               </div>
@@ -311,7 +311,7 @@ export default function OrgAdminUsersPage() {
                   required
                   value={createForm.email}
                   onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
+                  className="w-full px-3 py-2 rounded-lg border border-calm-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white"
                   placeholder="jane@example.com"
                 />
               </div>
@@ -323,7 +323,7 @@ export default function OrgAdminUsersPage() {
                   <select
                     value={createForm.role}
                     onChange={(e) => setCreateForm((f) => ({ ...f, role: e.target.value }))}
-                    className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white text-slate-700"
+                    className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-calm-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white text-slate-700"
                   >
                     {allowedRoles.map((r) => (
                       <option key={r} value={r}>
@@ -341,13 +341,13 @@ export default function OrgAdminUsersPage() {
                   type="button"
                   onClick={() => setCreateForm((f) => ({ ...f, ssoOnly: !f.ssoOnly }))}
                   className={clsx(
-                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300',
+                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-300',
                     createForm.ssoOnly ? 'bg-emerald-500' : 'bg-slate-200'
                   )}
                 >
                   <span
                     className={clsx(
-                      'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                      'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform',
                       createForm.ssoOnly ? 'translate-x-6' : 'translate-x-1'
                     )}
                   />
@@ -369,7 +369,7 @@ export default function OrgAdminUsersPage() {
                   minLength={8}
                   value={createForm.password}
                   onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white font-mono"
+                  className="w-full px-3 py-2 rounded-lg border border-calm-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white font-mono"
                   placeholder="Min. 8 characters"
                 />
               </div>
@@ -436,14 +436,14 @@ export default function OrgAdminUsersPage() {
             placeholder="Search by name or email..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-calm-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white"
           />
         </div>
         <div className="relative">
           <select
             value={roleFilter}
             onChange={(e) => { setRoleFilter(e.target.value); setPage(1) }}
-            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white text-slate-700"
+            className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-calm-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white text-slate-700"
           >
             <option value="">All roles</option>
             {allowedRoles.map((r) => (
@@ -507,7 +507,7 @@ export default function OrgAdminUsersPage() {
                         <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                           {user.name ?? '--'}
                           {user.ssoOnly && (
-                            <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-primary-500 dark:text-primary-400 flex-shrink-0" /></span>
+                            <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-primary-500 dark:text-primary-400 shrink-0" /></span>
                           )}
                           {isSelf && (
                             <span className="ml-1 text-xs text-emerald-600 font-normal">(you)</span>

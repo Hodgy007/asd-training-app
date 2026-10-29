@@ -33,7 +33,7 @@ export function WorkshopCard({
   })
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-[#ffffff] shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-[#ffffff] shadow-xs transition hover:-translate-y-1 hover:shadow-xl">
       {imageUrl ? (
         <div className="relative h-40 w-full overflow-hidden bg-slate-100">
           <img
@@ -42,7 +42,7 @@ export function WorkshopCard({
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           <div
-            className="absolute top-3 left-3 inline-flex items-center gap-2 rounded-xl bg-[#ffffff]/95 px-3 py-2 shadow-sm"
+            className="absolute top-3 left-3 inline-flex items-center gap-2 rounded-xl bg-[#ffffff]/95 px-3 py-2 shadow-xs"
             style={{ borderLeft: `3px solid ${accentHex}` }}
           >
             <div className="leading-none">
@@ -53,7 +53,7 @@ export function WorkshopCard({
             </div>
           </div>
           {soldOut ? (
-            <span className="absolute top-3 right-3 inline-flex items-center rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow-sm">
+            <span className="absolute top-3 right-3 inline-flex items-center rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow-xs">
               Sold out
             </span>
           ) : null}
@@ -70,7 +70,7 @@ export function WorkshopCard({
             </p>
           </div>
           {soldOut ? (
-            <span className="absolute top-3 right-3 inline-flex items-center rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow-sm">
+            <span className="absolute top-3 right-3 inline-flex items-center rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow-xs">
               Sold out
             </span>
           ) : null}
@@ -113,7 +113,7 @@ export function WorkshopCard({
               href={ticketUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:brightness-110 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ backgroundColor: accentHex }}
             >
               {soldOut ? 'View on Eventbrite' : 'Book on Eventbrite'}

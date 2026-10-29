@@ -77,7 +77,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-1 max-w-sm gap-4 animate-stagger">
         <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center shrink-0">
             <BookOpen className="h-6 w-6 text-primary-600" />
           </div>
           <div>

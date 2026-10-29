@@ -44,14 +44,14 @@ export function JobList({
         <div className="flex gap-2 text-xs">
           <button
             type="button"
-            className={`px-2 py-1 rounded ${sort === 'newest' ? 'bg-slate-900 text-white' : 'bg-slate-100'}`}
+            className={`px-2 py-1 rounded-sm ${sort === 'newest' ? 'bg-slate-900 text-white' : 'bg-slate-100'}`}
             onClick={() => setSort('newest')}
           >
             Newest
           </button>
           <button
             type="button"
-            className={`px-2 py-1 rounded ${sort === 'closing' ? 'bg-slate-900 text-white' : 'bg-slate-100'}`}
+            className={`px-2 py-1 rounded-sm ${sort === 'closing' ? 'bg-slate-900 text-white' : 'bg-slate-100'}`}
             onClick={() => setSort('closing')}
           >
             Closing soon

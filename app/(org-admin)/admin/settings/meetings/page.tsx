@@ -181,7 +181,7 @@ export default function MeetingSettingsPage() {
       </div>
 
       {/* Settings Card */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-5">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-5">
         {/* Platform selector */}
         <div>
           <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Platform</label>
@@ -222,7 +222,7 @@ export default function MeetingSettingsPage() {
                 type="text"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                 placeholder="Your Zoom Account ID"
               />
             </div>
@@ -232,7 +232,7 @@ export default function MeetingSettingsPage() {
                 type="text"
                 value={apiSecret}
                 onChange={(e) => setApiSecret(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                 placeholder="Your Zoom Client ID"
               />
             </div>
@@ -242,7 +242,7 @@ export default function MeetingSettingsPage() {
                 type="password"
                 value={tenantId}
                 onChange={(e) => setTenantId(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                 placeholder="Your Zoom Client Secret"
               />
             </div>
@@ -258,7 +258,7 @@ export default function MeetingSettingsPage() {
                 type="text"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                 placeholder="Azure AD Application Client ID"
               />
             </div>
@@ -268,7 +268,7 @@ export default function MeetingSettingsPage() {
                 type="password"
                 value={apiSecret}
                 onChange={(e) => setApiSecret(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                 placeholder="Azure AD Client Secret"
               />
             </div>
@@ -278,7 +278,7 @@ export default function MeetingSettingsPage() {
                 type="text"
                 value={tenantId}
                 onChange={(e) => setTenantId(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                 placeholder="Azure AD Tenant ID"
               />
             </div>
@@ -293,7 +293,7 @@ export default function MeetingSettingsPage() {
               ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
               : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'
           )}>
-            {testResult.success ? <CheckCircle className="h-4 w-4 flex-shrink-0" /> : <XCircle className="h-4 w-4 flex-shrink-0" />}
+            {testResult.success ? <CheckCircle className="h-4 w-4 shrink-0" /> : <XCircle className="h-4 w-4 shrink-0" />}
             {testResult.message}
           </div>
         )}

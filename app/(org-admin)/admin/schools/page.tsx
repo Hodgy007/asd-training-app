@@ -348,13 +348,13 @@ export default function SchoolsPage() {
                   type="button"
                   onClick={() => setFormInherit(!formInherit)}
                   className={clsx(
-                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300',
+                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-300',
                     formInherit ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-600'
                   )}
                 >
                   <span
                     className={clsx(
-                      'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                      'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform',
                       formInherit ? 'translate-x-6' : 'translate-x-1'
                     )}
                   />
@@ -381,7 +381,7 @@ export default function SchoolsPage() {
                             type="checkbox"
                             checked={formRoles.includes(role)}
                             onChange={() => toggleRole(role)}
-                            className="rounded border-calm-300 text-emerald-600 focus:ring-emerald-500"
+                            className="rounded-sm border-calm-300 text-emerald-600 focus:ring-emerald-500"
                           />
                           <span className="text-sm text-slate-700 dark:text-slate-300">{ROLE_LABELS[role] ?? role}</span>
                         </label>
@@ -399,7 +399,7 @@ export default function SchoolsPage() {
                             type="checkbox"
                             checked={formPrograms.includes(prog.id)}
                             onChange={() => toggleProgram(prog.id)}
-                            className="rounded border-calm-300 text-emerald-600 focus:ring-emerald-500"
+                            className="rounded-sm border-calm-300 text-emerald-600 focus:ring-emerald-500"
                           />
                           <span className="text-sm text-slate-700 dark:text-slate-300">{prog.name}</span>
                         </label>

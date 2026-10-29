@@ -127,7 +127,7 @@ export function FontSettings() {
                   onClick={() => setFontSize(step)}
                   aria-label={`Set font size to ${step}%`}
                   className={clsx(
-                    'flex-1 rounded-sm transition-all',
+                    'flex-1 rounded-xs transition-all',
                     fontSize === step
                       ? 'bg-primary-500'
                       : 'bg-calm-200 dark:bg-slate-600 hover:bg-primary-300 dark:hover:bg-primary-700',

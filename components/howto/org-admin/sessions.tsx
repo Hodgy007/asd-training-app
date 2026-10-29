@@ -32,11 +32,11 @@ export default function SessionsHowTo() {
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">After the Session</h3>
       <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
         <li className="flex items-start gap-2">
-          <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+          <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
           <span>Mark attendance using the checkboxes next to each attendee&apos;s name.</span>
         </li>
         <li className="flex items-start gap-2">
-          <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+          <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
           <span>Add a recording URL so attendees who missed the session can catch up.</span>
         </li>
       </ul>

@@ -31,7 +31,7 @@ function PctBadge({ pct }: { pct: number }) {
       ? 'bg-amber-50 text-amber-700'
       : 'bg-rose-50 text-rose-700'
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${tone}`}>
+    <span className={`inline-block px-2 py-0.5 rounded-sm text-xs font-semibold ${tone}`}>
       {pct}%
     </span>
   )

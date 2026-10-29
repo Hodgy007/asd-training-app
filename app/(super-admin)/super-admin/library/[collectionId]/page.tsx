@@ -704,7 +704,7 @@ export default function CollectionDetailPage() {
                     this collection, with optional thumbnail chained off the
                     description. */}
                 <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
-                  <Sparkles className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                  <Sparkles className="h-4 w-4 text-primary-500 shrink-0" />
                   <span className="text-xs text-primary-700 dark:text-primary-300 font-medium mr-1">AI Assist:</span>
                   <button
                     type="button"
@@ -730,10 +730,10 @@ export default function CollectionDetailPage() {
                     placeholder="Optional topic seed (e.g. autistic young people in the workplace)"
                     value={aiCollectionTopic}
                     onChange={(e) => setAiCollectionTopic(e.target.value)}
-                    className="flex-1 min-w-[12rem] text-xs rounded-md border border-primary-200 dark:border-primary-800 bg-white dark:bg-slate-700 px-2 py-1"
+                    className="flex-1 min-w-48 text-xs rounded-md border border-primary-200 dark:border-primary-800 bg-white dark:bg-slate-700 px-2 py-1"
                   />
                   <label className="inline-flex items-center gap-1.5 text-xs text-primary-700 dark:text-primary-300 cursor-pointer select-none">
-                    <input type="checkbox" checked={aiUseBrandStore} onChange={(e) => setAiUseBrandStore(e.target.checked)} className="rounded border-primary-300 text-primary-600 focus:ring-primary-500 h-3.5 w-3.5" />
+                    <input type="checkbox" checked={aiUseBrandStore} onChange={(e) => setAiUseBrandStore(e.target.checked)} className="rounded-sm border-primary-300 text-primary-600 focus:ring-primary-500 h-3.5 w-3.5" />
                     Use brand store
                   </label>
                 </div>
@@ -891,7 +891,7 @@ export default function CollectionDetailPage() {
                   </h1>
                   <button
                     onClick={startEditCollection}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors shrink-0"
                     title="Edit collection name and description"
                   >
                     <Pencil className="h-4 w-4" />
@@ -903,7 +903,7 @@ export default function CollectionDetailPage() {
           </div>
         </div>
         {!editingCollection && (
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => { setShowForm((v) => !v); if (showForm) resetForm() }}
               className="btn-primary flex items-center gap-2"
@@ -946,8 +946,8 @@ export default function CollectionDetailPage() {
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
               {zipResults.created > 0
-                ? <CheckCircle className="h-4 w-4 text-sage-600 dark:text-sage-400 flex-shrink-0" />
-                : <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                ? <CheckCircle className="h-4 w-4 text-sage-600 dark:text-sage-400 shrink-0" />
+                : <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
               }
               <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
                 {zipResults.created > 0
@@ -963,7 +963,7 @@ export default function CollectionDetailPage() {
             </div>
             <button
               onClick={() => setZipResults(null)}
-              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 flex-shrink-0"
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 shrink-0"
             >
               <X className="h-4 w-4" />
             </button>
@@ -983,7 +983,7 @@ export default function CollectionDetailPage() {
                 <ul className="mt-2 space-y-1">
                   {zipResults.errors.map((e, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
-                      <XCircle className="h-3.5 w-3.5 text-red-400 flex-shrink-0 mt-0.5" />
+                      <XCircle className="h-3.5 w-3.5 text-red-400 shrink-0 mt-0.5" />
                       <span><span className="font-medium">{e.fileName}</span> — {e.error}</span>
                     </li>
                   ))}
@@ -1025,7 +1025,7 @@ export default function CollectionDetailPage() {
             {/* AI generate buttons — only show when file is selected */}
             {formFile && (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
-                <Sparkles className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                <Sparkles className="h-4 w-4 text-primary-500 shrink-0" />
                 <span className="text-sm text-primary-700 dark:text-primary-300 font-medium mr-2">AI Assist:</span>
                 <button
                   type="button"
@@ -1190,7 +1190,7 @@ export default function CollectionDetailPage() {
 
                     {/* AI Assist row — same options as the upload form */}
                     <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
-                      <Sparkles className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                      <Sparkles className="h-4 w-4 text-primary-500 shrink-0" />
                       <span className="text-xs text-primary-700 dark:text-primary-300 font-medium mr-1">AI Assist:</span>
                       <button
                         type="button"
@@ -1318,13 +1318,13 @@ export default function CollectionDetailPage() {
                   {/* Thumbnail or icon */}
                   {doc.thumbnailUrl ? (
                     <div
-                      className="h-10 w-10 rounded-lg overflow-hidden flex-shrink-0 border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
+                      className="h-10 w-10 rounded-lg overflow-hidden shrink-0 border border-calm-200 dark:border-slate-600 cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => setZoomedImage(doc.thumbnailUrl)}
                     >
                       <img src={doc.thumbnailUrl} alt="" className="h-full w-full object-cover" />
                     </div>
                   ) : (
-                    <div className="h-10 w-10 rounded-lg bg-calm-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                    <div className="h-10 w-10 rounded-lg bg-calm-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
                       <FileText className="h-5 w-5 text-slate-400" />
                     </div>
                   )}
@@ -1343,7 +1343,7 @@ export default function CollectionDetailPage() {
                       value={doc.sectionId ?? ''}
                       disabled={actionLoading === doc.id + '-section'}
                       onChange={(e) => handleChangeSection(doc, e.target.value || null)}
-                      className="text-xs rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1 max-w-[12rem] truncate"
+                      className="text-xs rounded-md border border-calm-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1 max-w-48 truncate"
                       title="Move to section"
                     >
                       <option value="">No section</option>
@@ -1354,12 +1354,12 @@ export default function CollectionDetailPage() {
                   )}
 
                   {/* Reorder within section / unsectioned bucket */}
-                  <div className="flex flex-col gap-0.5 flex-shrink-0">
+                  <div className="flex flex-col gap-0.5 shrink-0">
                     <button
                       type="button"
                       disabled={actionLoading === doc.id + '-reorder'}
                       onClick={() => handleSwapDocOrder(doc, -1)}
-                      className="p-0.5 rounded text-slate-400 hover:text-slate-700 disabled:opacity-25"
+                      className="p-0.5 rounded-sm text-slate-400 hover:text-slate-700 disabled:opacity-25"
                       title="Move up within section"
                     >
                       <ChevronUp className="h-4 w-4" />
@@ -1368,7 +1368,7 @@ export default function CollectionDetailPage() {
                       type="button"
                       disabled={actionLoading === doc.id + '-reorder'}
                       onClick={() => handleSwapDocOrder(doc, 1)}
-                      className="p-0.5 rounded text-slate-400 hover:text-slate-700 disabled:opacity-25"
+                      className="p-0.5 rounded-sm text-slate-400 hover:text-slate-700 disabled:opacity-25"
                       title="Move down within section"
                     >
                       <ChevronDown className="h-4 w-4" />
@@ -1376,7 +1376,7 @@ export default function CollectionDetailPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     {/* Active/Inactive toggle */}
                     <button
                       disabled={actionLoading === doc.id + '-toggle'}

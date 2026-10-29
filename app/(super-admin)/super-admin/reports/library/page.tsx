@@ -151,7 +151,7 @@ function CollectionRow({ col, isExpanded, onToggle }: { col: CollectionStat; isE
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate mr-3">
                         {ob.orgName}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                      <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 shrink-0">
                         <Download className="h-3 w-3" /> {ob.downloads}
                       </span>
                     </div>
@@ -171,12 +171,12 @@ function CollectionRow({ col, isExpanded, onToggle }: { col: CollectionStat; isE
                       key={doc.id}
                       className="flex items-center gap-3 bg-white dark:bg-slate-700 rounded-lg px-3 py-2 border border-calm-200 dark:border-slate-600"
                     >
-                      <FileText className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                      <FileText className="h-4 w-4 text-slate-400 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{doc.title}</p>
                         <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{doc.fileName}</p>
                       </div>
-                      <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                      <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 shrink-0">
                         <Download className="h-3 w-3" /> {doc.downloads}
                       </span>
                     </div>
@@ -426,7 +426,7 @@ export default function LibraryReportPage() {
                     {registrantStats.topOrganisations.map((o, idx) => (
                       <div key={`${o.name}-${idx}`} className="flex items-center justify-between bg-calm-50 dark:bg-slate-800 rounded-lg px-3 py-2 border border-calm-200 dark:border-slate-700">
                         <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate mr-3">{o.name}</span>
-                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex-shrink-0">{o.count}</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100 shrink-0">{o.count}</span>
                       </div>
                     ))}
                   </div>

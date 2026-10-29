@@ -191,7 +191,7 @@ export function DragDropBuilder({ block, onChange }: DragDropBuilderProps) {
               />
               <button
                 onClick={() => deleteItem(idx)}
-                className="p-1.5 text-slate-400 hover:text-red-500 rounded"
+                className="p-1.5 text-slate-400 hover:text-red-500 rounded-sm"
                 aria-label="Delete item"
               >
                 <Trash2 className="h-4 w-4" />
@@ -235,12 +235,12 @@ export function DragDropBuilder({ block, onChange }: DragDropBuilderProps) {
                   ))}
                 </select>
                 <span
-                  className="w-6 h-6 rounded-full flex-shrink-0 border border-calm-200 dark:border-slate-600"
+                  className="w-6 h-6 rounded-full shrink-0 border border-calm-200 dark:border-slate-600"
                   style={{ backgroundColor: cat.color || '#6366f1' }}
                 />
                 <button
                   onClick={() => deleteCategory(idx)}
-                  className="p-1.5 text-slate-400 hover:text-red-500 rounded"
+                  className="p-1.5 text-slate-400 hover:text-red-500 rounded-sm"
                   aria-label="Delete category"
                 >
                   <Trash2 className="h-4 w-4" />

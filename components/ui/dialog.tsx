@@ -99,7 +99,7 @@ export const DialogContent = forwardRef<ElementRef<typeof DialogPrimitive.Conten
               onInteractOutside?.(e)
             }}
             className={cn(
-              'dialog-content pointer-events-auto relative w-full focus:outline-none',
+              'dialog-content pointer-events-auto relative w-full focus:outline-hidden',
               SIZE_CLASSES[size],
               !unstyled &&
                 'bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto',
@@ -110,7 +110,7 @@ export const DialogContent = forwardRef<ElementRef<typeof DialogPrimitive.Conten
             {children}
             {showClose && (
               <DialogPrimitive.Close
-                className="absolute right-4 top-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors"
+                className="absolute right-4 top-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 dark:hover:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-primary-400 transition-colors"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />

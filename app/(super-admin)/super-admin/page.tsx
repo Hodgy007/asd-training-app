@@ -356,14 +356,14 @@ export default async function SuperAdminPage() {
                   href={card.href}
                   className={`card group flex items-center gap-4 transition-all ${muted ? 'opacity-60 hover:opacity-100' : ''}`}
                 >
-                  <div className={`w-12 h-12 ${styles.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                  <div className={`w-12 h-12 ${styles.iconBg} rounded-xl flex items-center justify-center shrink-0`}>
                     <Icon className={`h-6 w-6 ${styles.iconText}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">{card.count}</p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">{card.label}</p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-600 dark:group-hover:text-slate-300 flex-shrink-0" />
+                  <ArrowRight className="h-4 w-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-600 dark:group-hover:text-slate-300 shrink-0" />
                 </Link>
               )
             })}
@@ -509,7 +509,7 @@ export default async function SuperAdminPage() {
                           : 'text-warm-500 dark:text-warm-400'
                   return (
                     <li key={event.id} className="px-4 py-3 flex items-start gap-3">
-                      <div className="w-8 h-8 bg-calm-100 dark:bg-slate-800 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-8 h-8 bg-calm-100 dark:bg-slate-800 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                         <Icon className={`h-4 w-4 ${iconColor}`} />
                       </div>
                       <div className="min-w-0 flex-1">

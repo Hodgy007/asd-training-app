@@ -216,7 +216,7 @@ export default function CreateSessionPage() {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Title */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-emerald-600" />
             Session Details
@@ -229,7 +229,7 @@ export default function CreateSessionPage() {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               placeholder="e.g. ASD Module 1 — Live Q&A"
             />
           </div>
@@ -240,7 +240,7 @@ export default function CreateSessionPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 resize-none"
+              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 resize-none"
               placeholder="Optional session description..."
             />
           </div>
@@ -253,7 +253,7 @@ export default function CreateSessionPage() {
                 required
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               />
             </div>
             <div>
@@ -264,7 +264,7 @@ export default function CreateSessionPage() {
                 max={480}
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               />
             </div>
           </div>
@@ -275,7 +275,7 @@ export default function CreateSessionPage() {
               <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value as 'ZOOM' | 'TEAMS' | 'CUSTOM' | 'IN_PERSON')}
-                className="w-full appearance-none px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full appearance-none px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               >
                 <option value="ZOOM">Zoom</option>
                 <option value="TEAMS">Microsoft Teams</option>
@@ -289,7 +289,7 @@ export default function CreateSessionPage() {
                 type="url"
                 value={meetingUrl}
                 onChange={(e) => setMeetingUrl(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                 placeholder="https://..."
               />
               {meetingConfig && meetingConfig.configured && (
@@ -306,7 +306,7 @@ export default function CreateSessionPage() {
               required
               value={hostId}
               onChange={(e) => setHostId(e.target.value)}
-              className="w-full appearance-none px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+              className="w-full appearance-none px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
             >
               <option value="">Select a host...</option>
               {users.map((u) => (
@@ -319,7 +319,7 @@ export default function CreateSessionPage() {
         </div>
 
         {/* Attendee Selection */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Attendee Selection</h2>
 
           {/* Invite all toggle */}
@@ -328,13 +328,13 @@ export default function CreateSessionPage() {
               type="button"
               onClick={() => setInviteAll(!inviteAll)}
               className={clsx(
-                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300',
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-300',
                 inviteAll ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-600'
               )}
             >
               <span
                 className={clsx(
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                  'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform',
                   inviteAll ? 'translate-x-6' : 'translate-x-1'
                 )}
               />
@@ -384,7 +384,7 @@ export default function CreateSessionPage() {
                       setShowSearchResults(true)
                     }}
                     onFocus={() => setShowSearchResults(true)}
-                    className="w-full pl-9 pr-4 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full pl-9 pr-4 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                     placeholder="Search by name or email..."
                   />
                   {showSearchResults && searchResults.length > 0 && (

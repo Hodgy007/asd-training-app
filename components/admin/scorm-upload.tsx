@@ -62,15 +62,15 @@ export function ScormUpload({ lessonId, initial }: ScormUploadProps) {
               href={`/api/scorm/${lessonId}/${state.scormEntryPath.split('/').map(encodeURIComponent).join('/')}`}
               target="_blank"
               rel="noreferrer"
-              className="rounded border px-3 py-1"
+              className="rounded-sm border px-3 py-1"
             >Preview</a>
-            <button onClick={handleRemove} disabled={busy} className="rounded border px-3 py-1">
+            <button onClick={handleRemove} disabled={busy} className="rounded-sm border px-3 py-1">
               Remove
             </button>
           </div>
         </div>
       ) : (
-        <label className="block cursor-pointer rounded border-2 border-dashed p-6 text-center">
+        <label className="block cursor-pointer rounded-sm border-2 border-dashed p-6 text-center">
           <input
             type="file"
             accept=".zip"

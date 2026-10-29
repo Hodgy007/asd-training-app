@@ -681,7 +681,7 @@ export default function OrgDetailPage() {
                     type="checkbox"
                     checked={editRoles.includes(role)}
                     onChange={() => toggleRole(role)}
-                    className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+                    className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500"
                   />
                   <span className="text-sm text-slate-700">{ROLE_LABELS[role] ?? role}</span>
                 </label>
@@ -697,7 +697,7 @@ export default function OrgDetailPage() {
               <select
                 value={editOrgType}
                 onChange={(e) => setEditOrgType(e.target.value)}
-                className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-calm-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-calm-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:border-slate-600 text-slate-700 dark:text-slate-200"
               >
                 {ORG_TYPES.map((t) => (
                   <option key={t} value={t}>{ORG_TYPE_LABELS[t]}</option>
@@ -737,8 +737,8 @@ export default function OrgDetailPage() {
                       )}
                     >
                       {isEnabled
-                        ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                        : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                        ? <CheckCircle className="h-4 w-4 shrink-0" />
+                        : <div className="h-4 w-4 rounded-full border-2 border-slate-300 shrink-0" />}
                       <div>
                         <p className="font-bold">{program.name}</p>
                         <p className="text-xs opacity-75">
@@ -780,8 +780,8 @@ export default function OrgDetailPage() {
                       )}
                     >
                       {isEnabled
-                        ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                        : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                        ? <CheckCircle className="h-4 w-4 shrink-0" />
+                        : <div className="h-4 w-4 rounded-full border-2 border-slate-300 shrink-0" />}
                       <div>
                         <p className="font-bold">{col.title}</p>
                         <p className="text-xs opacity-75">
@@ -823,8 +823,8 @@ export default function OrgDetailPage() {
                       )}
                     >
                       {isEnabled
-                        ? <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                        : <div className="h-4 w-4 rounded-full border-2 border-slate-300 flex-shrink-0" />}
+                        ? <CheckCircle className="h-4 w-4 shrink-0" />
+                        : <div className="h-4 w-4 rounded-full border-2 border-slate-300 shrink-0" />}
                       <div>
                         <p className="font-bold">{survey.title}</p>
                         <p className="text-xs opacity-75">
@@ -845,7 +845,7 @@ export default function OrgDetailPage() {
                 type="checkbox"
                 checked={editActive}
                 onChange={(e) => setEditActive(e.target.checked)}
-                className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+                className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm font-medium text-slate-700">Active</span>
             </label>
@@ -858,7 +858,7 @@ export default function OrgDetailPage() {
                 type="checkbox"
                 checked={editIsParentOrg}
                 onChange={(e) => setEditIsParentOrg(e.target.checked)}
-                className="rounded border-calm-300 text-primary-600 focus:ring-primary-500"
+                className="rounded-sm border-calm-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm font-medium text-slate-700">Parent Organisation</span>
             </label>
@@ -1026,7 +1026,7 @@ export default function OrgDetailPage() {
                         <p className="text-xs text-slate-400 italic px-2 py-1">No active programs.</p>
                       ) : (
                         programs.map((p) => (
-                          <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded hover:bg-calm-50">
+                          <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded-sm hover:bg-calm-50">
                             <input
                               type="checkbox"
                               checked={adminProgramIds.includes(p.id)}
@@ -1052,7 +1052,7 @@ export default function OrgDetailPage() {
                         <p className="text-xs text-slate-400 italic px-2 py-1">No surveys available.</p>
                       ) : (
                         org.availableSurveys.map((s) => (
-                          <label key={s.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded hover:bg-calm-50">
+                          <label key={s.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded-sm hover:bg-calm-50">
                             <input
                               type="checkbox"
                               checked={adminSurveyIds.includes(s.id)}
@@ -1128,7 +1128,7 @@ export default function OrgDetailPage() {
                         <span className="inline-flex items-center gap-1.5">
                           {user.name ?? <span className="text-slate-400 italic">--</span>}
                           {user.ssoOnly && (
-                            <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-primary-500 dark:text-primary-400 flex-shrink-0" /></span>
+                            <span title="SSO account"><ShieldCheck className="h-3.5 w-3.5 text-primary-500 dark:text-primary-400 shrink-0" /></span>
                           )}
                         </span>
                       </td>
@@ -1222,7 +1222,7 @@ export default function OrgDetailPage() {
                                   <p className="text-xs text-slate-400 italic px-2 py-1">No active programs.</p>
                                 ) : (
                                   programs.map((p) => (
-                                    <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded hover:bg-calm-50">
+                                    <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded-sm hover:bg-calm-50">
                                       <input
                                         type="checkbox"
                                         checked={editUserProgramIds.includes(p.id)}
@@ -1246,7 +1246,7 @@ export default function OrgDetailPage() {
                                   <p className="text-xs text-slate-400 italic px-2 py-1">No surveys available.</p>
                                 ) : (
                                   org.availableSurveys.map((s) => (
-                                    <label key={s.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded hover:bg-calm-50">
+                                    <label key={s.id} className="flex items-center gap-2 text-xs cursor-pointer px-2 py-1 rounded-sm hover:bg-calm-50">
                                       <input
                                         type="checkbox"
                                         checked={editUserSurveyIds.includes(s.id)}
@@ -1332,7 +1332,7 @@ export default function OrgDetailPage() {
       >
           <AlertDialogContent>
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
+              <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0">
                 <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
               <div>
@@ -1515,7 +1515,7 @@ function OrgDetailsView({
           <p className="text-sm text-slate-400 italic">No address on file.</p>
         ) : (
           <div className="flex items-start gap-2 text-sm text-slate-800 dark:text-slate-200">
-            <MapPin className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+            <MapPin className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
             <div>
               {addressLines.map((line, i) => (
                 <div key={i}>{line}</div>

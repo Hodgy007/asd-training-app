@@ -213,7 +213,7 @@ export default function NewSessionPage() {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+              className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               placeholder="e.g. ASD Module 1 — Live Q&A"
             />
           </div>
@@ -226,7 +226,7 @@ export default function NewSessionPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100 resize-none"
+              className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100 resize-none"
               placeholder="Optional session description..."
             />
           </div>
@@ -241,7 +241,7 @@ export default function NewSessionPage() {
                 required
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               />
             </div>
             <div>
@@ -254,7 +254,7 @@ export default function NewSessionPage() {
                 max={480}
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               />
             </div>
           </div>
@@ -267,7 +267,7 @@ export default function NewSessionPage() {
               <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value as 'ZOOM' | 'TEAMS' | 'CUSTOM')}
-                className="w-full appearance-none px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full appearance-none px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               >
                 <option value="ZOOM">Zoom</option>
                 <option value="TEAMS">Microsoft Teams</option>
@@ -282,7 +282,7 @@ export default function NewSessionPage() {
                 type="url"
                 value={meetingUrl}
                 onChange={(e) => setMeetingUrl(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="w-full px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                 placeholder="https://..."
               />
             </div>
@@ -296,7 +296,7 @@ export default function NewSessionPage() {
               required
               value={hostId}
               onChange={(e) => setHostId(e.target.value)}
-              className="w-full appearance-none px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+              className="w-full appearance-none px-3 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
             >
               <option value="">Select a host...</option>
               {users.map((u) => (
@@ -320,13 +320,13 @@ export default function NewSessionPage() {
               type="button"
               onClick={() => setInviteAll(!inviteAll)}
               className={clsx(
-                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-300',
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-primary-300',
                 inviteAll ? 'bg-primary-500' : 'bg-slate-200 dark:bg-slate-600'
               )}
             >
               <span
                 className={clsx(
-                  'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                  'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform',
                   inviteAll ? 'translate-x-6' : 'translate-x-1'
                 )}
               />
@@ -380,7 +380,7 @@ export default function NewSessionPage() {
                       setShowSearchResults(true)
                     }}
                     onFocus={() => setShowSearchResults(true)}
-                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                     placeholder="Search by name or email..."
                   />
                   {showSearchResults && searchResults.length > 0 && (

@@ -21,9 +21,9 @@ export function MobileNavDrawer({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <div className="fixed inset-0 z-50 md:hidden">
-          <DialogOverlay className="bg-black/40 backdrop-blur-sm" />
+          <DialogOverlay className="bg-black/40 backdrop-blur-xs" />
           <DialogPrimitive.Content
-            className="absolute left-0 top-0 h-full w-72 focus:outline-none"
+            className="absolute left-0 top-0 h-full w-72 focus:outline-hidden"
             aria-describedby={undefined}
           >
             <DialogPrimitive.Title className="sr-only">Navigation menu</DialogPrimitive.Title>

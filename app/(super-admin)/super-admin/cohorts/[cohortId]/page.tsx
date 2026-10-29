@@ -575,7 +575,7 @@ export default function CohortDetailPage() {
 
       {/* Invite link panel — only for active cohorts */}
       {cohort.lifecycleStatus === 'ACTIVE' && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-5 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-5 shadow-xs">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-3">
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -734,7 +734,7 @@ export default function CohortDetailPage() {
           {showAddMember && (
             <form
               onSubmit={handleAddMember}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-emerald-200 dark:border-emerald-800 p-5 shadow-sm space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-emerald-200 dark:border-emerald-800 p-5 shadow-xs space-y-4"
             >
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-emerald-600" />
@@ -749,7 +749,7 @@ export default function CohortDetailPage() {
                     value={memberName}
                     onChange={(e) => setMemberName(e.target.value)}
                     placeholder="Full name"
-                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                   />
                 </div>
                 <div>
@@ -760,7 +760,7 @@ export default function CohortDetailPage() {
                     value={memberEmail}
                     onChange={(e) => setMemberEmail(e.target.value)}
                     placeholder="email@example.com"
-                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                   />
                 </div>
                 <div>
@@ -771,7 +771,7 @@ export default function CohortDetailPage() {
                     value={memberPassword}
                     onChange={(e) => setMemberPassword(e.target.value)}
                     placeholder="Min 8 characters"
-                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                   />
                 </div>
                 <div>
@@ -779,7 +779,7 @@ export default function CohortDetailPage() {
                   <select
                     value={memberRole}
                     onChange={(e) => setMemberRole(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                   >
                     {Object.entries(ROLE_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>{label}</option>
@@ -808,12 +808,12 @@ export default function CohortDetailPage() {
 
           {/* Members list */}
           {cohort.users.length === 0 ? (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-xs">
               <Users className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
               <p className="text-sm text-slate-500 dark:text-slate-400">No members yet. Add individuals or import a CSV.</p>
             </div>
           ) : (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -918,7 +918,7 @@ export default function CohortDetailPage() {
           </div>
 
           {programs.length === 0 ? (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-xs">
               <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
               <p className="text-sm text-slate-500 dark:text-slate-400">No approved training programs available.</p>
             </div>
@@ -951,7 +951,7 @@ export default function CohortDetailPage() {
                     {editingPrograms && (
                       <input
                         type="checkbox"
-                        className="rounded accent-emerald-600"
+                        className="rounded-sm accent-emerald-600"
                         checked={isAssigned}
                         onChange={() => {}}
                         readOnly
@@ -1002,7 +1002,7 @@ export default function CohortDetailPage() {
           </div>
 
           {documents.length === 0 ? (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-xs">
               <FolderOpen className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
               <p className="text-sm text-slate-500 dark:text-slate-400">No document collections exist yet.</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
@@ -1030,7 +1030,7 @@ export default function CohortDetailPage() {
                     } : undefined}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <FolderOpen className={clsx('h-5 w-5 flex-shrink-0', isAssigned ? 'text-emerald-600' : 'text-slate-400')} />
+                      <FolderOpen className={clsx('h-5 w-5 shrink-0', isAssigned ? 'text-emerald-600' : 'text-slate-400')} />
                       <div className="min-w-0">
                         <p className={clsx('font-medium text-sm truncate', isAssigned ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400')}>
                           {doc.title}
@@ -1043,13 +1043,13 @@ export default function CohortDetailPage() {
                     {editingDocuments ? (
                       <input
                         type="checkbox"
-                        className="rounded accent-emerald-600 flex-shrink-0"
+                        className="rounded-sm accent-emerald-600 shrink-0"
                         checked={isAssigned}
                         onChange={() => {}}
                         readOnly
                       />
                     ) : isAssigned ? (
-                      <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                      <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
                     ) : null}
                   </div>
                 )
@@ -1093,7 +1093,7 @@ export default function CohortDetailPage() {
           </div>
 
           {surveys.length === 0 ? (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-xs">
               <ClipboardList className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
               <p className="text-sm text-slate-500 dark:text-slate-400">No surveys available.</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
@@ -1121,14 +1121,14 @@ export default function CohortDetailPage() {
                     } : undefined}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <ClipboardList className={clsx('h-5 w-5 flex-shrink-0', isAssigned ? 'text-emerald-600' : 'text-slate-400')} />
+                      <ClipboardList className={clsx('h-5 w-5 shrink-0', isAssigned ? 'text-emerald-600' : 'text-slate-400')} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className={clsx('font-medium text-sm truncate', isAssigned ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400')}>
                             {sv.title}
                           </p>
                           <span className={clsx(
-                            'text-[10px] px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0',
+                            'text-[10px] px-1.5 py-0.5 rounded-full font-semibold shrink-0',
                             sv.status === 'PUBLISHED'
                               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
                               : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
@@ -1145,13 +1145,13 @@ export default function CohortDetailPage() {
                     {editingSurveys ? (
                       <input
                         type="checkbox"
-                        className="rounded accent-emerald-600 flex-shrink-0"
+                        className="rounded-sm accent-emerald-600 shrink-0"
                         checked={isAssigned}
                         onChange={() => {}}
                         readOnly
                       />
                     ) : isAssigned ? (
-                      <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                      <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
                     ) : null}
                   </div>
                 )
@@ -1178,7 +1178,7 @@ export default function CohortDetailPage() {
           </div>
 
           {cohortSessions.length === 0 ? (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-10 text-center shadow-xs">
               <Calendar className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
               <p className="text-sm text-slate-500 dark:text-slate-400">No workshops yet.</p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
@@ -1191,10 +1191,10 @@ export default function CohortDetailPage() {
                 <Link
                   key={s.id}
                   href={`/super-admin/sessions/${s.id}`}
-                  className="flex items-center justify-between p-4 rounded-xl border border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:bg-calm-50 dark:hover:bg-slate-700 transition"
+                  className="flex items-center justify-between p-4 rounded-xl border border-calm-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xs hover:bg-calm-50 dark:hover:bg-slate-700 transition"
                 >
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                    <Calendar className="h-5 w-5 text-emerald-600 shrink-0" />
                     <div>
                       <p className="font-medium text-sm text-slate-900 dark:text-slate-100">{s.title}</p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">

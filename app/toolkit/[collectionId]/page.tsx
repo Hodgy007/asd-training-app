@@ -83,7 +83,7 @@ export default async function ToolkitCollectionPage(
   return (
     <ToolkitLeadModalHost>
     <div className="min-h-screen bg-[#FFFBF4] text-[#001522]">
-      <header className="sticky top-0 z-30 border-b border-[#FFE5C2] bg-[#FFFBF4]/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-[#FFE5C2] bg-[#FFFBF4]/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <Link href="/toolkit" className="flex items-center gap-3" aria-label="Back to all toolkits">
             <img src="/logo-aaa.svg" alt="" className="h-12 w-auto" />
@@ -96,12 +96,12 @@ export default async function ToolkitCollectionPage(
       {/* Hero — colourful, with thumbnail */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-aaa-orange/30 blur-3xl" aria-hidden="true" />
-        <div className="pointer-events-none absolute -bottom-32 -left-24 h-[28rem] w-[28rem] rounded-full bg-[#FCAF17]/40 blur-3xl" aria-hidden="true" />
+        <div className="pointer-events-none absolute -bottom-32 -left-24 h-112 w-md rounded-full bg-aaa-orange-light/40 blur-3xl" aria-hidden="true" />
 
         <div className="relative mx-auto max-w-6xl px-6 py-14 lg:py-20">
           <Link
             href="/toolkit"
-            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#475569] shadow-sm transition hover:text-[#001522]"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#475569] shadow-xs transition hover:text-[#001522]"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -109,7 +109,7 @@ export default async function ToolkitCollectionPage(
             All toolkits
           </Link>
 
-          <div className="mt-8 grid gap-10 lg:grid-cols-[1.4fr,1fr] lg:items-center">
+          <div className="mt-8 grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-aaa-orange/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-aaa-orange">
                 <span className="h-2 w-2 rounded-full bg-aaa-orange" />Toolkit
@@ -118,7 +118,7 @@ export default async function ToolkitCollectionPage(
                 {collection.title}
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#334155]">{collection.description}</p>
-              <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#475569] shadow-sm">
+              <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#475569] shadow-xs">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -128,15 +128,15 @@ export default async function ToolkitCollectionPage(
 
             {collection.thumbnailUrl ? (
               <div className="relative">
-                <div className="absolute -inset-4 rounded-[36px] bg-gradient-to-br from-aaa-orange/40 to-[#FCAF17]/30 blur-2xl" aria-hidden="true" />
+                <div className="absolute -inset-4 rounded-[36px] bg-linear-to-br from-aaa-orange/40 to-[#FCAF17]/30 blur-2xl" aria-hidden="true" />
                 <div className="relative overflow-hidden rounded-[28px] bg-white shadow-xl">
-                  <img src={collection.thumbnailUrl} alt="" className="aspect-[4/3] w-full object-cover" />
+                  <img src={collection.thumbnailUrl} alt="" className="aspect-4/3 w-full object-cover" />
                 </div>
               </div>
             ) : (
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-gradient-to-br from-[#FFEDD2] to-[#FFD09A] shadow-md">
+              <div className="relative aspect-4/3 overflow-hidden rounded-[28px] bg-linear-to-br from-[#FFEDD2] to-[#FFD09A] shadow-md">
                 <div className="absolute -bottom-12 -right-12 h-44 w-44 rounded-full bg-aaa-orange/30" aria-hidden="true" />
-                <div className="absolute -top-8 -left-8 h-28 w-28 rounded-full bg-[#FCAF17]/40" aria-hidden="true" />
+                <div className="absolute -top-8 -left-8 h-28 w-28 rounded-full bg-aaa-orange-light/40" aria-hidden="true" />
                 <div className="relative flex h-full w-full items-center justify-center">
                   <span className="text-7xl" aria-hidden="true">📦</span>
                 </div>
@@ -147,7 +147,7 @@ export default async function ToolkitCollectionPage(
       </section>
 
       {/* Documents grid */}
-      <section className="bg-gradient-to-b from-[#FFFBF4] to-[#FFF5E1]">
+      <section className="bg-linear-to-b from-[#FFFBF4] to-[#FFF5E1]">
         <div className="mx-auto max-w-6xl px-6 py-16">
           {(collection.toolkitResourcesHeading || collection.toolkitResourcesIntro) && (
             <div className="max-w-2xl">
@@ -204,7 +204,7 @@ export default async function ToolkitCollectionPage(
                               className="group relative flex h-full flex-col overflow-hidden rounded-[24px] bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
                             >
                               {/* Cover */}
-                              <div className="relative aspect-[4/3] w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
+                              <div className="relative aspect-4/3 w-full overflow-hidden" style={{ backgroundColor: theme.bg }}>
                                 <div className="pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full opacity-60" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
                                 <div className="pointer-events-none absolute -top-6 -left-6 h-16 w-16 rounded-full opacity-40" style={{ backgroundColor: theme.shape }} aria-hidden="true" />
 
@@ -216,7 +216,7 @@ export default async function ToolkitCollectionPage(
                                   />
                                 ) : (
                                   <div className="relative flex h-full w-full items-center justify-center">
-                                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/85 shadow-sm">
+                                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/85 shadow-xs">
                                       <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke={theme.accent} strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                       </svg>
@@ -225,7 +225,7 @@ export default async function ToolkitCollectionPage(
                                 )}
 
                                 <span
-                                  className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold shadow-sm backdrop-blur"
+                                  className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold shadow-xs backdrop-blur-sm"
                                   style={{ color: theme.accent }}
                                 >
                                   {typeLabel}

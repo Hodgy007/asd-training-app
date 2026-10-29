@@ -62,7 +62,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen bg-calm-50 dark:bg-slate-900">
       <div
         className={clsx(
-          'hidden md:flex flex-shrink-0 flex-col transition-[width] duration-200 ease-in-out',
+          'hidden md:flex shrink-0 flex-col transition-[width] duration-200 ease-in-out',
           desktopSidebarWidth,
         )}
       >

@@ -235,7 +235,7 @@ export default function ModuleEditorPage() {
       </div>
 
       {/* Module editor card */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Edit Module</h1>
           <span className={clsx('px-2 py-0.5 rounded-full text-xs font-semibold', typeBadgeClass)}>
@@ -287,7 +287,7 @@ export default function ModuleEditorPage() {
                             : prev.filter((c) => c !== code)
                         )
                       }
-                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      className="mt-0.5 h-4 w-4 rounded-sm border-slate-300 text-primary-600 focus:ring-primary-500"
                     />
                     <span className="text-sm text-slate-700 dark:text-slate-300">
                       <span className="font-semibold">{code}</span> — {GATSBY_BENCHMARKS[code].full}
@@ -357,21 +357,21 @@ export default function ModuleEditorPage() {
           {mod.lessons.map((lesson, idx) => (
             <div
               key={lesson.id}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm flex items-start gap-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs flex items-start gap-4"
             >
               {/* Order arrows */}
               <div className="flex flex-col gap-1 pt-1">
                 <button
                   onClick={() => swapLessonOrder(idx, 'up')}
                   disabled={idx === 0 || actionLoading === lesson.id}
-                  className="p-1 rounded hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1 rounded-sm hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronUp className="h-4 w-4 text-slate-500" />
                 </button>
                 <button
                   onClick={() => swapLessonOrder(idx, 'down')}
                   disabled={idx === mod.lessons.length - 1 || actionLoading === lesson.id}
-                  className="p-1 rounded hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1 rounded-sm hover:bg-calm-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronDown className="h-4 w-4 text-slate-500" />
                 </button>
@@ -418,7 +418,7 @@ export default function ModuleEditorPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => toggleLessonActive(lesson)}
                   disabled={actionLoading === lesson.id}
@@ -512,7 +512,7 @@ function AddLessonForm({ moduleId, nextOrder, onCreated, onCancel }: AddLessonFo
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4"
+      className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4"
     >
       <h3 className="font-bold text-slate-900 dark:text-white">New Lesson</h3>
       {error && <p className="text-sm text-red-600 dark:text-red-400 font-semibold">{error}</p>}

@@ -155,7 +155,7 @@ export function SurveyAiModal({ isOpen, onClose, onGenerated }: SurveyAiModalPro
       >
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-700">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
             <Sparkles className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           </div>
           <DialogTitle className="flex-1 text-base text-slate-800">
@@ -216,7 +216,7 @@ export function SurveyAiModal({ isOpen, onClose, onGenerated }: SurveyAiModalPro
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   rows={3}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 placeholder:text-slate-400"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-primary-500 focus:outline-hidden focus:ring-2 focus:ring-primary-500/20 placeholder:text-slate-400"
                   placeholder="e.g. Staff satisfaction with ASD training materials and delivery methods"
                 />
               </div>
@@ -233,7 +233,7 @@ export function SurveyAiModal({ isOpen, onClose, onGenerated }: SurveyAiModalPro
                   type="text"
                   value={audience}
                   onChange={(e) => setAudience(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 placeholder:text-slate-400"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 focus:border-primary-500 focus:outline-hidden focus:ring-2 focus:ring-primary-500/20 placeholder:text-slate-400"
                   placeholder="e.g. Caregivers and practitioners"
                 />
               </div>
@@ -276,14 +276,14 @@ export function SurveyAiModal({ isOpen, onClose, onGenerated }: SurveyAiModalPro
                       key={`${file.name}-${index}`}
                       className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-600 dark:bg-slate-700/50"
                     >
-                      <FileText className="h-4 w-4 flex-shrink-0 text-slate-400" />
+                      <FileText className="h-4 w-4 shrink-0 text-slate-400" />
                       <span className="flex-1 truncate text-sm text-slate-700 dark:text-slate-200">
                         {file.name}
                       </span>
                       <button
                         type="button"
                         onClick={() => removeFile(index)}
-                        className="rounded p-0.5 text-slate-400 hover:text-red-500 transition-colors"
+                        className="rounded-sm p-0.5 text-slate-400 hover:text-red-500 transition-colors"
                         aria-label={`Remove ${file.name}`}
                       >
                         <X className="h-3.5 w-3.5" />

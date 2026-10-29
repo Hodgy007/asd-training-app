@@ -56,17 +56,17 @@ export function JobAssignmentsPanel({
             ))}
           </select>
         </label>
-        <label className="flex-[2] min-w-[240px]">
+        <label className="flex-2 min-w-[240px]">
           <span className="text-sm">Note (optional)</span>
           <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </label>
-        <button type="button" className="bg-slate-900 text-white px-3 py-2 rounded text-sm" onClick={add}>
+        <button type="button" className="bg-slate-900 text-white px-3 py-2 rounded-sm text-sm" onClick={add}>
           Assign
         </button>
       </div>
       <ul className="space-y-1">
         {items.map((a) => (
-          <li key={a.id} className="border rounded p-2 flex items-center justify-between">
+          <li key={a.id} className="border rounded-sm p-2 flex items-center justify-between">
             <div>
               <div className="font-medium">{a.user.name ?? a.user.email}</div>
               <div className="text-xs text-slate-600">{a.user.role}</div>

@@ -66,7 +66,7 @@ export function SubscriptionCard({ yearlyPrice }: SubscriptionCardProps) {
             {FEATURES.map((feature) => (
               <li key={feature} className="flex items-start gap-3 text-sm text-slate-200">
                 <span
-                  className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-aaa-green text-white"
+                  className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-aaa-green text-white"
                   aria-hidden="true"
                 >
                   <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -78,7 +78,7 @@ export function SubscriptionCard({ yearlyPrice }: SubscriptionCardProps) {
             ))}
           </ul>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xs">
           <p className="text-xs font-semibold uppercase tracking-wider text-aaa-orange-light">
             Yearly subscription
           </p>

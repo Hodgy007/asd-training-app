@@ -68,10 +68,10 @@ export function JobDetail({ job }: { job: JobDetailData | null }) {
             <h2 className="text-xl font-semibold">{job.title}</h2>
             <div className="text-slate-600">{job.employer} · {job.location}</div>
             <div className="flex flex-wrap gap-2 mt-3 text-xs">
-              <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">{job.employmentType.replace('_', ' ')}</span>
-              {job.salary && <span className="bg-slate-100 px-2 py-0.5 rounded">{job.salary}</span>}
-              {job.duration && <span className="bg-slate-100 px-2 py-0.5 rounded">{job.duration}</span>}
-              <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Closes {format(new Date(job.closingDate), 'd MMM yyyy')}</span>
+              <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-sm">{job.employmentType.replace('_', ' ')}</span>
+              {job.salary && <span className="bg-slate-100 px-2 py-0.5 rounded-sm">{job.salary}</span>}
+              {job.duration && <span className="bg-slate-100 px-2 py-0.5 rounded-sm">{job.duration}</span>}
+              <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-sm">Closes {format(new Date(job.closingDate), 'd MMM yyyy')}</span>
             </div>
           </div>
           {applyHref && !closed && (
@@ -112,7 +112,7 @@ export function JobDetail({ job }: { job: JobDetailData | null }) {
             <h3 className="font-semibold mb-1">Skills</h3>
             <div className="flex flex-wrap gap-1.5">
               {job.skills.map((s) => (
-                <span key={s} className="text-xs bg-slate-100 px-2 py-1 rounded">{s}</span>
+                <span key={s} className="text-xs bg-slate-100 px-2 py-1 rounded-sm">{s}</span>
               ))}
             </div>
           </div>

@@ -130,7 +130,7 @@ function ImageHotspotVariant({
               </h4>
               <button
                 onClick={closePopup}
-                className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex-shrink-0"
+                className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 shrink-0"
                 aria-label="Close"
               >
                 <X className="h-4 w-4" />
@@ -204,7 +204,7 @@ function CardRevealVariant({
           return (
             <div
               key={card.id}
-              className="perspective-[800px]"
+              className="perspective-midrange"
               style={{ perspective: '800px' }}
             >
               <button

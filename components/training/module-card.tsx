@@ -58,7 +58,7 @@ export function ModuleCard({ module, completedLessons, locked, programId }: Modu
       <div className="flex items-start gap-3 mb-4">
         <div
           className={clsx(
-            'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-sm',
+            'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-bold text-sm',
             isComplete
               ? 'bg-sage-500 text-white'
               : locked

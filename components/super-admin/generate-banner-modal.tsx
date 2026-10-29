@@ -152,7 +152,7 @@ export function GenerateBannerModal({
                 rows={4}
                 maxLength={500}
                 placeholder="Describe the banner you want — colors, shapes, mood. No people, no text."
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-primary-500"
               />
               <div className="flex items-center justify-between gap-3 text-xs">
                 <label className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 cursor-pointer select-none">
@@ -160,7 +160,7 @@ export function GenerateBannerModal({
                     type="checkbox"
                     checked={useBrandStore}
                     onChange={(e) => setUseBrandStore(e.target.checked)}
-                    className="rounded border-slate-300 text-primary-600 focus:ring-primary-500 h-3.5 w-3.5"
+                    className="rounded-sm border-slate-300 text-primary-600 focus:ring-primary-500 h-3.5 w-3.5"
                   />
                   Use brand store as context
                 </label>
@@ -189,7 +189,7 @@ export function GenerateBannerModal({
 
           {status === 'preview' && previewUrl ? (
             <>
-              <div className="relative w-full aspect-[3/1] overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
+              <div className="relative w-full aspect-3/1 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={previewUrl} alt="Banner preview" className="w-full h-full object-cover" />
               </div>

@@ -294,7 +294,7 @@ export default function BrandAssetsPage() {
           <button
             type="button"
             onClick={() => setShowForm((v) => !v)}
-            className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors flex-shrink-0"
+            className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors shrink-0"
           >
             <Plus className="h-4 w-4" />
             {showForm ? 'Close' : 'Add asset'}
@@ -312,7 +312,7 @@ export default function BrandAssetsPage() {
               className={clsx(
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                 formMode === 'single'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700',
               )}
             >
@@ -325,7 +325,7 @@ export default function BrandAssetsPage() {
               className={clsx(
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                 formMode === 'zip'
-                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700',
               )}
             >
@@ -514,7 +514,7 @@ export default function BrandAssetsPage() {
                       'card p-0 overflow-hidden flex flex-col',
                       !a.active && 'opacity-60',
                     )}>
-                      <div className="relative aspect-[4/3] bg-calm-50 dark:bg-slate-700 flex items-center justify-center">
+                      <div className="relative aspect-4/3 bg-calm-50 dark:bg-slate-700 flex items-center justify-center">
                         {isImg ? (
                           <img src={a.fileUrl} alt={a.title} className="h-full w-full object-contain" />
                         ) : (
@@ -548,7 +548,7 @@ export default function BrandAssetsPage() {
                               <button
                                 type="button"
                                 onClick={cancelEdit}
-                                className="p-1.5 rounded text-slate-400 hover:text-slate-700"
+                                className="p-1.5 rounded-sm text-slate-400 hover:text-slate-700"
                                 title="Cancel"
                               >
                                 <X className="h-4 w-4" />
@@ -557,7 +557,7 @@ export default function BrandAssetsPage() {
                                 type="button"
                                 onClick={() => saveEdit(a.id)}
                                 disabled={editSaving || !editTitle.trim()}
-                                className="p-1.5 rounded text-primary-600 hover:bg-primary-50 disabled:opacity-40"
+                                className="p-1.5 rounded-sm text-primary-600 hover:bg-primary-50 disabled:opacity-40"
                                 title="Save"
                               >
                                 <Save className="h-4 w-4" />
@@ -592,7 +592,7 @@ export default function BrandAssetsPage() {
                                   href={a.fileUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-1.5 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                  className="p-1.5 rounded-sm text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                   title="Open file"
                                 >
                                   <ImageIcon className="h-4 w-4" />
@@ -602,7 +602,7 @@ export default function BrandAssetsPage() {
                                     type="button"
                                     onClick={() => setMoveMenuOpenId((id) => (id === a.id ? null : a.id))}
                                     disabled={movingId === a.id}
-                                    className="p-1.5 rounded text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-40"
+                                    className="p-1.5 rounded-sm text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 disabled:opacity-40"
                                     title="Move to another section"
                                   >
                                     <FolderInput className="h-4 w-4" />
@@ -646,7 +646,7 @@ export default function BrandAssetsPage() {
                                 <button
                                   type="button"
                                   onClick={() => startEdit(a)}
-                                  className="p-1.5 rounded text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
+                                  className="p-1.5 rounded-sm text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
                                   title="Edit"
                                 >
                                   <Pencil className="h-4 w-4" />
@@ -654,7 +654,7 @@ export default function BrandAssetsPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleDelete(a)}
-                                  className="p-1.5 rounded text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  className="p-1.5 rounded-sm text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                   title="Delete"
                                 >
                                   <Trash2 className="h-4 w-4" />

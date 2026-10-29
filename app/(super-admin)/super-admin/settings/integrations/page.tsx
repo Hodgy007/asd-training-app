@@ -100,10 +100,10 @@ export default function IntegrationsSettingsPage() {
   }
 
   const inputCls =
-    'w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100'
+    'w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100'
   const labelCls = 'block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1'
   const cardCls =
-    'bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-5'
+    'bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-5'
   const primaryBtnCls =
     'px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-bold transition-colors flex items-center gap-2'
   const secondaryBtnCls =
@@ -132,7 +132,7 @@ export default function IntegrationsSettingsPage() {
       {newKey && (
         <div className="rounded-2xl border-2 border-amber-400 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/20 p-5 space-y-3">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-amber-800 dark:text-amber-200">API Key Created — Copy Now</h3>
               <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
@@ -146,7 +146,7 @@ export default function IntegrationsSettingsPage() {
             </code>
             <button
               onClick={() => copyApiKey(newKey.rawKey)}
-              className="flex-shrink-0 p-2 rounded-lg hover:bg-calm-100 dark:hover:bg-slate-700 transition-colors"
+              className="shrink-0 p-2 rounded-lg hover:bg-calm-100 dark:hover:bg-slate-700 transition-colors"
               title="Copy to clipboard"
             >
               {keyCopied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4 text-slate-400" />}
@@ -161,7 +161,7 @@ export default function IntegrationsSettingsPage() {
         </div>
       )}
 
-      <div className={cardCls + ' !p-0 overflow-hidden'}>
+      <div className={cardCls + ' p-0! overflow-hidden'}>
         <div className="flex items-center justify-between px-4 py-4 border-b border-calm-200 dark:border-slate-700">
           <div className="flex items-center gap-2">
             <Key className="h-4 w-4 text-slate-500 dark:text-slate-400" />
@@ -286,7 +286,7 @@ export default function IntegrationsSettingsPage() {
                       ) : (
                         <button
                           onClick={() => setDeleteConfirm(k.id)}
-                          className="p-1 rounded text-slate-400 hover:text-red-500 transition-colors"
+                          className="p-1 rounded-sm text-slate-400 hover:text-red-500 transition-colors"
                           title="Delete key"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -333,17 +333,17 @@ export default function IntegrationsSettingsPage() {
             </ol>
             <div className="mt-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-calm-200 dark:border-slate-600 space-y-2">
               <div className="flex items-start gap-3 text-xs">
-                <span className="font-semibold text-slate-500 dark:text-slate-400 w-20 flex-shrink-0">Method:</span>
+                <span className="font-semibold text-slate-500 dark:text-slate-400 w-20 shrink-0">Method:</span>
                 <code className="text-slate-800 dark:text-slate-200">GET</code>
               </div>
               <div className="flex items-start gap-3 text-xs">
-                <span className="font-semibold text-slate-500 dark:text-slate-400 w-20 flex-shrink-0">URL:</span>
+                <span className="font-semibold text-slate-500 dark:text-slate-400 w-20 shrink-0">URL:</span>
                 <code className="text-slate-800 dark:text-slate-200 break-all">
                   {typeof window !== 'undefined' ? window.location.origin : ''}/api/integrations/reports
                 </code>
               </div>
               <div className="flex items-start gap-3 text-xs">
-                <span className="font-semibold text-slate-500 dark:text-slate-400 w-20 flex-shrink-0">Headers:</span>
+                <span className="font-semibold text-slate-500 dark:text-slate-400 w-20 shrink-0">Headers:</span>
                 <code className="text-slate-800 dark:text-slate-200">Authorization: Bearer YOUR_API_KEY</code>
               </div>
             </div>
@@ -352,7 +352,7 @@ export default function IntegrationsSettingsPage() {
           <div>
             <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Step 3: Filter by Section (optional)</h4>
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-              Add a <code className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-xs">?section=</code> query parameter to fetch only the data you need:
+              Add a <code className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-sm text-xs">?section=</code> query parameter to fetch only the data you need:
             </p>
             <div className="bg-slate-50 dark:bg-slate-800 rounded-lg border border-calm-200 dark:border-slate-600 overflow-hidden">
               <table className="w-full text-xs">
@@ -391,7 +391,7 @@ export default function IntegrationsSettingsPage() {
                 Add a <strong>Dataverse — Add a new row</strong> action to create records in your Dynamics 365 entity.
               </li>
               <li>
-                Map JSON fields (e.g. <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">organisationName</code>, <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">completionRate</code>) to Dynamics columns.
+                Map JSON fields (e.g. <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded-sm text-xs">organisationName</code>, <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded-sm text-xs">completionRate</code>) to Dynamics columns.
               </li>
             </ol>
           </div>
@@ -406,7 +406,7 @@ export default function IntegrationsSettingsPage() {
 
         <div className="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-400 rounded-r-lg p-3">
           <p className="text-sm text-amber-800 dark:text-amber-300">
-            <strong>Tip:</strong> Start with a weekly schedule and the <code className="bg-amber-100 dark:bg-amber-800/50 px-1 py-0.5 rounded text-xs">?section=training</code> filter to test the connection before building the full integration.
+            <strong>Tip:</strong> Start with a weekly schedule and the <code className="bg-amber-100 dark:bg-amber-800/50 px-1 py-0.5 rounded-sm text-xs">?section=training</code> filter to test the connection before building the full integration.
           </p>
         </div>
       </div>

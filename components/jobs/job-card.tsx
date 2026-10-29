@@ -46,12 +46,12 @@ export function JobCard({ job, selected, onSelect }: { job: JobCardData; selecte
           <div className="font-medium truncate">{job.title}</div>
           <div className="text-xs text-slate-600 truncate">{job.employer} · {job.location}</div>
           <div className="flex flex-wrap gap-1 mt-2 text-[11px]">
-            <span className={`px-1.5 rounded ${TYPE_BADGE[job.employmentType] ?? 'bg-slate-100'}`}>
+            <span className={`px-1.5 rounded-sm ${TYPE_BADGE[job.employmentType] ?? 'bg-slate-100'}`}>
               {job.employmentType.replace('_', ' ')}
             </span>
-            {job.salary && <span className="bg-slate-100 px-1.5 rounded">{job.salary}</span>}
-            <span className="bg-amber-100 text-amber-800 px-1.5 rounded">Closes {format(new Date(job.closingDate), 'd MMM')}</span>
-            {job.hasAssignment && <span className="bg-sky-100 text-sky-800 px-1.5 rounded">Assigned to you</span>}
+            {job.salary && <span className="bg-slate-100 px-1.5 rounded-sm">{job.salary}</span>}
+            <span className="bg-amber-100 text-amber-800 px-1.5 rounded-sm">Closes {format(new Date(job.closingDate), 'd MMM')}</span>
+            {job.hasAssignment && <span className="bg-sky-100 text-sky-800 px-1.5 rounded-sm">Assigned to you</span>}
           </div>
         </div>
       </div>

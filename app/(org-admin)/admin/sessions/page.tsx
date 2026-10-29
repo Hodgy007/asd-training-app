@@ -189,7 +189,7 @@ export default function SessionListPage() {
             className={clsx(
               'flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-all',
               filter === tab.key
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm'
+                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
             )}
           >
@@ -218,7 +218,7 @@ export default function SessionListPage() {
               <Link
                 key={s.id}
                 href={`/admin/sessions/${s.id}`}
-                className="block bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-600 transition-all"
+                className="block bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-600 transition-all"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                   <div className="flex-1 min-w-0">
@@ -245,7 +245,7 @@ export default function SessionListPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 sm:flex-shrink-0">
+                  <div className="flex items-center gap-2 sm:shrink-0">
                     <span className={clsx('inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full', PLATFORM_STYLES[s.platform])}>
                       <PlatformIcon className="h-3 w-3" />
                       {PLATFORM_LABELS[s.platform]}

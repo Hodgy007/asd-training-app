@@ -211,7 +211,7 @@ export default function OrgAnnouncementsPage() {
                   type="checkbox"
                   checked={formActive}
                   onChange={(e) => setFormActive(e.target.checked)}
-                  className="rounded border-calm-300 text-emerald-600 focus:ring-emerald-500"
+                  className="rounded-sm border-calm-300 text-emerald-600 focus:ring-emerald-500"
                 />
                 <span className="text-sm font-medium text-slate-700">Active (visible to members immediately)</span>
               </label>

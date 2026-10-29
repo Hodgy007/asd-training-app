@@ -185,10 +185,10 @@ export default function SsoSettingsPage() {
   }
 
   const inputCls =
-    'w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100'
+    'w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100'
   const labelCls = 'block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1'
   const cardCls =
-    'bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-5'
+    'bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-5'
   const primaryBtnCls =
     'px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-bold transition-colors flex items-center gap-2'
   const secondaryBtnCls =
@@ -259,7 +259,7 @@ export default function SsoSettingsPage() {
               type="url"
               value={metadataUrl}
               onChange={(e) => setMetadataUrl(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+              className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               placeholder="https://idp.example.com/metadata"
             />
             <button
@@ -309,7 +309,7 @@ export default function SsoSettingsPage() {
             value={certificate}
             onChange={(e) => setCertificate(e.target.value)}
             rows={6}
-            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 font-mono"
+            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 font-mono"
             placeholder="MIIC..."
           />
         </div>
@@ -329,7 +329,7 @@ export default function SsoSettingsPage() {
             aria-checked={enforceForCharityUsers}
             onClick={() => setEnforceForCharityUsers(!enforceForCharityUsers)}
             className={clsx(
-              'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300',
+              'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-300',
               enforceForCharityUsers ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600',
             )}
           >
@@ -352,9 +352,9 @@ export default function SsoSettingsPage() {
             )}
           >
             {testResult.success ? (
-              <CheckCircle className="h-4 w-4 flex-shrink-0" />
+              <CheckCircle className="h-4 w-4 shrink-0" />
             ) : (
-              <XCircle className="h-4 w-4 flex-shrink-0" />
+              <XCircle className="h-4 w-4 shrink-0" />
             )}
             {testResult.message}
           </div>
@@ -465,7 +465,7 @@ function ProviderToggle({
           disabled={disabled}
           onClick={() => onToggle(!enabled)}
           className={clsx(
-            'relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300',
+            'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-300',
             enabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600',
             disabled && 'opacity-50 cursor-not-allowed',
           )}
@@ -481,7 +481,7 @@ function ProviderToggle({
 
       {!available && (
         <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-800 dark:text-amber-300">
-          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+          <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
           <span>
             Credentials missing. Set <span className="font-mono">{credentialEnvVars.join(', ')}</span> on Vercel,
             redeploy, then return here to enable.

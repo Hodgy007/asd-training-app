@@ -55,7 +55,7 @@ export default function MfaVerifyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 flex items-center justify-center p-4 animate-page-enter">
+    <div className="min-h-screen bg-linear-to-br from-primary-50 via-white to-primary-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 flex items-center justify-center p-4 animate-page-enter">
       <div className="w-full max-w-md">
         {/* Logo & Branding */}
         <div className="text-center mb-8">
@@ -80,7 +80,7 @@ export default function MfaVerifyPage() {
 
           {error && (
             <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
             </div>
           )}

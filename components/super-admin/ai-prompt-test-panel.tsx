@@ -83,14 +83,14 @@ export function AiPromptTestPanel({ promptId, inputVariables, draft }: Props) {
       {response !== null && (
         <div>
           <div className="text-xs uppercase text-slate-400 font-semibold mb-1">Response</div>
-          <pre className="text-xs bg-slate-50 dark:bg-slate-800 rounded p-2 whitespace-pre-wrap max-h-64 overflow-y-auto">{response}</pre>
+          <pre className="text-xs bg-slate-50 dark:bg-slate-800 rounded-sm p-2 whitespace-pre-wrap max-h-64 overflow-y-auto">{response}</pre>
         </div>
       )}
 
       {assembled && (
         <details>
           <summary className="text-xs text-slate-500 cursor-pointer">Show assembled prompt ({assembled.length} chars)</summary>
-          <pre className="text-xs bg-slate-50 dark:bg-slate-800 rounded p-2 whitespace-pre-wrap max-h-48 overflow-y-auto mt-2">{assembled}</pre>
+          <pre className="text-xs bg-slate-50 dark:bg-slate-800 rounded-sm p-2 whitespace-pre-wrap max-h-48 overflow-y-auto mt-2">{assembled}</pre>
         </details>
       )}
     </aside>

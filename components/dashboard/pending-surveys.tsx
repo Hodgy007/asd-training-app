@@ -132,7 +132,7 @@ export function PendingSurveys() {
                     {s.closesAt && ` · Closes ${format(new Date(s.closesAt), 'MMM d')}`}
                   </p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-primary-400 flex-shrink-0" />
+                <ChevronRight className="h-4 w-4 text-primary-400 shrink-0" />
               </button>
             ))}
           </div>
@@ -150,7 +150,7 @@ export function PendingSurveys() {
             className="border-0 flex flex-col overflow-hidden"
             aria-describedby={undefined}
           >
-            <div className="bg-white dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 px-4 sm:px-6 py-4 flex items-center justify-between rounded-t-2xl flex-shrink-0">
+            <div className="bg-white dark:bg-slate-800 border-b border-calm-200 dark:border-slate-700 px-4 sm:px-6 py-4 flex items-center justify-between rounded-t-2xl shrink-0">
               <DialogTitle className="dark:text-white">{activeSurvey.title}</DialogTitle>
               <button
                 onClick={() => setActiveSurvey(null)}
@@ -179,7 +179,7 @@ export function PendingSurveys() {
               <div className="p-4 sm:p-6 space-y-6 overflow-y-auto flex-1 min-h-0">
                 {error && (
                   <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
-                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <AlertCircle className="h-4 w-4 shrink-0" />
                     {error}
                   </div>
                 )}
@@ -206,7 +206,7 @@ export function PendingSurveys() {
                             )}
                           >
                             <div className={clsx(
-                              'w-4 h-4 rounded-full border-2 flex-shrink-0',
+                              'w-4 h-4 rounded-full border-2 shrink-0',
                               answers[q.id] === opt
                                 ? 'border-primary-500 bg-primary-500'
                                 : 'border-slate-300 dark:border-slate-500'
@@ -295,7 +295,7 @@ export function PendingSurveys() {
                               )}
                             >
                               <div className={clsx(
-                                'w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center',
+                                'w-4 h-4 rounded-sm border-2 shrink-0 flex items-center justify-center',
                                 isSelected
                                   ? 'border-primary-500 bg-primary-500'
                                   : 'border-slate-300 dark:border-slate-500'

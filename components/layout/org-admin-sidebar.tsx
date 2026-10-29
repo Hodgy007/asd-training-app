@@ -94,7 +94,7 @@ export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCo
     sidebar: 'bg-slate-800 border-slate-700',
     logoBorder: 'border-slate-700 bg-slate-800',
     logoText: 'text-slate-100',
-    navActive: 'bg-slate-700 text-slate-100 shadow-sm',
+    navActive: 'bg-slate-700 text-slate-100 shadow-xs',
     navInactive: 'text-slate-300 hover:bg-slate-700 hover:text-slate-100',
     iconActive: 'text-slate-100',
     iconInactive: 'text-slate-400',
@@ -104,7 +104,7 @@ export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCo
     sidebar: 'bg-primary-500 dark:bg-primary-600 border-primary-600 dark:border-primary-700',
     logoBorder: 'border-primary-600 dark:border-primary-700 bg-primary-500 dark:bg-primary-600',
     logoText: 'text-white',
-    navActive: 'bg-white/20 text-white shadow-sm',
+    navActive: 'bg-white/20 text-white shadow-xs',
     navInactive: 'text-white/80 hover:bg-white/10 hover:text-white',
     iconActive: 'text-white',
     iconInactive: 'text-white/60',
@@ -124,7 +124,7 @@ export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCo
       {/* Logo */}
       <div
         className={clsx(
-          'flex items-center h-20 flex-shrink-0',
+          'flex items-center h-20 shrink-0',
           isCollapsed ? 'justify-center px-2' : 'justify-between px-5',
           chrome.logoBorder,
         )}
@@ -163,7 +163,7 @@ export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCo
               className={clsx(linkRowClass, isActive ? chrome.navActive : chrome.navInactive)}
             >
               <Icon
-                className={clsx('h-5 w-5 flex-shrink-0', isActive ? chrome.iconActive : chrome.iconInactive)}
+                className={clsx('h-5 w-5 shrink-0', isActive ? chrome.iconActive : chrome.iconInactive)}
               />
               {!isCollapsed && <span className="truncate">{item.label}</span>}
             </Link>
@@ -179,9 +179,9 @@ export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCo
             className={clsx(linkRowClass, 'w-full', chrome.navInactive)}
           >
             {isCollapsed ? (
-              <ChevronsRight className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
+              <ChevronsRight className={clsx('h-5 w-5 shrink-0', chrome.iconInactive)} />
             ) : (
-              <ChevronsLeft className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
+              <ChevronsLeft className={clsx('h-5 w-5 shrink-0', chrome.iconInactive)} />
             )}
             {!isCollapsed && <span className="truncate">Collapse</span>}
           </button>
@@ -198,7 +198,7 @@ export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCo
           className={clsx(linkRowClass, 'w-full', pathname === '/admin/settings' ? chrome.navActive : chrome.navInactive)}
         >
           <Settings
-            className={clsx('h-5 w-5 flex-shrink-0', pathname === '/admin/settings' ? chrome.iconActive : chrome.iconInactive)}
+            className={clsx('h-5 w-5 shrink-0', pathname === '/admin/settings' ? chrome.iconActive : chrome.iconInactive)}
           />
           {!isCollapsed && <span className="truncate">Settings</span>}
         </Link>
@@ -208,7 +208,7 @@ export function OrgAdminSidebar({ onClose, mobile, collapsed = false, onToggleCo
           aria-label={isCollapsed ? 'Sign out' : undefined}
           className={clsx(linkRowClass, 'w-full', chrome.signOut)}
         >
-          <LogOut className={clsx('h-5 w-5 flex-shrink-0', chrome.iconInactive)} />
+          <LogOut className={clsx('h-5 w-5 shrink-0', chrome.iconInactive)} />
           {!isCollapsed && <span className="truncate">Sign out</span>}
         </button>
       </div>

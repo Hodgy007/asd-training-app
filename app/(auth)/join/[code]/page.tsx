@@ -94,7 +94,7 @@ export default function JoinPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-calm-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-emerald-50 via-white to-calm-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-calm-200 dark:border-slate-700 p-8">
           {status === 'loading' && (
@@ -135,7 +135,7 @@ export default function JoinPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
                   <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
-                    <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
@@ -151,7 +151,7 @@ export default function JoinPage() {
                     autoComplete="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                   />
                 </div>
 
@@ -166,7 +166,7 @@ export default function JoinPage() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                   />
                 </div>
 
@@ -183,7 +183,7 @@ export default function JoinPage() {
                       autoComplete="new-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-3 py-2 pr-10 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                      className="w-full px-3 py-2 pr-10 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                     />
                     <button
                       type="button"

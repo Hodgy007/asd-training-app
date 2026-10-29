@@ -425,13 +425,13 @@ export default function SchoolDetailPage() {
                     type="button"
                     onClick={() => setEditActive(!editActive)}
                     className={clsx(
-                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300',
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-300',
                       editActive ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-600'
                     )}
                   >
                     <span
                       className={clsx(
-                        'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                        'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform',
                         editActive ? 'translate-x-6' : 'translate-x-1'
                       )}
                     />
@@ -487,13 +487,13 @@ export default function SchoolDetailPage() {
                     type="button"
                     onClick={() => setEditInherit(!editInherit)}
                     className={clsx(
-                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300',
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-300',
                       editInherit ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-600'
                     )}
                   >
                     <span
                       className={clsx(
-                        'inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                        'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform',
                         editInherit ? 'translate-x-6' : 'translate-x-1'
                       )}
                     />
@@ -503,7 +503,7 @@ export default function SchoolDetailPage() {
 
                 {editInherit && (
                   <div className="ml-14 flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                    <Link2 className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <Link2 className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
                     <p className="text-xs text-blue-700 dark:text-blue-300">
                       This school inherits training programs, roles, and features from the parent organisation.
                     </p>
@@ -522,7 +522,7 @@ export default function SchoolDetailPage() {
                               type="checkbox"
                               checked={editRoles.includes(role)}
                               onChange={() => toggleEditRole(role)}
-                              className="rounded border-calm-300 text-emerald-600 focus:ring-emerald-500"
+                              className="rounded-sm border-calm-300 text-emerald-600 focus:ring-emerald-500"
                             />
                             <span className="text-sm text-slate-700 dark:text-slate-300">{ROLE_LABELS[role] ?? role}</span>
                           </label>
@@ -540,7 +540,7 @@ export default function SchoolDetailPage() {
                               type="checkbox"
                               checked={editPrograms.includes(prog.id)}
                               onChange={() => toggleEditProgram(prog.id)}
-                              className="rounded border-calm-300 text-emerald-600 focus:ring-emerald-500"
+                              className="rounded-sm border-calm-300 text-emerald-600 focus:ring-emerald-500"
                             />
                             <span className="text-sm text-slate-700 dark:text-slate-300">{prog.name}</span>
                           </label>
@@ -636,14 +636,14 @@ export default function SchoolDetailPage() {
                     placeholder="Search by name or email..."
                     value={userSearch}
                     onChange={(e) => { setUserSearch(e.target.value); setUserPage(1) }}
-                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                   />
                 </div>
                 <div className="relative">
                   <select
                     value={userRoleFilter}
                     onChange={(e) => { setUserRoleFilter(e.target.value); setUserPage(1) }}
-                    className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200"
+                    className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200"
                   >
                     <option value="">All roles</option>
                     {allowedRolesForUsers.map((r) => (
@@ -686,7 +686,7 @@ export default function SchoolDetailPage() {
                         required
                         value={createUserName}
                         onChange={(e) => setCreateUserName(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                        className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                         placeholder="Jane Smith"
                       />
                     </div>
@@ -697,7 +697,7 @@ export default function SchoolDetailPage() {
                         required
                         value={createUserEmail}
                         onChange={(e) => setCreateUserEmail(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+                        className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
                         placeholder="jane@example.com"
                       />
                     </div>
@@ -707,7 +707,7 @@ export default function SchoolDetailPage() {
                         <select
                           value={createUserRole}
                           onChange={(e) => setCreateUserRole(e.target.value)}
-                          className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200"
+                          className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200"
                         >
                           {allowedRolesForUsers.map((r) => (
                             <option key={r} value={r}>{ROLE_LABELS[r] ?? r}</option>
@@ -726,7 +726,7 @@ export default function SchoolDetailPage() {
                         minLength={8}
                         value={createUserPassword}
                         onChange={(e) => setCreateUserPassword(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 font-mono"
+                        className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 font-mono"
                         placeholder="Min. 8 characters"
                       />
                     </div>

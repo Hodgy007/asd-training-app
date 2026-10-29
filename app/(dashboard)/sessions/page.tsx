@@ -108,7 +108,7 @@ function SessionCard({
           </p>
         )}
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         {canJoin && (
           <a
             href={session.meetingUrl!}
@@ -172,7 +172,7 @@ export default function SessionsPage() {
         {['ORG_ADMIN'].includes(authSession?.user?.role ?? '') && (
           <Link
             href="/sessions/new"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold transition-colors flex-shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold transition-colors shrink-0"
           >
             <Plus className="h-4 w-4" />
             Create Workshop

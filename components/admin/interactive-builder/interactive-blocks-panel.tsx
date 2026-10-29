@@ -110,7 +110,7 @@ export function InteractiveBlocksPanel({ blocks, onChange, onInsertPlaceholder, 
               className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-white"
             >
               {expandedBlockId === block.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-              <span className="text-xs px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded font-semibold uppercase">
+              <span className="text-xs px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-sm font-semibold uppercase">
                 {block.type}
               </span>
               {block.title || <span className="text-slate-400 italic">Untitled</span>}

@@ -120,7 +120,7 @@ export async function CohortHub({ userId }: Props) {
       {cohorts.map((c) => (
         <article
           key={c.id}
-          className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 shadow-sm overflow-hidden"
+          className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 shadow-xs overflow-hidden"
         >
           <header className="p-5 border-b border-calm-200 dark:border-slate-700 flex items-center justify-between gap-4">
             <div>

@@ -300,7 +300,7 @@ export function HotspotBuilder({ block, onChange }: HotspotBuilderProps) {
                     <span className="text-xs font-bold text-slate-400 uppercase">Hotspot {idx + 1}</span>
                     <button
                       onClick={() => deleteHotspot(idx)}
-                      className="p-1 text-slate-400 hover:text-red-500 rounded"
+                      className="p-1 text-slate-400 hover:text-red-500 rounded-sm"
                       aria-label="Delete hotspot"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -392,7 +392,7 @@ export function HotspotBuilder({ block, onChange }: HotspotBuilderProps) {
                   <span className="text-xs font-bold text-slate-400 uppercase">Card {idx + 1}</span>
                   <button
                     onClick={() => deleteCard(idx)}
-                    className="p-1 text-slate-400 hover:text-red-500 rounded"
+                    className="p-1 text-slate-400 hover:text-red-500 rounded-sm"
                     aria-label="Delete card"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -445,7 +445,7 @@ export function HotspotBuilder({ block, onChange }: HotspotBuilderProps) {
                       ))}
                     </select>
                     <span
-                      className="w-6 h-6 rounded-full flex-shrink-0 border border-calm-200 dark:border-slate-600"
+                      className="w-6 h-6 rounded-full shrink-0 border border-calm-200 dark:border-slate-600"
                       style={{ backgroundColor: card.color || '#6366f1' }}
                     />
                   </div>

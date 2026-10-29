@@ -336,7 +336,7 @@ export default function ProgramLessonPage(props: LessonPageProps) {
         <div className="flex items-start gap-3">
           <div
             className={clsx(
-              'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0',
+              'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
               lesson.type === 'VIDEO'
                 ? 'bg-primary-100'
                 : lesson.type === 'SURVEY'
@@ -423,9 +423,9 @@ export default function ProgramLessonPage(props: LessonPageProps) {
           aria-expanded={showContent}
         >
           {showContent ? (
-            <ChevronDown className="h-4 w-4 text-slate-500 flex-shrink-0" />
+            <ChevronDown className="h-4 w-4 text-slate-500 shrink-0" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-slate-500 flex-shrink-0" />
+            <ChevronRight className="h-4 w-4 text-slate-500 shrink-0" />
           )}
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Lesson Content</h2>
         </button>
@@ -444,7 +444,7 @@ export default function ProgramLessonPage(props: LessonPageProps) {
                     </div>
                   )}
                   <div
-                    className="prose-lesson text-slate-700 dark:text-slate-300 overflow-x-hidden break-words [&_h1]:font-bold [&_h1]:text-xl [&_h1]:text-slate-900 [&_h1]:dark:text-slate-100 [&_h1]:mt-10 [&_h1]:mb-3 [&_h2]:font-semibold [&_h2]:text-lg [&_h2]:text-slate-900 [&_h2]:dark:text-slate-100 [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:font-semibold [&_h3]:text-base [&_h3]:text-slate-900 [&_h3]:dark:text-slate-100 [&_h3]:mt-8 [&_h3]:mb-2 [&_p]:mb-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:sm:ml-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:sm:ml-6 [&_ol]:mb-4 [&_li]:mb-1.5 [&_li]:leading-relaxed [&_strong]:text-slate-900 [&_strong]:dark:text-slate-100 [&_strong]:font-semibold [&_em]:italic [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block [&_table]:text-sm [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_blockquote]:border-l-4 [&_blockquote]:border-primary-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-600 [&_blockquote]:dark:text-slate-400 [&_blockquote]:my-4"
+                    className="prose-lesson text-slate-700 dark:text-slate-300 overflow-x-hidden wrap-break-word [&_h1]:font-bold [&_h1]:text-xl [&_h1]:text-slate-900 dark:[&_h1]:text-slate-100 [&_h1]:mt-10 [&_h1]:mb-3 [&_h2]:font-semibold [&_h2]:text-lg [&_h2]:text-slate-900 dark:[&_h2]:text-slate-100 [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:font-semibold [&_h3]:text-base [&_h3]:text-slate-900 dark:[&_h3]:text-slate-100 [&_h3]:mt-8 [&_h3]:mb-2 [&_p]:mb-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:ml-4 sm:[&_ul]:ml-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:ml-4 sm:[&_ol]:ml-6 [&_ol]:mb-4 [&_li]:mb-1.5 [&_li]:leading-relaxed [&_strong]:text-slate-900 dark:[&_strong]:text-slate-100 [&_strong]:font-semibold [&_em]:italic [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_table]:w-full [&_table]:overflow-x-auto [&_table]:block [&_table]:text-sm [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_blockquote]:border-l-4 [&_blockquote]:border-primary-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-600 dark:[&_blockquote]:text-slate-400 [&_blockquote]:my-4"
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(segment.content) }}
                   />
                 </div>
@@ -483,14 +483,14 @@ export default function ProgramLessonPage(props: LessonPageProps) {
                 download
                 className="flex items-center gap-3 p-3 rounded-xl border border-calm-200 dark:border-slate-600 hover:bg-calm-50 dark:hover:bg-slate-700 transition-colors"
               >
-                <FileText className="h-5 w-5 text-red-500 flex-shrink-0" />
+                <FileText className="h-5 w-5 text-red-500 shrink-0" />
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{att.fileName}</span>
-                <span className="text-xs text-slate-400 flex-shrink-0">
+                <span className="text-xs text-slate-400 shrink-0">
                   {att.fileSize < 1024 * 1024
                     ? `${Math.round(att.fileSize / 1024)} KB`
                     : `${(att.fileSize / (1024 * 1024)).toFixed(1)} MB`}
                 </span>
-                <Download className="h-4 w-4 text-slate-400 ml-auto flex-shrink-0" />
+                <Download className="h-4 w-4 text-slate-400 ml-auto shrink-0" />
               </a>
             ))}
           </div>

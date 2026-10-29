@@ -135,7 +135,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
         // The form is long; a stray click outside shouldn't throw it away.
         dismissOnOutsideClick={false}
         overlayClassName="bg-[#001522]/55"
-        containerClassName="z-[100] items-end sm:items-center"
+        containerClassName="z-100 items-end sm:items-center"
         className="flex max-h-[92vh] flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
         onOpenAutoFocus={(e) => {
           e.preventDefault()
@@ -167,7 +167,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
         {success ? (
           <div className="px-6 pb-7 pt-4 sm:px-8 sm:pb-8">
             <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 p-4 text-emerald-900">
-              <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" aria-hidden="true" />
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
               <div>
                 <p className="font-semibold">Thanks — your download is starting now.</p>
                 {success.registered ? (
@@ -188,7 +188,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
           <form onSubmit={onSubmit} className="space-y-4 overflow-y-auto px-6 pb-7 pt-4 sm:px-8 sm:pb-8">
             {error ? (
               <div className="flex items-start gap-3 rounded-2xl bg-rose-50 p-4 text-rose-900">
-                <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-rose-600" aria-hidden="true" />
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" aria-hidden="true" />
                 <div className="text-sm">
                   <p>{error}</p>
                   {errorIsCollision ? (
@@ -212,7 +212,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
                 autoComplete="name"
                 value={form.name}
                 onChange={(e) => update('name', e.target.value)}
-                className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-sm focus:border-aaa-orange focus:outline-none focus:ring-2 focus:ring-aaa-orange/40"
+                className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-xs focus:border-aaa-orange focus:outline-hidden focus:ring-2 focus:ring-aaa-orange/40"
               />
             </div>
 
@@ -227,7 +227,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
                 autoComplete="email"
                 value={form.email}
                 onChange={(e) => update('email', e.target.value)}
-                className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-sm focus:border-aaa-orange focus:outline-none focus:ring-2 focus:ring-aaa-orange/40"
+                className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-xs focus:border-aaa-orange focus:outline-hidden focus:ring-2 focus:ring-aaa-orange/40"
               />
             </div>
 
@@ -247,7 +247,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
                       value={role}
                       checked={form.formRole === role}
                       onChange={() => update('formRole', role)}
-                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-aaa-orange focus:ring-aaa-orange"
+                      className="mt-0.5 h-4 w-4 shrink-0 text-aaa-orange focus:ring-aaa-orange"
                     />
                     <span className="text-sm font-medium leading-snug text-[#001522]">{TOOLKIT_FORM_ROLE_LABELS[role]}</span>
                   </label>
@@ -266,7 +266,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
                   autoComplete="organization"
                   value={form.organisation}
                   onChange={(e) => update('organisation', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-sm focus:border-aaa-orange focus:outline-none focus:ring-2 focus:ring-aaa-orange/40"
+                  className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-xs focus:border-aaa-orange focus:outline-hidden focus:ring-2 focus:ring-aaa-orange/40"
                 />
               </div>
               <div>
@@ -279,7 +279,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
                   autoComplete="postal-code"
                   value={form.postcode}
                   onChange={(e) => update('postcode', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-sm focus:border-aaa-orange focus:outline-none focus:ring-2 focus:ring-aaa-orange/40"
+                  className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-xs focus:border-aaa-orange focus:outline-hidden focus:ring-2 focus:ring-aaa-orange/40"
                 />
               </div>
             </div>
@@ -289,7 +289,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
                 type="checkbox"
                 checked={form.marketingConsent}
                 onChange={(e) => update('marketingConsent', e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-aaa-orange focus:ring-aaa-orange"
+                className="mt-0.5 h-4 w-4 rounded-sm border-slate-300 text-aaa-orange focus:ring-aaa-orange"
               />
               <span className="text-sm leading-relaxed text-[#334155]">
                 Email me occasional updates from Ambitious about Autism. You can unsubscribe at any time.
@@ -301,7 +301,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
                 type="checkbox"
                 checked={form.register}
                 onChange={(e) => update('register', e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-aaa-orange focus:ring-aaa-orange"
+                className="mt-0.5 h-4 w-4 rounded-sm border-slate-300 text-aaa-orange focus:ring-aaa-orange"
               />
               <span className="text-sm leading-relaxed text-[#334155]">
                 <span className="font-semibold text-[#001522]">Create an account so I can sign in on any device.</span>
@@ -322,7 +322,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
                   value={form.password}
                   onChange={(e) => update('password', e.target.value)}
                   minLength={10}
-                  className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-sm focus:border-aaa-orange focus:outline-none focus:ring-2 focus:ring-aaa-orange/40"
+                  className="mt-1 block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base text-[#001522] shadow-xs focus:border-aaa-orange focus:outline-hidden focus:ring-2 focus:ring-aaa-orange/40"
                 />
                 <p className="mt-1 text-xs text-[#64748b]">At least 10 characters and one number.</p>
               </div>
@@ -340,7 +340,7 @@ export function ToolkitLeadModal({ open, documentTitle, documentId, onClose, onS
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center justify-center rounded-full bg-aaa-orange px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#d96f18] disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-full bg-aaa-orange px-6 py-2.5 text-sm font-bold text-white shadow-xs transition hover:bg-[#d96f18] disabled:opacity-50"
               >
                 {submitting ? 'Just a moment…' : 'Get my download'}
               </button>

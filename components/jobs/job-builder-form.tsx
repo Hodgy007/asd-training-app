@@ -108,7 +108,7 @@ export function JobBuilderForm({
   return (
     <form className="space-y-8 max-w-4xl" onSubmit={(e) => { e.preventDefault(); submit(false) }}>
       {error && (
-        <div role="alert" className="p-3 bg-rose-50 border border-rose-200 text-rose-900 rounded">
+        <div role="alert" className="p-3 bg-rose-50 border border-rose-200 text-rose-900 rounded-sm">
           {error}
         </div>
       )}
@@ -127,7 +127,7 @@ export function JobBuilderForm({
           <span className="text-sm">Employer logo</span>
           <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo(f) }} />
           {values.employerLogoUrl && (
-            <img src={values.employerLogoUrl} alt="" className="h-12 mt-2 rounded" />
+            <img src={values.employerLogoUrl} alt="" className="h-12 mt-2 rounded-sm" />
           )}
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -196,13 +196,13 @@ export function JobBuilderForm({
           <span className="text-sm">Skills</span>
           <div className="flex flex-wrap gap-2 mt-1">
             {(values.skills ?? []).map((s, i) => (
-              <span key={i} className="bg-slate-100 px-2 py-1 rounded text-xs">
+              <span key={i} className="bg-slate-100 px-2 py-1 rounded-sm text-xs">
                 {s}
                 <button type="button" className="ml-2 text-slate-500" onClick={() => set('skills', (values.skills ?? []).filter((_, k) => k !== i))}>×</button>
               </span>
             ))}
             <input
-              className="input max-w-[12rem]"
+              className="input max-w-48"
               placeholder="Add skill + Enter"
               value={skillInput}
               onChange={(e) => setSkillInput(e.target.value)}
@@ -259,7 +259,7 @@ export function JobBuilderForm({
         {tier === 'charity' && (
           <label className="block">
             <span className="text-sm">Organisations (empty = all)</span>
-            <select multiple className="input min-h-[8rem]" value={values.targetOrgIds ?? []} onChange={(e) => set('targetOrgIds', Array.from(e.target.selectedOptions).map((o) => o.value))}>
+            <select multiple className="input min-h-32" value={values.targetOrgIds ?? []} onChange={(e) => set('targetOrgIds', Array.from(e.target.selectedOptions).map((o) => o.value))}>
               {organisations.map((o) => (
                 <option key={o.id} value={o.id}>{o.name}</option>
               ))}

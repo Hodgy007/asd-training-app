@@ -248,14 +248,14 @@ export default function SsoSettingsPage() {
       </div>
 
       {/* Email Domain */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-5">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-5">
         <div>
           <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Email Domain</label>
           <input
             type="text"
             value={emailDomain}
             onChange={(e) => setEmailDomain(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
             placeholder="example.com"
           />
           <p className="text-xs text-slate-400 mt-1">Users with this email domain will be redirected to your IdP.</p>
@@ -263,7 +263,7 @@ export default function SsoSettingsPage() {
       </div>
 
       {/* IdP Metadata */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-5">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-5">
         <div>
           <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">IdP Metadata URL</label>
           <div className="flex gap-2">
@@ -271,7 +271,7 @@ export default function SsoSettingsPage() {
               type="url"
               value={metadataUrl}
               onChange={(e) => setMetadataUrl(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+              className="flex-1 px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
               placeholder="https://idp.example.com/metadata"
             />
             <button
@@ -294,7 +294,7 @@ export default function SsoSettingsPage() {
             type="url"
             value={ssoUrl}
             onChange={(e) => setSsoUrl(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
             placeholder="https://idp.example.com/sso/saml"
           />
         </div>
@@ -306,7 +306,7 @@ export default function SsoSettingsPage() {
             type="text"
             value={entityId}
             onChange={(e) => setEntityId(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
             placeholder="https://idp.example.com/entity"
           />
         </div>
@@ -318,14 +318,14 @@ export default function SsoSettingsPage() {
             value={certificate}
             onChange={(e) => setCertificate(e.target.value)}
             rows={6}
-            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 font-mono"
+            className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100 font-mono"
             placeholder="MIIC..."
           />
         </div>
       </div>
 
       {/* Auto-provision */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Auto-provision users</p>
@@ -337,7 +337,7 @@ export default function SsoSettingsPage() {
             aria-checked={autoProvision}
             onClick={() => setAutoProvision(!autoProvision)}
             className={clsx(
-              'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-300',
+              'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-emerald-300',
               autoProvision ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
             )}
           >
@@ -356,7 +356,7 @@ export default function SsoSettingsPage() {
             <select
               value={defaultRole}
               onChange={(e) => setDefaultRole(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
+              className="w-full px-3 py-2 rounded-lg border border-calm-200 dark:border-slate-600 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-300 bg-white dark:bg-slate-700 dark:text-slate-100"
             >
               <option value="">Select a role...</option>
               {allowedRoles.map((role) => (
@@ -370,7 +370,7 @@ export default function SsoSettingsPage() {
       </div>
 
       {/* Actions */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-calm-200 dark:border-slate-700 p-6 shadow-xs">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -395,7 +395,7 @@ export default function SsoSettingsPage() {
 
       {/* Danger Zone */}
       {configExists && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-red-200 dark:border-red-900/40 p-6 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-red-200 dark:border-red-900/40 p-6 shadow-xs">
           <h3 className="text-sm font-bold text-red-600 dark:text-red-400 mb-2">Danger Zone</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
             Removing SSO will disable SAML-based login for all users in your organisation.

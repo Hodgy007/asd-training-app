@@ -235,7 +235,7 @@ export function SectionsManager({ collectionId, sections, onChanged, onError }: 
                     type="button"
                     disabled={isFirst || busyId === s.id}
                     onClick={() => handleSwap(i, -1)}
-                    className="p-0.5 rounded text-slate-400 hover:text-slate-700 disabled:opacity-25 disabled:cursor-not-allowed"
+                    className="p-0.5 rounded-sm text-slate-400 hover:text-slate-700 disabled:opacity-25 disabled:cursor-not-allowed"
                     title="Move up"
                   >
                     <ChevronUp className="h-4 w-4" />
@@ -244,7 +244,7 @@ export function SectionsManager({ collectionId, sections, onChanged, onError }: 
                     type="button"
                     disabled={isLast || busyId === s.id}
                     onClick={() => handleSwap(i, 1)}
-                    className="p-0.5 rounded text-slate-400 hover:text-slate-700 disabled:opacity-25 disabled:cursor-not-allowed"
+                    className="p-0.5 rounded-sm text-slate-400 hover:text-slate-700 disabled:opacity-25 disabled:cursor-not-allowed"
                     title="Move down"
                   >
                     <ChevronDown className="h-4 w-4" />
@@ -269,7 +269,7 @@ export function SectionsManager({ collectionId, sections, onChanged, onError }: 
                         <button
                           type="button"
                           onClick={cancelEdit}
-                          className="p-1.5 rounded text-slate-400 hover:text-slate-700"
+                          className="p-1.5 rounded-sm text-slate-400 hover:text-slate-700"
                           title="Cancel"
                         >
                           <X className="h-4 w-4" />
@@ -278,7 +278,7 @@ export function SectionsManager({ collectionId, sections, onChanged, onError }: 
                           type="button"
                           onClick={() => saveEdit(s.id)}
                           disabled={savingEdit || !editTitle.trim()}
-                          className="p-1.5 rounded text-primary-600 hover:bg-primary-50 disabled:opacity-40"
+                          className="p-1.5 rounded-sm text-primary-600 hover:bg-primary-50 disabled:opacity-40"
                           title="Save"
                         >
                           <Save className="h-4 w-4" />
@@ -299,7 +299,7 @@ export function SectionsManager({ collectionId, sections, onChanged, onError }: 
                 </div>
 
                 {!isEditing && (
-                  <div className="flex items-center gap-0.5 flex-shrink-0">
+                  <div className="flex items-center gap-0.5 shrink-0">
                     <button
                       type="button"
                       onClick={() => startEdit(s)}

@@ -1,14 +1,180 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary-50: var(--p-50);
+  --color-primary-100: var(--p-100);
+  --color-primary-200: var(--p-200);
+  --color-primary-300: var(--p-300);
+  --color-primary-400: var(--p-400);
+  --color-primary-500: var(--p-500);
+  --color-primary-600: var(--p-600);
+  --color-primary-700: var(--p-700);
+  --color-primary-800: var(--p-800);
+  --color-primary-900: var(--p-900);
+
+  --color-aaa-orange: #f5821f;
+  --color-aaa-orange-light: #fcaf17;
+  --color-aaa-green: #34b44a;
+  --color-aaa-blue: #056bb0;
+  --color-aaa-blue-light: #44c7ee;
+  --color-aaa-pink: #e13caf;
+  --color-aaa-lime: #b2d234;
+
+  --color-calm-50: #f8fafc;
+  --color-calm-100: #f1f5f9;
+  --color-calm-200: #e2e8f0;
+  --color-calm-300: #cbd5e1;
+
+  --color-sage-50: #f0fdf4;
+  --color-sage-100: #dcfce7;
+  --color-sage-200: #bbf7d0;
+  --color-sage-300: #86efac;
+  --color-sage-400: #4ade80;
+  --color-sage-500: #34b44a;
+  --color-sage-600: #2a9d3c;
+  --color-sage-700: #1f7a2d;
+
+  --color-warm-50: #fff4e6;
+  --color-warm-100: #ffe4bf;
+  --color-warm-200: #ffd099;
+  --color-warm-300: #ffb84d;
+  --color-warm-400: #ffa726;
+  --color-warm-500: #f5821f;
+  --color-warm-600: #e06800;
+  --color-warm-700: #c05500;
+
+  --font-sans: var(--font-inter), 'Inter', 'Helvetica Neue', Arial, sans-serif;
+
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility card {
+  @apply bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-5;
+}
+
+@utility card-hover {
+  @apply bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-5 hover:border-slate-300 dark:hover:border-slate-700;
+  transition:
+    border-color 150ms var(--ease-out),
+    transform 150ms var(--ease-out);
+}
+
+@utility card-rail {
+  @apply bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 lg:sticky lg:top-6;
+}
+
+@utility btn-primary {
+  @apply bg-primary-500 text-white px-5 py-2 rounded-full font-semibold hover:bg-primary-600 focus:outline-hidden focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed;
+  transition:
+    background-color 150ms var(--ease-out),
+    transform 100ms var(--ease-out);
+}
+
+@utility btn-secondary {
+  @apply bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-5 py-2 rounded-full font-semibold border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-hidden focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+  transition:
+    background-color 150ms var(--ease-out),
+    transform 100ms var(--ease-out),
+    border-color 150ms var(--ease-out);
+}
+
+@utility btn-warm {
+  @apply bg-warm-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-warm-600 focus:outline-hidden focus:ring-2 focus:ring-warm-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed;
+  transition:
+    background-color 150ms var(--ease-out),
+    transform 100ms var(--ease-out),
+    box-shadow 150ms var(--ease-out);
+}
+
+@utility btn-sage {
+  @apply bg-sage-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-sage-600 focus:outline-hidden focus:ring-2 focus:ring-sage-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed;
+  transition:
+    background-color 150ms var(--ease-out),
+    transform 100ms var(--ease-out),
+    box-shadow 150ms var(--ease-out);
+}
+
+@utility input {
+  @apply w-full border border-calm-300 dark:border-slate-600 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-hidden focus:ring-2 focus:ring-primary-400 focus:border-transparent placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-colors;
+}
+
+@utility label {
+  @apply block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5;
+}
+
+@utility badge-social {
+  @apply bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full;
+}
+
+@utility badge-behaviour {
+  @apply bg-sage-100 text-sage-700 text-xs font-bold px-2.5 py-0.5 rounded-full;
+}
+
+@utility badge-sensory {
+  @apply bg-primary-100 text-primary-700 text-xs font-bold px-2.5 py-0.5 rounded-full;
+}
+
+@utility disclaimer-banner {
+  @apply bg-primary-500 border-b border-primary-600 px-4 py-2.5 text-sm text-white;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
 
 @layer base {
   * {
     box-sizing: border-box;
   }
 
+  /* Tailwind 4 resets buttons to the browser's default cursor; keep v3's pointer. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Smooth transitions — specify exact properties, never 'all'. In the base
+     layer so any transition-* / duration-* utility still overrides it. */
+  * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke,
+      opacity, box-shadow, transform, filter;
+    transition-timing-function: var(--ease-out);
+    transition-duration: 150ms;
+  }
+
   html {
-    font-family: var(--font-sans), 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -37,66 +203,8 @@
   }
 }
 
-@layer components {
-  .card {
-    @apply bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-5;
-  }
-
-  .card-hover {
-    @apply bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-5 hover:border-slate-300 dark:hover:border-slate-700;
-    transition: border-color 150ms var(--ease-out), transform 150ms var(--ease-out);
-  }
-
-  .card-rail {
-    @apply bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 lg:sticky lg:top-6;
-  }
-
-  .btn-primary {
-    @apply bg-primary-500 text-white px-5 py-2 rounded-full font-semibold hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed;
-    transition: background-color 150ms var(--ease-out), transform 100ms var(--ease-out);
-  }
-
-  .btn-secondary {
-    @apply bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-5 py-2 rounded-full font-semibold border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
-    transition: background-color 150ms var(--ease-out), transform 100ms var(--ease-out), border-color 150ms var(--ease-out);
-  }
-
-  .btn-warm {
-    @apply bg-warm-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-warm-600 focus:outline-none focus:ring-2 focus:ring-warm-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed;
-    transition: background-color 150ms var(--ease-out), transform 100ms var(--ease-out), box-shadow 150ms var(--ease-out);
-  }
-
-  .btn-sage {
-    @apply bg-sage-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-sage-600 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed;
-    transition: background-color 150ms var(--ease-out), transform 100ms var(--ease-out), box-shadow 150ms var(--ease-out);
-  }
-
-  .input {
-    @apply w-full border border-calm-300 dark:border-slate-600 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-colors;
-  }
-
-  .label {
-    @apply block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5;
-  }
-
-  .badge-social {
-    @apply bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full;
-  }
-
-  .badge-behaviour {
-    @apply bg-sage-100 text-sage-700 text-xs font-bold px-2.5 py-0.5 rounded-full;
-  }
-
-  .badge-sensory {
-    @apply bg-primary-100 text-primary-700 text-xs font-bold px-2.5 py-0.5 rounded-full;
-  }
-
-  .disclaimer-banner {
-    @apply bg-primary-500 border-b border-primary-600 px-4 py-2.5 text-sm text-white;
-  }
-}
-
-/* Quill editor dark mode */
+/* Quill editor dark mode. Deliberately unlayered: Quill's own stylesheet is
+   unlayered, so these must be too or Quill's defaults always win. */
 .dark .ql-toolbar.ql-snow {
   border-color: #334155;
   background: #1e293b;
@@ -137,348 +245,344 @@
   color: #475569;
 }
 
+/* Rules below were unlayered in Tailwind 3, after the utilities. Tailwind 4
+   puts its utilities in a native cascade layer, so they now live at the end of
+   that layer to keep the same precedence. */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  /* =========================================================
+     DARK MODE GLOBAL OVERRIDES
+     These beat plain Tailwind classes (e.g. text-slate-900) on
+     every page but must lose to any dark:/hover:/focus: variant, as
+     they did in v3 (where variants were emitted after this block).
+     `:where()` keeps them at one class of specificity: they win over
+     a plain utility by coming later in the layer, and lose to
+     variants, which carry an extra pseudo-class.
+     ========================================================= */
+
+  /* v3 parity: the base-layer dark colours for paragraphs and headings
+     used to beat plain text-* classes (v3 had no native layers, and their
+     `.dark p` selector is more specific than one class). Without this,
+     e.g. <p class="text-gray-500"> drops to ~3.4:1 contrast in dark mode.
+     dark:text-* variants still win, being more specific. */
+  .dark p { color: rgb(203 213 225); }                         /* → slate-300 */
+  .dark :is(h1, h2, h3, h4, h5, h6) { color: rgb(241 245 249); } /* → slate-100 */
+
+  /* Text colours. `:is(*, p)` matches any element but adds one type to the
+     specificity, so these beat the paragraph/heading rule above (same
+     specificity, later) while dark:text-* variants still beat them. */
+  :where(.dark) :is(*, p).text-slate-900 { color: rgb(241 245 249); }   /* → slate-100 */
+  :where(.dark) :is(*, p).text-slate-800 { color: rgb(226 232 240); }   /* → slate-200 */
+  :where(.dark) :is(*, p).text-slate-700 { color: rgb(203 213 225); }   /* → slate-300 */
+  :where(.dark) :is(*, p).text-slate-600 { color: rgb(148 163 184); }   /* → slate-400 */
+  :where(.dark) :is(*, p).text-slate-500 { color: rgb(148 163 184); }   /* → slate-400 */
+
+  /* Backgrounds */
+  :where(.dark) .bg-white        { background-color: rgb(30 41 59);  }  /* → slate-800 */
+  :where(.dark) .bg-calm-50      { background-color: rgb(15 23 42);  }  /* → slate-900 */
+  :where(.dark) .bg-calm-100     { background-color: rgb(30 41 59);  }  /* → slate-800 */
+  :where(.dark) .bg-calm-200     { background-color: rgb(51 65 85);  }  /* → slate-700 */
+  :where(.dark) .bg-orange-50    { background-color: rgb(30 41 59);  }  /* → slate-800 */
+  :where(.dark) .bg-red-50       { background-color: rgb(69 10 10 / 0.4); }
+  :where(.dark) .bg-green-50     { background-color: rgb(5 46 22 / 0.4);  }
+  :where(.dark) .bg-blue-50      { background-color: rgb(8 47 73 / 0.4);  }
+  :where(.dark) .bg-purple-50    { background-color: rgb(46 16 101 / 0.4); }
+  :where(.dark) .bg-amber-50     { background-color: rgb(69 26 3 / 0.4);  }
+  :where(.dark) .bg-purple-100   { background-color: rgb(88 28 135 / 0.4); }
+  :where(.dark) :is(*, p).text-purple-700 { color: rgb(216 180 254); }
+  :where(.dark) .bg-blue-100     { background-color: rgb(30 64 175 / 0.4); }
+  :where(.dark) :is(*, p).text-blue-700   { color: rgb(147 197 253); }
+  :where(.dark) .bg-orange-100   { background-color: rgb(154 52 18 / 0.4); }
+  :where(.dark) :is(*, p).text-orange-700 { color: rgb(253 186 116); }
+  :where(.dark) .bg-sage-100     { background-color: rgb(20 83 45 / 0.4);  }
+  :where(.dark) :is(*, p).text-sage-700   { color: rgb(134 239 172); }
+
+  /* Borders */
+  :where(.dark) .border-calm-200   { border-color: rgb(51 65 85); }
+  :where(.dark) .border-calm-300   { border-color: rgb(71 85 105); }
+  :where(.dark) .border-calm-100   { border-color: rgb(51 65 85); }
+  :where(.dark) .border-red-200    { border-color: rgb(185 28 28 / 0.5); }
+  :where(.dark) .border-green-200  { border-color: rgb(21 128 61 / 0.5); }
+  /* Classic (orange) dark borders */
+  :where(.dark) .border-primary-100 { border-color: rgb(124 45 18 / 0.4); }
+  :where(.dark) .border-primary-200 { border-color: rgb(154 52 18 / 0.5); }
+  :where(.dark) .border-primary-300 { border-color: rgb(154 52 18 / 0.6); }
+  /* Blue dark borders */
+  :where(html[data-color-theme="blue"].dark) .border-primary-100 { border-color: rgb(4 90 150 / 0.4); }
+  :where(html[data-color-theme="blue"].dark) .border-primary-200 { border-color: rgb(4 90 150 / 0.5); }
+  :where(html[data-color-theme="blue"].dark) .border-primary-300 { border-color: rgb(4 90 150 / 0.6); }
+
+  /* Primary light tints in dark mode — Classic (orange) theme */
+  :where(.dark) .bg-primary-50  { background-color: rgb(154 67 18 / 0.25); }
+  :where(.dark) .bg-primary-100 { background-color: rgb(154 67 18 / 0.45); }
+  :where(.dark) :is(*, p).text-primary-700 { color: rgb(253 186 116); }   /* → orange-300 */
+  :where(.dark) :is(*, p).text-primary-800 { color: rgb(254 215 170); }   /* → orange-200 */
+
+  /* Primary light tints in dark mode — Blue theme */
+  :where(html[data-color-theme="blue"].dark) .bg-primary-50  { background-color: rgb(5 52 112 / 0.3); }
+  :where(html[data-color-theme="blue"].dark) .bg-primary-100 { background-color: rgb(5 52 112 / 0.5); }
+  :where(html[data-color-theme="blue"].dark) :is(*, p).text-primary-700 { color: rgb(125 187 235); }   /* → blue-300 */
+  :where(html[data-color-theme="blue"].dark) :is(*, p).text-primary-800 { color: rgb(68 199 238); }    /* → blue-light */
+
+  /* Sage (green) light tints → dark green tints */
+  :where(.dark) .bg-sage-50  { background-color: rgb(5 46 22 / 0.3); }
+  :where(.dark) .bg-sage-100 { background-color: rgb(5 46 22 / 0.5); }
+  :where(.dark) :is(*, p).text-sage-600 { color: rgb(134 239 172); }
+  :where(.dark) :is(*, p).text-sage-700 { color: rgb(167 243 208); }
+  :where(.dark) :is(*, p).text-sage-800 { color: rgb(187 247 208); }
+
+  /* Warm (orange alias) light tints */
+  :where(.dark) .bg-warm-100 { background-color: rgb(100 30 10 / 0.5); }
+
+  /* Print styles for reports */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    .print-break {
+      page-break-before: always;
+    }
+
+    body {
+      background: white !important;
+    }
+
+    .card {
+      box-shadow: none !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+
+    nav,
+    aside,
+    header {
+      display: none !important;
+    }
+
+    main {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Credential card print styles */
+    .credential-card-print-area {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      background: white !important;
+      z-index: 9999 !important;
+      padding: 2rem !important;
+    }
+
+    /* Hide modal backdrop and chrome when printing credential card */
+    .credential-card-print-area ~ .no-print {
+      display: none !important;
+    }
   }
 
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  /* Prose styles for lesson content */
+  .prose-lesson {
+    @apply text-slate-700 dark:text-slate-300 leading-relaxed;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-/* =========================================================
-   DARK MODE GLOBAL OVERRIDES
-   These live outside @layer so they beat hardcoded inline
-   Tailwind classes (e.g. text-slate-900) on every page.
-   ========================================================= */
-
-/* Text colours */
-.dark .text-slate-900 { color: rgb(241 245 249); }   /* → slate-100 */
-.dark .text-slate-800 { color: rgb(226 232 240); }   /* → slate-200 */
-.dark .text-slate-700 { color: rgb(203 213 225); }   /* → slate-300 */
-.dark .text-slate-600 { color: rgb(148 163 184); }   /* → slate-400 */
-.dark .text-slate-500 { color: rgb(148 163 184); }   /* → slate-400 */
-
-/* Backgrounds */
-.dark .bg-white        { background-color: rgb(30 41 59);  }  /* → slate-800 */
-.dark .bg-calm-50      { background-color: rgb(15 23 42);  }  /* → slate-900 */
-.dark .bg-calm-100     { background-color: rgb(30 41 59);  }  /* → slate-800 */
-.dark .bg-calm-200     { background-color: rgb(51 65 85);  }  /* → slate-700 */
-.dark .bg-orange-50    { background-color: rgb(30 41 59);  }  /* → slate-800 */
-.dark .bg-red-50       { background-color: rgb(69 10 10 / 0.4); }
-.dark .bg-green-50     { background-color: rgb(5 46 22 / 0.4);  }
-.dark .bg-blue-50      { background-color: rgb(8 47 73 / 0.4);  }
-.dark .bg-purple-50    { background-color: rgb(46 16 101 / 0.4); }
-.dark .bg-amber-50     { background-color: rgb(69 26 3 / 0.4);  }
-.dark .bg-purple-100   { background-color: rgb(88 28 135 / 0.4); }
-.dark .text-purple-700 { color: rgb(216 180 254); }
-.dark .bg-blue-100     { background-color: rgb(30 64 175 / 0.4); }
-.dark .text-blue-700   { color: rgb(147 197 253); }
-.dark .bg-orange-100   { background-color: rgb(154 52 18 / 0.4); }
-.dark .text-orange-700 { color: rgb(253 186 116); }
-.dark .bg-sage-100     { background-color: rgb(20 83 45 / 0.4);  }
-.dark .text-sage-700   { color: rgb(134 239 172); }
-
-/* Borders */
-.dark .border-calm-200   { border-color: rgb(51 65 85); }
-.dark .border-calm-300   { border-color: rgb(71 85 105); }
-.dark .border-calm-100   { border-color: rgb(51 65 85); }
-.dark .border-red-200    { border-color: rgb(185 28 28 / 0.5); }
-.dark .border-green-200  { border-color: rgb(21 128 61 / 0.5); }
-/* Classic (orange) dark borders */
-.dark .border-primary-100 { border-color: rgb(124 45 18 / 0.4); }
-.dark .border-primary-200 { border-color: rgb(154 52 18 / 0.5); }
-.dark .border-primary-300 { border-color: rgb(154 52 18 / 0.6); }
-/* Blue dark borders */
-html[data-color-theme="blue"].dark .border-primary-100 { border-color: rgb(4 90 150 / 0.4); }
-html[data-color-theme="blue"].dark .border-primary-200 { border-color: rgb(4 90 150 / 0.5); }
-html[data-color-theme="blue"].dark .border-primary-300 { border-color: rgb(4 90 150 / 0.6); }
-
-/* Primary light tints in dark mode — Classic (orange) theme */
-.dark .bg-primary-50  { background-color: rgb(154 67 18 / 0.25); }
-.dark .bg-primary-100 { background-color: rgb(154 67 18 / 0.45); }
-.dark .text-primary-700 { color: rgb(253 186 116); }   /* → orange-300 */
-.dark .text-primary-800 { color: rgb(254 215 170); }   /* → orange-200 */
-
-/* Primary light tints in dark mode — Blue theme */
-html[data-color-theme="blue"].dark .bg-primary-50  { background-color: rgb(5 52 112 / 0.3); }
-html[data-color-theme="blue"].dark .bg-primary-100 { background-color: rgb(5 52 112 / 0.5); }
-html[data-color-theme="blue"].dark .text-primary-700 { color: rgb(125 187 235); }   /* → blue-300 */
-html[data-color-theme="blue"].dark .text-primary-800 { color: rgb(68 199 238); }    /* → blue-light */
-
-/* Sage (green) light tints → dark green tints */
-.dark .bg-sage-50  { background-color: rgb(5 46 22 / 0.3); }
-.dark .bg-sage-100 { background-color: rgb(5 46 22 / 0.5); }
-.dark .text-sage-600 { color: rgb(134 239 172); }
-.dark .text-sage-700 { color: rgb(167 243 208); }
-.dark .text-sage-800 { color: rgb(187 247 208); }
-
-/* Warm (orange alias) light tints */
-.dark .bg-warm-100 { background-color: rgb(100 30 10 / 0.5); }
-
-/* Print styles for reports */
-@media print {
-  .no-print {
-    display: none !important;
+  .prose-lesson strong {
+    @apply text-slate-900 dark:text-slate-100 font-bold;
   }
 
-  .print-break {
-    page-break-before: always;
+  .prose-lesson h1,
+  .prose-lesson h2,
+  .prose-lesson h3 {
+    @apply text-slate-900 dark:text-slate-100 font-bold mt-6 mb-3;
   }
 
-  body {
-    background: white !important;
+  .prose-lesson p {
+    @apply mb-4;
   }
 
-  .card {
-    box-shadow: none !important;
-    border: 1px solid #e2e8f0 !important;
+  .prose-lesson ul {
+    @apply list-disc list-outside space-y-1 mb-4 pl-5 sm:pl-6;
   }
 
-  nav,
-  aside,
-  header {
-    display: none !important;
+  .prose-lesson ol {
+    @apply list-decimal list-outside space-y-1 mb-4 pl-5 sm:pl-6;
   }
 
-  main {
-    margin: 0 !important;
-    padding: 0 !important;
+  .prose-lesson img {
+    @apply max-w-full h-auto rounded-lg;
   }
 
-  /* Credential card print styles */
-  .credential-card-print-area {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    background: white !important;
-    z-index: 9999 !important;
-    padding: 2rem !important;
+  .prose-lesson table {
+    @apply w-full text-sm;
+    display: block;
+    overflow-x: auto;
   }
 
-  /* Hide modal backdrop and chrome when printing credential card */
-  .credential-card-print-area ~ .no-print {
-    display: none !important;
-  }
-}
-
-/* Prose styles for lesson content */
-.prose-lesson {
-  @apply text-slate-700 dark:text-slate-300 leading-relaxed;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.prose-lesson strong {
-  @apply text-slate-900 dark:text-slate-100 font-bold;
-}
-
-.prose-lesson h1,
-.prose-lesson h2,
-.prose-lesson h3 {
-  @apply text-slate-900 dark:text-slate-100 font-bold mt-6 mb-3;
-}
-
-.prose-lesson p {
-  @apply mb-4;
-}
-
-.prose-lesson ul {
-  @apply list-disc list-outside space-y-1 mb-4 pl-5 sm:pl-6;
-}
-
-.prose-lesson ol {
-  @apply list-decimal list-outside space-y-1 mb-4 pl-5 sm:pl-6;
-}
-
-.prose-lesson img {
-  @apply max-w-full h-auto rounded-lg;
-}
-
-.prose-lesson table {
-  @apply w-full text-sm;
-  display: block;
-  overflow-x: auto;
-}
-
-.prose-lesson pre {
-  @apply overflow-x-auto max-w-full rounded-lg p-3 text-sm;
-}
-
-/* Accessible focus styles */
-:focus-visible {
-  @apply outline-none ring-2 ring-primary-500 ring-offset-2;
-}
-
-/* ── Emil Kowalski-inspired polish ── */
-
-/* Custom easing curves — stronger than CSS defaults */
-:root {
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-snappy: cubic-bezier(0.2, 0.8, 0.2, 1);
-
-  /* ── Colour theme: Classic (orange) — default ── */
-  --p-50:  #fff4e6;
-  --p-100: #ffe4bf;
-  --p-200: #ffd099;
-  --p-300: #ffb84d;
-  --p-400: #ffa726;
-  --p-500: #f5821f;
-  --p-600: #e06800;
-  --p-700: #c05500;
-  --p-800: #9a4300;
-  --p-900: #6b2e00;
-}
-
-/* ── Accessibility fonts ── */
-html[data-font="atkinson"]     { font-family: 'Atkinson Hyperlegible', Arial, sans-serif; }
-html[data-font="lexend"]       { font-family: 'Lexend', Arial, sans-serif; }
-html[data-font="opendyslexic"] { font-family: 'OpenDyslexic', Arial, sans-serif; }
-
-/* ── Colour theme: Blue ── */
-html[data-color-theme="blue"] {
-  --p-50:  #f0f7fd;
-  --p-100: #dceef9;
-  --p-200: #b8ddf4;
-  --p-300: #7dbbeb;
-  --p-400: #5ca9e3;
-  --p-500: #056bb0;
-  --p-600: #045a96;
-  --p-700: #034678;
-  --p-800: #02345a;
-  --p-900: #01223c;
-}
-
-/* ── Colour theme: Dark (slate) ── */
-html[data-color-theme="dark"] {
-  --p-50:  #f8fafc;
-  --p-100: #f1f5f9;
-  --p-200: #e2e8f0;
-  --p-300: #cbd5e1;
-  --p-400: #94a3b8;
-  --p-500: #64748b;
-  --p-600: #475569;
-  --p-700: #334155;
-  --p-800: #1e293b;
-  --p-900: #0f172a;
-}
-
-/* Smooth transitions — specify exact properties, never 'all' */
-* {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke,
-    opacity, box-shadow, transform, filter;
-  transition-timing-function: var(--ease-out);
-  transition-duration: 150ms;
-}
-
-/* Button press feedback — makes every button feel responsive */
-button:active:not(:disabled),
-[role="button"]:active:not(:disabled),
-.btn-primary:active:not(:disabled),
-.btn-secondary:active:not(:disabled),
-.btn-sage:active:not(:disabled) {
-  transform: scale(0.97);
-  transition-duration: 100ms;
-}
-
-/* Clickable card press feedback */
-a.card-hover:active,
-.card-hover:active {
-  transform: scale(0.985);
-  transition-duration: 100ms;
-}
-
-/* Gate hover effects behind pointer capability */
-@media (hover: hover) and (pointer: fine) {
-  .card-hover:hover {
-    transform: translateY(-1px);
+  .prose-lesson pre {
+    @apply overflow-x-auto max-w-full rounded-lg p-3 text-sm;
   }
 
-  /* Quick action links — lift on hover */
-  a[class*="rounded-xl"]:hover {
-    transform: translateY(-1px);
+  /* Accessible focus styles */
+  :focus-visible {
+    @apply outline-hidden ring-2 ring-primary-500 ring-offset-2;
   }
-}
 
-/* Stagger animation for cards and list items */
-@keyframes fadeInUp {
-  from {
+  /* ── Emil Kowalski-inspired polish ── */
+
+  /* Custom easing curves — stronger than CSS defaults */
+  :root {
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-snappy: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    /* ── Colour theme: Classic (orange) — default ── */
+    --p-50:  #fff4e6;
+    --p-100: #ffe4bf;
+    --p-200: #ffd099;
+    --p-300: #ffb84d;
+    --p-400: #ffa726;
+    --p-500: #f5821f;
+    --p-600: #e06800;
+    --p-700: #c05500;
+    --p-800: #9a4300;
+    --p-900: #6b2e00;
+  }
+
+  /* ── Accessibility fonts ── */
+  html[data-font="atkinson"]     { font-family: 'Atkinson Hyperlegible', Arial, sans-serif; }
+  html[data-font="lexend"]       { font-family: 'Lexend', Arial, sans-serif; }
+  html[data-font="opendyslexic"] { font-family: 'OpenDyslexic', Arial, sans-serif; }
+
+  /* ── Colour theme: Blue ── */
+  html[data-color-theme="blue"] {
+    --p-50:  #f0f7fd;
+    --p-100: #dceef9;
+    --p-200: #b8ddf4;
+    --p-300: #7dbbeb;
+    --p-400: #5ca9e3;
+    --p-500: #056bb0;
+    --p-600: #045a96;
+    --p-700: #034678;
+    --p-800: #02345a;
+    --p-900: #01223c;
+  }
+
+  /* ── Colour theme: Dark (slate) ── */
+  html[data-color-theme="dark"] {
+    --p-50:  #f8fafc;
+    --p-100: #f1f5f9;
+    --p-200: #e2e8f0;
+    --p-300: #cbd5e1;
+    --p-400: #94a3b8;
+    --p-500: #64748b;
+    --p-600: #475569;
+    --p-700: #334155;
+    --p-800: #1e293b;
+    --p-900: #0f172a;
+  }
+
+  /* Button press feedback — makes every button feel responsive */
+  button:active:not(:disabled),
+  [role="button"]:active:not(:disabled),
+  .btn-primary:active:not(:disabled),
+  .btn-secondary:active:not(:disabled),
+  .btn-sage:active:not(:disabled) {
+    transform: scale(0.97);
+    transition-duration: 100ms;
+  }
+
+  /* Clickable card press feedback */
+  a.card-hover:active,
+  .card-hover:active {
+    transform: scale(0.985);
+    transition-duration: 100ms;
+  }
+
+  /* Gate hover effects behind pointer capability */
+  @media (hover: hover) and (pointer: fine) {
+    .card-hover:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Quick action links — lift on hover */
+    a[class*="rounded-xl"]:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  /* Stagger animation for cards and list items */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-stagger > * {
     opacity: 0;
-    transform: translateY(8px);
+    animation: fadeInUp 350ms var(--ease-out) forwards;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 50ms; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 100ms; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 150ms; }
+  .animate-stagger > *:nth-child(5) { animation-delay: 200ms; }
+  .animate-stagger > *:nth-child(6) { animation-delay: 250ms; }
+  .animate-stagger > *:nth-child(7) { animation-delay: 300ms; }
+  .animate-stagger > *:nth-child(8) { animation-delay: 350ms; }
+  /* Rows 9+ appear together at the end of the stagger */
+  .animate-stagger > *:nth-child(n+9) { animation-delay: 400ms; }
+
+  /* Page entrance animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-}
 
-.animate-stagger > * {
-  opacity: 0;
-  animation: fadeInUp 350ms var(--ease-out) forwards;
-}
-.animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
-.animate-stagger > *:nth-child(2) { animation-delay: 50ms; }
-.animate-stagger > *:nth-child(3) { animation-delay: 100ms; }
-.animate-stagger > *:nth-child(4) { animation-delay: 150ms; }
-.animate-stagger > *:nth-child(5) { animation-delay: 200ms; }
-.animate-stagger > *:nth-child(6) { animation-delay: 250ms; }
-.animate-stagger > *:nth-child(7) { animation-delay: 300ms; }
-.animate-stagger > *:nth-child(8) { animation-delay: 350ms; }
-/* Rows 9+ appear together at the end of the stagger */
-.animate-stagger > *:nth-child(n+9) { animation-delay: 400ms; }
-
-/* Page entrance animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
+  .animate-page-enter {
+    animation: fadeIn 300ms var(--ease-out) forwards;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  /* Progress bar animation */
+  @keyframes growWidth {
+    from { width: 0; }
   }
-}
 
-.animate-page-enter {
-  animation: fadeIn 300ms var(--ease-out) forwards;
-}
+  .animate-progress {
+    animation: growWidth 800ms var(--ease-in-out) forwards;
+  }
 
-/* Progress bar animation */
-@keyframes growWidth {
-  from { width: 0; }
-}
+  /* Dialog entrance — a short fade with the faintest scale, no slide. Kept
+     deliberately quiet for autistic users; the reduced-motion rule below
+     removes it entirely. */
+  @keyframes dialogOverlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 
-.animate-progress {
-  animation: growWidth 800ms var(--ease-in-out) forwards;
-}
+  @keyframes dialogContentIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+  }
 
-/* Dialog entrance — a short fade with the faintest scale, no slide. Kept
-   deliberately quiet for autistic users; the reduced-motion rule below
-   removes it entirely. */
-@keyframes dialogOverlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+  .dialog-overlay[data-state="open"] {
+    animation: dialogOverlayIn 150ms var(--ease-out);
+  }
 
-@keyframes dialogContentIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.dialog-overlay[data-state="open"] {
-  animation: dialogOverlayIn 150ms var(--ease-out);
-}
-
-.dialog-content[data-state="open"] {
-  animation: dialogContentIn 150ms var(--ease-out);
+  .dialog-content[data-state="open"] {
+    animation: dialogContentIn 150ms var(--ease-out);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

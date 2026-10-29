@@ -3,7 +3,7 @@ import type { HomeBlock } from '@/lib/home-blocks'
 
 function HeroBlockView({ block }: { block: Extract<HomeBlock, { kind: 'hero' }> }) {
   return (
-    <section className="rounded-3xl bg-gradient-to-br from-primary-50 to-white dark:from-slate-800 dark:to-slate-900 p-8 md:p-12 mb-8">
+    <section className="rounded-3xl bg-linear-to-br from-primary-50 to-white dark:from-slate-800 dark:to-slate-900 p-8 md:p-12 mb-8">
       <div className="grid md:grid-cols-2 gap-8 items-center">
         <div>
           {block.title && (
