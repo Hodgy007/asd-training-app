@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
-import { generateOutline, withRetry } from '@/lib/content-generator'
-import type { ParsedFile, GenerationMode, GenerationLens } from '@/lib/content-generator-types'
+import { generatePlan } from '@/lib/training-gen/plan'
+import { checkTrainingPlanLimits } from '@/lib/training-gen/limits'
+import { isAiUnavailable } from '@/lib/ai-runner'
+import type { ParsedFile } from '@/lib/content-generator-types'
 
 export const maxDuration = 300
 
+// Brief + outline for the generator's Plan step. Lessons are written later by
+// generate-content, once the admin has reviewed and edited this.
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || !hasPermission(session, CHARITY_PERMISSIONS.MANAGE_TRAINING)) {
@@ -17,35 +21,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'AI_GATEWAY_API_KEY is not configured' }, { status: 500 })
   }
 
-  let body: {
-    parsedContent?: ParsedFile[]
-    mode?: GenerationMode
-    lens?: GenerationLens
-    programName?: string
-  }
+  const limited = await checkTrainingPlanLimits(session.user.id)
+  if (limited) return limited
+
+  let body: { parsedContent?: ParsedFile[]; programName?: string }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { parsedContent, mode, lens, programName } = body
-
+  const { parsedContent, programName } = body
   if (!parsedContent || !Array.isArray(parsedContent) || parsedContent.length === 0) {
     return NextResponse.json({ error: 'parsedContent is required and must be a non-empty array' }, { status: 400 })
-  }
-  if (!mode || (mode !== 'structure' && mode !== 'generate')) {
-    return NextResponse.json({ error: 'mode is required and must be "structure" or "generate"' }, { status: 400 })
   }
   if (!programName || typeof programName !== 'string' || !programName.trim()) {
     return NextResponse.json({ error: 'programName is required' }, { status: 400 })
   }
 
   try {
-    const outline = await withRetry(() => generateOutline(parsedContent, mode, programName.trim()))
-    return NextResponse.json(outline)
+    return NextResponse.json(await generatePlan(parsedContent, programName.trim()))
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to generate outline-solid'
+    const message = isAiUnavailable(err) ? err.message : 'Failed to plan the programme'
     return NextResponse.json({ error: message }, { status: 502 })
   }
 }

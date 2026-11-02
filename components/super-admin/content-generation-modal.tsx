@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { X, Upload, Sparkles, CircleCheckBig, LoaderCircle, CircleAlert } from 'lucide-react'
+import { X, Sparkles, CircleCheckBig, LoaderCircle, CircleAlert } from 'lucide-react'
 import { clsx } from 'clsx'
 import type {
-  GenerationMode,
   GenerationLens,
+  GeneratedOutline,
   GeneratedProgram,
   ParsedFile,
   SSEEvent,
@@ -14,14 +14,17 @@ import { FileDropZone } from './file-drop-zone'
 import { GenerationProgress } from './generation-progress'
 import type { ProgressPhase } from './generation-progress'
 import { ProgramPreview } from './program-preview'
+import { GenerationPlanStep } from './generation-plan-step'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import type { CourseBrief } from '@/lib/training-gen/schemas'
+import { showToast } from '@/components/ui/toaster'
+import { startProgram, applyEvent, finishCutOff, hasFinishedLessons } from '@/lib/training-gen/progress'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ModalStep = 'upload' | 'processing' | 'preview' | 'saving' | 'done'
+type ModalStep = 'upload' | 'processing' | 'plan' | 'preview' | 'saving' | 'done'
 
 interface ContentGenerationModalProps {
-  mode: GenerationMode
   isOpen: boolean
   onClose: () => void
   onComplete: () => void
@@ -71,7 +74,6 @@ async function readSSEStream(
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 export function ContentGenerationModal({
-  mode,
   isOpen,
   onClose,
   onComplete,
@@ -96,8 +98,14 @@ export function ContentGenerationModal({
   // Preview step state
   const [program, setProgram] = useState<GeneratedProgram | null>(null)
 
-  // Saved parsed content for retry
+  // Saved parsed content and plan for retry
   const [parsedContent, setParsedContent] = useState<ParsedFile[]>([])
+  const [outline, setOutline] = useState<GeneratedOutline | null>(null)
+  const [brief, setBrief] = useState<CourseBrief | null>(null)
+  const [planWarnings, setPlanWarnings] = useState<string[]>([])
+  const [planTruncated, setPlanTruncated] = useState(false)
+  const [includeCheckIns, setIncludeCheckIns] = useState(true)
+  const [planError, setPlanError] = useState<string | null>(null)
 
   // Save error
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -121,6 +129,12 @@ export function ContentGenerationModal({
     setProgressErrors([])
     setProgram(null)
     setParsedContent([])
+    setOutline(null)
+    setBrief(null)
+    setPlanWarnings([])
+    setPlanTruncated(false)
+    setIncludeCheckIns(true)
+    setPlanError(null)
     setSaveError(null)
     setPublished(false)
   }, [])
@@ -162,34 +176,55 @@ export function ContentGenerationModal({
       const parsedFiles: ParsedFile[] = parsed.files
       setParsedContent(parsedFiles)
 
-      // Step 2: Generate outline
-      setProgressPhase('outline-solid')
+      // Step 2: Brief + outline
+      setProgressPhase('outline')
 
-      const outlineRes = await fetch('/api/super-admin/training/generate-outline', {
+      const planRes = await fetch('/api/super-admin/training/generate-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          parsedContent: parsedFiles,
-          mode,
-          lens,
-          programName,
-        }),
+        body: JSON.stringify({ parsedContent: parsedFiles, programName }),
       })
 
-      if (!outlineRes.ok) {
-        const err = await outlineRes.json().catch(() => ({ error: 'Outline generation failed' }))
-        throw new Error(err.error ?? 'Failed to generate outline-solid')
+      if (!planRes.ok) {
+        const err = await planRes.json().catch(() => ({ error: 'Planning failed' }))
+        throw new Error(err.error ?? 'Failed to plan the programme')
       }
 
-      const outline = await outlineRes.json()
+      const plan: { brief: CourseBrief; outline: GeneratedOutline; warnings: string[]; truncated: boolean } = await planRes.json()
+      setBrief(plan.brief)
+      setOutline(plan.outline)
+      setPlanWarnings(plan.warnings ?? [])
+      setPlanTruncated(plan.truncated === true)
+      setStep('plan')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'An unexpected error occurred'
+      setProgressPhase('error')
+      setUploadError(message)
+    }
+  }, [files, programName, includeImages])
 
-      // Step 3: Generate content via SSE
-      setProgressPhase('content')
+  // ─── Generate Lessons (after the Plan step) ──────────────────────────────────
 
+  const generateLessons = useCallback(async (checkIns: boolean) => {
+    if (!brief || !outline) return
+    setIncludeCheckIns(checkIns)
+    setUploadError(null)
+    setPlanError(null)
+    setStep('processing')
+    setProgressErrors([])
+    setProgressCurrentLesson(1)
+    setProgressCurrentPhase('content')
+    setProgressPhase('content')
+
+    // Built up as lessons finish, so a run that is cut off keeps its work.
+    let partial = startProgram(brief, outline)
+    const errors: string[] = []
+
+    try {
       const contentRes = await fetch('/api/super-admin/training/generate-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ outline, parsedContent: parsedFiles, mode, lens }),
+        body: JSON.stringify({ brief, outline, parsedContent, lens, includeCheckIns: checkIns }),
       })
 
       if (!contentRes.ok) {
@@ -198,23 +233,15 @@ export function ContentGenerationModal({
       }
 
       let finalProgram: GeneratedProgram | null = null
-      const errors: string[] = []
 
       await readSSEStream(contentRes, (event) => {
+        partial = applyEvent(partial, event)
         switch (event.type) {
           case 'progress':
             setProgressCurrentLesson(event.lesson)
             setProgressTotalLessons(event.total)
             setProgressCurrentPhase(event.phase)
             setProgressPhase(event.phase === 'quiz' ? 'quiz' : 'content')
-            break
-
-          case 'lesson-complete':
-            // No-op — will be captured in the final program
-            break
-
-          case 'quiz-complete':
-            // No-op — will be captured in the final program
             break
 
           case 'lesson-error':
@@ -235,7 +262,7 @@ export function ContentGenerationModal({
       })
 
       if (!finalProgram) {
-        throw new Error('Generation did not complete successfully')
+        throw new Error('Generation stopped before it finished.')
       }
 
       setProgram(finalProgram)
@@ -243,10 +270,18 @@ export function ContentGenerationModal({
       setStep('preview')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unexpected error occurred'
-      setProgressPhase('error')
-      setUploadError(message)
+      if (hasFinishedLessons(partial)) {
+        // Keep what was written; the rest are marked for Retry in the preview.
+        setProgram(finishCutOff(partial))
+        showToast(`${message} The lessons that were written are kept. Use Retry on the others.`, 'error')
+        setStep('preview')
+      } else {
+        // Nothing to keep: back to the Plan step with the admin's edits intact.
+        setPlanError(message)
+        setStep('plan')
+      }
     }
-  }, [files, programName, mode, lens, includeImages])
+  }, [brief, outline, parsedContent, lens])
 
   // ─── Retry Lesson ────────────────────────────────────────────────────────────
 
@@ -262,8 +297,8 @@ export function ContentGenerationModal({
             existingParsedContent: parsedContent,
             program,
             failedLessons: [{ moduleIndex, lessonIndex }],
-            mode,
             lens,
+            includeCheckIns,
           })
         )
 
@@ -286,8 +321,22 @@ export function ContentGenerationModal({
                   ...mod,
                   lessons: mod.lessons.map((lesson, lIdx) => {
                     if (lIdx !== event.lessonIndex) return lesson
-                    return { ...lesson, content: event.content, error: undefined }
+                    return { ...lesson, content: event.content, interactiveBlocks: event.interactiveBlocks, error: undefined }
                   }),
+                }
+              })
+              return { ...prev, modules: newModules }
+            })
+          } else if (event.type === 'lesson-error' && !event.error.startsWith('Quiz')) {
+            setProgram((prev) => {
+              if (!prev) return prev
+              const newModules = prev.modules.map((mod, mIdx) => {
+                if (mIdx !== event.moduleIndex) return mod
+                return {
+                  ...mod,
+                  lessons: mod.lessons.map((lesson, lIdx) =>
+                    lIdx === event.lessonIndex ? { ...lesson, error: event.error } : lesson,
+                  ),
                 }
               })
               return { ...prev, modules: newModules }
@@ -313,7 +362,7 @@ export function ContentGenerationModal({
         console.error('Retry lesson failed:', err)
       }
     },
-    [program, parsedContent, mode, lens]
+    [program, parsedContent, lens, includeCheckIns]
   )
 
   // ─── Save Program ────────────────────────────────────────────────────────────
@@ -354,8 +403,8 @@ export function ContentGenerationModal({
 
   // ─── Title ───────────────────────────────────────────────────────────────────
 
-  const title = mode === 'structure' ? 'Import from Files' : 'Generate from Files'
-  const HeaderIcon = mode === 'structure' ? Upload : Sparkles
+  const title = 'Generate from Files'
+  const HeaderIcon = Sparkles
 
   // ─── Render ───────────────────────────────────────────────────────────────────
 
@@ -414,8 +463,7 @@ export function ContentGenerationModal({
                 />
               </div>
 
-              {/* Lens toggle (generate mode only) */}
-              {mode === 'generate' && (
+              {/* Lens toggle */}
                 <div>
                   <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
                     Generation Lens
@@ -447,7 +495,6 @@ export function ContentGenerationModal({
                     </button>
                   </div>
                 </div>
-              )}
 
               {/* Include images */}
               <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
@@ -492,13 +539,31 @@ export function ContentGenerationModal({
             />
           )}
 
-          {/* ── Step 3: Preview ────────────────────────────────────────── */}
+          {/* ── Step 3: Plan ───────────────────────────────────────────── */}
+          {step === 'plan' && brief && outline && (
+            <GenerationPlanStep
+              brief={brief}
+              outline={outline}
+              warnings={planWarnings}
+              truncated={planTruncated}
+              onChange={(b, o) => {
+                setBrief(b)
+                setOutline(o)
+              }}
+              onBack={() => setStep('upload')}
+              onGenerate={generateLessons}
+              error={planError}
+            />
+          )}
+
+          {/* ── Step 4: Preview ────────────────────────────────────────── */}
           {(step === 'preview' || step === 'saving') && program && (
             <div className="space-y-4">
               <ProgramPreview
                 program={program}
                 onProgramChange={setProgram}
                 onRetryLesson={retryLesson}
+                parsedContent={parsedContent}
                 onUploadMore={handleUploadMore}
               />
               {saveError && (

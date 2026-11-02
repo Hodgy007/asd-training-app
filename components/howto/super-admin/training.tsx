@@ -25,13 +25,14 @@ export default function TrainingHowTo() {
         <span className="inline-flex items-center gap-1.5"><Sparkles className="h-4 w-4 text-primary-500" /> Generate from Files</span>
       </h3>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-        Upload PDF, DOCX, or PPTX files and let AI create pedagogically-designed training content inspired by your material. The platform organises your source documents into modules, lessons, and quizzes ready to publish.
+        Upload PDF, DOCX, or PPTX files and the AI drafts a training programme from them: learning objectives, modules, lessons and quizzes. It only uses what is in your files, and nothing is saved until you choose to.
       </p>
       <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 dark:text-slate-400">
-        <li>Click <strong>Generate from Files</strong> on the Training Content page.</li>
-        <li>Upload one or more files (PDF, DOCX, or PPTX).</li>
-        <li>Review the AI-generated content and make any adjustments.</li>
-        <li>Save to create the program, modules, lessons, and quizzes.</li>
+        <li>Click <strong>Generate from Files</strong> on the Training Content page, upload your files, name the programme and choose a lens.</li>
+        <li><strong>Plan:</strong> check who the programme is for, its learning objectives (3 to 6) and its modules and lessons. Rename or remove lessons here; an amber note tells you if an objective is no longer covered. Untick <strong>Add a check-in question inside each lesson</strong> if you don&rsquo;t want one.</li>
+        <li>Click <strong>Generate lessons</strong>. Every lesson follows the same layout: <em>What you&rsquo;ll learn</em>, the lesson, an optional <em>Check your understanding</em> question, then <em>Key points</em>.</li>
+        <li><strong>Review:</strong> open a lesson to edit it. <strong>Sources</strong> shows which parts of your files it was written from. Quiz questions are checked automatically; any marked <strong>Check this question</strong> need a person to look at them.</li>
+        <li>Save as a draft, or save and publish. The objectives become the programme description learners see.</li>
       </ol>
 
       <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Editing modules and lessons</h3>

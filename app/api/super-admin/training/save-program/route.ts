@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import prisma from '@/lib/prisma'
+import { sanitizeHtml } from '@/lib/sanitize'
+import { validateInteractiveBlocks } from '@/lib/interactive-blocks'
+import type { InteractiveBlock } from '@/types/interactive'
 import type { GeneratedProgram } from '@/lib/content-generator-types'
 
 export async function POST(req: NextRequest) {
@@ -18,13 +21,47 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { programName, modules, publish } = body
+  const { programName, modules, publish, brief } = body
 
   if (!programName || typeof programName !== 'string' || !programName.trim()) {
     return NextResponse.json({ error: 'programName is required' }, { status: 400 })
   }
   if (!modules || !Array.isArray(modules)) {
     return NextResponse.json({ error: 'modules is required and must be an array' }, { status: 400 })
+  }
+
+  // Blocks are checked all-or-nothing before anything is written, so a
+  // malformed block can't be silently dropped (see validateInteractiveBlocks).
+  const blocksByLesson = new Map<string, InteractiveBlock[]>()
+  for (let m = 0; m < modules.length; m++) {
+    const lessons = modules[m].lessons ?? []
+    for (let l = 0; l < lessons.length; l++) {
+      const raw = lessons[l].interactiveBlocks ?? []
+      const blocks = validateInteractiveBlocks(raw)
+      if (!blocks) {
+        return NextResponse.json(
+          { error: `Lesson "${lessons[l].title}": its interactive blocks are not valid` },
+          { status: 400 },
+        )
+      }
+      blocksByLesson.set(`${m}:${l}`, blocks)
+    }
+  }
+
+  // A correctAnswer that matches no option makes the question unanswerable for
+  // learners, so refuse the save rather than store it.
+  for (const mod of modules) {
+    for (const lesson of mod.lessons ?? []) {
+      const broken = (lesson.quizQuestions ?? []).some(
+        (q) => !Array.isArray(q.options) || !q.options.includes(q.correctAnswer),
+      )
+      if (broken) {
+        return NextResponse.json(
+          { error: `Lesson "${lesson.title}": a quiz question's correct answer is not one of its options` },
+          { status: 400 },
+        )
+      }
+    }
   }
 
   try {
@@ -37,7 +74,7 @@ export async function POST(req: NextRequest) {
       const program = await tx.trainingProgram.create({
         data: {
           name: programName.trim(),
-          description: 'AI-generated training program',
+          description: describeObjectives(taughtObjectives(brief?.objectives ?? [], modules)),
           order: programOrder,
           status: 'DRAFT',
         },
@@ -73,7 +110,10 @@ export async function POST(req: NextRequest) {
               moduleId,
               title: lesson.title,
               type: 'TEXT',
-              content: lesson.content ?? '',
+              content: sanitizeHtml(lesson.content ?? ''),
+              interactiveBlocks: blocksByLesson.get(`${modIndex}:${lesIndex}`)?.length
+                ? (blocksByLesson.get(`${modIndex}:${lesIndex}`) as object[])
+                : undefined,
               order: lesOrder,
               active: publish === true,
             },
@@ -104,4 +144,28 @@ export async function POST(req: NextRequest) {
     const message = err instanceof Error ? err.message : 'Failed to save program'
     return NextResponse.json({ error: message }, { status: 500 })
   }
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+/**
+ * Only objectives that are filled in and taught by at least one lesson are
+ * promised to learners. Lessons from before objectives existed carry no ids,
+ * in which case every non-blank objective is kept.
+ */
+function taughtObjectives(
+  objectives: { id: string; text: string }[],
+  modules: GeneratedProgram['modules'],
+): { id: string; text: string }[] {
+  const cited = new Set(modules.flatMap((m) => (m.lessons ?? []).flatMap((l) => l.objectiveIds ?? [])))
+  return objectives.filter((o) => o.text.trim() && (cited.size === 0 || cited.has(o.id)))
+}
+
+/** Learners see the objectives as the programme description. */
+function describeObjectives(objectives: { text: string }[]): string {
+  if (objectives.length === 0) return 'AI-generated training program'
+  const items = objectives.map((o) => `<li>${escapeHtml(o.text)}</li>`).join('')
+  return `<p>By the end of this programme you will be able to:</p><ul>${items}</ul>`
 }

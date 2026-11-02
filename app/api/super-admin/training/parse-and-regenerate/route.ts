@@ -3,11 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { hasPermission, CHARITY_PERMISSIONS } from '@/lib/rbac'
 import { parseFiles, getSupportedExtensions } from '@/lib/file-parser'
-import { generateLessonContent, generateQuizForLesson, withRetry } from '@/lib/content-generator'
+import { checkTrainingPlanLimits } from '@/lib/training-gen/limits'
+import { generateLesson } from '@/lib/training-gen/lesson'
+import { generateCheckedQuiz } from '@/lib/training-gen/quiz'
+import { withRetry } from '@/lib/training-gen/retry'
 import type {
   ParsedFile,
-  GenerationMode,
   GenerationLens,
+  GeneratedOutline,
   GeneratedProgram,
   SourceRef,
   SSEEvent,
@@ -20,8 +23,8 @@ interface RegenerateMetadata {
   existingParsedContent: ParsedFile[]
   program: GeneratedProgram
   failedLessons: Array<{ moduleIndex: number; lessonIndex: number }>
-  mode: GenerationMode
-  lens?: GenerationLens
+  lens: GenerationLens
+  includeCheckIns?: boolean
 }
 
 export async function POST(req: NextRequest) {
@@ -33,6 +36,9 @@ export async function POST(req: NextRequest) {
   if (!process.env.AI_GATEWAY_API_KEY) {
     return new Response(JSON.stringify({ error: 'AI_GATEWAY_API_KEY is not configured' }), { status: 500 })
   }
+
+  const limited = await checkTrainingPlanLimits(session.user.id)
+  if (limited) return limited
 
   let formData: FormData
   try {
@@ -54,7 +60,7 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'metadata must be valid JSON' }), { status: 400 })
   }
 
-  const { existingParsedContent, program, failedLessons, mode, lens } = metadata
+  const { existingParsedContent, program, failedLessons, lens, includeCheckIns } = metadata
 
   if (!existingParsedContent || !Array.isArray(existingParsedContent)) {
     return new Response(JSON.stringify({ error: 'existingParsedContent is required' }), { status: 400 })
@@ -65,8 +71,11 @@ export async function POST(req: NextRequest) {
   if (!failedLessons || !Array.isArray(failedLessons) || failedLessons.length === 0) {
     return new Response(JSON.stringify({ error: 'failedLessons must be a non-empty array' }), { status: 400 })
   }
-  if (!mode || (mode !== 'structure' && mode !== 'generate')) {
-    return new Response(JSON.stringify({ error: 'mode is required and must be "structure" or "generate"' }), { status: 400 })
+  if (!program.brief) {
+    return new Response(JSON.stringify({ error: 'program.brief is required' }), { status: 400 })
+  }
+  if (lens !== 'autism' && lens !== 'practitioner') {
+    return new Response(JSON.stringify({ error: 'lens must be "autism" or "practitioner"' }), { status: 400 })
   }
 
   // Parse any new files from the form
@@ -98,11 +107,27 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Build all-encompassing sourceRefs covering every file and section
-  const allSourceRefs: SourceRef[] = combinedParsedContent.map((file, fileIndex) => ({
-    fileIndex,
+  // Sections of files added with this retry, which any retried lesson may use.
+  const newFileRefs: SourceRef[] = combinedParsedContent.slice(existingParsedContent.length).map((file, i) => ({
+    fileIndex: existingParsedContent.length + i,
     sectionIndices: file.sections.map((_, sIndex) => sIndex),
   }))
+
+  // The outline is rebuilt from the program as the admin has edited it in the
+  // preview (lessons moved, renamed or removed), so indexes always match.
+  const editedOutline: GeneratedOutline = {
+    programName: program.programName,
+    modules: program.modules.map((mod) => ({
+      title: mod.title,
+      description: mod.description,
+      lessons: mod.lessons.map((l) => ({
+        title: l.title,
+        summary: l.summary ?? '',
+        objectiveIds: l.objectiveIds ?? [],
+        sourceRefs: l.sourceRefs ?? [],
+      })),
+    })),
+  }
 
   const totalLessons = failedLessons.length
 
@@ -153,23 +178,33 @@ export async function POST(req: NextRequest) {
         let lessonContent: string
         let lessonError: string | undefined
 
+        // The lesson keeps its own sources, plus anything uploaded with this retry.
+        const retryOutline: GeneratedOutline = JSON.parse(JSON.stringify(editedOutline))
+        const outlineLesson = retryOutline.modules[moduleIndex].lessons[lessonIndex]
+        outlineLesson.sourceRefs = [...outlineLesson.sourceRefs, ...newFileRefs]
+
         try {
-          lessonContent = await withRetry(() =>
-            generateLessonContent(
-              combinedParsedContent,
-              targetLesson.title,
-              allSourceRefs,
-              mode,
-              lens
-            )
+          const lesson = await withRetry(() =>
+            generateLesson({
+              files: combinedParsedContent,
+              outline: retryOutline,
+              brief: program.brief,
+              moduleIndex,
+              lessonIndex,
+              lens,
+              includeCheckIn: includeCheckIns !== false,
+            })
           )
+          lessonContent = lesson.content
           targetLesson.content = lessonContent
+          targetLesson.interactiveBlocks = lesson.interactiveBlocks
           delete targetLesson.error
           sendEvent({
             type: 'lesson-complete',
             moduleIndex,
             lessonIndex,
             content: lessonContent,
+            interactiveBlocks: lesson.interactiveBlocks,
           })
         } catch (err) {
           lessonError = err instanceof Error ? err.message : 'Failed to regenerate lesson content'
@@ -193,7 +228,12 @@ export async function POST(req: NextRequest) {
           })
           try {
             const quizQuestions = await withRetry(() =>
-              generateQuizForLesson(lessonContent, mode, lens)
+              generateCheckedQuiz({
+                lessonHtml: lessonContent,
+                objectives: program.brief.objectives.filter((o) => outlineLesson?.objectiveIds.includes(o.id)),
+                audience: program.brief.audience,
+                lens,
+              })
             )
             targetLesson.quizQuestions = quizQuestions
             sendEvent({

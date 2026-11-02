@@ -13,6 +13,16 @@ interface PromptSeed {
   responseFormat: string
 }
 
+// Rules every training-generator v2 prompt carries.
+const TRAINING_RULES = [
+  'Use UK English.',
+  'Be strength-focused and respectful.',
+  'Never diagnose anyone or suggest that a person is autistic.',
+  'Use only facts, statistics and examples found in the source material provided. Never invent case studies, quotes or numbers.',
+]
+
+const STRUCTURED_FORMAT = 'Structured output is enforced by the app; fill every field.'
+
 const SEEDS: PromptSeed[] = [
   // ─── Surveys ─────────────────────────────────────────────────────────────
 
@@ -104,6 +114,99 @@ const SEEDS: PromptSeed[] = [
   },
 
   // ─── Training ────────────────────────────────────────────────────────────
+
+  // ─── Training generator v2 (structured output, see lib/training-gen) ─────
+  // runPromptObject enforces the shape, so responseFormat only asks the model
+  // to fill every field. TRAINING_RULES applies to all five.
+
+  {
+    key: 'training.brief',
+    name: 'Training — Course Brief',
+    purpose: 'Read the source material and propose who the programme is for, how long it takes and what learners will be able to do by the end.',
+    category: 'training',
+    tone: 'Experienced instructional designer.',
+    requirements: [
+      ...TRAINING_RULES,
+      'Write 3 to 6 learning objectives. Each starts with an observable verb (identify, explain, describe, use, plan, compare) and never with "understand" or "know".',
+      'Give each objective an id of the form o1, o2, o3 in order.',
+      'audience is one sentence describing who the programme is for, taken from the source.',
+      'estimatedMinutes is the total learner time for the whole programme.',
+    ],
+    inputVariables: ['programName', 'formattedContent'],
+    responseFormat: STRUCTURED_FORMAT,
+  },
+  {
+    key: 'training.outline.v2',
+    name: 'Training — Outline v2',
+    purpose: 'Design modules and lessons that meet the brief, using only the provided source sections.',
+    category: 'training',
+    tone: 'Experienced instructional designer.',
+    requirements: [
+      ...TRAINING_RULES,
+      'Progress from simple to complex.',
+      'Every lesson cites at least one source section (fileIndex and sectionIndices exactly as labelled in the source) and at least one objective id from the brief.',
+      'Every objective in the brief is covered by at least one lesson.',
+      'summary is one sentence saying what the lesson covers and what it leaves to other lessons.',
+      'Use no more than 12 modules and no more than 10 lessons per module.',
+    ],
+    inputVariables: ['programName', 'briefJson', 'formattedContent'],
+    responseFormat: STRUCTURED_FORMAT,
+  },
+  {
+    key: 'training.lesson.v2',
+    name: 'Training — Lesson v2',
+    purpose: 'Write one lesson of a programme from its source sections, as parts the app assembles into a fixed layout.',
+    category: 'training',
+    tone: 'Clear, warm and practical trainer. Follow the lens guidance.',
+    requirements: [
+      ...TRAINING_RULES,
+      "Cover only what this lesson's summary describes. Do not repeat material that the outline context gives to other lessons.",
+      'bodyHtml uses only <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <blockquote> and <img>. Never use <h1> or <h2>: the layout adds those.',
+      'Place listed images where they belong in bodyHtml, and give every listed image a short descriptive alt text in imageAlts.',
+      'whatYouWillLearn has 1 to 4 short items drawn from the lesson objectives.',
+      'keyPoints has 3 to 5 short plain-text sentences summarising the lesson.',
+      'checkIn is one question with exactly 3 options about the most important idea, with correctIndex and one sentence of feedback; use null when the source is too thin for a fair question.',
+      'Write for the audience given, at a length a learner can read in about lessonMinutes minutes.',
+    ],
+    inputVariables: ['lessonTitle', 'audience', 'lessonMinutes', 'lessonSummary', 'lessonObjectives', 'outlineContext', 'sourceText', 'lensGuidance', 'imageList'],
+    responseFormat: STRUCTURED_FORMAT,
+  },
+  {
+    key: 'training.quiz.v2',
+    name: 'Training — Quiz v2',
+    purpose: 'Write multiple-choice questions that test the lesson objectives using only the lesson text.',
+    category: 'training',
+    tone: 'Fair, clear assessor. Follow the lens guidance.',
+    requirements: [
+      ...TRAINING_RULES,
+      'Write exactly the requested number of questions, each with exactly 4 options and one correctIndex.',
+      'Mix kinds: "recall" checks a fact from the lesson; "apply" describes a short realistic situation built only from the lesson and asks what to do.',
+      'Wrong options are plausible misunderstandings of the lesson, never jokes or obviously silly answers.',
+      'Never use "all of the above" or "none of the above".',
+      'objectiveId names the objective the question tests.',
+      'explanation says in one or two sentences why the correct option is right.',
+      'Pitch the situations and wording at the audience given.',
+    ],
+    inputVariables: ['count', 'audience', 'lessonText', 'objectivesJson', 'lensGuidance'],
+    responseFormat: STRUCTURED_FORMAT,
+  },
+  {
+    key: 'training.quizReview',
+    name: 'Training — Quiz Checker',
+    purpose: 'Check each quiz question strictly against the lesson text before a human sees it.',
+    category: 'training',
+    tone: 'Strict, careful reviewer.',
+    requirements: [
+      ...TRAINING_RULES,
+      "Return one verdict per question, using the question's index from the input.",
+      'answerableFromLesson is true only if the lesson text alone is enough to answer it.',
+      'exactlyOneCorrect is true only if exactly one option is defensibly correct.',
+      'clearWording is false for ambiguous, trick or double-negative wording.',
+      'issue explains any failure in one sentence; use null when all three checks pass.',
+    ],
+    inputVariables: ['lessonText', 'questionsJson'],
+    responseFormat: STRUCTURED_FORMAT,
+  },
 
   {
     key: 'training.quizGenerate',
